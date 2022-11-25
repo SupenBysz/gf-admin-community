@@ -188,7 +188,7 @@ func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info model.BaiduSdkCon
 
 	count, err := dao.SysConfig.Ctx(ctx).Count(do.SysConfig{Name: s.sysConfigName})
 	if count > 0 {
-		_, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Save(do.SysConfig{Value: jsonString})
+		_, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString})
 	} else {
 		_, err = dao.SysConfig.Ctx(ctx).Insert(do.SysConfig{Name: s.sysConfigName, Value: jsonString})
 	}
@@ -223,7 +223,7 @@ func (s *sSdkBaidu) DeleteBaiduSdkConf(ctx context.Context, identifier string) (
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
-	if _, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Save(do.SysConfig{Value: jsonString}); err != nil {
+	if _, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString}); err != nil {
 		return false, service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息删除失败", dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
