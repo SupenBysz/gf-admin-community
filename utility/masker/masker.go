@@ -29,6 +29,7 @@ var (
 	MaskTelephone = maskRule{matchString: "required|telephone"}
 	Password      = maskRule{matchString: "required|length:1,128"}
 	IDCard        = maskRule{matchString: "required|size:18"}
+	BankCard      = maskRule{matchString: "required|bank-card"}
 )
 
 func MaskString(in string, maskType MaskType) string {
@@ -67,6 +68,12 @@ func MaskString(in string, maskType MaskType) string {
 			return in[0:6] + "**********" + in[len(in)-2:len(in)]
 		}
 		return ""
+	}
+	if maskType.MaskType() == BankCard.MaskType() {
+		if nil == g.Validator().Bail().Data(in).Rules(maskType.MaskType()).Run(gctx.New()) {
+			return in[0:4] + "***********" + in[len(in)-4:len(in)]
+			// 6217 *********** 2049
+		}
 	}
 	return ""
 }
