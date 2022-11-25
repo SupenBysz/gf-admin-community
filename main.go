@@ -1,16 +1,16 @@
-package main
+package component
 
 import (
+	"github.com/SupenBysz/gf-admin-community/internal/cmd"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/joho/godotenv"
-	"github.com/SupenBysz/gf-admin-community/internal/cmd"
 	"os"
 	"strings"
 
-	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic"
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 )
 
 func init() {
