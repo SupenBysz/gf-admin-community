@@ -58,3 +58,48 @@ func (s *cSysConfig) DeleteBaiduSdkConf(ctx context.Context, req *sysapi.DeleteB
 	result, err := service.SdkBaidu().DeleteBaiduSdkConf(ctx, req.Identifier)
 	return result == true, err
 }
+
+// GetAliyunSdkConfList 获取阿里云SDK应用配置|列表
+func (s *cSysConfig) GetAliyunSdkConfList(ctx context.Context, _ *sysapi.GetAliyunSdkConfListReq) (*sysapi.AliyunSdkConfListRes, error) {
+	result := &sysapi.AliyunSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkAliyun().GetAliyunSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetAliyunSdkConf 查询阿里云SDK应用配置|信息
+func (s *cSysConfig) GetAliyunSdkConf(ctx context.Context, req *sysapi.GetAliyunSdkConfReq) (*sysapi.AliyunSdkConfRes, error) {
+	result, err := service.SdkAliyun().GetAliyunSdkConf(ctx, req.Identifier)
+	return (*sysapi.AliyunSdkConfRes)(result), err
+}
+
+// CreateAliyunSdkConf 创建阿里云SDK应用配置|信息
+func (s *cSysConfig) CreateAliyunSdkConf(ctx context.Context, req *sysapi.CreateAliyunSdkConfReq) (*sysapi.AliyunSdkConfRes, error) {
+	result, err := service.SdkAliyun().SaveAliyunSdkConf(ctx, req.AliyunSdkConf, true)
+	return (*sysapi.AliyunSdkConfRes)(result), err
+}
+
+// UpdateAliyunSdkConf 更新阿里云SDK应用配置|信息
+func (s *cSysConfig) UpdateAliyunSdkConf(ctx context.Context, req *sysapi.UpdateAliyunSdkConfReq) (*sysapi.AliyunSdkConfRes, error) {
+	result, err := service.SdkAliyun().SaveAliyunSdkConf(ctx, req.AliyunSdkConf, false)
+	return (*sysapi.AliyunSdkConfRes)(result), err
+}
+
+// DeleteAliyunSdkConf 删除阿里云SDK应用配置|信息
+func (s *cSysConfig) DeleteAliyunSdkConf(ctx context.Context, req *sysapi.DeleteAliyunSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkAliyun().DeleteAliyunSdkConf(ctx, req.Identifier)
+	return result == true, err
+}
