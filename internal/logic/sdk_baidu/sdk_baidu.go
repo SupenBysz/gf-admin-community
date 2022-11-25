@@ -3,17 +3,17 @@ package sdk_baidu
 import (
 	"context"
 	"database/sql"
-	"github.com/gogf/gf/v2/container/garray"
-	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"time"
 )
 
@@ -188,7 +188,7 @@ func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info model.BaiduSdkCon
 
 	count, err := dao.SysConfig.Ctx(ctx).Count(do.SysConfig{Name: s.sysConfigName})
 	if count > 0 {
-		_, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Save(do.SysConfig{Value: jsonString})
+		_, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString})
 	} else {
 		_, err = dao.SysConfig.Ctx(ctx).Insert(do.SysConfig{Name: s.sysConfigName, Value: jsonString})
 	}
@@ -223,7 +223,7 @@ func (s *sSdkBaidu) DeleteBaiduSdkConf(ctx context.Context, identifier string) (
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
-	if _, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Save(do.SysConfig{Value: jsonString}); err != nil {
+	if _, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString}); err != nil {
 		return false, service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息删除失败", dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
