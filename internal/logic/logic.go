@@ -13,6 +13,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/file"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/jwt"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/middleware"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_aliyun"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_baidu"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_audit"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_logs"
