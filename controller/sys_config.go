@@ -150,3 +150,50 @@ func (s *cSysConfig) DeleteHuaWeiYunSdkConf(ctx context.Context, req *sysapi.Del
 	result, err := service.SdkHuaWeiYun().DeleteHuaWeiYunSdkConf(ctx, req.Identifier)
 	return result == true, err
 }
+
+// 腾讯云
+
+// GetTengxunSdkConfList 获取腾讯云SDK应用配置|列表
+func (s *cSysConfig) GetTengxunSdkConfList(ctx context.Context, _ *sysapi.GetTengxunSdkConfListReq) (*sysapi.TengxunSdkConfListRes, error) {
+	result := &sysapi.TengxunSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkTengxun().GetTengxunSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetTengxunSdkConf 查询腾讯云SDK应用配置|信息
+func (s *cSysConfig) GetTengxunSdkConf(ctx context.Context, req *sysapi.GetTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
+	result, err := service.SdkTengxun().GetTengxunSdkConf(ctx, req.Identifier)
+	return (*sysapi.TengxunSdkConfRes)(result), err
+}
+
+// CreateTengxunSdkConf 创建腾讯云SDK应用配置|信息
+func (s *cSysConfig) CreateTengxunSdkConf(ctx context.Context, req *sysapi.CreateTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
+	result, err := service.SdkTengxun().SaveTengxunSdkConf(ctx, req.TengxunSdkConf, true)
+	return (*sysapi.TengxunSdkConfRes)(result), err
+}
+
+// UpdateTengxunSdkConf 更新腾讯云SDK应用配置|信息
+func (s *cSysConfig) UpdateTengxunSdkConf(ctx context.Context, req *sysapi.UpdateTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
+	result, err := service.SdkTengxun().SaveTengxunSdkConf(ctx, req.TengxunSdkConf, false)
+	return (*sysapi.TengxunSdkConfRes)(result), err
+}
+
+// DeleteTengxunSdkConf 删除腾讯云SDK应用配置|信息
+func (s *cSysConfig) DeleteTengxunSdkConf(ctx context.Context, req *sysapi.DeleteTengxunSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkTengxun().DeleteTengxunSdkConf(ctx, req.Identifier)
+	return result == true, err
+}

@@ -91,3 +91,31 @@ type DeleteHuaWeiYunSdkConfReq struct {
 
 type HuaWeiYunSdkConfRes model.HuaWeiYunSdkConf
 type HuaWeiYunSdkConfListRes model.CollectRes[model.HuaWeiYunSdkConf]
+
+// 腾讯云 SDK
+type GetTengxunSdkConfListReq struct {
+	g.Meta `path:"/tengxun/getTengxunSdkConfList" method:"POST" tags:"系统配置" summary:"获取腾讯云SDK应用配置|列表" dc:"系统配置：固定位仅供系统超级管理员可用"`
+}
+
+type GetTengxunSdkConfReq struct {
+	g.Meta     `path:"/tengxun/getTengxunSdkConf" method:"POST" tags:"系统配置" summary:"查询腾讯云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type CreateTengxunSdkConfReq struct {
+	g.Meta `path:"/tengxun/createTengxunSdkConf" method:"POST" tags:"系统配置" summary:"创建腾讯云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.TengxunSdkConf
+}
+
+type UpdateTengxunSdkConfReq struct {
+	g.Meta `path:"/tengxun/updateTengxunSdkConf" method:"POST" tags:"系统配置" summary:"更新腾讯云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.TengxunSdkConf
+}
+
+type DeleteTengxunSdkConfReq struct {
+	g.Meta     `path:"/tengxun/deleteTengxunSdkConf" method:"POST" tags:"系统配置" summary:"删除腾讯云SDK应用配置" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type TengxunSdkConfRes model.TengxunSdkConf
+type TengxunSdkConfListRes model.CollectRes[model.TengxunSdkConf]
