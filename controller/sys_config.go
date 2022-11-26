@@ -106,9 +106,9 @@ func (s *cSysConfig) DeleteAliyunSdkConf(ctx context.Context, req *sysapi.Delete
 
 // 华为云
 
-// GetHuaWeiYunSdkConfList 获取华为云SDK应用配置|列表
-func (s *cSysConfig) GetHuaWeiYunSdkConfList(ctx context.Context, _ *sysapi.GetHuaWeiYunSdkConfListReq) (*sysapi.HuaWeiYunSdkConfListRes, error) {
-	result := &sysapi.HuaWeiYunSdkConfListRes{
+// GetHuaweiSdkConfList 获取华为云SDK应用配置|列表
+func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sysapi.GetHuaweiSdkConfListReq) (*sysapi.HuaweiSdkConfListRes, error) {
+	result := &sysapi.HuaweiSdkConfListRes{
 		PaginationRes: model.PaginationRes{
 			Pagination: model.Pagination{
 				Page:     1,
@@ -118,7 +118,7 @@ func (s *cSysConfig) GetHuaWeiYunSdkConfList(ctx context.Context, _ *sysapi.GetH
 		},
 	}
 
-	if items, err := service.SdkHuaWeiYun().GetHuaWeiYunSdkConfList(ctx); err != nil {
+	if items, err := service.SdkHuawei().GetHuaweiSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
 		result.List = items
@@ -127,35 +127,35 @@ func (s *cSysConfig) GetHuaWeiYunSdkConfList(ctx context.Context, _ *sysapi.GetH
 	return result, nil
 }
 
-// GetHuaWeiYunSdkConf 查询华为云SDK应用配置|信息
-func (s *cSysConfig) GetHuaWeiYunSdkConf(ctx context.Context, req *sysapi.GetHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
-	result, err := service.SdkHuaWeiYun().GetHuaWeiYunSdkConf(ctx, req.Identifier)
-	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+// GetHuaweiSdkConf 查询华为云SDK应用配置|信息
+func (s *cSysConfig) GetHuaweiSdkConf(ctx context.Context, req *sysapi.GetHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().GetHuaweiSdkConf(ctx, req.Identifier)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
 }
 
-// CreateHuaWeiYunSdkConf 创建华为云SDK应用配置|信息
-func (s *cSysConfig) CreateHuaWeiYunSdkConf(ctx context.Context, req *sysapi.CreateHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
-	result, err := service.SdkHuaWeiYun().SaveHuaWeiYunSdkConf(ctx, req.HuaWeiYunSdkConf, true)
-	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+// CreateHuaweiSdkConf 创建华为云SDK应用配置|信息
+func (s *cSysConfig) CreateHuaweiSdkConf(ctx context.Context, req *sysapi.CreateHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, true)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
 }
 
-// UpdateHuaWeiYunSdkConf 更新华为云SDK应用配置|信息
-func (s *cSysConfig) UpdateHuaWeiYunSdkConf(ctx context.Context, req *sysapi.UpdateHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
-	result, err := service.SdkHuaWeiYun().SaveHuaWeiYunSdkConf(ctx, req.HuaWeiYunSdkConf, false)
-	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+// UpdateHuaweiSdkConf 更新华为云SDK应用配置|信息
+func (s *cSysConfig) UpdateHuaweiSdkConf(ctx context.Context, req *sysapi.UpdateHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, false)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
 }
 
-// DeleteHuaWeiYunSdkConf 删除华为云SDK应用配置|信息
-func (s *cSysConfig) DeleteHuaWeiYunSdkConf(ctx context.Context, req *sysapi.DeleteHuaWeiYunSdkConfReq) (api_v1.BoolRes, error) {
-	result, err := service.SdkHuaWeiYun().DeleteHuaWeiYunSdkConf(ctx, req.Identifier)
+// DeleteHuaweiSdkConf 删除华为云SDK应用配置|信息
+func (s *cSysConfig) DeleteHuaweiSdkConf(ctx context.Context, req *sysapi.DeleteHuaweiSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkHuawei().DeleteHuaweiSdkConf(ctx, req.Identifier)
 	return result == true, err
 }
 
 // 腾讯云
 
-// GetTengxunSdkConfList 获取腾讯云SDK应用配置|列表
-func (s *cSysConfig) GetTengxunSdkConfList(ctx context.Context, _ *sysapi.GetTengxunSdkConfListReq) (*sysapi.TengxunSdkConfListRes, error) {
-	result := &sysapi.TengxunSdkConfListRes{
+// GetTencentSdkConfList 获取腾讯云SDK应用配置|列表
+func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sysapi.GetTencentSdkConfListReq) (*sysapi.TencentSdkConfListRes, error) {
+	result := &sysapi.TencentSdkConfListRes{
 		PaginationRes: model.PaginationRes{
 			Pagination: model.Pagination{
 				Page:     1,
@@ -165,7 +165,7 @@ func (s *cSysConfig) GetTengxunSdkConfList(ctx context.Context, _ *sysapi.GetTen
 		},
 	}
 
-	if items, err := service.SdkTengxun().GetTengxunSdkConfList(ctx); err != nil {
+	if items, err := service.SdkTencent().GetTencentSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
 		result.List = items
@@ -174,26 +174,26 @@ func (s *cSysConfig) GetTengxunSdkConfList(ctx context.Context, _ *sysapi.GetTen
 	return result, nil
 }
 
-// GetTengxunSdkConf 查询腾讯云SDK应用配置|信息
-func (s *cSysConfig) GetTengxunSdkConf(ctx context.Context, req *sysapi.GetTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
-	result, err := service.SdkTengxun().GetTengxunSdkConf(ctx, req.Identifier)
-	return (*sysapi.TengxunSdkConfRes)(result), err
+// GetTencentSdkConf 查询腾讯云SDK应用配置|信息
+func (s *cSysConfig) GetTencentSdkConf(ctx context.Context, req *sysapi.GetTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().GetTencentSdkConf(ctx, req.Identifier)
+	return (*sysapi.TencentSdkConfRes)(result), err
 }
 
-// CreateTengxunSdkConf 创建腾讯云SDK应用配置|信息
-func (s *cSysConfig) CreateTengxunSdkConf(ctx context.Context, req *sysapi.CreateTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
-	result, err := service.SdkTengxun().SaveTengxunSdkConf(ctx, req.TengxunSdkConf, true)
-	return (*sysapi.TengxunSdkConfRes)(result), err
+// CreateTencentSdkConf 创建腾讯云SDK应用配置|信息
+func (s *cSysConfig) CreateTencentSdkConf(ctx context.Context, req *sysapi.CreateTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, true)
+	return (*sysapi.TencentSdkConfRes)(result), err
 }
 
-// UpdateTengxunSdkConf 更新腾讯云SDK应用配置|信息
-func (s *cSysConfig) UpdateTengxunSdkConf(ctx context.Context, req *sysapi.UpdateTengxunSdkConfReq) (*sysapi.TengxunSdkConfRes, error) {
-	result, err := service.SdkTengxun().SaveTengxunSdkConf(ctx, req.TengxunSdkConf, false)
-	return (*sysapi.TengxunSdkConfRes)(result), err
+// UpdateTencentSdkConf 更新腾讯云SDK应用配置|信息
+func (s *cSysConfig) UpdateTencentSdkConf(ctx context.Context, req *sysapi.UpdateTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, false)
+	return (*sysapi.TencentSdkConfRes)(result), err
 }
 
 // DeleteTengxunSdkConf 删除腾讯云SDK应用配置|信息
-func (s *cSysConfig) DeleteTengxunSdkConf(ctx context.Context, req *sysapi.DeleteTengxunSdkConfReq) (api_v1.BoolRes, error) {
-	result, err := service.SdkTengxun().DeleteTengxunSdkConf(ctx, req.Identifier)
+func (s *cSysConfig) DeleteTengxunSdkConf(ctx context.Context, req *sysapi.DeleteTencentSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkTencent().DeleteTencentSdkConf(ctx, req.Identifier)
 	return result == true, err
 }

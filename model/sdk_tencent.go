@@ -2,7 +2,7 @@ package model
 
 // 阿里云服务配置信息
 
-type TengxunSdkConf struct {
+type TencentSdkConf struct {
 	Identifier  string `json:"identifier" v:"required#业务标识符参数错误" dc:"业务标识符，唯一，且不可修改"`
 	Description string `json:"description" dc:"描述"`
 	AppID       string `json:"appID" v:"required#请输入 AppID" dc:"AppID"`
@@ -15,23 +15,23 @@ type TengxunSdkConf struct {
 	Region  string `json:"region" dc:"代表请求的地域，公共参数"`
 }
 
-// TengxunAccessToken 腾讯平台返回的Token
-type TengxunAccessToken struct {
-	TengxunToken TengxunToken `json:"response" dc:"token信息"`
+// TencentAccessToken 腾讯平台返回的Token
+type TencentAccessToken struct {
+	TencentToken TencentToken `json:"response" dc:"token信息"`
 }
 
-type TengxunToken struct {
+type TencentToken struct {
 	ExpireTime string `json:"expire_time" dc:"Access Token的有效期"`
 	RequestId  string `json:"request_id" dc:"唯一请求 ID" `
 	Token      string `json:"token" dc:"请求分配的Token值"`
 }
 
-// TengxunSdkConfToken 配置信息 + Token信息
-type TengxunSdkConfToken struct {
-	TengxunSdkConf
-	TengxunAccessToken
+// TencentSdkConfToken 配置信息 + Token信息
+type TencentSdkConfToken struct {
+	TencentSdkConf
+	TencentAccessToken
 }
 
-type TengxunSdkConfList CollectRes[TengxunSdkConf]
+type TencentSdkConfList CollectRes[TencentSdkConf]
 
 // 腾讯云服务应用列表

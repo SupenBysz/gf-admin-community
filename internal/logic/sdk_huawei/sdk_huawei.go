@@ -1,4 +1,4 @@
-package sdk_huaweiyun
+package sdk_huawei
 
 import (
 	"context"
@@ -19,28 +19,28 @@ import (
 
 // 华为云服务平台
 
-type sSdkHuaWeiYun struct {
-	HuaWeiSdkConfTokenList []model.HuaWeiYunSdkConfToken
+type sSdkHuawei struct {
+	HuaWeiSdkConfTokenList []model.HuaweiSdkConfToken
 	CacheDuration          time.Duration
 	sysConfigName          string
 }
 
 // New SdkBaidu 系统配置逻辑实现
-func New() *sSdkHuaWeiYun {
-	return &sSdkHuaWeiYun{
-		HuaWeiSdkConfTokenList: make([]model.HuaWeiYunSdkConfToken, 0),
+func New() *sSdkHuawei {
+	return &sSdkHuawei{
+		HuaWeiSdkConfTokenList: make([]model.HuaweiSdkConfToken, 0),
 		CacheDuration:          time.Hour,
 		sysConfigName:          "huawei_sdk_conf",
 	}
 }
 
 func init() {
-	service.RegisterSdkHuaWeiYun(New())
+	service.RegisterSdkHuawei(New())
 }
 
-// fetchHuaWeiYUnSdkConfToken 根据 identifier 获取华为云API Token  （API获取方式）
-func (s *sSdkHuaWeiYun) fetchHuaWeiYunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.HuaWeiYunSdkConfToken, err error) {
-	info, err := s.GetHuaWeiYunSdkConf(ctx, identifier)
+// fetchHuaweiSdkConfToken 根据 identifier 获取华为云API Token  （API获取方式）
+func (s *sSdkHuawei) fetchHuaweiSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.HuaweiSdkConfToken, err error) {
+	info, err := s.GetHuaweiSdkConf(ctx, identifier)
 	if err != nil {
 		return nil, err
 	}
@@ -79,20 +79,20 @@ func (s *sSdkHuaWeiYun) fetchHuaWeiYunSdkConfToken(ctx context.Context, identifi
 	}
 
 	// 接受返回数据，json解析
-	newTokenInfo := model.HuaWeiYunAccessToken{}
+	newTokenInfo := model.HuaweiAccessToken{}
 
 	err = gjson.DecodeTo(response.ReadAllString(), &newTokenInfo)
 	if nil != err {
 		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取华为云API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	var result *model.HuaWeiYunSdkConfToken = nil
+	var result *model.HuaweiSdkConfToken = nil
 	newItems := garray.New()
 	for _, item := range s.HuaWeiSdkConfTokenList {
 		if item.Identifier == identifier {
-			result = &model.HuaWeiYunSdkConfToken{
-				HuaWeiYunSdkConf:     *info,
-				HuaWeiYunAccessToken: newTokenInfo,
+			result = &model.HuaweiSdkConfToken{
+				HuaweiSdkConf:     *info,
+				HuaweiAccessToken: newTokenInfo,
 			}
 			newItems.Append(*result)
 			continue
@@ -102,9 +102,9 @@ func (s *sSdkHuaWeiYun) fetchHuaWeiYunSdkConfToken(ctx context.Context, identifi
 	}
 
 	if result == nil {
-		result = &model.HuaWeiYunSdkConfToken{
-			HuaWeiYunSdkConf:     *info,
-			HuaWeiYunAccessToken: newTokenInfo,
+		result = &model.HuaweiSdkConfToken{
+			HuaweiSdkConf:     *info,
+			HuaweiAccessToken: newTokenInfo,
 		}
 		newItems.Append(*result)
 	}
@@ -113,24 +113,24 @@ func (s *sSdkHuaWeiYun) fetchHuaWeiYunSdkConfToken(ctx context.Context, identifi
 	return result, nil
 }
 
-// GetHuaWeiYunSdkConfToken 根据 identifier 查询华为SDK应用配置和Token信息
-func (s *sSdkHuaWeiYun) GetHuaWeiYunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.HuaWeiYunSdkConfToken, err error) {
+// GetHuaweiSdkConfToken 根据 identifier 查询华为SDK应用配置和Token信息
+func (s *sSdkHuawei) GetHuaweiSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.HuaweiSdkConfToken, err error) {
 	for _, conf := range s.HuaWeiSdkConfTokenList {
 		if conf.Identifier == identifier {
 			return &conf, nil
 		}
 	}
-	return s.fetchHuaWeiYunSdkConfToken(ctx, identifier)
+	return s.fetchHuaweiSdkConfToken(ctx, identifier)
 }
 
-// syncHuaWeiYunSdkConfTokenList 同步华为云SDK应用配置信息Token列表缓存
-func (s *sSdkHuaWeiYun) syncHuaWeiYunSdkConfTokenList(ctx context.Context) error {
-	items, err := s.GetHuaWeiYunSdkConfList(ctx)
+// syncHuaweiSdkConfTokenList 同步华为云SDK应用配置信息Token列表缓存
+func (s *sSdkHuawei) syncHuaweiSdkConfTokenList(ctx context.Context) error {
+	items, err := s.GetHuaweiSdkConfList(ctx)
 	if err != nil {
 		return err
 	}
 
-	newTokenItems := make([]model.HuaWeiYunSdkConfToken, 0)
+	newTokenItems := make([]model.HuaweiSdkConfToken, 0)
 	for _, conf := range *items {
 		for _, tokenInfo := range s.HuaWeiSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
@@ -144,9 +144,9 @@ func (s *sSdkHuaWeiYun) syncHuaWeiYunSdkConfTokenList(ctx context.Context) error
 	return nil
 }
 
-// GetHuaWeiYunSdkConfList 获取华为云SDK应用配置列表
-func (s *sSdkHuaWeiYun) GetHuaWeiYunSdkConfList(ctx context.Context) (*[]model.HuaWeiYunSdkConf, error) {
-	items := make([]model.HuaWeiYunSdkConf, 0)
+// GetHuaweiSdkConfList 获取华为云SDK应用配置列表
+func (s *sSdkHuawei) GetHuaweiSdkConfList(ctx context.Context) (*[]model.HuaweiSdkConf, error) {
+	items := make([]model.HuaweiSdkConf, 0)
 
 	data := entity.SysConfig{}
 
@@ -173,9 +173,9 @@ func (s *sSdkHuaWeiYun) GetHuaWeiYunSdkConfList(ctx context.Context) (*[]model.H
 	return &items, nil
 }
 
-// GetHuaWeiYunSdkConf 根据identifier标识获取SDK配置信息
-func (s *sSdkHuaWeiYun) GetHuaWeiYunSdkConf(ctx context.Context, identifier string) (tokenInfo *model.HuaWeiYunSdkConf, err error) {
-	items, err := s.GetHuaWeiYunSdkConfList(ctx)
+// GetHuaweiSdkConf 根据identifier标识获取SDK配置信息
+func (s *sSdkHuawei) GetHuaweiSdkConf(ctx context.Context, identifier string) (tokenInfo *model.HuaweiSdkConf, err error) {
+	items, err := s.GetHuaweiSdkConfList(ctx)
 
 	if err != nil {
 		return nil, err
@@ -191,12 +191,12 @@ func (s *sSdkHuaWeiYun) GetHuaWeiYunSdkConf(ctx context.Context, identifier stri
 	return nil, service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询华为云SDK应用配置信息失败", dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
-// SaveHuaWeiYunSdkConf 保存华为SDK应用配信息, isCreate判断是更新还是新建
-func (s *sSdkHuaWeiYun) SaveHuaWeiYunSdkConf(ctx context.Context, info model.HuaWeiYunSdkConf, isCreate bool) (*model.HuaWeiYunSdkConf, error) {
-	items, _ := s.GetHuaWeiYunSdkConfList(ctx)
+// SaveHuaweiSdkConf 保存华为SDK应用配信息, isCreate判断是更新还是新建
+func (s *sSdkHuawei) SaveHuaweiSdkConf(ctx context.Context, info model.HuaweiSdkConf, isCreate bool) (*model.HuaweiSdkConf, error) {
+	items, _ := s.GetHuaweiSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]model.HuaWeiYunSdkConf, 0)
+	newItems := make([]model.HuaweiSdkConf, 0)
 	for _, conf := range *items {
 		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在
 			isHas = true
@@ -244,9 +244,9 @@ func (s *sSdkHuaWeiYun) SaveHuaWeiYunSdkConf(ctx context.Context, info model.Hua
 	return &info, nil
 }
 
-// DeleteHuaWeiYunSdkConf 删除华为SDK应用配置信息
-func (s *sSdkHuaWeiYun) DeleteHuaWeiYunSdkConf(ctx context.Context, identifier string) (bool, error) {
-	items, err := s.GetHuaWeiYunSdkConfList(ctx)
+// DeleteHuaweiSdkConf 删除华为SDK应用配置信息
+func (s *sSdkHuawei) DeleteHuaweiSdkConf(ctx context.Context, identifier string) (bool, error) {
+	items, err := s.GetHuaweiSdkConfList(ctx)
 
 	isHas := false
 	newItems := garray.New(false)
@@ -272,7 +272,7 @@ func (s *sSdkHuaWeiYun) DeleteHuaWeiYunSdkConf(ctx context.Context, identifier s
 	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步Token列表
-	s.syncHuaWeiYunSdkConfTokenList(ctx)
+	s.syncHuaweiSdkConfTokenList(ctx)
 
 	return true, nil
 }

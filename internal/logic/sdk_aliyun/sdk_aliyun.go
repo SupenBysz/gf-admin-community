@@ -83,7 +83,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 	}
 
 	// 接受返回数据，json解析
-	newTokenInfo := model.ALiYunAccessToken{}
+	newTokenInfo := model.AliyunAccessToken{}
 
 	err = gjson.DecodeTo(response.ReadAllString(), &newTokenInfo)
 	if nil != err {
@@ -96,7 +96,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 		if item.Identifier == identifier {
 			result = &model.AliyunSdkConfToken{
 				AliyunSdkConf:     *info,
-				ALiYunAccessToken: newTokenInfo,
+				AliyunAccessToken: newTokenInfo,
 			}
 			newItems.Append(*result)
 			continue
@@ -108,7 +108,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 	if result == nil {
 		result = &model.AliyunSdkConfToken{
 			AliyunSdkConf:     *info,
-			ALiYunAccessToken: newTokenInfo,
+			AliyunAccessToken: newTokenInfo,
 		}
 		newItems.Append(*result)
 	}

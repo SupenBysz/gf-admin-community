@@ -4,7 +4,7 @@ import "time"
 
 // 华为云服务配置信息
 
-type HuaWeiYunSdkConf struct {
+type HuaweiSdkConf struct {
 	Identifier  string `json:"identifier" v:"required#业务标识符参数错误" dc:"业务标识符，唯一，且不可修改"`
 	Description string `json:"description" dc:"描述"`
 	AppID       string `json:"appID" v:"required#请输入 AppID" dc:"AppID"`
@@ -13,8 +13,8 @@ type HuaWeiYunSdkConf struct {
 	SecretKey   string `json:"secretKey" v:"required#请输入 Secret Key" dc:"Secret Key"`
 }
 
-// HuaWeiYunAccessToken 华为云平台返回的Token
-type HuaWeiYunAccessToken struct {
+// HuaweiAccessToken 华为云平台返回的Token
+type HuaweiAccessToken struct {
 	AccessToken string   `json:"access_token" dc:"token值"`
 	TokenType   string   `json:"token_type" dc:"token类型"`
 	ExpiresIn   int      `json:"expires_in" dc:"token有效期" `
@@ -42,16 +42,16 @@ type PlatUser struct {
 	CurrentLoginType string        `json:"currentLoginType"`
 }
 
-type HuaWeiYunToken struct {
+type HuaweiToken struct {
 	ExpireTime string `json:"expire_time" dc:"Access Token的有效期"`
 	Id         string `json:"id" dc:"请求分配的Token值"`
 	UserId     string `json:"user_id" dc:"用户id"`
 }
 
-// HuaWeiYunSdkConfToken 配置信息 + Token信息
-type HuaWeiYunSdkConfToken struct {
-	HuaWeiYunSdkConf
-	HuaWeiYunAccessToken
+// HuaweiSdkConfToken 配置信息 + Token信息
+type HuaweiSdkConfToken struct {
+	HuaweiSdkConf
+	HuaweiAccessToken
 }
 
-type HuaWeiYunSdkConfList CollectRes[HuaWeiYunSdkConf]
+type HuaweiSdkConfList CollectRes[HuaweiSdkConf]
