@@ -62,3 +62,32 @@ type DeleteAliyunSdkConfReq struct {
 
 type AliyunSdkConfRes model.AliyunSdkConf
 type AliyunSdkConfListRes model.CollectRes[model.AliyunSdkConf]
+
+// 华为云SDk
+
+type GetHuaWeiYunSdkConfListReq struct {
+	g.Meta `path:"/huawei/getHuaWeiYunSdkConfList" method:"POST" tags:"系统配置" summary:"获取华为云SDK应用配置|列表" dc:"系统配置：固定位仅供系统超级管理员可用"`
+}
+
+type GetHuaWeiYunSdkConfReq struct {
+	g.Meta     `path:"/huawei/getHuaWeiYunSdkConf" method:"POST" tags:"系统配置" summary:"查询华为云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type CreateHuaWeiYunSdkConfReq struct {
+	g.Meta `path:"/huawei/createHuaWeiYunSdkConf" method:"POST" tags:"系统配置" summary:"创建华为云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.HuaWeiYunSdkConf
+}
+
+type UpdateHuaWeiYunSdkConfReq struct {
+	g.Meta `path:"/huawei/updateHuaWeiYunSdkConf" method:"POST" tags:"系统配置" summary:"更新华为云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.HuaWeiYunSdkConf
+}
+
+type DeleteHuaWeiYunSdkConfReq struct {
+	g.Meta     `path:"/huawei/deleteHuaWeiYunSdkConf" method:"POST" tags:"系统配置" summary:"删除华为云SDK应用配置" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type HuaWeiYunSdkConfRes model.HuaWeiYunSdkConf
+type HuaWeiYunSdkConfListRes model.CollectRes[model.HuaWeiYunSdkConf]

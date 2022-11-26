@@ -103,3 +103,50 @@ func (s *cSysConfig) DeleteAliyunSdkConf(ctx context.Context, req *sysapi.Delete
 	result, err := service.SdkAliyun().DeleteAliyunSdkConf(ctx, req.Identifier)
 	return result == true, err
 }
+
+// 华为云
+
+// GetHuaWeiYunSdkConfList 获取华为云SDK应用配置|列表
+func (s *cSysConfig) GetHuaWeiYunSdkConfList(ctx context.Context, _ *sysapi.GetHuaWeiYunSdkConfListReq) (*sysapi.HuaWeiYunSdkConfListRes, error) {
+	result := &sysapi.HuaWeiYunSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkHuaWeiYun().GetHuaWeiYunSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetHuaWeiYunSdkConf 查询华为云SDK应用配置|信息
+func (s *cSysConfig) GetHuaWeiYunSdkConf(ctx context.Context, req *sysapi.GetHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
+	result, err := service.SdkHuaWeiYun().GetHuaWeiYunSdkConf(ctx, req.Identifier)
+	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+}
+
+// CreateHuaWeiYunSdkConf 创建华为云SDK应用配置|信息
+func (s *cSysConfig) CreateHuaWeiYunSdkConf(ctx context.Context, req *sysapi.CreateHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
+	result, err := service.SdkHuaWeiYun().SaveHuaWeiYunSdkConf(ctx, req.HuaWeiYunSdkConf, true)
+	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+}
+
+// UpdateHuaWeiYunSdkConf 更新华为云SDK应用配置|信息
+func (s *cSysConfig) UpdateHuaWeiYunSdkConf(ctx context.Context, req *sysapi.UpdateHuaWeiYunSdkConfReq) (*sysapi.HuaWeiYunSdkConfRes, error) {
+	result, err := service.SdkHuaWeiYun().SaveHuaWeiYunSdkConf(ctx, req.HuaWeiYunSdkConf, false)
+	return (*sysapi.HuaWeiYunSdkConfRes)(result), err
+}
+
+// DeleteHuaWeiYunSdkConf 删除华为云SDK应用配置|信息
+func (s *cSysConfig) DeleteHuaWeiYunSdkConf(ctx context.Context, req *sysapi.DeleteHuaWeiYunSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkHuaWeiYun().DeleteHuaWeiYunSdkConf(ctx, req.Identifier)
+	return result == true, err
+}
