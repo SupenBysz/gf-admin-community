@@ -20,6 +20,7 @@ type (
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Login(ctx context.Context, req model.LoginInfo, needCaptcha ...bool) (*model.TokenInfo, error)
+		InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) (*model.TokenInfo, error)
 		Register(ctx context.Context, info model.SysUserRegister) (*entity.SysUser, error)
 		ForgotPassword(ctx context.Context, info model.ForgotPassword) (int64, error)
 		ResetPassword(ctx context.Context, username string, password string, idKey string) (bool, error)
