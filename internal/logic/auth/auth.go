@@ -75,6 +75,16 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
+	pw := gmd5.MustEncryptString(req.Username + req.Password)
+	if pw != sysUserInfo.Password {
+		return nil, gerror.New("用户密码错误")
+	}
+
+	return s.InnerLogin(ctx, sysUserInfo)
+}
+
+// InnerLogin 内部登录，无需校验验证码和密码
+func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) (*model.TokenInfo, error) {
 	if sysUserInfo.State == 0 {
 		return nil, gerror.New("账号未激活")
 	}
@@ -92,11 +102,6 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 	// 0匿名，1用户，2微商，4商户，禁止登录后台
 	if sysUserInfo.Type < 8 && sysUserInfo.Type != -1 {
 		return nil, gerror.New("非法登录")
-	}
-
-	pw := gmd5.MustEncryptString(req.Username + req.Password)
-	if pw != sysUserInfo.Password {
-		return nil, gerror.New("用户密码错误")
 	}
 
 	tokenInfo, err := service.Jwt().GenerateToken(sysUserInfo)
