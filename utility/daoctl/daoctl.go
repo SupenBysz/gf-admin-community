@@ -1,10 +1,10 @@
 package daoctl
 
 import (
+	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/SupenBysz/gf-admin-community/model"
 	"math"
 )
 
@@ -24,6 +24,7 @@ func GetArr[T any](db *gdb.Model, searchFields []model.SearchField) (*T, error) 
 		var isFirst = true
 		for _, field := range searchFields {
 			if gconv.String(field.Value) != "" || field.IsNullValue {
+				field.Field = gstr.CaseSnakeFirstUpper(field.Field)
 				if field.IsOrWhere && !isFirst {
 					isFirst = false
 					if field.Where == "in" {
@@ -74,6 +75,7 @@ func Count(db *gdb.Model, searchFields ...model.SearchField) (total int) {
 	if len(searchFields) > 0 {
 		var isFirst = true
 		for _, field := range searchFields {
+			field.Field = gstr.CaseSnakeFirstUpper(field.Field)
 			if gconv.String(field.Value) != "" {
 				if field.IsOrWhere && !isFirst {
 					isFirst = false
@@ -106,6 +108,7 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, IsExport bool
 	if searchFields != nil && searchFields.Fields != nil {
 		var isFirst = true
 		for _, field := range searchFields.Fields {
+			field.Field = gstr.CaseSnakeFirstUpper(field.Field)
 			if gconv.String(field.Value) != "" {
 				if field.IsOrWhere && !isFirst {
 					isFirst = false
