@@ -103,3 +103,144 @@ func (s *cSysConfig) DeleteAliyunSdkConf(ctx context.Context, req *sysapi.Delete
 	result, err := service.SdkAliyun().DeleteAliyunSdkConf(ctx, req.Identifier)
 	return result == true, err
 }
+
+// 华为云
+
+// GetHuaweiSdkConfList 获取华为云SDK应用配置|列表
+func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sysapi.GetHuaweiSdkConfListReq) (*sysapi.HuaweiSdkConfListRes, error) {
+	result := &sysapi.HuaweiSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkHuawei().GetHuaweiSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetHuaweiSdkConf 查询华为云SDK应用配置|信息
+func (s *cSysConfig) GetHuaweiSdkConf(ctx context.Context, req *sysapi.GetHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().GetHuaweiSdkConf(ctx, req.Identifier)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
+}
+
+// CreateHuaweiSdkConf 创建华为云SDK应用配置|信息
+func (s *cSysConfig) CreateHuaweiSdkConf(ctx context.Context, req *sysapi.CreateHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, true)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
+}
+
+// UpdateHuaweiSdkConf 更新华为云SDK应用配置|信息
+func (s *cSysConfig) UpdateHuaweiSdkConf(ctx context.Context, req *sysapi.UpdateHuaweiSdkConfReq) (*sysapi.HuaweiSdkConfRes, error) {
+	result, err := service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, false)
+	return (*sysapi.HuaweiSdkConfRes)(result), err
+}
+
+// DeleteHuaweiSdkConf 删除华为云SDK应用配置|信息
+func (s *cSysConfig) DeleteHuaweiSdkConf(ctx context.Context, req *sysapi.DeleteHuaweiSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkHuawei().DeleteHuaweiSdkConf(ctx, req.Identifier)
+	return result == true, err
+}
+
+// 腾讯云
+
+// GetTencentSdkConfList 获取腾讯云SDK应用配置|列表
+func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sysapi.GetTencentSdkConfListReq) (*sysapi.TencentSdkConfListRes, error) {
+	result := &sysapi.TencentSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkTencent().GetTencentSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetTencentSdkConf 查询腾讯云SDK应用配置|信息
+func (s *cSysConfig) GetTencentSdkConf(ctx context.Context, req *sysapi.GetTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().GetTencentSdkConf(ctx, req.Identifier)
+	return (*sysapi.TencentSdkConfRes)(result), err
+}
+
+// CreateTencentSdkConf 创建腾讯云SDK应用配置|信息
+func (s *cSysConfig) CreateTencentSdkConf(ctx context.Context, req *sysapi.CreateTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, true)
+	return (*sysapi.TencentSdkConfRes)(result), err
+}
+
+// UpdateTencentSdkConf 更新腾讯云SDK应用配置|信息
+func (s *cSysConfig) UpdateTencentSdkConf(ctx context.Context, req *sysapi.UpdateTencentSdkConfReq) (*sysapi.TencentSdkConfRes, error) {
+	result, err := service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, false)
+	return (*sysapi.TencentSdkConfRes)(result), err
+}
+
+// DeleteTengxunSdkConf 删除腾讯云SDK应用配置|信息
+func (s *cSysConfig) DeleteTengxunSdkConf(ctx context.Context, req *sysapi.DeleteTencentSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkTencent().DeleteTencentSdkConf(ctx, req.Identifier)
+	return result == true, err
+}
+
+// 天翼云
+
+// GetCtyunSdkConfList 获取天翼云SDK应用配置|列表
+func (s *cSysConfig) GetCtyunSdkConfList(ctx context.Context, _ *sysapi.GetCtyunSdkConfListReq) (*sysapi.CtyunSdkConfListRes, error) {
+	result := &sysapi.CtyunSdkConfListRes{
+		PaginationRes: model.PaginationRes{
+			Pagination: model.Pagination{
+				Page:     1,
+				PageSize: 20,
+			},
+			PageTotal: 1,
+		},
+	}
+
+	if items, err := service.SdkCtyun().GetCtyunSdkConfList(ctx); err != nil {
+		return nil, err
+	} else {
+		result.List = items
+		result.PageSize = len(*items)
+	}
+	return result, nil
+}
+
+// GetCtyunSdkConf 查询天翼云SDK应用配置|信息
+func (s *cSysConfig) GetCtyunSdkConf(ctx context.Context, req *sysapi.GetCtyunSdkConfReq) (*sysapi.CtyunSdkConfRes, error) {
+	result, err := service.SdkCtyun().GetCtyunSdkConf(ctx, req.Identifier)
+	return (*sysapi.CtyunSdkConfRes)(result), err
+}
+
+// CreateCtyunSdkConf 创建天翼云SDK应用配置|信息
+func (s *cSysConfig) CreateCtyunSdkConf(ctx context.Context, req *sysapi.CreateCtyunSdkConfReq) (*sysapi.CtyunSdkConfRes, error) {
+	result, err := service.SdkCtyun().SaveCtyunSdkConf(ctx, req.CtyunSdkConf, true)
+	return (*sysapi.CtyunSdkConfRes)(result), err
+}
+
+// UpdateCtyunSdkConf 更新天翼云SDK应用配置|信息
+func (s *cSysConfig) UpdateCtyunSdkConf(ctx context.Context, req *sysapi.UpdateCtyunSdkConfReq) (*sysapi.CtyunSdkConfRes, error) {
+	result, err := service.SdkCtyun().SaveCtyunSdkConf(ctx, req.CtyunSdkConf, false)
+	return (*sysapi.CtyunSdkConfRes)(result), err
+}
+
+// DeleteTengxunSdkConf 删除天翼云SDK应用配置|信息
+func (s *cSysConfig) DeleteCtyunSdkConf(ctx context.Context, req *sysapi.DeleteCtyunSdkConfReq) (api_v1.BoolRes, error) {
+	result, err := service.SdkCtyun().DeleteCtyunSdkConf(ctx, req.Identifier)
+	return result == true, err
+}

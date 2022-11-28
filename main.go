@@ -1,4 +1,4 @@
-package component
+package main
 
 import (
 	"github.com/SupenBysz/gf-admin-community/internal/cmd"

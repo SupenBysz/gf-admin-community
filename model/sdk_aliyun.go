@@ -11,14 +11,14 @@ type AliyunSdkConf struct {
 	SecretKey   string `json:"secretKey" v:"required#请输入 Secret Key" dc:"Secret Key"`
 }
 
-// ALiYunAccessToken 阿里云平台返回的Token
-type ALiYunAccessToken struct {
+// AliyunAccessToken 阿里云平台返回的Token
+type AliyunAccessToken struct {
 	NlsRequestId string      `json:"NlsRequestId" dc:"该参数可忽略"`
 	RequestId    string      `json:"RequestId" dc:"该参数忽略,请求ID"`
-	AliYunToken  ALiYunToken `json:"Token" dc:"token信息"`
+	AliyunToken  AliyunToken `json:"Token" dc:"token信息"`
 }
 
-type ALiYunToken struct {
+type AliyunToken struct {
 	ExpireTime string `json:"expire_time" dc:"Access Token的有效期"`
 	Id         string `json:"id" dc:"请求分配的Token值"`
 	UserId     string `json:"user_id" dc:"用户id"`
@@ -26,7 +26,7 @@ type ALiYunToken struct {
 
 type AliyunSdkConfToken struct {
 	AliyunSdkConf
-	ALiYunAccessToken
+	AliyunAccessToken
 }
 
 type AliyunSdkConfList CollectRes[AliyunSdkConf]
