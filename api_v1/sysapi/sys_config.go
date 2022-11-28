@@ -120,3 +120,32 @@ type DeleteTencentSdkConfReq struct {
 
 type TencentSdkConfRes model.TencentSdkConf
 type TencentSdkConfListRes model.CollectRes[model.TencentSdkConf]
+
+// 天翼云 SDK
+
+type GetCtyunSdkConfListReq struct {
+	g.Meta `path:"/ctyun/getCtyunSdkConfList" method:"POST" tags:"系统配置" summary:"获取天翼云SDK应用配置|列表" dc:"系统配置：固定位仅供系统超级管理员可用"`
+}
+
+type GetCtyunSdkConfReq struct {
+	g.Meta     `path:"/ctyun/getCtyunSdkConf" method:"POST" tags:"系统配置" summary:"查询天翼云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type CreateCtyunSdkConfReq struct {
+	g.Meta `path:"ctyun/createCtyunSdkConf" method:"POST" tags:"系统配置" summary:"创建天翼云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.CtyunSdkConf
+}
+
+type UpdateCtyunSdkConfReq struct {
+	g.Meta `path:"/ctyun/updateCtyunSdkConf" method:"POST" tags:"系统配置" summary:"更新天翼云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	model.CtyunSdkConf
+}
+
+type DeleteCtyunSdkConfReq struct {
+	g.Meta     `path:"/ctyun/deleteCtyunSdkConf" method:"POST" tags:"系统配置" summary:"删除天翼云SDK应用配置" dc:"系统配置：固定位仅供系统超级管理员可用"`
+	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
+}
+
+type CtyunSdkConfRes model.CtyunSdkConf
+type CtyunSdkConfListRes model.CollectRes[model.CtyunSdkConf]

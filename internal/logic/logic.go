@@ -15,6 +15,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/middleware"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_aliyun"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_baidu"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_ctyun"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_huawei"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_tencent"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_audit"
