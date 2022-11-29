@@ -129,9 +129,9 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, IsExport bool
 						db = db.Where(field.Field+" "+field.Where+" ?", field.Value)
 					}
 				}
-				if field.Sort != "" {
-					db = db.Order(field.Field + " " + field.Sort)
-				}
+			}
+			if field.Sort != "" {
+				db = db.Order(field.Field + " " + field.Sort)
 			}
 		}
 	}
