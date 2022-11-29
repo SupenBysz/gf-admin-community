@@ -161,15 +161,15 @@ func makeBuilder(db *gdb.Model, orderBy *model.OrderBy, searchFieldArr []model.S
 	return db, nil
 }
 
-func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, orderBy *model.OrderBy, IsExport bool) (response *model.CollectRes[T], err error) {
-	itemsDb, err := makeBuilder(db, orderBy, searchFields.Fields)
+func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, IsExport bool) (response *model.CollectRes[T], err error) {
+	itemsDb, err := makeBuilder(db, &searchFields.OrderBy, searchFields.Fields)
 	if err != nil {
 		return nil, err
 	}
 
 	total, _ := itemsDb.Count()
 
-	queryDb, _ := makeBuilder(db, orderBy, searchFields.Fields)
+	queryDb, _ := makeBuilder(db, &searchFields.OrderBy, searchFields.Fields)
 
 	entities := make([]T, 0)
 	if searchFields == nil || IsExport {
@@ -196,7 +196,8 @@ func Find[T any](db *gdb.Model, orderBy *model.OrderBy, searchFields ...model.Se
 			Page:     1,
 			PageSize: 1000,
 		},
-	}, orderBy, true)
+		OrderBy: *orderBy,
+	}, true)
 }
 
 func GetAll[T any](db *gdb.Model, info *model.Pagination) (response *model.CollectRes[T], err error) {

@@ -62,8 +62,9 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*mod
 			Page:     1,
 			PageSize: 100,
 		},
-	}, &model.OrderBy{
-		Fields: dao.SysArea.Columns().Id,
+		OrderBy: model.OrderBy{
+			Fields: dao.SysArea.Columns().Id,
+		},
 	}, false)
 
 	items := make([]model.Area, 0)
