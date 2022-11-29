@@ -29,8 +29,8 @@ type SearchField struct {
 
 // OrderBy 排序规则
 type OrderBy struct {
-	Fields string `json:"fields" dc:"排序字段，多个用半角逗号隔开"`
-	Sort   string `json:"sort" v:"in:asc,desc" dc:"排序规则，支持asc，desc" default:"ASC"`
+	Columns string `json:"columns" dc:"排序字段，多个用半角逗号隔开"`
+	Sort    string `json:"sort" v:"in:asc,desc" dc:"排序规则，支持asc，desc" default:"ASC"`
 }
 
 // SearchFilter 数据查询字段条件信息集合

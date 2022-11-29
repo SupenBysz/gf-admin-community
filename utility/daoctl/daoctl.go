@@ -49,7 +49,7 @@ func makeBuilder(db *gdb.Model, orderBy *model.OrderBy, searchFieldArr []model.S
 		field.Field = gstr.CaseSnakeFirstUpper(field.Field)
 		if gconv.String(field.Field) != "" {
 			// 过滤特殊符号，防止SQL注入
-			orderBy.Fields = gstr.ReplaceIByMap(orderBy.Fields, map[string]string{
+			orderBy.Columns = gstr.ReplaceIByMap(orderBy.Columns, map[string]string{
 				"\"": "",
 				"'":  "",
 			})
@@ -145,17 +145,17 @@ func makeBuilder(db *gdb.Model, orderBy *model.OrderBy, searchFieldArr []model.S
 			}
 		}
 	}
-	if orderBy != nil && len(orderBy.Fields) > 0 {
+	if orderBy != nil && len(orderBy.Columns) > 0 {
 		// 过滤特殊符号，防止SQL注入
-		orderBy.Fields = gstr.ReplaceIByMap(orderBy.Fields, map[string]string{
+		orderBy.Columns = gstr.ReplaceIByMap(orderBy.Columns, map[string]string{
 			"\"": "",
 			"'":  "",
 		})
 
-		if gstr.CaseCamelLower(orderBy.Sort) == "asc" || len(orderBy.Sort) <= 0 {
-			db = db.OrderAsc(orderBy.Fields)
+		if gstr.CaseCamelLower(orderBy.Columns) == "asc" || len(orderBy.Sort) <= 0 {
+			db = db.OrderAsc(orderBy.Columns)
 		} else {
-			db = db.OrderDesc(orderBy.Fields)
+			db = db.OrderDesc(orderBy.Columns)
 		}
 	}
 	return db, nil
