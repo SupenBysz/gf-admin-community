@@ -102,8 +102,8 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 	filter := model.SearchFilter{
 		Fields: fields,
 		OrderBy: model.OrderBy{
-			Fields: dao.SysAudit.Columns().Id,
-			Sort:   "desc",
+			Columns: dao.SysAudit.Columns().Id,
+			Sort:    "desc",
 		},
 		Pagination: model.Pagination{},
 	}
