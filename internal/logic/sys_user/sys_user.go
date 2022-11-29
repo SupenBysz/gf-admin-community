@@ -76,7 +76,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchFilter, 
 		newFields := make([]model.SearchField, 0)
 
 		newFields = append(newFields, model.SearchField{
-			Field: dao.SysUser.Columns().Type,
+			Field: dao.SysUser.Columns().Type, //type
 			Where: "=",
 			Value: consts.Global.UserDefaultType,
 		})
@@ -145,7 +145,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 	data := entity.SysUser{
 		Id:        idgen.NextId(),
 		Username:  info.Username,
-		Password:  gmd5.MustEncryptString(info.Username + info.Password),
+		Password:  gmd5.MustEncryptString(gconv.String(customId[0]) + info.Password),
 		State:     userState.Code(),
 		Type:      userType.Code(),
 		CreatedAt: gtime.Now(),
