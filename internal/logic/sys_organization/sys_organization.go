@@ -2,11 +2,6 @@ package sys_organization
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/yitter/idgenerator-go/idgen"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
@@ -14,6 +9,11 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/errors/gcode"
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
 
@@ -36,7 +36,7 @@ func New() *sSysOrganization {
 
 // QueryOrganizationList 获取组织架构信息列表
 func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info model.SearchFilter) (*sysapi.OrganizationInfoListRes, error) {
-	result, err := daoctl.Query[entity.SysOrganization](dao.SysOrganization.Ctx(ctx), &info, false)
+	result, err := daoctl.Query[entity.SysOrganization](dao.SysOrganization.Ctx(ctx), &info, &info.OrderBy, false)
 
 	return (*sysapi.OrganizationInfoListRes)(result), err
 }

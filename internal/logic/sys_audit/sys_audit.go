@@ -3,6 +3,13 @@ package sys_audit
 import (
 	"context"
 	"database/sql"
+	"github.com/SupenBysz/gf-admin-community/model"
+	"github.com/SupenBysz/gf-admin-community/model/dao"
+	"github.com/SupenBysz/gf-admin-community/model/do"
+	"github.com/SupenBysz/gf-admin-community/model/entity"
+	kyAudit "github.com/SupenBysz/gf-admin-community/model/enum/audit"
+	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -11,13 +18,6 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/dao"
-	"github.com/SupenBysz/gf-admin-community/model/do"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
-	kyAudit "github.com/SupenBysz/gf-admin-community/model/enum/audit"
-	"github.com/SupenBysz/gf-admin-community/service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"time"
 )
 
@@ -78,7 +78,6 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 			Where:       "in",
 			IsOrWhere:   false,
 			Value:       state,
-			Sort:        "",
 			IsNullValue: false,
 		},
 	)
@@ -88,7 +87,6 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 			Where:       "=",
 			IsOrWhere:   false,
 			Value:       category,
-			Sort:        "",
 			IsNullValue: false,
 		})
 	}
@@ -98,7 +96,6 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		Where:       ">",
 		IsOrWhere:   false,
 		Value:       0,
-		Sort:        "DESC",
 		IsNullValue: false,
 	})
 
@@ -106,7 +103,10 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		Fields:     fields,
 		Pagination: model.Pagination{},
 	}
-	result, err := daoctl.Query[entity.SysAudit](dao.SysAudit.Ctx(ctx), &filter, false)
+	result, err := daoctl.Query[entity.SysAudit](dao.SysAudit.Ctx(ctx), &filter, &model.OrderBy{
+		Fields: dao.SysAudit.Columns().Id,
+		Sort:   "desc",
+	}, false)
 
 	return (*model.SysAuditListRes)(result), err
 }

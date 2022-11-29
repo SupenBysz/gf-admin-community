@@ -2,12 +2,6 @@ package sys_permission
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/yitter/idgenerator-go/idgen"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
@@ -15,6 +9,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/errors/gcode"
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
 
@@ -63,7 +63,7 @@ func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName
 
 // QueryPermissionList 查询权限
 func (s *sSysPermission) QueryPermissionList(ctx context.Context, info model.SearchFilter) (*sysapi.SysPermissionInfoListRes, error) {
-	result, err := daoctl.Query[entity.SysPermission](dao.SysPermission.Ctx(ctx), &info, false)
+	result, err := daoctl.Query[entity.SysPermission](dao.SysPermission.Ctx(ctx), &info, &info.OrderBy, false)
 	return (*sysapi.SysPermissionInfoListRes)(result), err
 }
 

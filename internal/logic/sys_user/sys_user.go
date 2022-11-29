@@ -88,7 +88,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchFilter, 
 		}
 	}
 
-	result, err := daoctl.Query[model.SysUser](dao.SysUser.Ctx(ctx), info, isExport)
+	result, err := daoctl.Query[model.SysUser](dao.SysUser.Ctx(ctx), info, &info.OrderBy, isExport)
 
 	newList := make([]model.SysUser, 0)
 	if result != nil && result.List != nil && len(*result.List) > 0 {

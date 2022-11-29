@@ -2,7 +2,6 @@ package sys_role
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/container/garray"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/model"
@@ -11,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/container/garray"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -35,7 +35,7 @@ func New() *sSysRole {
 
 // QueryRoleList 获取角色列表
 func (s *sSysRole) QueryRoleList(ctx context.Context, info model.SearchFilter) (*sysapi.RoleListRes, error) {
-	result, err := daoctl.Query[entity.SysRole](dao.SysRole.Ctx(ctx), &info, false)
+	result, err := daoctl.Query[entity.SysRole](dao.SysRole.Ctx(ctx), &info, &info.OrderBy, false)
 
 	return (*sysapi.RoleListRes)(result), err
 }

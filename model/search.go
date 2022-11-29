@@ -19,17 +19,24 @@ type CollectRes[T any] struct {
 
 // SearchField 数据查询字段条件信息
 type SearchField struct {
-	Field       string      `json:"filed" dc:"字段名称"`
-	Where       string      `json:"where" dc:"查询条件"`
+	Field       string      `json:"filed" v:"required" dc:"字段名称"`
+	Where       string      `json:"where" v:"required|in:>,<,>=,<=,<>,=,like,in,between" dc:"查询条件，支持：>,<,>=,<=,<>,=,like,not in,in,between,is,is not"`
 	IsOrWhere   bool        `json:"isOrWhere" dc:"是否或与条件"`
 	Value       interface{} `json:"value" dc:"字段对应值"`
-	Sort        string      `json:"sort" dc:"排序，默认ASC，倒序DES"`
 	IsNullValue bool        `json:"isNullValue" dc:"是否空值"`
+	Modifier    string      `json:"modifier" v:"in:is,not,is not" dc:"修饰条件，支持：like,in,between"`
+}
+
+// OrderBy 排序规则
+type OrderBy struct {
+	Fields string `json:"fields" dc:"排序字段，多个用半角逗号隔开"`
+	Sort   string `json:"sort" v:"in:asc,desc" dc:"排序规则，支持asc，desc" default:"ASC"`
 }
 
 // SearchFilter 数据查询字段条件信息集合
 type SearchFilter struct {
 	Fields []SearchField `json:"fields" dc:"搜索字段集"`
+	OrderBy
 	Pagination
 }
 
