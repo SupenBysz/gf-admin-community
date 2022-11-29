@@ -63,7 +63,7 @@ func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName
 
 // QueryPermissionList 查询权限
 func (s *sSysPermission) QueryPermissionList(ctx context.Context, info model.SearchFilter) (*sysapi.SysPermissionInfoListRes, error) {
-	result, err := daoctl.Query[entity.SysPermission](dao.SysPermission.Ctx(ctx), &info, &info.OrderBy, false)
+	result, err := daoctl.Query[entity.SysPermission](dao.SysPermission.Ctx(ctx), &info, false)
 	return (*sysapi.SysPermissionInfoListRes)(result), err
 }
 
