@@ -26,7 +26,7 @@ func (c *cSysPermission) GetPermissionByName(ctx context.Context, req *sysapi.Ge
 
 // QueryPermissionListReq 查询权限|列表
 func (c *cSysPermission) QueryPermissionListReq(ctx context.Context, req *sysapi.QueryPermissionListReq) (*sysapi.SysPermissionInfoListRes, error) {
-	return service.SysPermission().QueryPermissionList(ctx, req.SearchFilter)
+	return service.SysPermission().QueryPermissionList(ctx, req.SearchParams)
 }
 
 // GetPermissionList 根据ID获取下级权限|列表

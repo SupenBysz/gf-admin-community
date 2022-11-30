@@ -44,14 +44,14 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*mod
 		}
 	}
 
-	result, _ := daoctl.Query[entity.SysArea](dao.SysArea.Ctx(ctx), &model.SearchFilter{
-		Fields: append(make([]model.SearchField, 0), model.SearchField{
+	result, _ := daoctl.Query[entity.SysArea](dao.SysArea.Ctx(ctx), &model.SearchParams{
+		Filter: append(make([]model.FilterInfo, 0), model.FilterInfo{
 			Field:       dao.SysArea.Columns().ParentId,
 			Where:       "=",
 			IsOrWhere:   false,
 			Value:       parentId,
 			IsNullValue: false,
-		}, model.SearchField{
+		}, model.FilterInfo{
 			Field:       dao.SysArea.Columns().Id,
 			Where:       ">",
 			IsOrWhere:   false,
@@ -62,9 +62,9 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*mod
 			Page:     1,
 			PageSize: 100,
 		},
-		OrderBy: model.OrderBy{
-			Fields: dao.SysArea.Columns().Id,
-		},
+		OrderBy: append(make([]model.OrderBy, 0), model.OrderBy{
+			Field: dao.SysArea.Columns().Id,
+		}),
 	}, false)
 
 	items := make([]model.Area, 0)

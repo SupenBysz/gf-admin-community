@@ -71,17 +71,17 @@ func (s *sSysUser) CleanAllHook() {
 }
 
 // QueryUserList 获取用户列表
-func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchFilter, isExport bool) (response *model.SysUserRes, err error) {
+func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchParams, isExport bool) (response *model.SysUserRes, err error) {
 	if info != nil {
-		newFields := make([]model.SearchField, 0)
+		newFields := make([]model.FilterInfo, 0)
 
-		newFields = append(newFields, model.SearchField{
-			Field: dao.SysUser.Columns().Type,
+		newFields = append(newFields, model.FilterInfo{
+			Field: dao.SysUser.Columns().Type, //type
 			Where: "=",
 			Value: consts.Global.UserDefaultType,
 		})
 
-		for _, field := range info.Fields {
+		for _, field := range info.Filter {
 			if field.Field != dao.SysUser.Columns().Type {
 				newFields = append(newFields, field)
 			}
@@ -105,7 +105,10 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchFilter, 
 		}
 	}
 
-	result.List = &newList
+	if newList != nil {
+		result.List = &newList
+	}
+
 	return (*model.SysUserRes)(result), err
 }
 
@@ -145,7 +148,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 	data := entity.SysUser{
 		Id:        idgen.NextId(),
 		Username:  info.Username,
-		Password:  gmd5.MustEncryptString(info.Username + info.Password),
+		Password:  gmd5.MustEncryptString(gconv.String(customId[0]) + info.Password),
 		State:     userState.Code(),
 		Type:      userType.Code(),
 		CreatedAt: gtime.Now(),

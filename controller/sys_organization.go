@@ -15,7 +15,7 @@ type cSysOrganization struct{}
 
 // QueryOrganizationList 获取组织架构|列表
 func (c *cSysOrganization) QueryOrganizationList(ctx context.Context, req *sysapi.QueryOrganizationListReq) (*sysapi.OrganizationInfoListRes, error) {
-	return service.SysOrganization().QueryOrganizationList(ctx, req.SearchFilter)
+	return service.SysOrganization().QueryOrganizationList(ctx, req.SearchParams)
 }
 
 // GetOrganizationList 根据ID获取下级组织架构|列表

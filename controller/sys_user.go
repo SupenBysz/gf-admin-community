@@ -23,7 +23,7 @@ func (c *cSysUser) CreateUser(ctx context.Context, req *sysapi.CreateUserReq) (r
 
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sysapi.QueryUserListReq) (*sysapi.UserListRes, error) {
-	data, err := service.SysUser().QueryUserList(ctx, &req.SearchFilter, false)
+	data, err := service.SysUser().QueryUserList(ctx, &req.SearchParams, false)
 	if err != nil {
 		return nil, err
 	}

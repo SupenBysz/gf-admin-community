@@ -17,8 +17,8 @@ type CollectRes[T any] struct {
 	PaginationRes
 }
 
-// SearchField 数据查询字段条件信息
-type SearchField struct {
+// FilterInfo 数据查询字段条件信息
+type FilterInfo struct {
 	Field       string      `json:"filed" v:"required" dc:"字段名称"`
 	Where       string      `json:"where" v:"required|in:>,<,>=,<=,<>,=,like,in,between" dc:"查询条件，支持：>,<,>=,<=,<>,=,like,not in,in,between,is,is not"`
 	IsOrWhere   bool        `json:"isOrWhere" dc:"是否或与条件"`
@@ -29,19 +29,19 @@ type SearchField struct {
 
 // OrderBy 排序规则
 type OrderBy struct {
-	Columns string `json:"columns" dc:"排序字段，多个用半角逗号隔开"`
-	Sort    string `json:"sort" v:"in:asc,desc" dc:"排序规则，支持asc，desc" default:"ASC"`
+	Field string `json:"field" dc:"排序字段，多个用半角逗号隔开"`
+	Sort  string `json:"sort" v:"in:asc,desc" dc:"排序规则，支持asc，desc" default:"ASC"`
 }
 
-// SearchFilter 数据查询字段条件信息集合
-type SearchFilter struct {
-	Fields []SearchField `json:"fields" dc:"搜索字段集"`
-	OrderBy
+// SearchParams 数据查询字段条件信息集合
+type SearchParams struct {
+	Filter  []FilterInfo `json:"filter" dc:"搜索字段集"`
+	OrderBy []OrderBy    `json:"order_by" dc:"排序字段集"`
 	Pagination
 }
 
 // ExportFilter 数据查询字段条件信息集合
 type ExportFilter struct {
-	Fields []SearchField `json:"fields" dc:"搜索字段集"`
+	Fields []FilterInfo `json:"filter" dc:"搜索字段集"`
 	Pagination
 }

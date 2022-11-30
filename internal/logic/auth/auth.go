@@ -9,6 +9,7 @@ import (
 	kyAuth "github.com/SupenBysz/gf-admin-community/model/enum/auth"
 	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
 	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/gogf/gf/v2/util/gconv"
 	"time"
 
 	"github.com/gogf/gf/v2/database/gdb"
@@ -75,7 +76,10 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
-	pw := gmd5.MustEncryptString(req.Username + req.Password)
+	//pw := gmd5.MustEncryptString(req.Username + req.Password)
+
+	pw := gmd5.MustEncryptString(gconv.String(sysUserInfo.Id) + req.Password)
+
 	if pw != sysUserInfo.Password {
 		return nil, gerror.New("用户密码错误")
 	}

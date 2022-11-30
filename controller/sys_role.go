@@ -15,7 +15,7 @@ type cSysRole struct{}
 
 // GetRoleList 获取角色|列表
 func (c *cSysRole) GetRoleList(ctx context.Context, req *sysapi.QueryRoleListReq) (*sysapi.RoleListRes, error) {
-	return service.SysRole().QueryRoleList(ctx, req.SearchFilter)
+	return service.SysRole().QueryRoleList(ctx, req.SearchParams)
 }
 
 // CreateeRoleInfo 新增或保存角色|信息
