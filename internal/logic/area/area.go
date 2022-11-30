@@ -2,14 +2,14 @@ package area
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/os/gcache"
-	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/os/gcache"
+	"github.com/gogf/gf/v2/util/gconv"
 	"time"
 )
 
@@ -50,19 +50,20 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*mod
 			Where:       "=",
 			IsOrWhere:   false,
 			Value:       parentId,
-			Sort:        "",
 			IsNullValue: false,
 		}, model.SearchField{
 			Field:       dao.SysArea.Columns().Id,
 			Where:       ">",
 			IsOrWhere:   false,
 			Value:       0,
-			Sort:        "ASC",
 			IsNullValue: false,
 		}),
 		Pagination: model.Pagination{
 			Page:     1,
 			PageSize: 100,
+		},
+		OrderBy: model.OrderBy{
+			Columns: dao.SysArea.Columns().Id,
 		},
 	}, false)
 
