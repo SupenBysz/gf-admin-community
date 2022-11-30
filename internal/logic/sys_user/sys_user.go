@@ -2,10 +2,12 @@ package user
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
+	"github.com/gogf/gf/v2/crypto/gmd5"
+	"github.com/gogf/gf/v2/text/gstr"
 	"time"
 
 	"github.com/gogf/gf/v2/container/garray"
-	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -144,11 +146,13 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 	if count > 0 {
 		return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", dao.SysUser.Table())
 	}
+	// 这样是不行的，因为customId 是可选参数，他也有可能不传
+	//	pwd, _ := scrypt.Key([]byte(info.Password), gconv.Bytes(customId[0]), 1<<15, 8, 1, 32)
 
 	data := entity.SysUser{
 		Id:        idgen.NextId(),
 		Username:  info.Username,
-		Password:  gmd5.MustEncryptString(gconv.String(customId[0]) + info.Password),
+		Password:  info.Password,
 		State:     userState.Code(),
 		Type:      userType.Code(),
 		CreatedAt: gtime.Now(),
@@ -158,13 +162,25 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 		data.Id = customId[0]
 	}
 
+	// 避免id不足8位，我们把id md5加密后截取后八位
+	md5Id := gmd5.MustEncryptString(gconv.String(data.Id))
+
+	// id的后八位作为盐
+	idLen := len(md5Id)
+	salt := gstr.SubStr(md5Id, idLen-8, 8)
+
+	// 用户指定的密码 + 他的id的后八位(盐)  --Hash-->  最终的密码
+	pwdHash, err := en_crypto.PwdEncodeHash([]byte(info.Password), gconv.Bytes(salt))
+
+	// 密码赋值
+	data.Password = pwdHash
+
 	result := model.SysUserRegisterRes{
 		UserInfo:     data,
 		RoleInfoList: make([]entity.SysRole, 0),
 	}
 
-	err := dao.SysUser.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
-
+	err = dao.SysUser.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
