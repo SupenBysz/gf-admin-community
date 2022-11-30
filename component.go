@@ -1,9 +1,7 @@
 package component
 
 import (
-	"github.com/SupenBysz/gf-admin-community/internal/cmd"
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/joho/godotenv"
 	"os"
@@ -59,8 +57,4 @@ func init() {
 			},
 		})
 	}
-}
-
-func main() {
-	cmd.Main.Run(gctx.New())
 }

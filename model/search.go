@@ -22,7 +22,7 @@ type SearchField struct {
 	Field       string      `json:"filed" v:"required" dc:"字段名称"`
 	Where       string      `json:"where" v:"required|in:>,<,>=,<=,<>,=,like,in,between" dc:"查询条件，支持：>,<,>=,<=,<>,=,like,not in,in,between,is,is not"`
 	IsOrWhere   bool        `json:"isOrWhere" dc:"是否或与条件"`
-	Value       interface{} `json:"value" dc:"字段对应值"`
+	Value       interface{} `json:"value" dc:"字段对应值，如果是between的值，则用逗号隔开"`
 	IsNullValue bool        `json:"isNullValue" dc:"是否空值"`
 	Modifier    string      `json:"modifier" v:"in:is,not,is not" dc:"修饰条件，支持：like,in,between"`
 }
