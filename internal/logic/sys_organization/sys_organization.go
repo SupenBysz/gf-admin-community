@@ -35,7 +35,7 @@ func New() *sSysOrganization {
 }
 
 // QueryOrganizationList 获取组织架构信息列表
-func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info model.SearchFilter) (*sysapi.OrganizationInfoListRes, error) {
+func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info model.SearchParams) (*sysapi.OrganizationInfoListRes, error) {
 	result, err := daoctl.Query[entity.SysOrganization](dao.SysOrganization.Ctx(ctx), &info, false)
 
 	return (*sysapi.OrganizationInfoListRes)(result), err

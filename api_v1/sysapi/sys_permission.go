@@ -1,9 +1,9 @@
 package sysapi
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type GetPermissionByIdReq struct {
@@ -18,7 +18,7 @@ type GetPermissionByNameReq struct {
 
 type QueryPermissionListReq struct {
 	g.Meta `path:"/queryPermissionList" method:"post" summary:"根据ID获取下级权限|列表，返回列表" tags:"权限"`
-	model.SearchFilter
+	model.SearchParams
 }
 
 type GetPermissionListReq struct {

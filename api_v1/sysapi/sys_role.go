@@ -9,7 +9,7 @@ import (
 
 type QueryRoleListReq struct {
 	g.Meta `path:"/queryRoleList" method:"post" summary:"获取所有角色|列表" tags:"角色"`
-	model.SearchFilter
+	model.SearchParams
 }
 
 type CreateRoleInfoReq struct {

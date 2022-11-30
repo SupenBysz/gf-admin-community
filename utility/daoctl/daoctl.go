@@ -28,7 +28,7 @@ func GetById[T any](db *gdb.Model, id int64) *T {
 	return result
 }
 
-func Count(db *gdb.Model, orderBy *model.OrderBy, searchFields ...model.SearchField) (total int) {
+func Count(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (total int) {
 	db, err := makeBuilder(db, orderBy, searchFields)
 	if err != nil {
 		return 0
@@ -37,139 +37,148 @@ func Count(db *gdb.Model, orderBy *model.OrderBy, searchFields ...model.SearchFi
 	return
 }
 
-func builder(db *gdb.Model, orderBy *model.OrderBy, searchFields ...model.SearchField) (*gdb.Model, error) {
+func builder(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (*gdb.Model, error) {
 	return makeBuilder(db, orderBy, searchFields)
 }
 
-func makeBuilder(db *gdb.Model, orderBy *model.OrderBy, searchFieldArr []model.SearchField) (*gdb.Model, error) {
-	if len(searchFieldArr) <= 0 {
-		return nil, gerror.New("查询条件参数错误")
-	}
-	for index, field := range searchFieldArr {
-		field.Field = gstr.CaseSnakeFirstUpper(field.Field)
-		if gconv.String(field.Field) != "" {
-			// 过滤特殊符号，防止SQL注入
-			orderBy.Columns = gstr.ReplaceIByMap(orderBy.Columns, map[string]string{
-				"\"": "",
-				"'":  "",
-			})
+func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.FilterInfo) (*gdb.Model, error) {
+	// 需要过滤
+	if searchFieldArr != nil && len(searchFieldArr) > 0 {
+		for index, field := range searchFieldArr {
+			field.Field = gstr.CaseSnakeFirstUpper(field.Field)
+			if gconv.String(field.Field) != "" {
+				// 过滤特殊符号，防止SQL注入
+				field.Field = gstr.ReplaceIByMap(field.Field, map[string]string{
+					"\"": "",
+					"'":  "",
+				})
 
-			if index == 0 {
-				field.IsOrWhere = false
-			}
-
-			if field.IsOrWhere {
-				if gstr.CaseCamelLower(field.Where) == "in" {
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereOrNotIn(field.Field, field.Value)
-					} else {
-						db = db.WhereOrIn(field.Field, field.Value)
-					}
-				} else if gstr.CaseCamelLower(field.Where) == "between" {
-					valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
-					minValue := valueArr[0]
-					maxValue := minValue
-					if len(valueArr) > 1 {
-						maxValue = valueArr[1]
-					}
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereOrNotBetween(field.Field, minValue, maxValue)
-					} else {
-						db = db.WhereOrBetween(field.Field, minValue, maxValue)
-					}
-				} else if gstr.CaseCamelLower(field.Where) == "like" {
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereOrNotLike(field.Field, field.Value)
-					} else {
-						db = db.WhereOrLike(field.Field, field.Value)
-					}
-				} else {
-					if field.Where == ">" {
-						db = db.WhereOrGT(field.Field, field.Value)
-					} else if field.Where == ">=" {
-						db = db.WhereOrGTE(field.Field, field.Value)
-					} else if field.Where == "<" {
-						db = db.WhereOrLT(field.Field, field.Value)
-					} else if field.Where == "<=" {
-						db = db.WhereOrLT(field.Field, field.Value)
-					} else if field.Where == "<>" {
-						db = db.WhereOrNotIn(field.Field, field.Value)
-					} else if field.Where == "=" {
-						db = db.WhereOr(field.Field, field.Value)
-					} else {
-						return nil, gerror.New("查询条件参数错误")
-					}
+				if index == 0 {
+					field.IsOrWhere = false
 				}
-			} else {
-				if gstr.CaseCamelLower(field.Where) == "in" {
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereNotIn(field.Field, field.Value)
+
+				if field.IsOrWhere {
+					if gstr.CaseCamelLower(field.Where) == "in" {
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereOrNotIn(field.Field, field.Value)
+						} else {
+							db = db.WhereOrIn(field.Field, field.Value)
+						}
+					} else if gstr.CaseCamelLower(field.Where) == "between" {
+						valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
+						minValue := valueArr[0]
+						maxValue := minValue
+						if len(valueArr) > 1 {
+							maxValue = valueArr[1]
+						}
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereOrNotBetween(field.Field, minValue, maxValue)
+						} else {
+							db = db.WhereOrBetween(field.Field, minValue, maxValue)
+						}
+					} else if gstr.CaseCamelLower(field.Where) == "like" {
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereOrNotLike(field.Field, field.Value)
+						} else {
+							db = db.WhereOrLike(field.Field, field.Value)
+						}
 					} else {
-						db = db.WhereIn(field.Field, field.Value)
-					}
-				} else if gstr.CaseCamelLower(field.Where) == "between" {
-					valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
-					minValue := valueArr[0]
-					maxValue := minValue
-					if len(valueArr) > 1 {
-						maxValue = valueArr[1]
-					}
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereNotBetween(field.Field, minValue, maxValue)
-					} else {
-						db = db.WhereBetween(field.Field, minValue, maxValue)
-					}
-				} else if gstr.CaseCamelLower(field.Where) == "like" {
-					if gstr.CaseCamelLower(field.Modifier) == "not" {
-						db = db.WhereNotLike(field.Field, field.Value)
-					} else {
-						db = db.WhereLike(field.Field, gconv.String(field.Value))
+						if field.Where == ">" {
+							db = db.WhereOrGT(field.Field, field.Value)
+						} else if field.Where == ">=" {
+							db = db.WhereOrGTE(field.Field, field.Value)
+						} else if field.Where == "<" {
+							db = db.WhereOrLT(field.Field, field.Value)
+						} else if field.Where == "<=" {
+							db = db.WhereOrLT(field.Field, field.Value)
+						} else if field.Where == "<>" {
+							db = db.WhereOrNotIn(field.Field, field.Value)
+						} else if field.Where == "=" {
+							db = db.WhereOr(field.Field, field.Value)
+						} else {
+							return nil, gerror.New("查询条件参数错误")
+						}
 					}
 				} else {
-					if field.Where == ">" {
-						db = db.WhereGT(field.Field, field.Value)
-					} else if field.Where == ">=" {
-						db = db.WhereGTE(field.Field, field.Value)
-					} else if field.Where == "<" {
-						db = db.WhereLT(field.Field, field.Value)
-					} else if field.Where == "<=" {
-						db = db.WhereLT(field.Field, field.Value)
-					} else if field.Where == "<>" {
-						db = db.WhereNotIn(field.Field, field.Value)
-					} else if field.Where == "=" {
-						db = db.Where(field.Field, field.Value)
+					if gstr.CaseCamelLower(field.Where) == "in" {
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereNotIn(field.Field, field.Value)
+						} else {
+							db = db.WhereIn(field.Field, field.Value)
+						}
+					} else if gstr.CaseCamelLower(field.Where) == "between" {
+						valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
+						minValue := valueArr[0]
+						maxValue := minValue
+						if len(valueArr) > 1 {
+							maxValue = valueArr[1]
+						}
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereNotBetween(field.Field, minValue, maxValue)
+						} else {
+							db = db.WhereBetween(field.Field, minValue, maxValue)
+						}
+					} else if gstr.CaseCamelLower(field.Where) == "like" {
+						if gstr.CaseCamelLower(field.Modifier) == "not" {
+							db = db.WhereNotLike(field.Field, field.Value)
+						} else {
+							db = db.WhereLike(field.Field, gconv.String(field.Value))
+						}
 					} else {
-						return nil, gerror.New("查询条件参数错误")
+						if field.Where == ">" {
+							db = db.WhereGT(field.Field, field.Value)
+						} else if field.Where == ">=" {
+							db = db.WhereGTE(field.Field, field.Value)
+						} else if field.Where == "<" {
+							db = db.WhereLT(field.Field, field.Value)
+						} else if field.Where == "<=" {
+							db = db.WhereLT(field.Field, field.Value)
+						} else if field.Where == "<>" {
+							db = db.WhereNotIn(field.Field, field.Value)
+						} else if field.Where == "=" {
+							db = db.Where(field.Field, field.Value)
+						} else {
+							return nil, gerror.New("查询条件参数错误")
+						}
 					}
 				}
 			}
 		}
 	}
-	if orderBy != nil && len(orderBy.Columns) > 0 {
-		// 过滤特殊符号，防止SQL注入
-		orderBy.Columns = gstr.ReplaceIByMap(orderBy.Columns, map[string]string{
-			"\"": "",
-			"'":  "",
-		})
 
-		if gstr.CaseCamelLower(orderBy.Columns) == "asc" || len(orderBy.Sort) <= 0 {
-			db = db.OrderAsc(orderBy.Columns)
-		} else {
-			db = db.OrderDesc(orderBy.Columns)
+	// 需要排序
+	if len(orderBy) > 0 && orderBy != nil {
+		// 出来会是一条sql语句
+		for _, orderFiled := range orderBy { //[ {name,asc}, {age,desc} ]
+			// 过滤特殊字符，防止SQL注入
+			orderFiled.Field = gstr.ReplaceIByMap(orderFiled.Field, map[string]string{
+				"\"": "",
+				"'":  "",
+			})
+
+			// 排序
+			if gstr.CaseCamelLower(orderFiled.Sort) == "asc" || len(orderFiled.Sort) <= 0 {
+				db = db.OrderAsc(orderFiled.Field)
+			} else { // desc
+				db = db.OrderDesc(orderFiled.Field)
+			}
 		}
 	}
 	return db, nil
 }
 
-func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, IsExport bool) (response *model.CollectRes[T], err error) {
-	itemsDb, err := makeBuilder(db, &searchFields.OrderBy, searchFields.Fields)
+func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool) (response *model.CollectRes[T], err error) {
+
+	// 查询条件，返回分页的数
+	itemsDb, err := makeBuilder(db, searchFields.OrderBy, searchFields.Filter)
 	if err != nil {
 		return nil, err
 	}
 
 	total, _ := itemsDb.Count()
 
-	queryDb, _ := makeBuilder(db, &searchFields.OrderBy, searchFields.Fields)
+	// 查询具体的值
+	queryDb, _ := makeBuilder(db, searchFields.OrderBy, searchFields.Filter)
 
 	entities := make([]T, 0)
 	if searchFields == nil || IsExport {
@@ -189,14 +198,14 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchFilter, IsExport bool
 	return response, nil
 }
 
-func Find[T any](db *gdb.Model, orderBy *model.OrderBy, searchFields ...model.SearchField) (response *model.CollectRes[T], err error) {
-	return Query[T](db, &model.SearchFilter{
-		Fields: searchFields,
+func Find[T any](db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (response *model.CollectRes[T], err error) {
+	return Query[T](db, &model.SearchParams{
+		Filter: searchFields,
 		Pagination: model.Pagination{
 			Page:     1,
 			PageSize: 1000,
 		},
-		OrderBy: *orderBy,
+		OrderBy: orderBy,
 	}, true)
 }
 
