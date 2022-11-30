@@ -1,9 +1,9 @@
 package sysapi
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type CreateUserReq struct {
@@ -13,7 +13,7 @@ type CreateUserReq struct {
 
 type QueryUserListReq struct {
 	g.Meta `path:"/queryUserList" method:"post" summary:"获取用户|列表" tags:"用户"`
-	model.SearchFilter
+	model.SearchParams
 }
 
 type SetUserRoleIdsReq struct {

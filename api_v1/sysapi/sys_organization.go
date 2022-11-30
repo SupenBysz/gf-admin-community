@@ -1,14 +1,14 @@
 package sysapi
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type QueryOrganizationListReq struct {
 	g.Meta `path:"/queryOrganizationList" method:"post" summary:"获取组织架构|列表" tags:"组织架构"`
-	model.SearchFilter
+	model.SearchParams
 }
 
 type GetOrganizationListReq struct {

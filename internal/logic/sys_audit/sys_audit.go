@@ -72,8 +72,8 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		}
 	}
 
-	fields := append(make([]model.SearchField, 0),
-		model.SearchField{
+	fields := append(make([]model.FilterInfo, 0),
+		model.FilterInfo{
 			Field:       dao.SysAudit.Columns().State,
 			Where:       "in",
 			IsOrWhere:   false,
@@ -82,7 +82,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		},
 	)
 	if category > 0 {
-		fields = append(fields, model.SearchField{
+		fields = append(fields, model.FilterInfo{
 			Field:       dao.SysAudit.Columns().Category,
 			Where:       "=",
 			IsOrWhere:   false,
@@ -91,7 +91,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		})
 	}
 
-	fields = append(fields, model.SearchField{
+	fields = append(fields, model.FilterInfo{
 		Field:       dao.SysAudit.Columns().Id,
 		Where:       ">",
 		IsOrWhere:   false,
@@ -99,12 +99,12 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		IsNullValue: false,
 	})
 
-	filter := model.SearchFilter{
-		Fields: fields,
-		OrderBy: model.OrderBy{
-			Columns: dao.SysAudit.Columns().Id,
-			Sort:    "desc",
-		},
+	filter := model.SearchParams{
+		Filter: fields,
+		OrderBy: append(make([]model.OrderBy, 0), model.OrderBy{
+			Field: dao.SysAudit.Columns().Id,
+			Sort:  "desc",
+		}),
 		Pagination: model.Pagination{},
 	}
 	result, err := daoctl.Query[entity.SysAudit](dao.SysAudit.Ctx(ctx), &filter, false)

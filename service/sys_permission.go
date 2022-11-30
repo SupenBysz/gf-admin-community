@@ -17,7 +17,7 @@ type (
 	ISysPermission interface {
 		GetPermissionById(ctx context.Context, permissionId int64) (*entity.SysPermission, error)
 		GetPermissionByName(ctx context.Context, permissionName string) (*entity.SysPermission, error)
-		QueryPermissionList(ctx context.Context, info model.SearchFilter) (*sysapi.SysPermissionInfoListRes, error)
+		QueryPermissionList(ctx context.Context, info model.SearchParams) (*sysapi.SysPermissionInfoListRes, error)
 		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) (*[]entity.SysPermission, error)
 		GetPermissionTree(ctx context.Context, parentId int64) (*[]model.SysPermissionTree, error)
 		CreatePermission(ctx context.Context, info model.SysPermission) (*entity.SysPermission, error)

@@ -18,7 +18,7 @@ type (
 		InstallHook(state kyEnum.UserEventState, hookFunc model.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		QueryUserList(ctx context.Context, info *model.SearchFilter, isExport bool) (response *model.SysUserRes, err error)
+		QueryUserList(ctx context.Context, info *model.SearchParams, isExport bool) (response *model.SysUserRes, err error)
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
 		CreateUser(ctx context.Context, info model.UserInnerRegister, userState kyEnum.UserState, userType kyEnum.UserType, customId ...int64) (*model.SysUserRegisterRes, error)
 		GetSysUserByUsername(ctx context.Context, username string) (*entity.SysUser, error)
