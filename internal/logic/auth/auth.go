@@ -79,6 +79,7 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 	}
 
 	// 取盐
+
 	salt := gconv.String(sysUserInfo.Id)
 
 	// 不足8位，盐补0
@@ -203,22 +204,47 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info model.ForgotPassword
 
 	IdKey := idgen.NextId()
 
-	gcache.New().Set(ctx, IdKey, info.Username, time.Minute*5)
+	err = gcache.Set(ctx, gconv.String(IdKey), info.Username, time.Minute*5)
+	if err != nil {
+		return 0, err
+	}
 
 	return IdKey, nil
 }
 
 // ResetPassword 重置密码
 func (s *sSysAuth) ResetPassword(ctx context.Context, username string, password string, idKey string) (bool, error) {
-	value, err := gcache.New().Get(ctx, idKey)
+	value, err := gcache.Get(ctx, idKey)
 	if err != nil || username != value.String() {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "你停留太久了，请重新操作")
 	}
-	gcache.New().Remove(ctx, idKey)
+	gcache.Remove(ctx, idKey)
 
-	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Username: username}).Update(do.SysUser{Username: gmd5.MustEncryptString(username + password)})
+	// 根据用户名获取用户信息
+	sysUserInfo, err := service.SysUser().GetSysUserByUsername(ctx, username)
+	if err != nil || sysUserInfo == nil || sysUserInfo.Id == 0 {
+		return false, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
+	}
 
-	count, _ := result.LastInsertId()
+	// 取盐
+	salt := gconv.String(sysUserInfo.Id)
+	saltLen := len(salt)
+
+	for saltLen < 8 {
+		salt += "0"
+		saltLen++
+	}
+
+	salt = gstr.SubStr(salt, saltLen-8, 8)
+
+	// 加密
+	pwdHash, _ := en_crypto.PwdEncodeHash([]byte(password), []byte(salt))
+
+	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Username: username}).Update(do.SysUser{Password: pwdHash})
+
+	// 受影响的行数
+	//	count, _ := result.LastInsertId()
+	count, _ := result.RowsAffected()
 
 	if err != nil || count != 1 {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")

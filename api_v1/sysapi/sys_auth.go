@@ -1,8 +1,8 @@
 package sysapi
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/SupenBysz/gf-admin-community/model"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type LoginReq struct {
@@ -29,5 +29,5 @@ type ResetPasswordReq struct {
 	g.Meta   `path:"/resetPasswordReq" method:"post" summary:"重置密码" tags:"鉴权"`
 	Username string `json:"username" v:"required#请输入用户名" dc:"登录账号"`
 	Password string `json:"password" v:"required#请输入密码" dc:"登录密码"`
-	IdKey    string `json:"key" v:"required#请输入KEY" dc:"KEY，通过ForgotPassword结构获取"`
+	IdKey    string `json:"id_key" v:"required#请输入KEY" dc:"KEY，通过ForgotPassword结构获取"`
 }
