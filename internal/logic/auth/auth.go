@@ -78,21 +78,10 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 	}
 
 	// 取盐
-
 	salt := gconv.String(sysUserInfo.Id)
 
-	// 不足8位，盐补0
-	saltLen := len(salt)
-	for saltLen < 8 {
-		salt += "0"
-		saltLen++
-	}
-
-	salt = gstr.SubStr(salt, saltLen-8, 8)
-
 	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
-	pwdHash, err := en_crypto.PwdEncodeHash([]byte(req.Password), gconv.Bytes(salt))
-
+	pwdHash, err := en_crypto.PwdHash(req.Password, salt)
 
 	// 判断是否相等
 	if pwdHash != sysUserInfo.Password {
@@ -227,17 +216,9 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, username string, password 
 
 	// 取盐
 	salt := gconv.String(sysUserInfo.Id)
-	saltLen := len(salt)
-
-	for saltLen < 8 {
-		salt += "0"
-		saltLen++
-	}
-
-	salt = gstr.SubStr(salt, saltLen-8, 8)
 
 	// 加密
-	pwdHash, _ := en_crypto.PwdEncodeHash([]byte(password), []byte(salt))
+	pwdHash, _ := en_crypto.PwdHash(password, salt)
 
 	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Username: username}).Update(do.SysUser{Password: pwdHash})
 
