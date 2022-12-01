@@ -24,6 +24,7 @@ type (
 		UploadIDCard(ctx context.Context, in model.OCRIDCardFileUploadInput, userId int64) (*model.IDCardWithOCR, error)
 		UploadBankCard(ctx context.Context, in model.BankCardWithOCRInput, userId int64) (*model.BankCardWithOCR, error)
 		UploadBusinessLicense(ctx context.Context, in model.OCRBusinessLicense, userId int64) (*model.BusinessLicenseWithOCR, error)
+		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
 	}
 )
 
