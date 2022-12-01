@@ -31,6 +31,12 @@ type SysUser struct {
 	RoleNames []string `json:"roleNames" dc:"所属角色"`
 }
 
+type UpdateUserPassword struct {
+	OldPassword     string `json:"oldPassword" v:"required#请输入原始密码" dc:"旧密码"`
+	Password        string `json:"password" v:"required#请输入新密码" dc:"新密码"`
+	ConfirmPassword string `json:"confirmPassword" v:"required#请确认密码" dc:"确认密码"`
+}
+
 type SysUserRes CollectRes[SysUser]
 
 type UserHookFunc HookFunc[kyEnum.UserEventState, entity.SysUser]

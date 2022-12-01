@@ -10,7 +10,6 @@ import (
 	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"time"
 
@@ -94,6 +93,7 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
 	pwdHash, err := en_crypto.PwdEncodeHash([]byte(req.Password), gconv.Bytes(salt))
 
+
 	// 判断是否相等
 	if pwdHash != sysUserInfo.Password {
 		return nil, gerror.New("用户密码错误")
@@ -138,7 +138,6 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 			return nil, err
 		}
 	}
-
 	return tokenInfo, err
 }
 

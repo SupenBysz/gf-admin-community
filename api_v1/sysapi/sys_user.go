@@ -38,5 +38,10 @@ type SetUsernameByIdReq struct {
 	NewUsername string `json:"newUsername" v:"required#新用户名称" dc:"新的用户名称"`
 }
 
+type UpdateUserPasswordReq struct {
+	g.Meta `path:"/updateUserPassword" method:"post" summary:"修改用户密码" tags:"用户"`
+	model.UpdateUserPassword
+}
+
 type UserInfoRes entity.SysUser
 type UserInfoListRes model.CollectRes[entity.SysUser]
