@@ -79,9 +79,16 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 	}
 
 	// 取盐
-	md5Id := gmd5.MustEncryptString(gconv.String(sysUserInfo.Id))
-	idLen := len(gconv.String(md5Id))
-	salt := gstr.SubStr(gconv.String(md5Id), idLen-8, 8)
+	salt := gconv.String(sysUserInfo.Id)
+
+	// 不足8位，盐补0
+	saltLen := len(salt)
+	for saltLen < 8 {
+		salt += "0"
+		saltLen++
+	}
+
+	salt = gstr.SubStr(salt, saltLen-8, 8)
 
 	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
 	pwdHash, err := en_crypto.PwdEncodeHash([]byte(req.Password), gconv.Bytes(salt))
