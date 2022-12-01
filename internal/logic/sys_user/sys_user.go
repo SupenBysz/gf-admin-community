@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"github.com/gogf/gf/v2/text/gstr"
 	"time"
 
 	"github.com/gogf/gf/v2/container/garray"
@@ -159,18 +158,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 		data.Id = customId[0]
 	}
 
-	salt := gconv.String(data.Id)
-
-	// 不足八位，补0 (很少有这个情况出现，因为我们的id都是随机生产的)
-	saltLen := len(salt)
-	for saltLen < 8 {
-		salt += "0"
-		saltLen++
-	}
-
-	salt = gstr.SubStr(salt, saltLen-8, 8)
-
-	pwdHash, err := en_crypto.PwdEncodeHash([]byte(info.Password), gconv.Bytes(salt))
+	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
 
 	// 密码赋值
 	data.Password = pwdHash

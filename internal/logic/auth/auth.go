@@ -10,7 +10,7 @@ import (
 	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/util/gconv"
 	"time"
 
@@ -78,20 +78,7 @@ func (s *sSysAuth) Login(ctx context.Context, req model.LoginInfo, needCaptcha .
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
-	// 取盐
-	salt := gconv.String(sysUserInfo.Id)
-
-	// 不足8位，盐补0
-	saltLen := len(salt)
-	for saltLen < 8 {
-		salt += "0"
-		saltLen++
-	}
-
-	salt = gstr.SubStr(salt, saltLen-8, 8)
-
-	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
-	pwdHash, err := en_crypto.PwdEncodeHash([]byte(req.Password), gconv.Bytes(salt))
+	pwdHash, err := en_crypto.PwdHash(req.Password, gconv.String(sysUserInfo.Id))
 
 	// 判断是否相等
 	if pwdHash != sysUserInfo.Password {
@@ -137,6 +124,9 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 			return nil, err
 		}
 	}
+
+	// 是否需要手动调用注册JWT的方法
+	service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
 
 	return tokenInfo, err
 }
