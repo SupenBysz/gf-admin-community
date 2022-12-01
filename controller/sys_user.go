@@ -54,3 +54,13 @@ func (c *cSysUser) SetUsername(ctx context.Context, req *sysapi.SetUsernameByIdR
 	result, err := service.SysUser().SetUsername(ctx, req.NewUsername)
 	return result == true, err
 }
+
+// UpdateUserPassword 修改密码
+func (c *cSysUser) UpdateUserPassword(ctx context.Context, req *sysapi.UpdateUserPasswordReq) (api_v1.BoolRes, error) {
+	_, err := service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword)
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}

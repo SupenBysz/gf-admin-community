@@ -145,7 +145,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 	if count > 0 {
 		return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", dao.SysUser.Table())
 	}
-	
+
 	data := entity.SysUser{
 		Id:        idgen.NextId(),
 		Username:  info.Username,
@@ -305,9 +305,48 @@ func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]in
 // SetUsername 修改自己的账号登陆名称
 func (s *sSysUser) SetUsername(ctx context.Context, newUsername string) (bool, error) {
 	userId := service.BizCtx().Get(ctx).ClaimsUser.Id
-	_, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Id: userId}).Update(do.SysUser{Username: newUsername})
-	if err != nil {
+	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Id: userId}).Update(do.SysUser{Username: newUsername})
+
+	if err != nil || result == nil {
 		return false, err
 	}
+	return true, nil
+}
+
+// UpdateUserPassword 修改用户登录密码
+func (s *sSysUser) UpdateUserPassword(ctx context.Context, info model.UpdateUserPassword) (bool, error) {
+	// 获取到当前登录用户
+	loginUserName := service.BizCtx().Get(ctx).ClaimsUser.Username
+
+	if loginUserName == "" {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "需要先登录后才能修改密码")
+	}
+
+	// 查询到用户信息
+	sysUserInfo, err := service.SysUser().GetSysUserByUsername(ctx, loginUserName)
+
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "当前登录用户不存在")
+	}
+
+	// 判断输入的两次密码是否相同
+	if info.Password != info.ConfirmPassword {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "两次输入的密码不一致，修改失败")
+	}
+
+	// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
+	hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
+	if sysUserInfo.Password != hash1 {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "原密码输入错误，修改失败")
+	}
+
+	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
+
+	_, err = dao.SysUser.Ctx(ctx).Where(do.SysUser{Id: sysUserInfo.Id}).Update(do.SysUser{Password: pwdHash})
+
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
+	}
+
 	return true, nil
 }

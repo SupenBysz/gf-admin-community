@@ -27,6 +27,7 @@ type (
 		SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
 		GetUserPermissionIds(ctx context.Context, userId int64) ([]int64, error)
 		SetUsername(ctx context.Context, newUsername string) (bool, error)
+		UpdateUserPassword(ctx context.Context, info model.UpdateUserPassword) (bool, error)
 	}
 )
 
