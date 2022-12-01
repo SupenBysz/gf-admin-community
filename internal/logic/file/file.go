@@ -3,6 +3,9 @@ package file
 import (
 	"context"
 	"github.com/gogf/gf/v2/encoding/gjson"
+	"io"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/gogf/gf/v2/encoding/gbase64"
@@ -354,4 +357,26 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in model.OCRBusinessL
 	ret.BusinessLicenseOCR = *OCRInfo
 
 	return &ret, nil
+}
+
+// DownLoadFile 下载文件
+func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (string, error) {
+	if !gfile.Exists(savePath) {
+		return "", service.SysLogs().WarnSimple(ctx, nil, "The save path does not exist! "+savePath, dao.SysFile.Table())
+	}
+
+	v, err := http.Get(url)
+	if err != nil {
+		return "", service.SysLogs().WarnSimple(ctx, err, "Http get ["+url+"] failed!", dao.SysFile.Table())
+	}
+	defer v.Body.Close()
+	content, err := io.ReadAll(v.Body)
+	if err != nil {
+		return "", service.SysLogs().WarnSimple(ctx, err, "Read http response failed! "+url, dao.SysFile.Table())
+	}
+	err = os.WriteFile(savePath, content, 0666)
+	if err != nil {
+		return "", service.SysLogs().WarnSimple(ctx, err, "Save to file failed! "+url, dao.SysFile.Table())
+	}
+	return savePath, nil
 }
