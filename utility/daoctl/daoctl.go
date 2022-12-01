@@ -150,6 +150,8 @@ func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.
 	if len(orderBy) > 0 && orderBy != nil {
 		// 出来会是一条sql语句
 		for _, orderFiled := range orderBy { //[ {name,asc}, {age,desc} ]
+			orderFiled.Field = gstr.CaseSnakeFirstUpper(orderFiled.Field)
+
 			// 过滤特殊字符，防止SQL注入
 			orderFiled.Field = gstr.ReplaceIByMap(orderFiled.Field, map[string]string{
 				"\"": "",
