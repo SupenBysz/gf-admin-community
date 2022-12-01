@@ -36,7 +36,7 @@ type OrderBy struct {
 // SearchParams 数据查询字段条件信息集合
 type SearchParams struct {
 	Filter  []FilterInfo `json:"filter" dc:"搜索字段集"`
-	OrderBy []OrderBy    `json:"order_by" dc:"排序字段集"`
+	OrderBy []OrderBy    `json:"orderBy" dc:"排序字段集"`
 	Pagination
 }
 
