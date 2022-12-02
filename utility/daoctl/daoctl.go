@@ -28,7 +28,7 @@ func GetById[T any](db *gdb.Model, id int64) *T {
 	return result
 }
 
-func Count(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (total int) {
+func Count(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (total int64) {
 	db, err := makeBuilder(db, orderBy, searchFields)
 	if err != nil {
 		return 0
@@ -149,7 +149,7 @@ func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.
 	// 需要排序
 	if len(orderBy) > 0 && orderBy != nil {
 		// 出来会是一条sql语句
-		for _, orderFiled := range orderBy { //[ {name,asc}, {age,desc} ]
+		for _, orderFiled := range orderBy { // [ {name,asc}, {age,desc} ]
 			orderFiled.Field = gstr.CaseSnakeFirstUpper(orderFiled.Field)
 
 			// 过滤特殊字符，防止SQL注入
@@ -217,7 +217,7 @@ func GetAll[T any](db *gdb.Model, info *model.Pagination) (response *model.Colle
 	if info == nil {
 		info = &model.Pagination{
 			Page:     1,
-			PageSize: total,
+			PageSize: gconv.Int(total),
 		}
 	}
 
