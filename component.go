@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/SupenBysz/gf-admin-community/utility/validator"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/joho/godotenv"
@@ -57,4 +58,7 @@ func init() {
 			},
 		})
 	}
+
+	// 注册服务电话验证规则
+	validator.RegisterServicePhone()
 }
