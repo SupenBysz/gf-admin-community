@@ -177,7 +177,8 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 		return nil, err
 	}
 
-	total, _ := itemsDb.Count()
+	// 查询并返回所以记录条数
+	total, _ := itemsDb.All()
 
 	// 查询具体的值
 	queryDb, _ := makeBuilder(db, searchFields.OrderBy, searchFields.Filter)
@@ -186,6 +187,7 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 	if searchFields == nil || IsExport {
 		err = queryDb.Scan(&entities)
 	} else {
+
 		err = queryDb.Page(searchFields.Page, searchFields.PageSize).Scan(&entities)
 	}
 
@@ -193,7 +195,7 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 		List: &entities,
 		PaginationRes: model.PaginationRes{
 			Pagination: searchFields.Pagination,
-			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(searchFields.PageSize))),
+			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(len(total)) / gconv.Float64(searchFields.PageSize))),
 		},
 	}
 
