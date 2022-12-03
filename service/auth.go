@@ -24,7 +24,7 @@ type (
 		LoginByMobile(ctx context.Context, req model.LoginByMobileInfo) (*model.TokenInfo, error)
 		Register(ctx context.Context, info model.SysUserRegister) (*entity.SysUser, error)
 		ForgotPassword(ctx context.Context, info model.ForgotPassword) (int64, error)
-		ResetPassword(ctx context.Context, username string, password string, idKey string) (bool, error)
+		ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error)
 	}
 )
 
