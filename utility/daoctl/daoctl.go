@@ -152,7 +152,7 @@ func makeBuilder(db *gdb.Model, searchFieldArr []model.FilterInfo) (*gdb.Model, 
 						} else if field.Where == "<" {
 							db = db.WhereLT(field.Field, field.Value)
 						} else if field.Where == "<=" {
-							db = db.WhereLT(field.Field, field.Value)
+							db = db.WhereLTE(field.Field, field.Value)
 						} else if field.Where == "<>" {
 							db = db.WhereNotIn(field.Field, field.Value)
 						} else if field.Where == "=" {
