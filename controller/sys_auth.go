@@ -45,7 +45,7 @@ func (a *cAuth) ForgotPassword(ctx context.Context, req *sysapi.ForgotPasswordRe
 
 // ResetPassword 重置密码
 func (a *cAuth) ResetPassword(ctx context.Context, req *sysapi.ResetPasswordReq) (res api_v1.BoolRes, err error) {
-	_, err = service.SysAuth().ResetPassword(ctx, req.Username, req.Password, req.IdKey)
+	_, err = service.SysAuth().ResetPassword(ctx, req.Password, req.ConfirmPassword, req.IdKey)
 	if err != nil {
 		return false, err
 	}

@@ -201,29 +201,31 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info model.ForgotPassword
 }
 
 // ResetPassword 重置密码
-func (s *sSysAuth) ResetPassword(ctx context.Context, username string, password string, idKey string) (bool, error) {
+func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error) {
 	value, err := gcache.Get(ctx, idKey)
-	if err != nil || username != value.String() {
+	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "你停留太久了，请重新操作")
 	}
 	gcache.Remove(ctx, idKey)
 
 	// 根据用户名获取用户信息
-	sysUserInfo, err := service.SysUser().GetSysUserByUsername(ctx, username)
+	sysUserInfo, err := service.SysUser().GetSysUserByUsername(ctx, gconv.String(value))
 	if err != nil || sysUserInfo == nil || sysUserInfo.Id == 0 {
 		return false, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
+	if password != confirmPassword {
+		return false, gerror.NewCode(gcode.CodeValidationFailed, "两次密码不一致，请重新输入")
+	}
 	// 取盐
 	salt := gconv.String(sysUserInfo.Id)
 
 	// 加密
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 
-	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Username: username}).Update(do.SysUser{Password: pwdHash})
+	result, err := dao.SysUser.Ctx(ctx).Where(do.SysUser{Username: sysUserInfo.Username}).Update(do.SysUser{Password: pwdHash})
 
 	// 受影响的行数
-	//	count, _ := result.LastInsertId()
 	count, _ := result.RowsAffected()
 
 	if err != nil || count != 1 {
