@@ -22,6 +22,17 @@ func (a *cAuth) Login(ctx context.Context, req *sysapi.LoginReq) (res *sysapi.Lo
 	return (*sysapi.LoginRes)(result), nil
 }
 
+// LoginByMobile 通过手机号码+验证码登陆
+func (c *cAuth) LoginByMobile(ctx context.Context, req *sysapi.LoginByMobileReq) (res *sysapi.LoginByMobileRes, err error) {
+	// 获取
+	result, err := service.SysAuth().LoginByMobile(ctx, req.LoginByMobileInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*sysapi.LoginByMobileRes)(result), nil
+}
+
 // Register 注册
 func (a *cAuth) Register(ctx context.Context, req *sysapi.RegisterReq) (res api_v1.BoolRes, err error) {
 	_, err = service.SysAuth().Register(ctx, req.SysUserRegister)

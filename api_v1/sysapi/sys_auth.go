@@ -10,6 +10,13 @@ type LoginReq struct {
 	model.LoginInfo
 }
 
+type LoginByMobileReq struct {
+	g.Meta `path:"/loginByMobile" method:"post" summary:"手机号登录" tags:"鉴权"`
+	model.LoginByMobileInfo
+}
+
+type LoginByMobileRes model.TokenInfo
+
 type LoginRes model.TokenInfo
 
 type RegisterReq struct {
