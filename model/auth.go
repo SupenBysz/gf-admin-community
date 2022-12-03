@@ -23,7 +23,6 @@ type ForgotPassword struct {
 	Username string `json:"username" v:"required#用户名不能为空" dc:"用户名"`
 	Captcha  string `json:"captcha" v:"required#验证吗不能为空" dc:"验证码"`
 	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
-	Email    string `json:"email" v:"email|required-without:mobile#邮箱或手机号至少写一个" dc:"邮箱"'`
 }
 
 type AuthHookFunc func(ctx context.Context, state kyAuth.ActionType, info entity.SysUser) error
