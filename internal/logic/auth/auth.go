@@ -130,6 +130,30 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 	return tokenInfo, err
 }
 
+// LoginByMobile 手机号 + 验证码登陆
+func (s *sSysAuth) LoginByMobile(ctx context.Context, req model.LoginByMobileInfo) (*model.TokenInfo, error) {
+	// 在此之前，用户除了提供验证码，还需要补全自己的用户名信息  林 * 菲
+
+	// 短信验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
+	if req.Captcha == "" || !gmode.IsDevelop() && !service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), req.Username) {
+		return nil, gerror.New("请输入正确的验证码")
+	}
+
+	//  先判断输入的用户名是否正确
+	userInfo, err := service.SysUser().GetSysUserByUsername(ctx, req.Username)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名错误，安全校验不通过")
+	}
+
+	// 返回token
+	tokenInfo, err := service.SysAuth().InnerLogin(ctx, userInfo)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
+	}
+	// 返回token数据
+	return tokenInfo, nil
+}
+
 // Register 注册账号
 func (s *sSysAuth) Register(ctx context.Context, info model.SysUserRegister) (*entity.SysUser, error) {
 	if !gmode.IsDevelop() && !service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
