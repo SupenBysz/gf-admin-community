@@ -28,20 +28,40 @@ func GetById[T any](db *gdb.Model, id int64) *T {
 	return result
 }
 
-func Count(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (total int64) {
-	db, err := makeBuilder(db, orderBy, searchFields)
+func makeCountArr(db *gdb.Model, searchFields []model.FilterInfo) (total int64) {
+	db, err := makeBuilder(db, searchFields)
 	if err != nil {
 		return 0
 	}
-	total, _ = db.Count()
+	total, _ = db.Count("1=1")
 	return
 }
 
-func builder(db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (*gdb.Model, error) {
-	return makeBuilder(db, orderBy, searchFields)
+func makeOrderBy(db *gdb.Model, orderBy []model.OrderBy) *gdb.Model {
+	// 需要排序
+	if len(orderBy) > 0 && orderBy != nil {
+		// 出来会是一条sql语句
+		for _, orderFiled := range orderBy { // [ {name,asc}, {age,desc} ]
+			orderFiled.Field = gstr.CaseSnakeFirstUpper(orderFiled.Field)
+
+			// 过滤特殊字符，防止SQL注入
+			orderFiled.Field = gstr.ReplaceIByMap(orderFiled.Field, map[string]string{
+				"\"": "",
+				"'":  "",
+			})
+
+			// 排序
+			if gstr.CaseCamelLower(orderFiled.Sort) == "asc" || len(orderFiled.Sort) <= 0 {
+				db = db.OrderAsc(orderFiled.Field)
+			} else { // desc
+				db = db.OrderDesc(orderFiled.Field)
+			}
+		}
+	}
+	return db
 }
 
-func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.FilterInfo) (*gdb.Model, error) {
+func makeBuilder(db *gdb.Model, searchFieldArr []model.FilterInfo) (*gdb.Model, error) {
 	// 需要过滤
 	if searchFieldArr != nil && len(searchFieldArr) > 0 {
 		for index, field := range searchFieldArr {
@@ -90,7 +110,7 @@ func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.
 						} else if field.Where == "<" {
 							db = db.WhereOrLT(field.Field, field.Value)
 						} else if field.Where == "<=" {
-							db = db.WhereOrLT(field.Field, field.Value)
+							db = db.WhereOrLTE(field.Field, field.Value)
 						} else if field.Where == "<>" {
 							db = db.WhereOrNotIn(field.Field, field.Value)
 						} else if field.Where == "=" {
@@ -146,41 +166,13 @@ func makeBuilder(db *gdb.Model, orderBy []model.OrderBy, searchFieldArr []model.
 		}
 	}
 
-	// 需要排序
-	if len(orderBy) > 0 && orderBy != nil {
-		// 出来会是一条sql语句
-		for _, orderFiled := range orderBy { // [ {name,asc}, {age,desc} ]
-			orderFiled.Field = gstr.CaseSnakeFirstUpper(orderFiled.Field)
-
-			// 过滤特殊字符，防止SQL注入
-			orderFiled.Field = gstr.ReplaceIByMap(orderFiled.Field, map[string]string{
-				"\"": "",
-				"'":  "",
-			})
-
-			// 排序
-			if gstr.CaseCamelLower(orderFiled.Sort) == "asc" || len(orderFiled.Sort) <= 0 {
-				db = db.OrderAsc(orderFiled.Field)
-			} else { // desc
-				db = db.OrderDesc(orderFiled.Field)
-			}
-		}
-	}
 	return db, nil
 }
 
 func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool) (response *model.CollectRes[T], err error) {
-
-	// 查询条件，返回分页的数
-	itemsDb, err := makeBuilder(db, searchFields.OrderBy, searchFields.Filter)
-	if err != nil {
-		return nil, err
-	}
-
-	total, _ := itemsDb.Count()
-
 	// 查询具体的值
-	queryDb, _ := makeBuilder(db, searchFields.OrderBy, searchFields.Filter)
+	queryDb, _ := makeBuilder(db, searchFields.Filter)
+	queryDb = makeOrderBy(queryDb, searchFields.OrderBy)
 
 	entities := make([]T, 0)
 	if searchFields == nil || IsExport {
@@ -190,14 +182,19 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 	}
 
 	response = &model.CollectRes[T]{
-		List: &entities,
-		PaginationRes: model.PaginationRes{
-			Pagination: searchFields.Pagination,
-			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(searchFields.PageSize))),
-		},
+		List:          &entities,
+		PaginationRes: makePaginationArr(db, searchFields.Pagination, searchFields.Filter),
 	}
 
 	return response, nil
+}
+
+func makePaginationArr(db *gdb.Model, pagination model.Pagination, searchFields []model.FilterInfo) model.PaginationRes {
+	total := makeCountArr(db, searchFields)
+	return model.PaginationRes{
+		Pagination: pagination,
+		PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize))),
+	}
 }
 
 func Find[T any](db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (response *model.CollectRes[T], err error) {
