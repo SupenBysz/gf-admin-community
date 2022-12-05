@@ -361,9 +361,16 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in model.OCRBusinessL
 
 // DownLoadFile 下载文件
 func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (string, error) {
-	if !gfile.Exists(savePath) {
+	if !gfile.Exists(gfile.Dir(savePath)) {
 		return "", service.SysLogs().WarnSimple(ctx, nil, "The save path does not exist! "+savePath, dao.SysFile.Table())
 	}
+
+	tmpPath := g.Cfg().MustGet(ctx, "upload.temp", "temp/upload").String()
+
+	gfile.Mkdir(tmpPath)
+	gfile.Chmod(tmpPath, 755)
+
+	tmpPath = gfile.Join(tmpPath, gconv.String(idgen.NextId()))
 
 	v, err := http.Get(url)
 	if err != nil {
@@ -374,9 +381,14 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	if err != nil {
 		return "", service.SysLogs().WarnSimple(ctx, err, "Read http response failed! "+url, dao.SysFile.Table())
 	}
-	err = os.WriteFile(savePath, content, 0666)
+	err = os.WriteFile(tmpPath, content, 755)
 	if err != nil {
 		return "", service.SysLogs().WarnSimple(ctx, err, "Save to file failed! "+url, dao.SysFile.Table())
 	}
+
+	if nil != gfile.CopyFile(tmpPath, savePath) {
+		return "", service.SysLogs().WarnSimple(ctx, err, "Copy file failed! "+savePath, dao.SysFile.Table())
+	}
+
 	return savePath, nil
 }

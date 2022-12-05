@@ -28,7 +28,7 @@ type SysFileColumns struct {
 	Size      string // 文件大小
 	Category  string // 文件分类
 	UserId    string // 用户ID
-	LicenseId string // 资质ID
+	LicenseId string // 主体ID
 	CreatedAt string //
 	UpdatedAt string //
 }
