@@ -20,7 +20,7 @@ type SysFile struct {
 	Size      interface{} // 文件大小
 	Category  interface{} // 文件分类
 	UserId    interface{} // 用户ID
-	LicenseId interface{} // 资质ID
+	LicenseId interface{} // 主体ID
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
 }

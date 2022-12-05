@@ -18,7 +18,7 @@ type SysFile struct {
 	Size      int64       `json:"size"      description:"文件大小"`
 	Category  string      `json:"category"  description:"文件分类"`
 	UserId    int64       `json:"userId"    description:"用户ID"`
-	LicenseId int64       `json:"licenseId" description:"资质ID"`
+	LicenseId int64       `json:"licenseId" description:"主体ID"`
 	CreatedAt *gtime.Time `json:"createdAt" description:""`
 	UpdatedAt *gtime.Time `json:"updatedAt" description:""`
 }

@@ -25,8 +25,9 @@ type SysUserColumns struct {
 	Password  string // 密码
 	State     string // 状态：0未激活、1正常、-1封号、-2异常、-3已注销
 	Type      string // 用户类型，0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心
-	UpdatedAt string //
+	Mobile    string // 手机号
 	CreatedAt string //
+	UpdatedAt string //
 	DeletedAt string //
 }
 
@@ -37,8 +38,9 @@ var sysUserColumns = SysUserColumns{
 	Password:  "password",
 	State:     "state",
 	Type:      "type",
-	UpdatedAt: "updated_at",
+	Mobile:    "mobile",
 	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 	DeletedAt: "deleted_at",
 }
 
