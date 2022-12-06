@@ -22,4 +22,5 @@ type FdBankCard struct {
 	CreatedAt     *gtime.Time `json:"createdAt"     description:""`
 	UpdatedAt     *gtime.Time `json:"updatedAt"     description:""`
 	DeletedAt     *gtime.Time `json:"deletedAt"     description:""`
+	UserId        int64       `json:"userId"        description:"用户id，表示属于谁"`
 }

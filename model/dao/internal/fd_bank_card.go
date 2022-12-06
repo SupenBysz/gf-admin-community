@@ -32,6 +32,7 @@ type FdBankCardColumns struct {
 	CreatedAt     string //
 	UpdatedAt     string //
 	DeletedAt     string //
+	UserId        string // 用户id，表示属于谁
 }
 
 // fdBankCardColumns holds the columns for table fd_bank_card.
@@ -48,6 +49,7 @@ var fdBankCardColumns = FdBankCardColumns{
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
 	DeletedAt:     "deleted_at",
+	UserId:        "user_id",
 }
 
 // NewFdBankCardDao creates and returns a new DAO object for table data access.

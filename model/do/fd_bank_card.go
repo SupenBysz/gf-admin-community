@@ -24,4 +24,5 @@ type FdBankCard struct {
 	CreatedAt     *gtime.Time //
 	UpdatedAt     *gtime.Time //
 	DeletedAt     *gtime.Time //
+	UserId        interface{} // 用户id，表示属于谁
 }
