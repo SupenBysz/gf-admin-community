@@ -115,3 +115,30 @@ func (s *sFdAccount) HasAccountByName(ctx context.Context, name string) (*entity
 
 	return data, nil
 }
+
+// UpdateAccountLimitState 修改财务账号的限制状态 （0不限制，1限制支出、2限制收入）
+func (s *sFdAccount) UpdateAccountLimitState(ctx context.Context, id int64, limitState int64) (bool, error) {
+	_, err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{Id: id}).Update(do.FdAccount{LimitState: limitState})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// QueryAccountListByUserId 获取指定用户的所有财务账号
+func (s *sFdAccount) QueryAccountListByUserId(ctx context.Context, userId int64) (*model.AccountList, error) {
+	accountList := model.AccountList{}
+
+	if userId == 0 {
+		return nil, gerror.New("用户id不能为空")
+	}
+
+	err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{UnionUserId: userId}).Scan(&accountList)
+
+	if err != nil || len(accountList) <= 0 {
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "该账户没有财务账号", dao.FdAccount.Table())
+	}
+
+	return &accountList, nil
+}
