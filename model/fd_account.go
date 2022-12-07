@@ -11,6 +11,7 @@ type FdAccountRegister struct {
 	IsEnabled          int    `json:"isEnabled"          dc:"是否启用：1启用，0禁用"`
 	LimitState         int    `json:"limitState"         dc:"限制状态：0不限制，1限制支出、2限制收入"`
 	PrecisionOfBalance int    `json:"precisionOfBalance" v:"required#请输入财务账号货币单位精度" dc:"货币单位精度：1:元，10:角，100:分，1000:厘，10000:毫"`
+	Version            int    `json:"version"            description:"乐观锁所需数据版本字段"`
 }
 
 type AccountInfo entity.FdAccount

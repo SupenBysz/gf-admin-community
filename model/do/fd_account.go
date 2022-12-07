@@ -24,4 +24,5 @@ type FdAccount struct {
 	CreatedAt          *gtime.Time //
 	UpdatedAt          *gtime.Time //
 	DeletedAt          *gtime.Time //
+	Version            interface{} // 乐观锁所需数据版本字段
 }
