@@ -37,8 +37,8 @@ func New() *sFdAccount {
 	}
 }
 
-// CreateFdAccount 创建财务账号
-func (s *sFdAccount) CreateFdAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error) {
+// CreateAccount 创建财务账号
+func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error) {
 	// 检查指定参数是否为空
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
 		fmt.Println(err)
@@ -61,7 +61,10 @@ func (s *sFdAccount) CreateFdAccount(ctx context.Context, info model.FdAccountRe
 	if err != nil || currency == nil {
 		return nil, service.SysLogs().ErrorSimple(ctx, err, "货币代码错误", dao.FdCurrenty.Table())
 	}
+	if currency.IsLegalTender != 1 {
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "请选择合法货币", dao.FdCurrenty.Table())
 
+	}
 	// 生产随机id
 	data := do.FdAccount{}
 	gconv.Struct(info, &data)
@@ -86,8 +89,13 @@ func (s *sFdAccount) GetAccountById(ctx context.Context, id int64) (*entity.FdAc
 	return result, nil
 }
 
-// UpdateFdAccountIsEnable 修改财务账号状态（0禁用 1启用）
-func (s *sFdAccount) UpdateFdAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error) {
+// UpdateAccountIsEnable 修改财务账号状态（是否启用：0禁用 1启用）
+func (s *sFdAccount) UpdateAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error) {
+	account := daoctl.GetById[entity.FdAccount](dao.FdAccount.Ctx(ctx), id)
+	if account == nil {
+		return false, gerror.New("财务账号不存在")
+	}
+
 	_, err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{Id: id}).Update(do.FdAccount{IsEnabled: isEnabled})
 	if err != nil {
 		return false, err
