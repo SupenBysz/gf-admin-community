@@ -45,10 +45,10 @@ func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegi
 	}
 
 	// 根据名称判断财务账号是否存在
-	count, _ := dao.FdAccount.Ctx(ctx).Unscoped().Count(dao.FdAccount.Columns().Name, info.Name)
-	if count > 0 {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "该公司已有财务账号"), "", dao.FdAccount.Table())
-	}
+	//count, _ := dao.FdAccount.Ctx(ctx).Unscoped().Count(dao.FdAccount.Columns().Name, info.Name)
+	//if count > 0 {
+	//	return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "该公司已有财务账号"), "", dao.FdAccount.Table())
+	//}
 
 	// 关联用户id是否正确
 	user := daoctl.GetById[entity.SysUser](dao.SysUser.Ctx(ctx), info.UnionUserId)
@@ -141,4 +141,33 @@ func (s *sFdAccount) QueryAccountListByUserId(ctx context.Context, userId int64)
 	}
 
 	return &accountList, nil
+}
+
+// UpdateAccountBalance 修改财务账户的余额
+func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, balance int64, version int) (int64, error) {
+	// 根据id + 乐观锁version进行修改
+	r, err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
+		Id:      accountId,
+		Version: version, // 获取到的版本 = 数据库中的版本
+	}).Update(do.FdAccount{
+		Balance: balance,
+		Version: version + 1,
+	})
+
+	affected, err := r.RowsAffected()
+
+	return affected, err
+}
+
+// GetAccountByUnionUserId 根据用户union_user_id获取财务账号
+func (s *sFdAccount) GetAccountByUnionUserId(ctx context.Context, unionUserId int64) (*entity.FdAccount, error) {
+	if unionUserId == 0 {
+		return nil, gerror.New("财务账号用户id不能为空")
+	}
+
+	result := entity.FdAccount{}
+
+	dao.FdAccount.Ctx(ctx).Where(do.FdAccount{UnionUserId: unionUserId}).Scan(&result)
+
+	return &result, nil
 }
