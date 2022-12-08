@@ -2,6 +2,7 @@ package fd_account
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
@@ -143,18 +144,41 @@ func (s *sFdAccount) QueryAccountListByUserId(ctx context.Context, userId int64)
 	return &accountList, nil
 }
 
-// UpdateAccountBalance 修改财务账户的余额
-func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, balance int64, version int) (int64, error) {
-	// 根据id + 乐观锁version进行修改
-	r, err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
-		Id:      accountId,
-		Version: version, // 获取到的版本 = 数据库中的版本
-	}).Update(do.FdAccount{
-		Balance: balance,
-		Version: version + 1,
-	})
+// UpdateAccountBalance 修改财务账户余额(上下文, 财务账号id, 需要修改的钱数目, 版本, 收支类型)
+func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, amount int64, version int, inOutType int) (int64, error) {
+	db := dao.FdAccount.Ctx(ctx)
 
-	affected, err := r.RowsAffected()
+	var result sql.Result
+	var err error
+	// 收入
+	if inOutType == 1 {
+		// 余额 = 之前的余额 + 本次交易的余额
+		result, err = db.Where(do.FdAccount{
+			Id:      accountId,
+			Version: version,
+		}).Increment("balance", amount) // 原来的钱 + 修改的钱
+
+		// 修改版本
+		result, err = db.Where(do.FdAccount{
+			Id: accountId,
+		}).Increment(dao.FdAccount.Columns().Version, 1)
+
+	} else if inOutType == 2 { // 支出
+
+		// 余额 = 之前的余额 - 本次交易的余额
+		db := dao.FdAccount.Ctx(ctx)
+		result, err = db.Where(do.FdAccount{
+			Id:      accountId,
+			Version: version,
+		}).Decrement("balance", amount) // 原来的钱 - 修改的钱
+
+		// 修改版本
+		result, err = db.Where(do.FdAccount{ // 不管是收入还是支出，只要更新了，版本version就需要+1
+			Id: accountId,
+		}).Increment("version", 1)
+	}
+
+	affected, err := result.RowsAffected()
 
 	return affected, err
 }
@@ -168,10 +192,10 @@ func (s *sFdAccount) GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context,
 	result := entity.FdAccount{}
 
 	// 查找指定用户名下指定货币类型的财务账号
-	dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
+	err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
 		UnionUserId:  unionUserId,
 		CurrencyCode: currencyCode,
 	}).Scan(&result)
 
-	return &result, nil
+	return &result, err
 }

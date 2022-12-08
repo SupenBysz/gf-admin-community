@@ -65,6 +65,16 @@ func (s *sFdAccountBill) CreateAccountBill(ctx context.Context, info model.Accou
 	return success == true, err
 }
 
+// 修改支付状态
+
+// 接收微信支付宝的支付通知  （账单id，微信的交易id，支付结果）
+
+// 接收微信支付宝的握手
+
+// 待支付：
+
+// HOOK (Hook)
+
 // income 收入
 func (s *sFdAccountBill) income(ctx context.Context, info model.AccountBillRegister) (bool, error) {
 	// 判断接受者是否存在
@@ -105,17 +115,16 @@ func (s *sFdAccountBill) income(ctx context.Context, info model.AccountBillRegis
 					}
 
 					// 2.修改财务账号的余额
-					affected, err = service.FdAccount().UpdateAccountBalance(ctx, account.Id, afterBalance, version)
-
+					// 参数：上下文, 财务账号id, 需要修改的钱数目, 查询到的版本, 收支类型
+					affected, err = service.FdAccount().UpdateAccountBalance(ctx, account.Id, info.Amount, version, info.InOutType)
 				} else {
-					return gerror.New("提示交易收款方不存在")
+					return gerror.New("交易收款方不存在")
 				}
 
 			} else { // affected !=  0
 				return nil
 			}
 		}
-
 		return nil
 	})
 
@@ -128,8 +137,8 @@ func (s *sFdAccountBill) income(ctx context.Context, info model.AccountBillRegis
 
 // spending 支出
 func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillRegister) (bool, error) {
-	// 使用乐观锁校验余额，和更新余额
 
+	// 使用乐观锁校验余额，和更新余额
 	err := dao.FdAccount.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		// 修改财务账号余额，增加一条财务账单
 		i := 0
@@ -159,7 +168,9 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 					}
 
 					// 2.修改财务账号的余额
-					affected, err = service.FdAccount().UpdateAccountBalance(ctx, account.Id, afterBalance, version)
+					
+					// 参数：上下文, 财务账号id, 需要修改的钱数目, 查询到的版本, 收支类型
+					affected, err = service.FdAccount().UpdateAccountBalance(ctx, account.Id, info.Amount, version, info.InOutType)
 
 				} else {
 					return gerror.New("交易发起者的账户余额不足")
