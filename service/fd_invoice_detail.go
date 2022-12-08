@@ -18,6 +18,7 @@ type (
 		GetInvoiceDetailById(ctx context.Context, id int64) (*entity.FdInvoiceDetail, error)
 		UpdateInvoiceDetail(ctx context.Context, info entity.FdInvoiceDetail) (bool, error)
 		GetInvoiceDetailList(ctx context.Context, info *model.SearchParams, isExport bool) (*model.FdInvoiceDetailListRes, error)
+		DeleteInvoiceDetail(ctx context.Context, id int64) (bool, error)
 	}
 )
 

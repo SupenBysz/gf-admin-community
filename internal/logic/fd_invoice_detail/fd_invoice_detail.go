@@ -9,6 +9,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -44,9 +45,12 @@ func (s *sFdInvoiceDetail) CreateInvoiceDetail(ctx context.Context, info model.F
 		return nil, err
 	}
 
+	// 获取发票详情
+
 	// 创建发票审核详情记录
 	data := entity.FdInvoiceDetail{}
 	gconv.Struct(info, &data)
+
 	data.Id = idgen.NextId()
 
 	result, err := dao.FdInvoiceDetail.Ctx(ctx).Data(data).Insert()
@@ -142,4 +146,29 @@ func (s *sFdInvoiceDetail) GetInvoiceDetailList(ctx context.Context, info *model
 	result, err := daoctl.Query[entity.FdInvoiceDetail](dao.FdInvoiceDetail.Ctx(ctx), info, isExport)
 
 	return (*model.FdInvoiceDetailListRes)(result), err
+}
+
+// DeleteInvoiceDetail 标记删除发票详情
+func (s *sFdInvoiceDetail) DeleteInvoiceDetail(ctx context.Context, id int64) (bool, error) {
+	// 判断是否存在该发票
+	invoice, err := s.GetInvoiceDetailById(ctx, id)
+	if err != nil || invoice == nil {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "发票详情id错误", dao.FdInvoiceDetail.Table())
+	}
+
+	err = dao.FdInvoiceDetail.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+		// 状态修改为已撤消，
+		_, err = dao.FdInvoiceDetail.Ctx(ctx).Where(do.FdInvoiceDetail{Id: id}).Update(do.FdInvoiceDetail{State: 16})
+
+		// 删除
+		_, err = dao.FdInvoiceDetail.Ctx(ctx).Where(do.FdInvoiceDetail{Id: id}).Delete()
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err == nil, err
 }
