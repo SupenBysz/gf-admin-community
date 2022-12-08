@@ -3,7 +3,6 @@ package fd_account
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
@@ -42,7 +41,7 @@ func New() *sFdAccount {
 func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error) {
 	// 检查指定参数是否为空
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	// 根据名称判断财务账号是否存在
