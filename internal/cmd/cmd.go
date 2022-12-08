@@ -121,6 +121,11 @@ var (
 
 					// 权限路由绑定
 					group.Group("/", func(group *ghttp.RouterGroup) {
+						// 注册中间件
+						group.Middleware(
+							service.Middleware().Auth,
+						)
+
 						// 文件上传
 						group.Group("/common/file", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysFile) })
 						// 通用资质管理

@@ -14,10 +14,14 @@ import (
 
 type (
 	IFdAccount interface {
-		CreateFdAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error)
+		CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error)
 		GetAccountById(ctx context.Context, id int64) (*entity.FdAccount, error)
-		UpdateFdAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error)
+		UpdateAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error)
 		HasAccountByName(ctx context.Context, name string) (*entity.FdAccount, error)
+		UpdateAccountLimitState(ctx context.Context, id int64, limitState int64) (bool, error)
+		QueryAccountListByUserId(ctx context.Context, userId int64) (*model.AccountList, error)
+		UpdateAccountBalance(ctx context.Context, accountId int64, balance int64, version int) (int64, error)
+		GetAccountByUnionUserId(ctx context.Context, unionUserId int64) (*entity.FdAccount, error)
 	}
 )
 

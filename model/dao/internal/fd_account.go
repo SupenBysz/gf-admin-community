@@ -32,6 +32,7 @@ type FdAccountColumns struct {
 	CreatedAt          string //
 	UpdatedAt          string //
 	DeletedAt          string //
+	Version            string // 乐观锁所需数据版本字段
 }
 
 // fdAccountColumns holds the columns for table fd_account.
@@ -48,6 +49,7 @@ var fdAccountColumns = FdAccountColumns{
 	CreatedAt:          "created_at",
 	UpdatedAt:          "updated_at",
 	DeletedAt:          "deleted_at",
+	Version:            "version",
 }
 
 // NewFdAccountDao creates and returns a new DAO object for table data access.

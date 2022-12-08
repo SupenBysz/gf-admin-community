@@ -22,4 +22,5 @@ type FdAccount struct {
 	CreatedAt          *gtime.Time `json:"createdAt"          description:""`
 	UpdatedAt          *gtime.Time `json:"updatedAt"          description:""`
 	DeletedAt          *gtime.Time `json:"deletedAt"          description:""`
+	Version            int         `json:"version"            description:"乐观锁所需数据版本字段"`
 }

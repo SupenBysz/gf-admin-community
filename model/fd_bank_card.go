@@ -1,6 +1,9 @@
 package model
 
-import "github.com/gogf/gf/v2/os/gtime"
+import (
+	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/gogf/gf/v2/os/gtime"
+)
 
 type BankCardRegister struct {
 	BankName      string      `json:"bankName"      v:"required#请输入银行卡名称" dc:"银行名称"`
@@ -13,3 +16,5 @@ type BankCardRegister struct {
 	State         int         `json:"state"         dc:"状态：0禁用，1正常"`
 	Remark        string      `json:"remark"        dc:"备注信息"`
 }
+
+type BankCardInfo entity.FdBankCard
