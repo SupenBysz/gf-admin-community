@@ -8,19 +8,19 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/dao/internal"
 )
 
-// internalFdCurrentyDao is internal type for wrapping internal DAO implements.
-type internalFdCurrentyDao = *internal.FdCurrentyDao
+// internalFdCurrencyDao is internal type for wrapping internal DAO implements.
+type internalFdCurrencyDao = *internal.FdCurrencyDao
 
-// fdCurrentyDao is the data access object for table fd_currenty.
+// fdCurrencyDao is the data access object for table fd_currency.
 // You can define custom methods on it to extend its functionality as you wish.
-type fdCurrentyDao struct {
-	internalFdCurrentyDao
+type fdCurrencyDao struct {
+	internalFdCurrencyDao
 }
 
 var (
-	// FdCurrenty is globally public accessible object for table fd_currenty operations.
-	FdCurrenty = fdCurrentyDao{
-		internal.NewFdCurrentyDao(),
+	// FdCurrency is globally public accessible object for table fd_currency operations.
+	FdCurrency = fdCurrencyDao{
+		internal.NewFdCurrencyDao(),
 	}
 )
 

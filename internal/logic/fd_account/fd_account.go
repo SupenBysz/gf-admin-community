@@ -57,12 +57,12 @@ func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegi
 	}
 
 	// 判断货币代码是否符合标准
-	currency, err := service.FdCurrenty().GetCurrentyByCurrencyCode(ctx, info.CurrencyCode)
+	currency, err := service.FdCurrency().GetCurrencyByCurrencyCode(ctx, info.CurrencyCode)
 	if err != nil || currency == nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "货币代码错误", dao.FdCurrenty.Table())
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "货币代码错误", dao.FdCurrency.Table())
 	}
 	if currency.IsLegalTender != 1 {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "请选择合法货币", dao.FdCurrenty.Table())
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "请选择合法货币", dao.FdCurrency.Table())
 
 	}
 	// 生产随机id

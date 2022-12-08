@@ -11,15 +11,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// FdCurrentyDao is the data access object for table fd_currenty.
-type FdCurrentyDao struct {
+// FdCurrencyDao is the data access object for table fd_currency.
+type FdCurrencyDao struct {
 	table   string            // table is the underlying table name of the DAO.
 	group   string            // group is the database configuration group name of current DAO.
-	columns FdCurrentyColumns // columns contains all the column names of Table for convenient usage.
+	columns FdCurrencyColumns // columns contains all the column names of Table for convenient usage.
 }
 
-// FdCurrentyColumns defines and stores column names for table fd_currenty.
-type FdCurrentyColumns struct {
+// FdCurrencyColumns defines and stores column names for table fd_currency.
+type FdCurrencyColumns struct {
 	Code          string // 国家编码
 	EnName        string // 国家英文名称
 	CnName        string // 国家中文名称
@@ -31,8 +31,8 @@ type FdCurrentyColumns struct {
 	IsLegalTender string // 是否法定货币：1是，0否
 }
 
-// fdCurrentyColumns holds the columns for table fd_currenty.
-var fdCurrentyColumns = FdCurrentyColumns{
+// fdCurrencyColumns holds the columns for table fd_currency.
+var fdCurrencyColumns = FdCurrencyColumns{
 	Code:          "code",
 	EnName:        "en_name",
 	CnName:        "cn_name",
@@ -44,37 +44,37 @@ var fdCurrentyColumns = FdCurrentyColumns{
 	IsLegalTender: "is_legal_tender",
 }
 
-// NewFdCurrentyDao creates and returns a new DAO object for table data access.
-func NewFdCurrentyDao() *FdCurrentyDao {
-	return &FdCurrentyDao{
+// NewFdCurrencyDao creates and returns a new DAO object for table data access.
+func NewFdCurrencyDao() *FdCurrencyDao {
+	return &FdCurrencyDao{
 		group:   "default",
-		table:   "fd_currenty",
-		columns: fdCurrentyColumns,
+		table:   "fd_currency",
+		columns: fdCurrencyColumns,
 	}
 }
 
 // DB retrieves and returns the underlying raw database management object of current DAO.
-func (dao *FdCurrentyDao) DB() gdb.DB {
+func (dao *FdCurrencyDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
 // Table returns the table name of current dao.
-func (dao *FdCurrentyDao) Table() string {
+func (dao *FdCurrencyDao) Table() string {
 	return dao.table
 }
 
 // Columns returns all column names of current dao.
-func (dao *FdCurrentyDao) Columns() FdCurrentyColumns {
+func (dao *FdCurrencyDao) Columns() FdCurrencyColumns {
 	return dao.columns
 }
 
 // Group returns the configuration group name of database of current dao.
-func (dao *FdCurrentyDao) Group() string {
+func (dao *FdCurrencyDao) Group() string {
 	return dao.group
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *FdCurrentyDao) Ctx(ctx context.Context) *gdb.Model {
+func (dao *FdCurrencyDao) Ctx(ctx context.Context) *gdb.Model {
 	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
 }
 
@@ -84,6 +84,6 @@ func (dao *FdCurrentyDao) Ctx(ctx context.Context) *gdb.Model {
 //
 // Note that, you should not Commit or Rollback the transaction in function f
 // as it is automatically handled by this function.
-func (dao *FdCurrentyDao) Transaction(ctx context.Context, f func(ctx context.Context, tx *gdb.TX) error) (err error) {
+func (dao *FdCurrencyDao) Transaction(ctx context.Context, f func(ctx context.Context, tx *gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
 }

@@ -13,7 +13,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/fd_account"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/fd_account_bill"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/fd_bank_card"
-	_ "github.com/SupenBysz/gf-admin-community/internal/logic/fd_currenty"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/fd_currency"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/file"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/jwt"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/middleware"
