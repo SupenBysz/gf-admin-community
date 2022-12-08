@@ -18,7 +18,7 @@ import (
 type sFdInvoice struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	//hookArr       []hookInfo
+	// hookArr       []hookInfo
 }
 
 func init() {
@@ -29,14 +29,14 @@ func New() *sFdInvoice {
 	return &sFdInvoice{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdInvoice.Table() + "_",
-		//hookArr:       make([]hookInfo, 0),
+		// hookArr:       make([]hookInfo, 0),
 	}
 }
 
 // CreateInvoice 创建发票
 func (s *sFdInvoice) CreateInvoice(ctx context.Context, info model.FdInvoiceRegister) (*entity.FdInvoice, error) {
 	// 判断审核状态
-	if info.State == kyInvoice.Reject.Code() && info.AuditReplayMsg == "" {
+	if info.State == kyInvoice.Action.Reject.Code() && info.AuditReplayMsg == "" {
 		return nil, service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", dao.FdInvoice.Table())
 	}
 
@@ -61,7 +61,7 @@ func (s *sFdInvoice) GetInvoiceById(ctx context.Context, id int64) (*entity.FdIn
 
 	result := daoctl.GetById[entity.FdInvoice](dao.FdInvoice.Ctx(ctx), id)
 
-	//result := dao.FdInvoice.Ctx(ctx).Where(do.FdAccount{Id: id})
+	// result := dao.FdInvoice.Ctx(ctx).Where(do.FdAccount{Id: id})
 
 	return result, nil
 }
@@ -72,7 +72,7 @@ func (s *sFdInvoice) GetInvoiceList(ctx context.Context, info *model.SearchParam
 		newFields := make([]model.FilterInfo, 0)
 
 		newFields = append(newFields, model.FilterInfo{
-			Field: dao.SysUser.Columns().Type, //type
+			Field: dao.SysUser.Columns().Type, // type
 			Where: "=",
 			Value: consts.Global.UserDefaultType,
 		})

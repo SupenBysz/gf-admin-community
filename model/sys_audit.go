@@ -2,9 +2,9 @@ package model
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyAudit "github.com/SupenBysz/gf-admin-community/model/enum/audit"
+	"github.com/gogf/gf/v2/os/gtime"
 )
 
 type CreateSysAudit struct {
@@ -35,9 +35,9 @@ type AuditRes struct {
 
 type SysAuditListRes CollectRes[entity.SysAudit]
 
-type AuditHookFunc func(ctx context.Context, state kyAudit.EventState, info entity.SysAudit) error
+type AuditHookFunc func(ctx context.Context, state kyAudit.EventEnum, info entity.SysAudit) error
 type AuditHookInfo struct {
-	Key      kyAudit.EventState
+	Key      kyAudit.EventEnum
 	Value    AuditHookFunc
 	Category int `json:"category" dc:"业务类型"`
 }

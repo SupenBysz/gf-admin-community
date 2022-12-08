@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"time"
 
@@ -19,8 +20,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
-	"github.com/SupenBysz/gf-admin-community/model/enum"
-	userEventState "github.com/SupenBysz/gf-admin-community/model/enum/user_event_state"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
@@ -47,8 +46,8 @@ func New() *sSysUser {
 }
 
 // InstallHook 安装Hook
-func (s *sSysUser) InstallHook(state kyEnum.UserEventState, hookFunc model.UserHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: model.UserHookInfo{Key: state, Value: hookFunc}}
+func (s *sSysUser) InstallHook(event kyUser.EventEnum, hookFunc model.UserHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: model.UserHookInfo{Key: event, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -76,7 +75,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchParams, 
 		newFields := make([]model.FilterInfo, 0)
 
 		newFields = append(newFields, model.FilterInfo{
-			Field: dao.SysUser.Columns().Type, //type
+			Field: dao.SysUser.Columns().Type, // type
 			Where: "=",
 			Value: consts.Global.UserDefaultType,
 		})
@@ -139,7 +138,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 }
 
 // CreateUser 创建用户
-func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister, userState kyEnum.UserState, userType kyEnum.UserType, customId ...int64) (*model.SysUserRegisterRes, error) {
+func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister, userState kyUser.StateEnum, userType kyUser.TypeEnum, customId ...int64) (*model.SysUserRegisterRes, error) {
 	count, _ := dao.SysUser.Ctx(ctx).Unscoped().Count(dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", dao.SysUser.Table())
@@ -172,8 +171,8 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
-				if hook.Value.Key.Code()&userEventState.BeforeCreate.Code() == userEventState.BeforeCreate.Code() {
-					hook.Value.Value(ctx, userEventState.BeforeCreate, data)
+				if hook.Value.Key.Code()&kyUser.Event.BeforeCreate.Code() == kyUser.Event.BeforeCreate.Code() {
+					hook.Value.Value(ctx, kyUser.Event.BeforeCreate, data)
 				}
 			}
 		})
@@ -205,8 +204,8 @@ func (s *sSysUser) CreateUser(ctx context.Context, info model.UserInnerRegister,
 	// 建后
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&userEventState.AfterCreate.Code() == userEventState.AfterCreate.Code() {
-				hook.Value.Value(ctx, userEventState.AfterCreate, data)
+			if hook.Value.Key.Code()&kyUser.Event.AfterCreate.Code() == kyUser.Event.AfterCreate.Code() {
+				hook.Value.Value(ctx, kyUser.Event.AfterCreate, data)
 			}
 		}
 	})

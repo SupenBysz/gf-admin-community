@@ -1,6 +1,9 @@
 package kyEnum
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/gogf/gf/v2/util/gconv"
+)
 
 // Code is universal code interface definition.
 type Code interface {
@@ -9,6 +12,9 @@ type Code interface {
 
 	// Description returns the brief description for current code.
 	Description() string
+
+	// String returns current code as a string.
+	String() string
 }
 
 // EnumCode is an implementer for interface Code for internal usage only.
@@ -35,14 +41,19 @@ func (c EnumCode) String() string {
 	return fmt.Sprintf(`%d`, c.code)
 }
 
-func New(code int, description string) EnumCode {
-	return EnumCode{
+func New(code int, description string) Code {
+	result := EnumCode{
 		code:        code,
 		description: description,
 	}
+	return (Code)(&result)
 }
 
-type UserType Code
-type UserState Code
-type UserEventState Code
-type UploadEventState Code
+func NewT[T Code](code int, description string) T {
+	result := new(T)
+	gconv.Struct(EnumCode{
+		code:        code,
+		description: description,
+	}, result)
+	return *result
+}

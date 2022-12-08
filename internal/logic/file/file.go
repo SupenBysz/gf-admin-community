@@ -2,13 +2,13 @@ package file
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/encoding/gjson"
 	"io"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gogf/gf/v2/encoding/gbase64"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
@@ -20,9 +20,9 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
-	"github.com/SupenBysz/gf-admin-community/model/enum"
-	uploadEventState "github.com/SupenBysz/gf-admin-community/model/enum/upload_event_state"
 	"github.com/SupenBysz/gf-admin-community/service"
+
+	kyUpload "github.com/SupenBysz/gf-admin-community/model/enum/upload"
 )
 
 type hookInfo model.KeyValueT[int64, model.FileHookInfo]
@@ -53,7 +53,7 @@ type _TmpFileInfo struct {
 type _UserUploadItemsCache []_TmpFileInfo
 
 // InstallHook 安装Hook
-func (s *sFile) InstallHook(state kyEnum.UploadEventState, hookFunc model.FileHookFunc) int64 {
+func (s *sFile) InstallHook(state kyUpload.EventStateEnum, hookFunc model.FileHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: model.FileHookInfo{Key: state, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -169,8 +169,8 @@ func (s *sFile) Upload(ctx context.Context, in model.FileUploadInput, userId int
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&uploadEventState.AfterCache.Code() == uploadEventState.AfterCache.Code() {
-				hook.Value.Value(ctx, uploadEventState.AfterCache, entity.SysFile{
+			if hook.Value.Key.Code()&kyUpload.EventState.AfterCache.Code() == kyUpload.EventState.AfterCache.Code() {
+				hook.Value.Value(ctx, kyUpload.EventState.AfterCache, entity.SysFile{
 					Id:        data.Id,
 					Name:      data.Name,
 					Src:       data.Path,
@@ -240,8 +240,8 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&uploadEventState.BeforeSave.Code() == uploadEventState.BeforeSave.Code() {
-				hook.Value.Value(ctx, uploadEventState.BeforeSave, data)
+			if hook.Value.Key.Code()&kyUpload.EventState.BeforeSave.Code() == kyUpload.EventState.BeforeSave.Code() {
+				hook.Value.Value(ctx, kyUpload.EventState.BeforeSave, data)
 			}
 		}
 	})
@@ -257,8 +257,8 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&uploadEventState.AfterSave.Code() == uploadEventState.AfterSave.Code() {
-				hook.Value.Value(ctx, uploadEventState.AfterSave, data)
+			if hook.Value.Key.Code()&kyUpload.EventState.AfterSave.Code() == kyUpload.EventState.AfterSave.Code() {
+				hook.Value.Value(ctx, kyUpload.EventState.AfterSave, data)
 			}
 		}
 	})

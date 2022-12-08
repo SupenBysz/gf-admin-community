@@ -15,7 +15,7 @@ import (
 
 type (
 	ISysAudit interface {
-		InstallHook(state kyAudit.EventState, category int, hookFunc model.AuditHookFunc) int64
+		InstallHook(state kyAudit.EventEnum, category int, hookFunc model.AuditHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		GetAuditList(ctx context.Context, category int, state int, pagination *model.Pagination) (*model.SysAuditListRes, error)

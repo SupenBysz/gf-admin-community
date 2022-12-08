@@ -7,7 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyAuth "github.com/SupenBysz/gf-admin-community/model/enum/auth"
-	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -43,7 +43,7 @@ func New() *sSysAuth {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAuth) InstallHook(state kyAuth.ActionType, userType userType.Code, hookFunc model.AuthHookFunc) int64 {
+func (s *sSysAuth) InstallHook(state kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: model.AuthHookInfo{Key: state, Value: hookFunc, UserType: userType}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -121,7 +121,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 		// 判断注入的Hook用户类型是否一致
 		if hook.Value.UserType.Code()&sysUserInfo.Type == sysUserInfo.Type {
 			// 用户类型一致则调用注入的Hook函数
-			err = hook.Value.Value(ctx, kyAuth.ActionLogin, *sysUserInfo)
+			err = hook.Value.Value(ctx, kyAuth.ActionType.Login, *sysUserInfo)
 		}
 		if err != nil {
 			return nil, err
@@ -186,7 +186,7 @@ func (s *sSysAuth) Register(ctx context.Context, info model.SysUserRegister) (*e
 			// 判断注入的Hook用户类型是否一致
 			if hook.Value.UserType.Code()&data.Type == data.Type {
 				// 用户类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, kyAuth.ActionRegister, data)
+				err = hook.Value.Value(ctx, kyAuth.ActionType.Register, data)
 			}
 			if err != nil {
 				return err

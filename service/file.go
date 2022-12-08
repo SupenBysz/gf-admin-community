@@ -10,12 +10,12 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
-	kyEnum "github.com/SupenBysz/gf-admin-community/model/enum"
+	kyUpload "github.com/SupenBysz/gf-admin-community/model/enum/upload"
 )
 
 type (
 	IFile interface {
-		InstallHook(state kyEnum.UploadEventState, hookFunc model.FileHookFunc) int64
+		InstallHook(state kyUpload.EventStateEnum, hookFunc model.FileHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Upload(ctx context.Context, in model.FileUploadInput, userId int64) (*model.FileUploadOutput, error)
