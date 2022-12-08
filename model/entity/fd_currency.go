@@ -4,8 +4,8 @@
 
 package entity
 
-// FdCurrenty is the golang structure for table fd_currenty.
-type FdCurrenty struct {
+// FdCurrency is the golang structure for table fd_currency.
+type FdCurrency struct {
 	Code          string `json:"code"          description:"国家编码"`
 	EnName        string `json:"enName"        description:"国家英文名称"`
 	CnName        string `json:"cnName"        description:"国家中文名称"`

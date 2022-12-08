@@ -8,9 +8,9 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// FdCurrenty is the golang structure of table fd_currenty for DAO operations like Where/Data.
-type FdCurrenty struct {
-	g.Meta        `orm:"table:fd_currenty, do:true"`
+// FdCurrency is the golang structure of table fd_currency for DAO operations like Where/Data.
+type FdCurrency struct {
+	g.Meta        `orm:"table:fd_currency, do:true"`
 	Code          interface{} // 国家编码
 	EnName        interface{} // 国家英文名称
 	CnName        interface{} // 国家中文名称

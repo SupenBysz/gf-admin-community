@@ -18,6 +18,7 @@ type (
 		GetBankCardById(ctx context.Context, id int64) (*entity.FdBankCard, error)
 		GetBankCardByCardNumber(ctx context.Context, cardNumber string) (*entity.FdBankCard, error)
 		UpdateBankCardState(ctx context.Context, bankCardId int64, state int) (bool, error)
+		DeleteBankCardById(ctx context.Context, bankCardId int64) (bool, error)
 	}
 )
 

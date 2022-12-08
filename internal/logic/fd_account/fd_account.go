@@ -2,7 +2,7 @@ package fd_account
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
@@ -41,7 +41,7 @@ func New() *sFdAccount {
 func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error) {
 	// 检查指定参数是否为空
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	// 根据名称判断财务账号是否存在
@@ -57,12 +57,12 @@ func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegi
 	}
 
 	// 判断货币代码是否符合标准
-	currency, err := service.FdCurrenty().GetCurrentyByCurrencyCode(ctx, info.CurrencyCode)
+	currency, err := service.FdCurrency().GetCurrencyByCurrencyCode(ctx, info.CurrencyCode)
 	if err != nil || currency == nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "货币代码错误", dao.FdCurrenty.Table())
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "货币代码错误", dao.FdCurrency.Table())
 	}
 	if currency.IsLegalTender != 1 {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "请选择合法货币", dao.FdCurrenty.Table())
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "请选择合法货币", dao.FdCurrency.Table())
 
 	}
 	// 生产随机id
@@ -143,31 +143,58 @@ func (s *sFdAccount) QueryAccountListByUserId(ctx context.Context, userId int64)
 	return &accountList, nil
 }
 
-// UpdateAccountBalance 修改财务账户的余额
-func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, balance int64, version int) (int64, error) {
-	// 根据id + 乐观锁version进行修改
-	r, err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
-		Id:      accountId,
-		Version: version, // 获取到的版本 = 数据库中的版本
-	}).Update(do.FdAccount{
-		Balance: balance,
-		Version: version + 1,
-	})
+// UpdateAccountBalance 修改财务账户余额(上下文, 财务账号id, 需要修改的钱数目, 版本, 收支类型)
+func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, amount int64, version int, inOutType int) (int64, error) {
+	db := dao.FdAccount.Ctx(ctx)
 
-	affected, err := r.RowsAffected()
+	var result sql.Result
+	var err error
+	// 收入
+	if inOutType == 1 {
+		// 余额 = 之前的余额 + 本次交易的余额
+		result, err = db.Where(do.FdAccount{
+			Id:      accountId,
+			Version: version,
+		}).Increment("balance", amount) // 原来的钱 + 修改的钱
+
+		// 修改版本
+		result, err = db.Where(do.FdAccount{
+			Id: accountId,
+		}).Increment(dao.FdAccount.Columns().Version, 1)
+
+	} else if inOutType == 2 { // 支出
+
+		// 余额 = 之前的余额 - 本次交易的余额
+		db := dao.FdAccount.Ctx(ctx)
+		result, err = db.Where(do.FdAccount{
+			Id:      accountId,
+			Version: version,
+		}).Decrement("balance", amount) // 原来的钱 - 修改的钱
+
+		// 修改版本
+		result, err = db.Where(do.FdAccount{ // 不管是收入还是支出，只要更新了，版本version就需要+1
+			Id: accountId,
+		}).Increment("version", 1)
+	}
+
+	affected, err := result.RowsAffected()
 
 	return affected, err
 }
 
-// GetAccountByUnionUserId 根据用户union_user_id获取财务账号
-func (s *sFdAccount) GetAccountByUnionUserId(ctx context.Context, unionUserId int64) (*entity.FdAccount, error) {
+// GetAccountByUnionUserIdAndCurrencyCode 根据用户union_user_id和货币代码currency_code获取财务账号
+func (s *sFdAccount) GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context, unionUserId int64, currencyCode string) (*entity.FdAccount, error) {
 	if unionUserId == 0 {
 		return nil, gerror.New("财务账号用户id不能为空")
 	}
 
 	result := entity.FdAccount{}
 
-	dao.FdAccount.Ctx(ctx).Where(do.FdAccount{UnionUserId: unionUserId}).Scan(&result)
+	// 查找指定用户名下指定货币类型的财务账号
+	err := dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
+		UnionUserId:  unionUserId,
+		CurrencyCode: currencyCode,
+	}).Scan(&result)
 
-	return &result, nil
+	return &result, err
 }
