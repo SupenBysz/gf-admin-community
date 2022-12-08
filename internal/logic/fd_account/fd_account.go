@@ -159,15 +159,19 @@ func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, 
 	return affected, err
 }
 
-// GetAccountByUnionUserId 根据用户union_user_id获取财务账号
-func (s *sFdAccount) GetAccountByUnionUserId(ctx context.Context, unionUserId int64) (*entity.FdAccount, error) {
+// GetAccountByUnionUserIdAndCurrencyCode 根据用户union_user_id和货币代码currency_code获取财务账号
+func (s *sFdAccount) GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context, unionUserId int64, currencyCode string) (*entity.FdAccount, error) {
 	if unionUserId == 0 {
 		return nil, gerror.New("财务账号用户id不能为空")
 	}
 
 	result := entity.FdAccount{}
 
-	dao.FdAccount.Ctx(ctx).Where(do.FdAccount{UnionUserId: unionUserId}).Scan(&result)
+	// 查找指定用户名下指定货币类型的财务账号
+	dao.FdAccount.Ctx(ctx).Where(do.FdAccount{
+		UnionUserId:  unionUserId,
+		CurrencyCode: currencyCode,
+	}).Scan(&result)
 
 	return &result, nil
 }

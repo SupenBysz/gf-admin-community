@@ -21,7 +21,7 @@ type (
 		UpdateAccountLimitState(ctx context.Context, id int64, limitState int64) (bool, error)
 		QueryAccountListByUserId(ctx context.Context, userId int64) (*model.AccountList, error)
 		UpdateAccountBalance(ctx context.Context, accountId int64, balance int64, version int) (int64, error)
-		GetAccountByUnionUserId(ctx context.Context, unionUserId int64) (*entity.FdAccount, error)
+		GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context, unionUserId int64, currencyCode string) (*entity.FdAccount, error)
 	}
 )
 
