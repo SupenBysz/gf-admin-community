@@ -20,7 +20,7 @@ func (e eventState) New(code int, description string) EventEnum {
 	if (code&Event.Created.Code()) == Event.Created.Code() ||
 		(code&Event.ReSubmit.Code()) == Event.ReSubmit.Code() ||
 		(code&Event.ExecAudit.Code()) == Event.ExecAudit.Code() {
-		return kyEnum.NewT[EventEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("kyAudit.Event.New: error")
 }

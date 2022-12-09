@@ -10,9 +10,6 @@ type event struct {
 }
 
 var Event = event{
-	//BeforeCreate: kyEnum.NewT[EventEnum](2, "创建前"),
-	//AfterCreate:  kyEnum.NewT[EventEnum](4, "创建后"),
-
 	BeforeCreate: kyEnum.New(2, "创建前"),
 	AfterCreate:  kyEnum.New(4, "创建后"),
 }
@@ -20,7 +17,7 @@ var Event = event{
 func (e event) New(code int, description string) EventEnum {
 	if (code&Event.BeforeCreate.Code()) == Event.BeforeCreate.Code() ||
 		(code&Event.AfterCreate.Code()) == Event.AfterCreate.Code() {
-		return kyEnum.NewT[EventEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("kyUser.Event.New: error")
 }

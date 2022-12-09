@@ -44,7 +44,7 @@ func (e tradeType) New(code int, description string) TradeTypeEnum {
 		(code&TradeType.Recharge.Code()) == TradeType.Recharge.Code() ||
 		(code&TradeType.OperatingIncome.Code()) == TradeType.OperatingIncome.Code() ||
 		(code&TradeType.Other.Code()) == TradeType.Other.Code() {
-		return kyEnum.NewT[TradeTypeEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("kyFinancial.TradeType.New: error")
 }

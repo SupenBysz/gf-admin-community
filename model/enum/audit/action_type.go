@@ -20,7 +20,7 @@ func (e action) New(code int, description string) ActionEnum {
 	if (code&Action.Reject.Code()) == Action.Reject.Code() ||
 		(code&Action.WaitReview.Code()) == Action.WaitReview.Code() ||
 		(code&Action.Approve.Code()) == Action.Approve.Code() {
-		return kyEnum.NewT[ActionEnum](code, description)
+		return kyEnum.New(code, description)
 	} else {
 		panic("kyAudit.Action.New: error")
 	}

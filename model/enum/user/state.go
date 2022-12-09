@@ -26,7 +26,7 @@ func (e state) New(code int, description string) StateEnum {
 		(code&State.Suspended.Code()) == State.Suspended.Code() ||
 		(code&State.Abnormality.Code()) == State.Abnormality.Code() ||
 		(code&State.Canceled.Code()) == State.Canceled.Code() {
-		return kyEnum.NewT[StateEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("kyUser.UserState.New: error")
 }
