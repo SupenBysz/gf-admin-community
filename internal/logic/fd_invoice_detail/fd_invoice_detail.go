@@ -2,11 +2,11 @@ package fd_invoice_detail
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	kyInvoice "github.com/SupenBysz/gf-admin-community/model/enum/invoice"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -19,11 +19,9 @@ import (
 )
 
 // 发票详情
-
 type sFdInvoiceDetail struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	//hookArr       []hookInfo
 }
 
 func init() {
@@ -34,7 +32,6 @@ func New() *sFdInvoiceDetail {
 	return &sFdInvoiceDetail{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdInvoiceDetail.Table() + "_",
-		//hookArr:       make([]hookInfo, 0),
 	}
 }
 
@@ -52,6 +49,8 @@ func (s *sFdInvoiceDetail) CreateInvoiceDetail(ctx context.Context, info model.F
 	gconv.Struct(info, &data)
 
 	data.Id = idgen.NextId()
+	// 设置审核状态为待审核
+	data.State = kyInvoice.AuditType.WaitReview.Code()
 
 	result, err := dao.FdInvoiceDetail.Ctx(ctx).Data(data).Insert()
 
@@ -76,44 +75,26 @@ func (s *sFdInvoiceDetail) GetInvoiceDetailById(ctx context.Context, id int64) (
 	return &invoiceDetail, nil
 }
 
-// UpdateInvoiceDetail 修改发票详情 (审核发票后触发,把信息录进数据表)
-func (s *sFdInvoiceDetail) UpdateInvoiceDetail(ctx context.Context, info entity.FdInvoiceDetail) (bool, error) {
-	if info.State == 0 {
-		return false, service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", dao.FdInvoiceDetail.Table())
-	}
-
-	if info.State == 4 && info.AuditReplyMsg == "" {
-		return false, service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", dao.FdInvoiceDetail.Table())
-	}
-
-	invoiceDetailInfo, err := s.GetInvoiceDetailById(ctx, info.Id)
+// MakeInvoiceDetail 开票
+func (s *sFdInvoiceDetail) MakeInvoiceDetail(ctx context.Context, invoiceDetailId int64, makeInvoiceDetail model.FdMakeInvoiceDetail) (bool, error) {
+	invoiceDetailInfo, err := s.GetInvoiceDetailById(ctx, invoiceDetailId)
 	if err != nil || invoiceDetailInfo == nil {
 		return false, service.SysLogs().ErrorSimple(ctx, nil, "发票详情ID参数错误", dao.FdInvoiceDetail.Table())
 	}
 
-	// 代表已审过的
-	if invoiceDetailInfo.State == 4 || invoiceDetailInfo.State == 8 || invoiceDetailInfo.State == 16 { //4开票失败、8已开票、16已撤销
-		return false, service.SysLogs().ErrorSimple(ctx, nil, "禁止单次申请重复审核业务", dao.FdInvoiceDetail.Table())
+	// 校验状态是否为待开票
+	if invoiceDetailInfo.State != kyInvoice.State.WaitForInvoice.Code() {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "开票失败，状态类型不匹配", dao.FdInvoiceDetail.Table())
 	}
-
-	// 事务里的Hook，还是事务外的Hook
 
 	// 添加审核过后的数据
 	_, err = dao.FdInvoiceDetail.Ctx(ctx).OmitNilData().Data(do.FdInvoiceDetail{
-		// 修改非必选参数的数值
-		AuditUserIds:  info.AuditUserIds,
-		MakeType:      info.MakeType,
-		MakeUserId:    info.MakeUserId,
+		MakeType:      makeInvoiceDetail.Type.Code(),
+		MakeUserId:    makeInvoiceDetail.UserId,
+		CourierName:   makeInvoiceDetail.CourierName,
+		CourierNumber: makeInvoiceDetail.CourierNumber,
+		State:         kyInvoice.State.Success,
 		MakeAt:        gtime.Now(),
-		CourierName:   info.CourierName,
-		CourierNumber: info.CourierNumber,
-		FdInvoiceId:   info.FdInvoiceId,
-		AuditUserId:   info.AuditUserId,
-		AuditReplyMsg: info.AuditReplyMsg,
-		AuditAt:       gtime.Now(),
-
-		// 修改状态
-		State: info.State,
 	}).Where(do.FdInvoiceDetail{
 		Id: invoiceDetailInfo.Id,
 	}).Update()
@@ -125,25 +106,62 @@ func (s *sFdInvoiceDetail) UpdateInvoiceDetail(ctx context.Context, info entity.
 	return true, nil
 }
 
-// GetInvoiceDetailList 获取发票详情列表
-func (s *sFdInvoiceDetail) GetInvoiceDetailList(ctx context.Context, info *model.SearchParams, isExport bool) (*model.FdInvoiceDetailListRes, error) {
-	if info != nil {
-		newFields := make([]model.FilterInfo, 0)
-
-		newFields = append(newFields, model.FilterInfo{
-			Field: dao.SysUser.Columns().Type, //type
-			Where: "=",
-			Value: consts.Global.UserDefaultType,
-		})
-
-		for _, field := range info.Filter {
-			if field.Field != dao.FdInvoiceDetail.Columns().Type {
-				newFields = append(newFields, field)
-			}
-		}
+// AuditInvoiceDetail 审核发票
+func (s *sFdInvoiceDetail) AuditInvoiceDetail(ctx context.Context, invoiceDetailId int64, auditInfo model.FdInvoiceAuditInfo) (bool, error) {
+	// 审核行仅允许 kyInvoice.State.WaitForInvoice 和 kyInvoice.State.Failure
+	if auditInfo.State != kyInvoice.State.WaitForInvoice.Code() && auditInfo.State != kyInvoice.State.Failure.Code() {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", dao.FdInvoiceDetail.Table())
 	}
 
-	result, err := daoctl.Query[entity.FdInvoiceDetail](dao.FdInvoiceDetail.Ctx(ctx), info, isExport)
+	if auditInfo.State == kyInvoice.State.Failure.Code() && auditInfo.ReplyMsg == "" {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", dao.FdInvoiceDetail.Table())
+	}
+
+	invoiceDetailInfo, err := s.GetInvoiceDetailById(ctx, invoiceDetailId)
+	if err != nil || invoiceDetailInfo == nil {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "发票详情ID参数错误", dao.FdInvoiceDetail.Table())
+	}
+
+	// 代表已审过的
+	if invoiceDetailInfo.State > kyInvoice.State.WaitAudit.Code() {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "禁止单次申请重复审核业务", dao.FdInvoiceDetail.Table())
+	}
+
+	// 添加审核过后的数据
+	_, err = dao.FdInvoiceDetail.Ctx(ctx).OmitNilData().Data(do.FdInvoiceDetail{
+		AuditUserId:   auditInfo.UserId,
+		AuditReplyMsg: auditInfo.ReplyMsg,
+		State:         auditInfo.State,
+		AuditAt:       gtime.Now(),
+	}).Where(do.FdInvoiceDetail{
+		Id: invoiceDetailInfo.Id,
+	}).Update()
+
+	if err != nil {
+		return false, service.SysLogs().ErrorSimple(ctx, nil, "发票详情数据修改失败", dao.FdInvoiceDetail.Table())
+	}
+
+	return true, nil
+}
+
+// GetInvoiceDetailList 根据财务账户，获取已开票的发票详情列表
+func (s *sFdInvoiceDetail) GetInvoiceDetailList(ctx context.Context, fdAccountId int64) (*model.FdInvoiceDetailListRes, error) {
+	account, err := service.FdAccount().GetAccountById(ctx, fdAccountId)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := daoctl.Query[entity.FdInvoiceDetail](dao.FdInvoiceDetail.Ctx(ctx), &model.SearchParams{
+		Filter: append(make([]model.FilterInfo, 0), model.FilterInfo{
+			Field: dao.FdInvoiceDetail.Columns().FdInvoiceId,
+			Where: "=",
+			Value: account.Id,
+		}),
+		Pagination: model.Pagination{
+			Page:     1,
+			PageSize: -1,
+		},
+	}, false)
 
 	return (*model.FdInvoiceDetailListRes)(result), err
 }
@@ -158,10 +176,17 @@ func (s *sFdInvoiceDetail) DeleteInvoiceDetail(ctx context.Context, id int64) (b
 
 	err = dao.FdInvoiceDetail.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		// 状态修改为已撤消，
-		_, err = dao.FdInvoiceDetail.Ctx(ctx).Where(do.FdInvoiceDetail{Id: id}).Update(do.FdInvoiceDetail{State: 16})
+		_, err = dao.FdInvoiceDetail.Ctx(ctx).
+			Where(do.FdInvoiceDetail{Id: id}).
+			Update(do.FdInvoiceDetail{State: kyInvoice.State.Cancel.Code()})
+		if err != nil {
+			return err
+		}
 
 		// 删除
-		_, err = dao.FdInvoiceDetail.Ctx(ctx).Where(do.FdInvoiceDetail{Id: id}).Delete()
+		_, err = dao.FdInvoiceDetail.Ctx(ctx).
+			Where(do.FdInvoiceDetail{Id: id}).
+			Delete()
 
 		if err != nil {
 			return err
@@ -169,6 +194,10 @@ func (s *sFdInvoiceDetail) DeleteInvoiceDetail(ctx context.Context, id int64) (b
 
 		return nil
 	})
+
+	if err != nil {
+		return false, service.SysLogs().ErrorSimple(ctx, err, "发票删除失败", dao.FdInvoiceDetail.Table())
+	}
 
 	return err == nil, err
 }

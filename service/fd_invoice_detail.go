@@ -16,8 +16,9 @@ type (
 	IFdInvoiceDetail interface {
 		CreateInvoiceDetail(ctx context.Context, info model.FdInvoiceDetailRegister) (*entity.FdInvoiceDetail, error)
 		GetInvoiceDetailById(ctx context.Context, id int64) (*entity.FdInvoiceDetail, error)
-		UpdateInvoiceDetail(ctx context.Context, info entity.FdInvoiceDetail) (bool, error)
-		GetInvoiceDetailList(ctx context.Context, info *model.SearchParams, isExport bool) (*model.FdInvoiceDetailListRes, error)
+		MakeInvoiceDetail(ctx context.Context, invoiceDetailId int64, makeInvoiceDetail model.FdMakeInvoiceDetail) (bool, error)
+		AuditInvoiceDetail(ctx context.Context, invoiceDetailId int64, auditInfo model.FdInvoiceAuditInfo) (bool, error)
+		GetInvoiceDetailList(ctx context.Context, fdAccountId int64) (*model.FdInvoiceDetailListRes, error)
 		DeleteInvoiceDetail(ctx context.Context, id int64) (bool, error)
 	}
 )
