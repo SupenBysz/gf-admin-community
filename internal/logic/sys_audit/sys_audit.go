@@ -40,7 +40,7 @@ func New() *sSysAudit {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAudit) InstallHook(state kyAudit.EventState, category int, hookFunc model.AuditHookFunc) int64 {
+func (s *sSysAudit) InstallHook(state kyAudit.EventEnum, category int, hookFunc model.AuditHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: model.AuditHookInfo{Key: state, Value: hookFunc, Category: category}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -190,9 +190,9 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info model.CreateSysAudit) 
 			return service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", dao.SysAudit.Table())
 		}
 
-		stateType := kyAudit.Created
+		stateType := kyAudit.Event.Created
 		if info.Id > 0 {
-			stateType = kyAudit.ReSubmit
+			stateType = kyAudit.Event.ReSubmit
 		}
 
 		for _, hook := range s.hookArr {
@@ -259,7 +259,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, replay
 			// 判断注入的Hook业务类型是否一致
 			if hook.Value.Category&info.Category == info.Category {
 				// 业务类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, kyAudit.ExecAudit, *data)
+				err = hook.Value.Value(ctx, kyAudit.Event.ExecAudit, *data)
 			}
 			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 			if err != nil {

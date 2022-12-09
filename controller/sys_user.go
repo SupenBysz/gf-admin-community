@@ -4,8 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
-	userState "github.com/SupenBysz/gf-admin-community/model/enum/user_state"
-	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 	"github.com/SupenBysz/gf-admin-community/service"
 )
 
@@ -16,7 +15,7 @@ type cSysUser struct{}
 
 // CreateUser 创建用户|信息
 func (c *cSysUser) CreateUser(ctx context.Context, req *sysapi.CreateUserReq) (res api_v1.BoolRes, err error) {
-	_, err = service.SysUser().CreateUser(ctx, req.UserInnerRegister, userState.Normal, userType.User)
+	_, err = service.SysUser().CreateUser(ctx, req.UserInnerRegister, kyUser.State.Normal, kyUser.Type.User)
 
 	return err == nil, err
 }

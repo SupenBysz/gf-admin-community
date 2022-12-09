@@ -22,13 +22,13 @@ func (c *cSysAudit) GetAuditLogList(ctx context.Context, req *sysapi.GetAuditLis
 
 // SetAuditApprove 审批通过
 func (c *cSysAudit) SetAuditApprove(ctx context.Context, req *sysapi.SetAuditApproveReq) (api_v1.BoolRes, error) {
-	result, err := service.SysAudit().UpdateAudit(ctx, req.Id, kyAudit.Approve.Code(), "")
+	result, err := service.SysAudit().UpdateAudit(ctx, req.Id, kyAudit.Action.Approve.Code(), "")
 	return result == true, err
 }
 
 // SetAuditReject 审批不通过
 func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sysapi.SetAuditRejectReq) (api_v1.BoolRes, error) {
-	result, err := service.SysAudit().UpdateAudit(ctx, req.Id, kyAudit.Reject.Code(), req.Replay)
+	result, err := service.SysAudit().UpdateAudit(ctx, req.Id, kyAudit.Action.Reject.Code(), req.Replay)
 	return result == true, err
 }
 

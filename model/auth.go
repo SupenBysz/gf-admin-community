@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyAuth "github.com/SupenBysz/gf-admin-community/model/enum/auth"
-	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 	"time"
 )
 
@@ -30,9 +30,9 @@ type ForgotPassword struct {
 	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
 }
 
-type AuthHookFunc func(ctx context.Context, state kyAuth.ActionType, info entity.SysUser) error
+type AuthHookFunc func(ctx context.Context, actionType kyAuth.ActionTypeEnum, info entity.SysUser) error
 type AuthHookInfo struct {
-	Key      kyAuth.ActionType
+	Key      kyAuth.ActionTypeEnum
 	Value    AuthHookFunc
-	UserType userType.Code `json:"userType" dc:"用户类型"`
+	UserType kyUser.TypeEnum `json:"userType" dc:"用户类型"`
 }
