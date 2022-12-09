@@ -35,7 +35,7 @@ func (e userType) New(code int, description string) TypeEnum {
 		(code&Type.Facilitator.Code()) == Type.Facilitator.Code() ||
 		(code&Type.Operator.Code()) == Type.Operator.Code() ||
 		(code&Type.SuperAdmin.Code()) == Type.SuperAdmin.Code() {
-		return kyEnum.NewT[TypeEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("UserType: error")
 }

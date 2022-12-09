@@ -20,7 +20,7 @@ func (e actionType) New(code int, description string) ActionTypeEnum {
 	if (code&ActionType.Login.Code()) == ActionType.Login.Code() ||
 		(code&ActionType.Logout.Code()) == ActionType.Logout.Code() ||
 		(code&ActionType.Register.Code()) == ActionType.Register.Code() {
-		return kyEnum.NewT[ActionTypeEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("kyAuth.ActionType.New: error")
 }

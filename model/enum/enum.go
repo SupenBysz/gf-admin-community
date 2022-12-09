@@ -2,7 +2,6 @@ package kyEnum
 
 import (
 	"fmt"
-	"github.com/gogf/gf/v2/util/gconv"
 )
 
 // Code is universal code interface definition.
@@ -47,13 +46,4 @@ func New(code int, description string) Code {
 		description: description,
 	}
 	return (Code)(&result)
-}
-
-func NewT[T Code](code int, description string) T {
-	result := new(T)
-	gconv.Struct(EnumCode{
-		code:        code,
-		description: description,
-	}, result)
-	return *result
 }

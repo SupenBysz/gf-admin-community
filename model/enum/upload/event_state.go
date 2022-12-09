@@ -22,7 +22,7 @@ func (e eventState) New(code int, description string) EventStateEnum {
 	if (code&EventState.AfterCache.Code()) == EventState.AfterCache.Code() ||
 		(code&EventState.BeforeSave.Code()) == EventState.BeforeSave.Code() ||
 		(code&EventState.AfterSave.Code()) == EventState.AfterSave.Code() {
-		return kyEnum.NewT[EventStateEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("uploadEventState: error")
 }

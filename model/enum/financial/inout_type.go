@@ -17,7 +17,7 @@ var InOutType = inOutType{
 func (e inOutType) New(code int, description string) InOutTypeEnum {
 	if (code&InOutType.In.Code()) == InOutType.In.Code() ||
 		(code&InOutType.Out.Code()) == InOutType.Out.Code() {
-		return kyEnum.NewT[InOutTypeEnum](code, description)
+		return kyEnum.New(code, description)
 	}
 	panic("uploadEventState: error")
 }
