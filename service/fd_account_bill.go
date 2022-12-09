@@ -14,6 +14,7 @@ import (
 type (
 	IFdAccountBill interface {
 		CreateAccountBill(ctx context.Context, info model.AccountBillRegister) (bool, error)
+		GetAccountBillByAccountId(ctx context.Context, accountId int64) (model.AccountBillList, error)
 	}
 )
 
