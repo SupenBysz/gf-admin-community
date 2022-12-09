@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	kyFinancial "github.com/SupenBysz/gf-admin-community/model/enum/financial"
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
@@ -21,3 +22,11 @@ type AccountBillRegister struct {
 }
 
 type AccountBillInfo entity.FdAccountBill
+
+type AccountBillHookFilter struct {
+	InOutType     kyFinancial.InOutTypeEnum
+	TradeType     kyFinancial.TradeTypeEnum
+	InTransaction bool
+}
+
+type AccountBillHookFunc HookFunc[AccountBillHookFilter, AccountBillInfo]

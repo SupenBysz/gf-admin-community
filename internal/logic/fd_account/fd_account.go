@@ -2,13 +2,13 @@ package fd_account
 
 import (
 	"context"
-	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -17,12 +17,12 @@ import (
 	"time"
 )
 
-//type hookInfo model.KeyValueT[int64, model.UserHookInfo]
+// type hookInfo model.KeyValueT[int64, model.UserHookInfo]
 
 type sFdAccount struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	//hookArr       []hookInfo
+	// hookArr       []hookInfo
 }
 
 func init() {
@@ -33,7 +33,7 @@ func New() *sFdAccount {
 	return &sFdAccount{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdAccount.Table() + "_",
-		//hookArr:       make([]hookInfo, 0),
+		// hookArr:       make([]hookInfo, 0),
 	}
 }
 
@@ -45,10 +45,10 @@ func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegi
 	}
 
 	// 根据名称判断财务账号是否存在
-	//count, _ := dao.FdAccount.Ctx(ctx).Unscoped().Count(dao.FdAccount.Columns().Name, info.Name)
-	//if count > 0 {
+	// count, _ := dao.FdAccount.Ctx(ctx).Unscoped().Count(dao.FdAccount.Columns().Name, info.Name)
+	// if count > 0 {
 	//	return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "该公司已有财务账号"), "", dao.FdAccount.Table())
-	//}
+	// }
 
 	// 关联用户id是否正确
 	user := daoctl.GetById[entity.SysUser](dao.SysUser.Ctx(ctx), info.UnionUserId)
@@ -147,34 +147,25 @@ func (s *sFdAccount) QueryAccountListByUserId(ctx context.Context, userId int64)
 func (s *sFdAccount) UpdateAccountBalance(ctx context.Context, accountId int64, amount int64, version int, inOutType int) (int64, error) {
 	db := dao.FdAccount.Ctx(ctx)
 
-	var result sql.Result
-	var err error
-	// 收入
-	if inOutType == 1 {
+	data := do.FdAccount{
+		Version: gdb.Raw(dao.FdAccount.Columns().Version + "+1"),
+	}
+
+	if inOutType == 1 { // 收入
 		// 余额 = 之前的余额 + 本次交易的余额
-		result, err = db.Where(do.FdAccount{
-			Id:      accountId,
-			Version: version,
-		}).Increment("balance", amount) // 原来的钱 + 修改的钱
-
-		// 修改版本
-		result, err = db.Where(do.FdAccount{
-			Id: accountId,
-		}).Increment(dao.FdAccount.Columns().Version, 1)
-
+		data.Balance = gdb.Raw(dao.FdAccount.Columns().Balance + "+" + gconv.String(amount))
 	} else if inOutType == 2 { // 支出
-
 		// 余额 = 之前的余额 - 本次交易的余额
-		db := dao.FdAccount.Ctx(ctx)
-		result, err = db.Where(do.FdAccount{
-			Id:      accountId,
-			Version: version,
-		}).Decrement("balance", amount) // 原来的钱 - 修改的钱
+		data.Balance = gdb.Raw(dao.FdAccount.Columns().Balance + "-" + gconv.String(amount))
+	}
 
-		// 修改版本
-		result, err = db.Where(do.FdAccount{ // 不管是收入还是支出，只要更新了，版本version就需要+1
-			Id: accountId,
-		}).Increment("version", 1)
+	result, err := db.Data(data).Where(do.FdAccount{
+		Id:      accountId,
+		Version: version,
+	}).Update()
+
+	if err != nil {
+		return 0, err
 	}
 
 	affected, err := result.RowsAffected()
