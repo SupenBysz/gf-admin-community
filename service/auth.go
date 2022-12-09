@@ -11,12 +11,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyAuth "github.com/SupenBysz/gf-admin-community/model/enum/auth"
-	userType "github.com/SupenBysz/gf-admin-community/model/enum/user_type"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 )
 
 type (
 	ISysAuth interface {
-		InstallHook(state kyAuth.ActionType, userType userType.Code, hookFunc model.AuthHookFunc) int64
+		InstallHook(state kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Login(ctx context.Context, req model.LoginInfo, needCaptcha ...bool) (*model.TokenInfo, error)

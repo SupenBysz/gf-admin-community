@@ -10,17 +10,17 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
-	kyEnum "github.com/SupenBysz/gf-admin-community/model/enum"
+	kyUser "github.com/SupenBysz/gf-admin-community/model/enum/user"
 )
 
 type (
 	ISysUser interface {
-		InstallHook(state kyEnum.UserEventState, hookFunc model.UserHookFunc) int64
+		InstallHook(event kyUser.EventEnum, hookFunc model.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		QueryUserList(ctx context.Context, info *model.SearchParams, isExport bool) (response *model.SysUserRes, err error)
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
-		CreateUser(ctx context.Context, info model.UserInnerRegister, userState kyEnum.UserState, userType kyEnum.UserType, customId ...int64) (*model.SysUserRegisterRes, error)
+		CreateUser(ctx context.Context, info model.UserInnerRegister, userState kyUser.StateEnum, userType kyUser.TypeEnum, customId ...int64) (*model.SysUserRegisterRes, error)
 		GetSysUserByUsername(ctx context.Context, username string) (*entity.SysUser, error)
 		HasSysUserByUsername(ctx context.Context, username string) bool
 		GetSysUserById(ctx context.Context, userId int64) (*entity.SysUser, error)
