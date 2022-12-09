@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/model/entity"
+	kyInvoice "github.com/SupenBysz/gf-admin-community/model/enum/invoice"
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
@@ -25,6 +26,19 @@ type FdInvoiceDetailRegister struct {
 	AuditUserId   int64       `json:"auditUserId"   dc:"审核者UserID"`
 	AuditReplyMsg string      `json:"auditReplyMsg" dc:"审核回复，仅审核不通过时才有值"`
 	AuditAt       *gtime.Time `json:"auditAt"       dc:"审核时间"`
+}
+
+type FdMakeInvoiceDetail struct {
+	Type          kyInvoice.TypeEnum `json:"type" dc:"发票类型"`
+	UserId        int64              `json:"userId" dc:"开票者UserID"`
+	CourierName   string             `json:"courierName" dc:"快递名称"`
+	CourierNumber string             `json:"courierNumber" dc:"快递编号"`
+}
+
+type FdInvoiceAuditInfo struct {
+	State    int    `json:"state" dc:"审核状态"`
+	UserId   int64  `json:"userId" dc:"审核者UserId"`
+	ReplyMsg string `json:"replyMsg" dc:"审核失败时必填的原因回复"`
 }
 
 type FdInvoiceDetailInfo entity.FdInvoiceDetail

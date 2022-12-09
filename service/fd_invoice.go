@@ -16,7 +16,7 @@ type (
 	IFdInvoice interface {
 		CreateInvoice(ctx context.Context, info model.FdInvoiceRegister) (*entity.FdInvoice, error)
 		GetInvoiceById(ctx context.Context, id int64) (*entity.FdInvoice, error)
-		GetInvoiceList(ctx context.Context, info *model.SearchParams, isExport bool) (*model.FdInvoiceListRes, error)
+		GetInvoiceList(ctx context.Context, info *model.SearchParams, userId int64) (*model.FdInvoiceListRes, error)
 	}
 )
 
