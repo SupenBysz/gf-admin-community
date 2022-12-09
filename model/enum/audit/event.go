@@ -11,9 +11,9 @@ type eventState struct {
 }
 
 var Event = eventState{
-	Created:   kyEnum.NewT[EventEnum](1, "有新的审核申请"),
-	ReSubmit:  kyEnum.NewT[EventEnum](2, "有再次提交的申请"),
-	ExecAudit: kyEnum.NewT[EventEnum](4, "处理审核"),
+	Created:   kyEnum.New(1, "有新的审核申请"),
+	ReSubmit:  kyEnum.New(2, "有再次提交的申请"),
+	ExecAudit: kyEnum.New(4, "处理审核"),
 }
 
 func (e eventState) New(code int, description string) EventEnum {

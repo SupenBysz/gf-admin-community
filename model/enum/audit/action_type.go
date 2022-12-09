@@ -11,9 +11,9 @@ type action struct {
 }
 
 var Action = action{
-	Reject:     kyEnum.NewT[ActionEnum](-1, "不通过"),
-	WaitReview: kyEnum.NewT[ActionEnum](0, "待审核"),
-	Approve:    kyEnum.NewT[ActionEnum](1, "通过"),
+	Reject:     kyEnum.New(-1, "不通过"),
+	WaitReview: kyEnum.New(0, "待审核"),
+	Approve:    kyEnum.New(1, "通过"),
 }
 
 func (e action) New(code int, description string) ActionEnum {

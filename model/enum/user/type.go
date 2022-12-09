@@ -16,14 +16,14 @@ type userType struct {
 }
 
 var Type = userType{
-	Anonymous:   kyEnum.NewT[TypeEnum](0, "匿名"),
-	User:        kyEnum.NewT[TypeEnum](1, "用户"),
-	WeBusiness:  kyEnum.NewT[TypeEnum](2, "微商"),
-	Merchant:    kyEnum.NewT[TypeEnum](4, "商户"),
-	Advertiser:  kyEnum.NewT[TypeEnum](8, "广告主"),
-	Facilitator: kyEnum.NewT[TypeEnum](16, "服务商"),
-	Operator:    kyEnum.NewT[TypeEnum](32, "运营商"),
-	SuperAdmin:  kyEnum.NewT[TypeEnum](-1, "超级管理员"),
+	Anonymous:   kyEnum.New(0, "匿名"),
+	User:        kyEnum.New(1, "用户"),
+	WeBusiness:  kyEnum.New(2, "微商"),
+	Merchant:    kyEnum.New(4, "商户"),
+	Advertiser:  kyEnum.New(8, "广告主"),
+	Facilitator: kyEnum.New(16, "服务商"),
+	Operator:    kyEnum.New(32, "运营商"),
+	SuperAdmin:  kyEnum.New(-1, "超级管理员"),
 }
 
 func (e userType) New(code int, description string) TypeEnum {
