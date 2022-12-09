@@ -108,7 +108,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 
 	// 用户类型，0匿名，1用户，2微商，4商户、8服务商、16服务商 32运营商 -1超级管理员
 	// 0匿名，1用户，2微商，4商户，禁止登录后台
-	if sysUserInfo.Type < 8 && sysUserInfo.Type != -1 {
+	if sysUserInfo.Type < 8 && sysUserInfo.Type != -1 && sysUserInfo.Type != 4 && sysUserInfo.Type != 2 {
 		return nil, gerror.New("非法登录")
 	}
 
