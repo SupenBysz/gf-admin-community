@@ -21,7 +21,7 @@ type FdAccountBill struct {
 	AfterBalance  interface{} // 交易后账户余额
 	UnionOrderId  interface{} // 关联业务订单ID
 	InOutType     interface{} // 收支类型：1收入，2支出
-	TradeType     interface{} // 交易类型，1转账、2消费、4退款、8佣金、16保证金、32诚意金、64手续费、128提现、256充值、512罚金、1024营收、2048生活缴费，8192其它
+	TradeType     interface{} // 交易类型，1转账、2消费、4退款、8佣金、16保证金、32诚意金、64手续费、128提现、256充值、512营收、8192其它
 	TradeAt       *gtime.Time // 交易时间
 	Remark        interface{} // 备注信息
 	TradeState    interface{} // 交易状态：1待支付、2支付中、4已支付、8支付失败、16交易完成、
