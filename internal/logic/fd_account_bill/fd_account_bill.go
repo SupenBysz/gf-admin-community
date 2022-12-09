@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
+	"github.com/SupenBysz/gf-admin-community/model/do"
+	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyFinancial "github.com/SupenBysz/gf-admin-community/model/enum/financial"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -218,3 +220,23 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 
 	return true, nil
 }
+
+// GetAccountBillByAccountId  根据财务账号id获取账单
+func (s *sFdAccountBill) GetAccountBillByAccountId(ctx context.Context, accountId int64) (model.AccountBillList, error) {
+	//
+	if accountId == 0 {
+		return nil, gerror.New("财务账号不能为0！")
+	}
+	billList := make([]entity.FdAccountBill, 0)
+	// 进行查询
+	err := dao.FdAccountBill.Ctx(ctx).Where(do.FdAccountBill{
+		FdAccountId: accountId,
+	}).Scan(&billList)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return billList, nil
+}
+
