@@ -19,6 +19,7 @@ type UserInnerRegister struct {
 	Password        string  `json:"password" v:"required|password#请输入密码|密码长度非法"  dc:"密码"`
 	ConfirmPassword string  `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"密码"`
 	RoleIds         []int64 `json:"roleIds" dc:"所属角色，多个用逗号隔开"`
+	Mobile          string  `json:"mobile"    dc:"手机号"`
 }
 
 type SysUserRegisterRes struct {
