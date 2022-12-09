@@ -10,8 +10,8 @@ type inOutType struct {
 }
 
 var InOutType = inOutType{
-	In:  kyEnum.NewT[InOutTypeEnum](1, "收入"),
-	Out: kyEnum.NewT[InOutTypeEnum](2, "支出"),
+	In:  kyEnum.New(1, "收入"),
+	Out: kyEnum.New(2, "支出"),
 }
 
 func (e inOutType) New(code int, description string) InOutTypeEnum {

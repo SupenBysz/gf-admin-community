@@ -13,9 +13,9 @@ type eventState struct {
 }
 
 var EventState = eventState{
-	AfterCache: kyEnum.NewT[EventStateEnum](1, "已缓存"),
-	BeforeSave: kyEnum.NewT[EventStateEnum](2, "保存前"),
-	AfterSave:  kyEnum.NewT[EventStateEnum](4, "保存后"),
+	AfterCache: kyEnum.New(1, "已缓存"),
+	BeforeSave: kyEnum.New(2, "保存前"),
+	AfterSave:  kyEnum.New(4, "保存后"),
 }
 
 func (e eventState) New(code int, description string) EventStateEnum {

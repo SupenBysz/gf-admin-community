@@ -10,8 +10,11 @@ type event struct {
 }
 
 var Event = event{
-	BeforeCreate: kyEnum.NewT[EventEnum](2, "创建前"),
-	AfterCreate:  kyEnum.NewT[EventEnum](4, "创建后"),
+	//BeforeCreate: kyEnum.NewT[EventEnum](2, "创建前"),
+	//AfterCreate:  kyEnum.NewT[EventEnum](4, "创建后"),
+
+	BeforeCreate: kyEnum.New(2, "创建前"),
+	AfterCreate:  kyEnum.New(4, "创建后"),
 }
 
 func (e event) New(code int, description string) EventEnum {
