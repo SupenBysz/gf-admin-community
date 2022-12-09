@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
 	"github.com/SupenBysz/gf-admin-community/model/do"
@@ -43,8 +44,8 @@ func New() *sSysAuth {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAuth) InstallHook(state kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: model.AuthHookInfo{Key: state, Value: hookFunc, UserType: userType}}
+func (s *sSysAuth) InstallHook(actionType kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: model.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -106,15 +107,14 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *entity.SysUser) 
 		return nil, gerror.New("账号查已注销")
 	}
 
-	// 用户类型，0匿名，1用户，2微商，4商户、8服务商、16服务商 32运营商 -1超级管理员
-	// 0匿名，1用户，2微商，4商户，禁止登录后台
-	if sysUserInfo.Type < 8 && sysUserInfo.Type != -1 && sysUserInfo.Type != 4 && sysUserInfo.Type != 2 {
-		return nil, gerror.New("非法登录")
-	}
-
 	tokenInfo, err := service.Jwt().GenerateToken(sysUserInfo)
 	if err != nil {
 		return nil, err
+	}
+
+	// 校验登录类型
+	if !consts.Global.NotAllowLoginUserTypeArr.Contains(sysUserInfo.Type) {
+		return nil, service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", dao.SysUser.Table())
 	}
 
 	for _, hook := range s.hookArr {

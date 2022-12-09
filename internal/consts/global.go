@@ -1,9 +1,15 @@
 package consts
 
+import "github.com/gogf/gf/v2/container/garray"
+
 type global struct {
-	UserDefaultType int
+	DefaultRegisterType      int
+	NotAllowLoginUserTypeArr *garray.SortedIntArray
 }
 
 var (
-	Global = global{}
+	Global = global{
+		DefaultRegisterType:      0,
+		NotAllowLoginUserTypeArr: garray.NewSortedIntArray(),
+	}
 )

@@ -16,7 +16,7 @@ import (
 
 type (
 	ISysAuth interface {
-		InstallHook(state kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64
+		InstallHook(actionType kyAuth.ActionTypeEnum, userType kyUser.TypeEnum, hookFunc model.AuthHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Login(ctx context.Context, req model.LoginInfo, needCaptcha ...bool) (*model.TokenInfo, error)

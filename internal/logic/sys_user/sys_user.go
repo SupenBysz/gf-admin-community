@@ -74,12 +74,6 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *model.SearchParams, 
 	if info != nil {
 		newFields := make([]model.FilterInfo, 0)
 
-		newFields = append(newFields, model.FilterInfo{
-			Field: dao.SysUser.Columns().Type, // type
-			Where: "=",
-			Value: consts.Global.UserDefaultType,
-		})
-
 		for _, field := range info.Filter {
 			if field.Field != dao.SysUser.Columns().Type {
 				newFields = append(newFields, field)

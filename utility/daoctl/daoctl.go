@@ -191,6 +191,11 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 
 func makePaginationArr(db *gdb.Model, pagination model.Pagination, searchFields []model.FilterInfo) model.PaginationRes {
 	total := makeCountArr(db, searchFields)
+
+	// 如果每页大小为 -1 则不进行分页
+	if pagination.PageSize == -1 {
+		pagination.PageSize = gconv.Int(total)
+	}
 	return model.PaginationRes{
 		Pagination: pagination,
 		PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize))),
@@ -202,7 +207,7 @@ func Find[T any](db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.F
 		Filter: searchFields,
 		Pagination: model.Pagination{
 			Page:     1,
-			PageSize: 1000,
+			PageSize: -1,
 		},
 		OrderBy: orderBy,
 	}, true)

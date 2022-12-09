@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
-	"github.com/gogf/gf/v2/os/gfile"
-	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	sysController "github.com/SupenBysz/gf-admin-community/controller"
 	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/util/gmode"
 
 	"github.com/yitter/idgenerator-go/idgen"
 
@@ -49,10 +50,6 @@ var (
 			}
 
 			{
-
-			}
-
-			{
 				// HOOK, 开发阶段禁止浏览器缓存,方便调试
 				if gmode.IsDevelop() {
 					s.BindHookHandler("/*", ghttp.HookBeforeServe, func(r *ghttp.Request) {
@@ -62,8 +59,13 @@ var (
 			}
 
 			{
-				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-				consts.Global.UserDefaultType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
+				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
+				// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
+				consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
+				// 加载不允许登录的用户类型
+				consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.allowLoginUserType", "[-1]").Ints())
+				// 去重
+				consts.Global.NotAllowLoginUserTypeArr.Unique()
 			}
 
 			{

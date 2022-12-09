@@ -1,0 +1,53 @@
+server:
+  address: "127.0.0.1:7747"
+  serverRoot: "/resources"
+  dumpRouterMap: false
+  routeOverWrite: true
+  accessLogEnabled: false
+  SessionIdName: "KysionSessionId"
+  sessionPath: "temp/sessions/gf-admin_sessions"    # Session文件存储目录
+  openapiPath: "/openapi/gf-admin-community.json"
+  swaggerPath: "/docs/gf-admin-community"
+
+service:
+  # 用户表ID生成器，分布式终端标识，取值范围 1 ~ 63，解决分布式多服务横向扩展时保证生成的ID不重复
+  idGeneratorWorkerId: 1
+  # 接口前缀
+  apiPrefix: "/kysion/gf-admin-community"
+  # Token Sign Key
+  tokenSignKey: "AdminTokenSignKey"
+  # 新增用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员
+  # -1超级管理员，不支持注册为超级管理员
+  # 业务层有自定义类型时将忽略这里的设置
+  DefaultUserRegisterType: 0
+  # 允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
+  NotAllowLoginUserType: [0]
+  # 是否允许用户注册，false时用户注册接口将强制返回失败
+  userAllowRegister: true
+
+# 日志配置
+logger:
+  path: "temp/logs/default"
+  level: "all"
+  stdout: true
+  ctxKeys: [ "RequestId" ]
+
+# 文件上传设置
+upload:
+  # 用戶1分钟内限制上传最大文件数量
+  fileMaxUploadCountMinute: 10
+  # 文件上传的默认保存路径
+  path: "resources/upload"
+  temp: "temp/upload"
+
+# 数据库连接配置
+database:
+  logger:
+    path: "temp/logs/sql"
+    level: "all"
+    stdout: true
+    ctxKeys: ["RequestId"]
+
+  default:
+    link: "pgsql:user=dbUsername password=dbPassword host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
+    debug: true
