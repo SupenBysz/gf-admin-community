@@ -19,17 +19,17 @@ type tradeType struct {
 }
 
 var TradeType = tradeType{
-	Transfer:        kyEnum.NewT[TradeTypeEnum](1, "转账"),
-	Consumption:     kyEnum.NewT[TradeTypeEnum](2, "消费"),
-	Refund:          kyEnum.NewT[TradeTypeEnum](4, "退款"),
-	Commission:      kyEnum.NewT[TradeTypeEnum](8, "佣金"),
-	SecurityDeposit: kyEnum.NewT[TradeTypeEnum](16, "保证金"),
-	EarnestMoney:    kyEnum.NewT[TradeTypeEnum](32, "诚意金"),
-	ServiceCharge:   kyEnum.NewT[TradeTypeEnum](64, "手续费/服务费"),
-	CashWithdrawal:  kyEnum.NewT[TradeTypeEnum](128, "提现"),
-	Recharge:        kyEnum.NewT[TradeTypeEnum](256, "充值"),
-	OperatingIncome: kyEnum.NewT[TradeTypeEnum](512, "营收"),
-	Other:           kyEnum.NewT[TradeTypeEnum](8192, "其它"),
+	Transfer:        kyEnum.New(1, "转账"),
+	Consumption:     kyEnum.New(2, "消费"),
+	Refund:          kyEnum.New(4, "退款"),
+	Commission:      kyEnum.New(8, "佣金"),
+	SecurityDeposit: kyEnum.New(16, "保证金"),
+	EarnestMoney:    kyEnum.New(32, "诚意金"),
+	ServiceCharge:   kyEnum.New(64, "手续费/服务费"),
+	CashWithdrawal:  kyEnum.New(128, "提现"),
+	Recharge:        kyEnum.New(256, "充值"),
+	OperatingIncome: kyEnum.New(512, "营收"),
+	Other:           kyEnum.New(8192, "其它"),
 }
 
 func (e tradeType) New(code int, description string) TradeTypeEnum {

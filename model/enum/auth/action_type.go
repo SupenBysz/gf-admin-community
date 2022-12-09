@@ -11,9 +11,9 @@ type actionType struct {
 }
 
 var ActionType = actionType{
-	Login:    kyEnum.NewT[ActionTypeEnum](1, "登录"),
-	Logout:   kyEnum.NewT[ActionTypeEnum](2, "退出"),
-	Register: kyEnum.NewT[ActionTypeEnum](4, "注册"),
+	Login:    kyEnum.New(1, "登录"),
+	Logout:   kyEnum.New(2, "退出"),
+	Register: kyEnum.New(4, "注册"),
 }
 
 func (e actionType) New(code int, description string) ActionTypeEnum {

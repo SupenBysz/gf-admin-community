@@ -13,11 +13,11 @@ type state struct {
 }
 
 var State = state{
-	Unactivated: kyEnum.NewT[StateEnum](0, "未激活"),
-	Normal:      kyEnum.NewT[StateEnum](1, "正常"),
-	Suspended:   kyEnum.NewT[StateEnum](-1, "封号"),
-	Abnormality: kyEnum.NewT[StateEnum](-2, "异常"),
-	Canceled:    kyEnum.NewT[StateEnum](-3, "已注销"),
+	Unactivated: kyEnum.New(0, "未激活"),
+	Normal:      kyEnum.New(1, "正常"),
+	Suspended:   kyEnum.New(-1, "封号"),
+	Abnormality: kyEnum.New(-2, "异常"),
+	Canceled:    kyEnum.New(-3, "已注销"),
 }
 
 func (e state) New(code int, description string) StateEnum {
