@@ -20,7 +20,7 @@ service:
   # -1超级管理员，不支持注册为超级管理员
   # 业务层有自定义类型时将忽略这里的设置
   DefaultUserRegisterType: 0
-  # 允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
+  # 不允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
   NotAllowLoginUserType: [0]
   # 是否允许用户注册，false时用户注册接口将强制返回失败
   userAllowRegister: true
