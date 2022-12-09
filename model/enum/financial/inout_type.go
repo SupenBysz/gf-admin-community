@@ -2,11 +2,6 @@ package kyFinancial
 
 import kyEnum "github.com/SupenBysz/gf-admin-community/model/enum"
 
-var (
-	In  = kyEnum.New(1, "收入")
-	Out = kyEnum.New(2, "支出")
-)
-
 type InOutTypeEnum kyEnum.Code
 
 type inOutType struct {
