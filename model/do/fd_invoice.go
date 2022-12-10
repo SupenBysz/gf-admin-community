@@ -21,7 +21,7 @@ type FdInvoice struct {
 	AuditUserId    interface{} // 审核人UserID
 	AuditReplayMsg interface{} // 审核回复，仅审核不通过时才有值
 	AuditAt        *gtime.Time // 审核时间
-	State          interface{} // 状态：1待审核、2已通过、3不通过
+	State          interface{} // 状态：0待审核、1已通过、-1不通过
 	CreatedAt      *gtime.Time //
 	UpdatedAt      *gtime.Time //
 	DeletedAt      *gtime.Time //
