@@ -2,12 +2,15 @@ package financial
 
 import (
 	"context"
+	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
+	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyInvoice "github.com/SupenBysz/gf-admin-community/model/enum/invoice"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -32,7 +35,7 @@ func NewFdInvoice() *sFdInvoice {
 	}
 }
 
-// CreateInvoice 创建发票
+// CreateInvoice 添加发票抬头
 func (s *sFdInvoice) CreateInvoice(ctx context.Context, info model.FdInvoiceRegister) (*entity.FdInvoice, error) {
 	// 判断审核状态
 	if info.State == kyInvoice.AuditType.Reject.Code() && info.AuditReplayMsg == "" {
@@ -93,4 +96,31 @@ func (s *sFdInvoice) QueryInvoiceList(ctx context.Context, info *model.SearchPar
 	result, err := daoctl.Query[entity.FdInvoice](dao.FdInvoice.Ctx(ctx), info, false)
 
 	return (*model.FdInvoiceListRes)(result), err
+}
+
+// DeletesFdInvoiceById 删除发票抬头
+func (s *sFdInvoice) DeletesFdInvoiceById(ctx context.Context, invoiceId int64) (bool, error) {
+	var result sql.Result
+	var err error
+
+	invoice, err := s.GetInvoiceById(ctx, invoiceId)
+	if err != nil || invoice == nil {
+		return false, service.SysLogs().ErrorSimple(ctx, err, "发票抬头不存在", dao.FdInvoice.Table())
+	}
+
+	err = dao.FdInvoice.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+		// 删除
+		result, err = dao.FdInvoice.Ctx(ctx).Where(do.FdInvoice{Id: invoice.Id}).Delete()
+
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil || result == nil {
+		return false, service.SysLogs().ErrorSimple(ctx, err, "发票抬头删除失败", dao.FdInvoice.Table())
+	}
+
+	return true, nil
 }
