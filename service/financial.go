@@ -13,27 +13,6 @@ import (
 )
 
 type (
-	IFdAccount interface {
-		CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error)
-		GetAccountById(ctx context.Context, id int64) (*entity.FdAccount, error)
-		UpdateAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error)
-		HasAccountByName(ctx context.Context, name string) (*entity.FdAccount, error)
-		UpdateAccountLimitState(ctx context.Context, id int64, limitState int64) (bool, error)
-		QueryAccountListByUserId(ctx context.Context, userId int64) (*model.AccountList, error)
-		UpdateAccountBalance(ctx context.Context, accountId int64, amount int64, version int, inOutType int) (int64, error)
-		GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context, unionUserId int64, currencyCode string) (*entity.FdAccount, error)
-	}
-	IFdAccountBill interface {
-		CreateAccountBill(ctx context.Context, info model.AccountBillRegister) (bool, error)
-		GetAccountBillByAccountId(ctx context.Context, accountId int64, pagination *model.Pagination) (*model.AccountBillListRes, error)
-	}
-	IFdBankCard interface {
-		CreateBankCard(ctx context.Context, info model.BankCardRegister) (*entity.FdBankCard, error)
-		GetBankCardById(ctx context.Context, id int64) (*entity.FdBankCard, error)
-		GetBankCardByCardNumber(ctx context.Context, cardNumber string) (*entity.FdBankCard, error)
-		UpdateBankCardState(ctx context.Context, bankCardId int64, state int) (bool, error)
-		DeleteBankCardById(ctx context.Context, bankCardId int64) (bool, error)
-	}
 	IFdCurrency interface {
 		GetCurrencyByCurrencyCode(ctx context.Context, currencyCode string) (*entity.FdCurrency, error)
 		GetCurrencyByCnName(ctx context.Context, cnName string) (*entity.FdCurrency, error)
@@ -51,38 +30,40 @@ type (
 		GetInvoiceDetailList(ctx context.Context, fdAccountId int64) (*model.FdInvoiceDetailListRes, error)
 		DeleteInvoiceDetail(ctx context.Context, id int64) (bool, error)
 	}
+	IFdAccount interface {
+		CreateAccount(ctx context.Context, info model.FdAccountRegister) (*entity.FdAccount, error)
+		GetAccountById(ctx context.Context, id int64) (*entity.FdAccount, error)
+		UpdateAccountIsEnable(ctx context.Context, id int64, isEnabled int64) (bool, error)
+		HasAccountByName(ctx context.Context, name string) (*entity.FdAccount, error)
+		UpdateAccountLimitState(ctx context.Context, id int64, limitState int64) (bool, error)
+		QueryAccountListByUserId(ctx context.Context, userId int64) (*model.AccountList, error)
+		UpdateAccountBalance(ctx context.Context, accountId int64, amount int64, version int, inOutType int) (int64, error)
+		GetAccountByUnionUserIdAndCurrencyCode(ctx context.Context, unionUserId int64, currencyCode string) (*entity.FdAccount, error)
+	}
+	IFdAccountBill interface {
+		InstallHook(filter model.AccountBillHookFilter, hookFunc model.AccountBillHookFunc)
+		UnInstallHook(filter model.AccountBillHookFilter)
+		ClearAllHook()
+		CreateAccountBill(ctx context.Context, info model.AccountBillRegister) (bool, error)
+		GetAccountBillByAccountId(ctx context.Context, accountId int64, pagination *model.Pagination) (*model.AccountBillListRes, error)
+	}
+	IFdBankCard interface {
+		CreateBankCard(ctx context.Context, info model.BankCardRegister) (*entity.FdBankCard, error)
+		GetBankCardById(ctx context.Context, id int64) (*entity.FdBankCard, error)
+		GetBankCardByCardNumber(ctx context.Context, cardNumber string) (*entity.FdBankCard, error)
+		UpdateBankCardState(ctx context.Context, bankCardId int64, state int) (bool, error)
+		DeleteBankCardById(ctx context.Context, bankCardId int64) (bool, error)
+	}
 )
 
 var (
+	localFdCurrency      IFdCurrency
+	localFdInvoice       IFdInvoice
 	localFdInvoiceDetail IFdInvoiceDetail
 	localFdAccount       IFdAccount
 	localFdAccountBill   IFdAccountBill
 	localFdBankCard      IFdBankCard
-	localFdCurrency      IFdCurrency
-	localFdInvoice       IFdInvoice
 )
-
-func FdAccount() IFdAccount {
-	if localFdAccount == nil {
-		panic("implement not found for interface IFdAccount, forgot register?")
-	}
-	return localFdAccount
-}
-
-func RegisterFdAccount(i IFdAccount) {
-	localFdAccount = i
-}
-
-func FdAccountBill() IFdAccountBill {
-	if localFdAccountBill == nil {
-		panic("implement not found for interface IFdAccountBill, forgot register?")
-	}
-	return localFdAccountBill
-}
-
-func RegisterFdAccountBill(i IFdAccountBill) {
-	localFdAccountBill = i
-}
 
 func FdBankCard() IFdBankCard {
 	if localFdBankCard == nil {
@@ -126,4 +107,26 @@ func FdInvoiceDetail() IFdInvoiceDetail {
 
 func RegisterFdInvoiceDetail(i IFdInvoiceDetail) {
 	localFdInvoiceDetail = i
+}
+
+func FdAccount() IFdAccount {
+	if localFdAccount == nil {
+		panic("implement not found for interface IFdAccount, forgot register?")
+	}
+	return localFdAccount
+}
+
+func RegisterFdAccount(i IFdAccount) {
+	localFdAccount = i
+}
+
+func FdAccountBill() IFdAccountBill {
+	if localFdAccountBill == nil {
+		panic("implement not found for interface IFdAccountBill, forgot register?")
+	}
+	return localFdAccountBill
+}
+
+func RegisterFdAccountBill(i IFdAccountBill) {
+	localFdAccountBill = i
 }

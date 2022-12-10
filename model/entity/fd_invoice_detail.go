@@ -33,4 +33,6 @@ type FdInvoiceDetail struct {
 	CreatedAt     *gtime.Time `json:"createdAt"     description:""`
 	UpdatedAt     *gtime.Time `json:"updatedAt"     description:""`
 	DeletedAt     *gtime.Time `json:"deletedAt"     description:""`
+	UserId        int64       `json:"userId"        description:"申请者用户ID"`
+	UnionMainId   int64       `json:"unionMainId"   description:"主体ID：运营商ID、服务商ID、商户ID、消费者ID"`
 }

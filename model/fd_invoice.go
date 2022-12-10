@@ -11,10 +11,11 @@ type FdInvoiceRegister struct {
 	Addr           string      `json:"addr"           dc:"发票收件地址，限纸质"`
 	Email          string      `json:"email"          dc:"发票收件邮箱，限电子发票"`
 	UserId         int64       `json:"userId"         v:"required#请输入申请人UserID" dc:"申请人UserID"`
-	AuditUserId    int64       `json:"auditUserId"    v:"required#请输入审核人UserID" dc:"审核人UserID"`
+	AuditUserId    int64       `json:"auditUserId"    dc:"审核人UserID"`
 	AuditReplayMsg string      `json:"auditReplayMsg" dc:"审核回复，仅审核不通过时才有值"`
-	AuditAt        *gtime.Time `json:"auditAt"        v:"required#审核时间不能为空" dc:"审核时间"`
-	State          int         `json:"state"          v:"required|in:1,2,3#请输入发票审核状态" dc:"状态：1待审核、2已通过、3不通过"`
+	AuditAt        *gtime.Time `json:"auditAt"        dc:"审核时间"`
+	State          int         `json:"state"          dc:"状态：0待审核、1已通过、-1不通过"`
+	UnionMainId    int64       `json:"unionMainId"    v:"required#请输入主体ID" dc:"主体ID：运营商ID、服务商ID、商户ID、消费者ID"`
 }
 
 type FdInvoiceInfo entity.FdInvoice

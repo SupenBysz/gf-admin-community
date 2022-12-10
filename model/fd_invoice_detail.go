@@ -26,6 +26,8 @@ type FdInvoiceDetailRegister struct {
 	AuditUserId   int64       `json:"auditUserId"   dc:"审核者UserID"`
 	AuditReplyMsg string      `json:"auditReplyMsg" dc:"审核回复，仅审核不通过时才有值"`
 	AuditAt       *gtime.Time `json:"auditAt"       dc:"审核时间"`
+	UserId        int64       `json:"userId"       v:"required#请输入申请者ID" dc:"申请者用户ID"`
+	UnionMainId   int64       `json:"unionMainId"  v:"required#请输入主体ID" dc:"主体ID：运营商ID、服务商ID、商户ID、消费者ID"`
 }
 
 type FdMakeInvoiceDetail struct {
