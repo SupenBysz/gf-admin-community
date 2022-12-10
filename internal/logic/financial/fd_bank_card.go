@@ -1,4 +1,4 @@
-package fd_bank_card
+package financial
 
 import (
 	"context"
@@ -21,18 +21,16 @@ import (
 type sFdBankCard struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	//hookArr       []hookInfo
 }
 
 func init() {
-	service.RegisterFdBankCard(New())
+	service.RegisterFdBankCard(NewFdBankCard())
 }
 
-func New() *sFdBankCard {
+func NewFdBankCard() *sFdBankCard {
 	return &sFdBankCard{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdBankCard.Table() + "_",
-		//hookArr:       make([]hookInfo, 0),
 	}
 }
 
