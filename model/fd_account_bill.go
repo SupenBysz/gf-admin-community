@@ -22,7 +22,7 @@ type AccountBillRegister struct {
 }
 
 type AccountBillInfo entity.FdAccountBill
-type AccountBillList []entity.FdAccountBill
+type AccountBillListRes CollectRes[entity.FdAccountBill]
 
 type AccountBillHookFilter struct {
 	InOutType     kyFinancial.InOutTypeEnum

@@ -1,4 +1,4 @@
-package fd_invoice_detail
+package financial
 
 import (
 	"context"
@@ -25,10 +25,10 @@ type sFdInvoiceDetail struct {
 }
 
 func init() {
-	service.RegisterFdInvoiceDetail(New())
+	service.RegisterFdInvoiceDetail(NewFdInvoiceDetail())
 }
 
-func New() *sFdInvoiceDetail {
+func NewFdInvoiceDetail() *sFdInvoiceDetail {
 	return &sFdInvoiceDetail{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdInvoiceDetail.Table() + "_",

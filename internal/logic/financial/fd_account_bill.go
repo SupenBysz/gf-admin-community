@@ -1,13 +1,13 @@
-package fd_account_bill
+package financial
 
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/model"
 	"github.com/SupenBysz/gf-admin-community/model/dao"
-	"github.com/SupenBysz/gf-admin-community/model/do"
 	"github.com/SupenBysz/gf-admin-community/model/entity"
 	kyFinancial "github.com/SupenBysz/gf-admin-community/model/enum/financial"
 	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -27,10 +27,10 @@ type sFdAccountBill struct {
 }
 
 func init() {
-	service.RegisterFdAccountBill(New())
+	service.RegisterFdAccountBill(NewFdAccountBill())
 }
 
-func New() *sFdAccountBill {
+func NewFdAccountBill() *sFdAccountBill {
 	return &sFdAccountBill{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdAccountBill.Table() + "_",
@@ -222,21 +222,34 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 }
 
 // GetAccountBillByAccountId  根据财务账号id获取账单
-func (s *sFdAccountBill) GetAccountBillByAccountId(ctx context.Context, accountId int64) (model.AccountBillList, error) {
-	//
+func (s *sFdAccountBill) GetAccountBillByAccountId(ctx context.Context, accountId int64, pagination *model.Pagination) (*model.AccountBillListRes, error) {
 	if accountId == 0 {
 		return nil, gerror.New("财务账号不能为0！")
 	}
-	billList := make([]entity.FdAccountBill, 0)
-	// 进行查询
-	err := dao.FdAccountBill.Ctx(ctx).Where(do.FdAccountBill{
-		FdAccountId: accountId,
-	}).Scan(&billList)
 
-	if err != nil {
-		return nil, err
+	if pagination == nil {
+		pagination = &model.Pagination{
+			Page:     1,
+			PageSize: 20,
+		}
 	}
 
-	return billList, nil
-}
+	result, err := daoctl.Query[entity.FdAccountBill](dao.FdAccountBill.Ctx(ctx), &model.SearchParams{
+		Filter: append(make([]model.FilterInfo, 0), model.FilterInfo{
+			Field: dao.FdAccountBill.Columns().FdAccountId,
+			Where: "=",
+			Value: accountId,
+		}),
+		OrderBy: append(make([]model.OrderBy, 0), model.OrderBy{
+			Field: dao.FdAccountBill.Columns().CreatedAt,
+			Sort:  "asc",
+		}),
+		Pagination: *pagination,
+	}, false)
 
+	if err != nil {
+		return nil, service.SysLogs().ErrorSimple(ctx, err, "账单查询失败", dao.FdAccountBill.Table())
+	}
+
+	return (*model.AccountBillListRes)(result), nil
+}

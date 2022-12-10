@@ -1,4 +1,4 @@
-package fd_currency
+package financial
 
 import (
 	"context"
@@ -13,19 +13,17 @@ import (
 type sFdCurrency struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	//hookArr       []hookInfo
 }
 
 func init() {
-	service.RegisterFdCurrency(New())
+	service.RegisterFdCurrency(NewFdCurrency())
 }
 
-func New() *sFdCurrency {
+func NewFdCurrency() *sFdCurrency {
 	return &sFdCurrency{
 
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdCurrency.Table() + "_",
-		//hookArr:       make([]hookInfo, 0),
 	}
 }
 

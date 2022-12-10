@@ -1,4 +1,4 @@
-package fd_account
+package financial
 
 import (
 	"context"
@@ -17,23 +17,19 @@ import (
 	"time"
 )
 
-// type hookInfo model.KeyValueT[int64, model.UserHookInfo]
-
 type sFdAccount struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	// hookArr       []hookInfo
 }
 
 func init() {
-	service.RegisterFdAccount(New())
+	service.RegisterFdAccount(NewFdAccount())
 }
 
-func New() *sFdAccount {
+func NewFdAccount() *sFdAccount {
 	return &sFdAccount{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdAccount.Table() + "_",
-		// hookArr:       make([]hookInfo, 0),
 	}
 }
 
@@ -43,12 +39,6 @@ func (s *sFdAccount) CreateAccount(ctx context.Context, info model.FdAccountRegi
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
 		return nil, err
 	}
-
-	// 根据名称判断财务账号是否存在
-	// count, _ := dao.FdAccount.Ctx(ctx).Unscoped().Count(dao.FdAccount.Columns().Name, info.Name)
-	// if count > 0 {
-	//	return nil, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "该公司已有财务账号"), "", dao.FdAccount.Table())
-	// }
 
 	// 关联用户id是否正确
 	user := daoctl.GetById[entity.SysUser](dao.SysUser.Ctx(ctx), info.UnionUserId)
