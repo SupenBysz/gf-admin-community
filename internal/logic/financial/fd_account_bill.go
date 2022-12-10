@@ -8,6 +8,7 @@ import (
 	kyFinancial "github.com/SupenBysz/gf-admin-community/model/enum/financial"
 	"github.com/SupenBysz/gf-admin-community/service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -23,7 +24,7 @@ type hookInfo model.HookEventType[model.AccountBillHookFilter, model.AccountBill
 type sFdAccountBill struct {
 	CacheDuration time.Duration
 	CachePrefix   string
-	hookArr       []hookInfo
+	hookArr       *garray.Array
 }
 
 func init() {
@@ -34,8 +35,36 @@ func NewFdAccountBill() *sFdAccountBill {
 	return &sFdAccountBill{
 		CacheDuration: time.Hour,
 		CachePrefix:   dao.FdAccountBill.Table() + "_",
-		hookArr:       make([]hookInfo, 0),
+		hookArr:       garray.NewArray(),
 	}
+}
+
+// InstallHook 安装Hook
+func (s *sFdAccountBill) InstallHook(filter model.AccountBillHookFilter, hookFunc model.AccountBillHookFunc) {
+	item := hookInfo{Key: filter, Value: hookFunc}
+	s.hookArr.Append(item)
+}
+
+// UnInstallHook 卸载Hook
+func (s *sFdAccountBill) UnInstallHook(filter model.AccountBillHookFilter) {
+	newFuncArr := garray.NewArray()
+	s.hookArr.Iterator(func(key int, value interface{}) bool {
+		item := value.(hookInfo)
+
+		if item.Key.TradeType != filter.TradeType ||
+			item.Key.InOutType != filter.InOutType ||
+			item.Key.InTransaction != filter.InTransaction {
+			newFuncArr.Append(item)
+		}
+
+		return true
+	})
+	s.hookArr = newFuncArr
+}
+
+// ClearAllHook 清除Hook
+func (s *sFdAccountBill) ClearAllHook() {
+	s.hookArr.Clear()
 }
 
 // CreateAccountBill 创建财务账单
@@ -124,13 +153,15 @@ func (s *sFdAccountBill) income(ctx context.Context, info model.AccountBillRegis
 			return service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "更新账户余额失败"), "", dao.FdAccountBill.Table())
 		}
 
-		for _, hook := range s.hookArr {
+		s.hookArr.Iterator(func(_ int, v interface{}) bool {
+			hook := v.(hookInfo)
 			if hook.Key.InTransaction && hook.Key.InOutType == kyFinancial.InOutType.In {
 				if hook.Key.TradeType.Code()&info.TradeType == info.TradeType {
 					hook.Value(ctx, hook.Key, bill)
 				}
 			}
-		}
+			return true
+		})
 		return nil
 	})
 
@@ -138,13 +169,15 @@ func (s *sFdAccountBill) income(ctx context.Context, info model.AccountBillRegis
 		return false, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "交易失败"), err.Error(), dao.FdAccountBill.Table())
 	}
 
-	for _, hook := range s.hookArr {
+	s.hookArr.Iterator(func(_ int, v interface{}) bool {
+		hook := v.(hookInfo)
 		if !hook.Key.InTransaction && hook.Key.InOutType == kyFinancial.InOutType.In {
 			if hook.Key.TradeType.Code()&info.TradeType == info.TradeType {
 				hook.Value(ctx, hook.Key, bill)
 			}
 		}
-	}
+		return true
+	})
 
 	return true, nil
 }
@@ -189,8 +222,8 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 				return service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "更新账户余额失败"), "", dao.FdAccountBill.Table())
 			}
 
-			// Hook调用
-			for _, hook := range s.hookArr {
+			s.hookArr.Iterator(func(_ int, v interface{}) bool {
+				hook := v.(hookInfo)
 				// 判断收支类型
 				if hook.Key.InTransaction && hook.Key.InOutType == kyFinancial.InOutType.Out {
 					// 判断交易类型
@@ -198,7 +231,9 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 						hook.Value(ctx, hook.Key, bill)
 					}
 				}
-			}
+				return true
+			})
+
 		} else {
 			return gerror.New("交易发起者的账户余额不足")
 		}
@@ -210,13 +245,15 @@ func (s *sFdAccountBill) spending(ctx context.Context, info model.AccountBillReg
 		return false, service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "交易失败"), err.Error(), dao.FdAccountBill.Table())
 	}
 
-	for _, hook := range s.hookArr {
+	s.hookArr.Iterator(func(_ int, v interface{}) bool {
+		hook := v.(hookInfo)
 		if !hook.Key.InTransaction && hook.Key.InOutType == kyFinancial.InOutType.Out {
 			if hook.Key.TradeType.Code()&info.TradeType == info.TradeType {
 				hook.Value(ctx, hook.Key, bill)
 			}
 		}
-	}
+		return true
+	})
 
 	return true, nil
 }
