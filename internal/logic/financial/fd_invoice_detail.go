@@ -204,7 +204,7 @@ func (s *sFdInvoiceDetail) QueryInvoiceDetail(ctx context.Context, info *model.S
 	if unionMainId != 0 {
 		newFields = append(newFields, model.FilterInfo{
 			Field: dao.FdInvoiceDetail.Columns().UnionMainId, // type
-			Where: "in",
+			Where: "=",
 			Value: unionMainId,
 		})
 	}
@@ -212,7 +212,7 @@ func (s *sFdInvoiceDetail) QueryInvoiceDetail(ctx context.Context, info *model.S
 	if userId != 0 {
 		newFields = append(newFields, model.FilterInfo{
 			Field: dao.FdInvoiceDetail.Columns().UserId,
-			Where: "in",
+			Where: "=",
 			Value: userId,
 		})
 	}
