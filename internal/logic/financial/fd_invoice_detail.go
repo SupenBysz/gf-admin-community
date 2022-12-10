@@ -144,18 +144,13 @@ func (s *sFdInvoiceDetail) AuditInvoiceDetail(ctx context.Context, invoiceDetail
 	return true, nil
 }
 
-// GetInvoiceDetailList 根据财务账户，获取已开票的发票详情列表
-func (s *sFdInvoiceDetail) GetInvoiceDetailList(ctx context.Context, fdAccountId int64) (*model.FdInvoiceDetailListRes, error) {
-	account, err := service.FdAccount().GetAccountById(ctx, fdAccountId)
-	if err != nil {
-		return nil, err
-	}
-
+// QueryInvoiceDetailListByInvoiceId 根据发票抬头，获取已开票的发票详情列表
+func (s *sFdInvoiceDetail) QueryInvoiceDetailListByInvoiceId(ctx context.Context, invoiceId int64) (*model.FdInvoiceDetailListRes, error) {
 	result, err := daoctl.Query[entity.FdInvoiceDetail](dao.FdInvoiceDetail.Ctx(ctx), &model.SearchParams{
 		Filter: append(make([]model.FilterInfo, 0), model.FilterInfo{
 			Field: dao.FdInvoiceDetail.Columns().FdInvoiceId,
 			Where: "=",
-			Value: account.Id,
+			Value: invoiceId,
 		}),
 		Pagination: model.Pagination{
 			Page:     1,
@@ -200,4 +195,39 @@ func (s *sFdInvoiceDetail) DeleteInvoiceDetail(ctx context.Context, id int64) (b
 	}
 
 	return err == nil, err
+}
+
+// QueryInvoiceDetail 根据限定的条件查询发票列表
+func (s *sFdInvoiceDetail) QueryInvoiceDetail(ctx context.Context, info *model.SearchParams, userId int64, unionMainId int64) (*model.FdInvoiceDetailListRes, error) {
+	newFields := make([]model.FilterInfo, 0)
+	// 筛选条件强制指定所属用户
+	if unionMainId != 0 {
+		newFields = append(newFields, model.FilterInfo{
+			Field: dao.FdInvoiceDetail.Columns().UnionMainId, // type
+			Where: "in",
+			Value: unionMainId,
+		})
+	}
+
+	if userId != 0 {
+		newFields = append(newFields, model.FilterInfo{
+			Field: dao.FdInvoiceDetail.Columns().UserId,
+			Where: "in",
+			Value: userId,
+		})
+	}
+
+	if info != nil {
+		for _, field := range info.Filter {
+			if field.Field != dao.FdInvoiceDetail.Columns().UserId {
+				newFields = append(newFields, field)
+			}
+		}
+	}
+
+	info.Filter = newFields
+
+	result, err := daoctl.Query[entity.FdInvoiceDetail](dao.FdInvoiceDetail.Ctx(ctx), info, false)
+
+	return (*model.FdInvoiceDetailListRes)(result), err
 }

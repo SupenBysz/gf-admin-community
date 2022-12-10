@@ -43,6 +43,7 @@ func (s *sFdInvoice) CreateInvoice(ctx context.Context, info model.FdInvoiceRegi
 	data := entity.FdInvoice{}
 	gconv.Struct(info, &data)
 	data.Id = idgen.NextId()
+	data.AuditUserId = 0
 
 	data.State = kyInvoice.AuditType.WaitReview.Code()
 
@@ -69,8 +70,8 @@ func (s *sFdInvoice) GetInvoiceById(ctx context.Context, id int64) (*entity.FdIn
 	return result, nil
 }
 
-// GetInvoiceList 获取发票抬头列表
-func (s *sFdInvoice) GetInvoiceList(ctx context.Context, info *model.SearchParams, userId int64) (*model.FdInvoiceListRes, error) {
+// QueryInvoiceList 获取发票抬头列表
+func (s *sFdInvoice) QueryInvoiceList(ctx context.Context, info *model.SearchParams, userId int64) (*model.FdInvoiceListRes, error) {
 	newFields := make([]model.FilterInfo, 0)
 	// 筛选条件强制指定所属用户
 	newFields = append(newFields, model.FilterInfo{
