@@ -35,4 +35,6 @@ type FdInvoiceDetail struct {
 	CreatedAt     *gtime.Time //
 	UpdatedAt     *gtime.Time //
 	DeletedAt     *gtime.Time //
+	UserId        interface{} // 申请者用户ID
+	UnionMainId   interface{} // 主体ID：运营商ID、服务商ID、商户ID、消费者ID
 }

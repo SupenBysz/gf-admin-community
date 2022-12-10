@@ -33,6 +33,7 @@ type FdInvoiceColumns struct {
 	CreatedAt      string //
 	UpdatedAt      string //
 	DeletedAt      string //
+	UnionMainId    string // 主体ID：运营商ID、服务商ID、商户ID、消费者ID
 }
 
 // fdInvoiceColumns holds the columns for table fd_invoice.
@@ -50,6 +51,7 @@ var fdInvoiceColumns = FdInvoiceColumns{
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
 	DeletedAt:      "deleted_at",
+	UnionMainId:    "union_main_id",
 }
 
 // NewFdInvoiceDao creates and returns a new DAO object for table data access.
