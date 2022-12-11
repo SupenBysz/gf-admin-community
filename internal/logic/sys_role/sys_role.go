@@ -2,7 +2,6 @@ package sys_role
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -34,10 +33,10 @@ func New() *sSysRole {
 }
 
 // QueryRoleList 获取角色列表
-func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sysapi.RoleListRes, error) {
+func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sys_model.RoleListRes, error) {
 	result, err := daoctl.Query[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx), &info, false)
 
-	return (*sysapi.RoleListRes)(result), err
+	return (*sys_model.RoleListRes)(result), err
 }
 
 // Create 创建角色信息

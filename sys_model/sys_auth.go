@@ -3,8 +3,7 @@ package sys_model
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/auth"
-	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"time"
 )
 
@@ -30,9 +29,9 @@ type ForgotPassword struct {
 	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
 }
 
-type AuthHookFunc func(ctx context.Context, actionType sys_enum_auth.ActionTypeEnum, info sys_entity.SysUser) error
+type AuthHookFunc func(ctx context.Context, actionType sys_enum.AuthActionType, info sys_entity.SysUser) error
 type AuthHookInfo struct {
-	Key      sys_enum_auth.ActionTypeEnum
+	Key      sys_enum.AuthActionType
 	Value    AuthHookFunc
-	UserType sys_enum_user.TypeEnum `json:"userType" dc:"用户类型"`
+	UserType sys_enum.UserType `json:"userType" dc:"用户类型"`
 }

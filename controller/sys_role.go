@@ -3,9 +3,9 @@ package sysController
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
-	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
 // SysRole 角色
@@ -14,47 +14,47 @@ var SysRole = cSysRole{}
 type cSysRole struct{}
 
 // GetRoleList 获取角色|列表
-func (c *cSysRole) GetRoleList(ctx context.Context, req *sysapi.QueryRoleListReq) (*sysapi.RoleListRes, error) {
+func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListReq) (*sys_api.RoleListRes, error) {
 	return sys_service.SysRole().QueryRoleList(ctx, req.SearchParams)
 }
 
 // CreateeRoleInfo 新增或保存角色|信息
-func (c *cSysRole) CreateeRoleInfo(ctx context.Context, req *sysapi.CreateRoleInfoReq) (*sysapi.RoleInfoRes, error) {
+func (c *cSysRole) CreateeRoleInfo(ctx context.Context, req *sys_api.CreateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
 	result, err := sys_service.SysRole().Create(ctx, req.SysRole)
 
-	return (*sysapi.RoleInfoRes)(result), err
+	return (*sys_api.RoleInfoRes)(result), err
 }
 
 // UpdateRoleInfo 更新角色信息
-func (c *cSysRole) UpdateRoleInfo(ctx context.Context, req *sysapi.UpdateRoleInfoReq) (*sysapi.RoleInfoRes, error) {
+func (c *cSysRole) UpdateRoleInfo(ctx context.Context, req *sys_api.UpdateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
 	result, err := sys_service.SysRole().Update(ctx, req.SysRole)
 
-	return (*sysapi.RoleInfoRes)(result), err
+	return (*sys_api.RoleInfoRes)(result), err
 }
 
 // DeleteRoleInfo 删除角色
-func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sysapi.DeleteRoleInfoReq) (api_v1.BoolRes, error) {
+func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleInfoReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SysRole().Delete(ctx, req.Id)
 
 	return result == true, err
 }
 
 // SetRoleForUser 设置角色用户
-func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sysapi.SetRoleForUserReq) (api_v1.BoolRes, error) {
+func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUserReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SysRole().SetRoleForUser(ctx, req.RoleId, req.UserId)
 
 	return result == true, err
 }
 
 // RemoveRoleForUser 移除用户所拥有的角色
-func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sysapi.RemoveRoleForUserReq) (api_v1.BoolRes, error) {
+func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRoleForUserReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SysRole().RemoveRoleForUser(ctx, req.RoleId, req.UserId)
 
 	return result == true, err
 }
 
 // GetRoleUserList 获取角色下的所有用户|列表
-func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sysapi.GetRoleUsersReq) (*sysapi.UserListRes, error) {
+func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUsersReq) (*sys_api.UserListRes, error) {
 	data, err := sys_service.SysRole().GetRoleUsers(ctx, req.RoleId)
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sysapi.GetRoleUsers
 
 	count := len(*data)
 
-	return &sysapi.UserListRes{
+	return &sys_api.UserListRes{
 		List: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
@@ -76,7 +76,7 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sysapi.GetRoleUsers
 }
 
 // GetUserRoleList 获取用户拥有的所有角色列表
-func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sysapi.GetUserRolesReq) (*sysapi.RoleListRes, error) {
+func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRolesReq) (*sys_api.RoleListRes, error) {
 	data, err := sys_service.SysRole().GetUserRoleList(ctx, req.UserId)
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sysapi.GetUserRoles
 
 	count := len(*data)
 
-	return &sysapi.RoleListRes{
+	return &sys_api.RoleListRes{
 		List: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
@@ -98,13 +98,13 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sysapi.GetUserRoles
 }
 
 // SetRolePermissions 设置角色权限
-func (c *cSysUser) SetRolePermissions(ctx context.Context, req *sysapi.SetRolePermissionsReq) (api_v1.BoolRes, error) {
+func (c *cSysUser) SetRolePermissions(ctx context.Context, req *sys_api.SetRolePermissionsReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SysRole().SetRolePermissions(ctx, req.Id, req.PermissionIds)
 	return result == true, err
 }
 
 // GetRolePermissionIds 获取角色权限Ids
-func (c *cSysUser) GetRolePermissionIds(ctx context.Context, req *sysapi.GetRolePermissionsReq) (*api_v1.Int64ArrRes, error) {
+func (c *cSysUser) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsReq) (*api_v1.Int64ArrRes, error) {
 	result, err := sys_service.SysRole().GetRolePermissions(ctx, req.Id)
 	return (*api_v1.Int64ArrRes)(&result), err
 }

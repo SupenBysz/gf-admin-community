@@ -20,8 +20,8 @@ import (
 
 var (
 	Main = gcmd.Command{
-		Name:  "KysionShared",
-		Usage: "KysionShared",
+		Name:  "Kysion Gf Admin Community",
+		Usage: "Kysion Gf Admin Community",
 		Brief: "Start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			var (

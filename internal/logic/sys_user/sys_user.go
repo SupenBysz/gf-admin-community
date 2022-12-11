@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	kyUser2 "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"time"
 
@@ -46,7 +46,7 @@ func New() *sSysUser {
 }
 
 // InstallHook 安装Hook
-func (s *sSysUser) InstallHook(event kyUser2.EventEnum, hookFunc sys_model.UserHookFunc) int64 {
+func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_model.UserHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: sys_model.UserHookInfo{Key: event, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -132,7 +132,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 }
 
 // CreateUser 创建用户
-func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState kyUser2.StateEnum, userType kyUser2.TypeEnum, customId ...int64) (*sys_model.SysUserRegisterRes, error) {
+func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error) {
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", sys_dao.SysUser.Table())
@@ -166,8 +166,8 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
-				if hook.Value.Key.Code()&kyUser2.Event.BeforeCreate.Code() == kyUser2.Event.BeforeCreate.Code() {
-					hook.Value.Value(ctx, kyUser2.Event.BeforeCreate, data)
+				if hook.Value.Key.Code()&sys_enum.User.Event.BeforeCreate.Code() == sys_enum.User.Event.BeforeCreate.Code() {
+					hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
 				}
 			}
 		})
@@ -199,8 +199,8 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	// 建后
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&kyUser2.Event.AfterCreate.Code() == kyUser2.Event.AfterCreate.Code() {
-				hook.Value.Value(ctx, kyUser2.Event.AfterCreate, data)
+			if hook.Value.Key.Code()&sys_enum.User.Event.AfterCreate.Code() == sys_enum.User.Event.AfterCreate.Code() {
+				hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
 			}
 		}
 	})

@@ -2,7 +2,7 @@ package sys_model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/upload"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -62,5 +62,5 @@ type BankCardWithOCR struct {
 	BaiduSdkOCRBankCard
 }
 
-type FileHookFunc HookFunc[sys_enum_upload.EventStateEnum, sys_entity.SysFile]
-type FileHookInfo HookEventType[sys_enum_upload.EventStateEnum, FileHookFunc]
+type FileHookFunc HookFunc[sys_enum.UploadEventState, sys_entity.SysFile]
+type FileHookInfo HookEventType[sys_enum.UploadEventState, FileHookFunc]

@@ -1,4 +1,4 @@
-package kyCrypto
+package crypto
 
 import (
 	"bytes"

@@ -2,7 +2,7 @@ package sysController
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
+	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -15,7 +15,7 @@ var SysFile = cSysFile{}
 type cSysFile struct{}
 
 // Upload 上传文件
-func (c *cSysFile) Upload(ctx context.Context, req *sysapi.UploadReq) (res *sysapi.UploadRes, err error) {
+func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys_api.UploadRes, err error) {
 	// sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
 
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
@@ -29,11 +29,11 @@ func (c *cSysFile) Upload(ctx context.Context, req *sysapi.UploadReq) (res *sysa
 		return nil, err
 	}
 
-	return (*sysapi.UploadRes)(result), nil
+	return (*sys_api.UploadRes)(result), nil
 }
 
 // UploadIDCardWithOCR 上传身份证
-func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sysapi.UploadIDCardWithOCRReq) (res *sysapi.IDCardWithOCRRes, err error) {
+func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sys_api.UploadIDCardWithOCRReq) (res *sys_api.IDCardWithOCRRes, err error) {
 	// sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
 
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
@@ -44,11 +44,11 @@ func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sysapi.UploadID
 
 	result, err := sys_service.File().UploadIDCard(ctx, req.OCRIDCardFileUploadInput, userId)
 
-	return (*sysapi.IDCardWithOCRRes)(result), err
+	return (*sys_api.IDCardWithOCRRes)(result), err
 }
 
 // UploadBusinessLicenseWithOCR 上传营业执照
-func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sysapi.UploadBusinessLicenseWithOCRReq) (*sysapi.UploadBusinessLicenseWithOCRRes, error) {
+func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sys_api.UploadBusinessLicenseWithOCRReq) (*sys_api.UploadBusinessLicenseWithOCRRes, error) {
 	sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
 
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
@@ -59,11 +59,11 @@ func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sysapi
 
 	result, err := sys_service.File().UploadBusinessLicense(ctx, req.OCRBusinessLicense, userId)
 
-	return (*sysapi.UploadBusinessLicenseWithOCRRes)(result), err
+	return (*sys_api.UploadBusinessLicenseWithOCRRes)(result), err
 }
 
 // UploadBankCardWithOCR 上传银行卡
-func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sysapi.UploadBankCardWithOCRReq) (res *sysapi.BankCardWithOCRRes, err error) {
+func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sys_api.UploadBankCardWithOCRReq) (res *sys_api.BankCardWithOCRRes, err error) {
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
 
 	if userId <= 0 {
@@ -72,5 +72,5 @@ func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sysapi.Upload
 
 	result, err := sys_service.File().UploadBankCard(ctx, req.BankCardWithOCRInput, userId)
 
-	return (*sysapi.BankCardWithOCRRes)(result), err
+	return (*sys_api.BankCardWithOCRRes)(result), err
 }

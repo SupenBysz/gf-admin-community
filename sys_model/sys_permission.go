@@ -17,3 +17,7 @@ type SysPermissionTree struct {
 	sys_entity.SysPermission
 	Children *[]SysPermissionTree `json:"children"       dc:"下级权限"`
 }
+
+type SysPermissionInfoRes sys_entity.SysPermission
+type SysPermissionInfoListRes CollectRes[sys_entity.SysPermission]
+type SysPermissionInfoTreeRes []SysPermissionTree

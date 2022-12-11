@@ -1,4 +1,4 @@
-package sys_auth
+package sys
 
 import (
 	"context"
@@ -7,8 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/auth"
-	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -44,7 +43,7 @@ func New() *sSysAuth {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAuth) InstallHook(actionType sys_enum_auth.ActionTypeEnum, userType sys_enum_user.TypeEnum, hookFunc sys_model.AuthHookFunc) int64 {
+func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_model.AuthHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: sys_model.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -121,7 +120,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUs
 		// 判断注入的Hook用户类型是否一致
 		if hook.Value.UserType.Code()&sysUserInfo.Type == sysUserInfo.Type {
 			// 用户类型一致则调用注入的Hook函数
-			err = hook.Value.Value(ctx, sys_enum_auth.ActionType.Login, *sysUserInfo)
+			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, *sysUserInfo)
 		}
 		if err != nil {
 			return nil, err
@@ -186,7 +185,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 			// 判断注入的Hook用户类型是否一致
 			if hook.Value.UserType.Code()&data.Type == data.Type {
 				// 用户类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, sys_enum_auth.ActionType.Register, data)
+				err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Register, data)
 			}
 			if err != nil {
 				return err
