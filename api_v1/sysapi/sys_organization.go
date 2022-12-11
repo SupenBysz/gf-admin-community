@@ -1,14 +1,14 @@
 package sysapi
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
 type QueryOrganizationListReq struct {
 	g.Meta `path:"/queryOrganizationList" method:"post" summary:"获取组织架构|列表" tags:"组织架构"`
-	model.SearchParams
+	sys_model.SearchParams
 }
 
 type GetOrganizationListReq struct {
@@ -24,12 +24,12 @@ type GetOrganizationTreeReq struct {
 
 type CreateOrganizationInfoReq struct {
 	g.Meta `path:"/createOrganization" method:"post" summary:"创建组织架构|信息" tags:"组织架构"`
-	model.SysOrganizationInfo
+	sys_model.SysOrganizationInfo
 }
 
 type UpdateOrganizationInfoReq struct {
 	g.Meta `path:"/updateOrganization" method:"post" summary:"更新组织架构|信息" tags:"组织架构"`
-	model.SysOrganizationInfo
+	sys_model.SysOrganizationInfo
 }
 
 type GetOrganizationInfoReq struct {
@@ -42,8 +42,8 @@ type DeleteOrganizationInfoReq struct {
 	Id     int64 `json:"id" v:"required#缺少ID参数" dc:"组织架构ID"`
 }
 
-type OrganizationInfoRes entity.SysOrganization
-type OrganizationInfoListRes model.CollectRes[entity.SysOrganization]
+type OrganizationInfoRes sys_entity.SysOrganization
+type OrganizationInfoListRes sys_model.CollectRes[sys_entity.SysOrganization]
 
-type OrganizationInfoTreeRes model.SysOrganizationTree
-type OrganizationInfoTreeListRes []model.SysOrganizationTree
+type OrganizationInfoTreeRes sys_model.SysOrganizationTree
+type OrganizationInfoTreeListRes []sys_model.SysOrganizationTree

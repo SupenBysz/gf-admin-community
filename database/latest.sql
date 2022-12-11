@@ -1,11 +1,18 @@
 /*
  Navicat Premium Data Transfer
 
+ Source Server         : 天翼云-127.0.0.1
+ Source Server Type    : PostgreSQL
+ Source Server Version : 140005 (140005)
+ Source Host           : 127.0.0.1:5432
+ Source Catalog        : gf-admin
+ Source Schema         : public
+
  Target Server Type    : PostgreSQL
  Target Server Version : 140005 (140005)
  File Encoding         : 65001
 
- Date: 25/11/2022 17:20:35
+ Date: 11/12/2022 12:19:16
 */
 
 
@@ -30,21 +37,6 @@ MINVALUE  1
 MAXVALUE 9223372036854775807
 START 1
 CACHE 1;
-
--- ----------------------------
--- Table structure for schema_migrations
--- ----------------------------
-DROP TABLE IF EXISTS "public"."schema_migrations";
-CREATE TABLE "public"."schema_migrations" (
-  "version" int8 NOT NULL,
-  "dirty" bool NOT NULL
-)
-;
-
--- ----------------------------
--- Records of schema_migrations
--- ----------------------------
-INSERT INTO "public"."schema_migrations" VALUES (3, 'f');
 
 -- ----------------------------
 -- Table structure for sys_area
@@ -3228,6 +3220,14 @@ INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3159, 652829, '�
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3161, 652901, '阿克苏市', 1, '0997', '80.263387,41.167548', 3160);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3162, 652922, '温宿县', 1, '0997', '80.238959,41.276688', 3160);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3027, 630000, '青海省', 4, '[]', '101.780268,36.620939', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10001, 110910, '华中地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10002, 110920, '华南地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10003, 110930, '华北地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10004, 110940, '华东地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10005, 110950, '华西地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10006, 110960, '西南地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10007, 110970, '西北地区', 8, '010', '116.407394,39.904211', 0);
+INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10008, 110980, '港澳台地区', 8, '010', '116.407394,39.904211', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3163, 652923, '库车县', 1, '0997', '82.987312,41.714696', 3160);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3164, 652924, '沙雅县', 1, '0997', '82.781818,41.221666', 3160);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3165, 652925, '新和县', 1, '0997', '82.618736,41.551206', 3160);
@@ -3246,12 +3246,6 @@ INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (2277, 510000, '�
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (1505, 410000, '河南省', 4, '[]', '113.753394,34.765869', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (464, 210000, '辽宁省', 4, '[]', '123.431382,41.836175', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (1021, 340000, '安徽省', 4, '[]', '117.329949,31.733806', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10003, 110930, '华北地区', 8, '010', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10004, 110940, '华东地区', 8, '010', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10006, 110960, '西南地区', 8, '010', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10007, 110970, '西北地区', 8, '010', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10008, 110980, '港澳台地区', 8, '010', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10002, 110920, '华南地区', 8, '010', '116.407394,39.904211', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (792, 310000, '上海市', 4, '021', '121.473662,31.230372', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3229, 810000, '香港特别行政区', 4, '1852', '114.171203,22.277468', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (348, 150000, '内蒙古自治区', 4, '[]', '111.76629,40.81739', 0);
@@ -3339,40 +3333,7 @@ INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3256, 820005, '�
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3257, 820006, '嘉模堂区', 1, '1853', '113.558705,22.15376', 3251);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3258, 820007, '路凼填海区', 1, '1853', '113.569599,22.13663', 3251);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (3259, 820008, '圣方济各堂区', 1, '1853', '113.559954,22.123486', 3251);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10005, 110950, '华西地区', 8, '010', '116.407394,39.904211', 0);
 INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10000, 110900, '全国', 16, '000', '116.407394,39.904211', 0);
-INSERT INTO "public"."sys_area" OVERRIDING SYSTEM VALUE VALUES (10001, 110910, '华中地区', 8, '010', '116.407394,39.904211', 0);
-
--- ----------------------------
--- Table structure for sys_audit
--- ----------------------------
-DROP TABLE IF EXISTS "public"."sys_audit";
-CREATE TABLE "public"."sys_audit" (
-  "id" int8 NOT NULL,
-  "state" int4 NOT NULL DEFAULT 0,
-  "replay" text COLLATE "pg_catalog"."default",
-  "union_id" int8 NOT NULL,
-  "category" int4 NOT NULL,
-  "audit_data" text COLLATE "pg_catalog"."default" NOT NULL,
-  "expire_at" timestamp(6),
-  "audit_replay_at" timestamp(6),
-  "history_Items" text COLLATE "pg_catalog"."default",
-  "created_at" timestamp(6)
-)
-;
-COMMENT ON COLUMN "public"."sys_audit"."state" IS '审核状态：-1不通过，0待审核，1通过';
-COMMENT ON COLUMN "public"."sys_audit"."replay" IS '不通过时回复的审核不通过原因';
-COMMENT ON COLUMN "public"."sys_audit"."union_id" IS '关联业务ID';
-COMMENT ON COLUMN "public"."sys_audit"."category" IS '分类：1运营商主体资质审核，2服务商主体资质审核、4消费者实名审核';
-COMMENT ON COLUMN "public"."sys_audit"."audit_data" IS '待审核的业务数据包';
-COMMENT ON COLUMN "public"."sys_audit"."expire_at" IS '服务时限';
-COMMENT ON COLUMN "public"."sys_audit"."audit_replay_at" IS '审核回复时间';
-COMMENT ON COLUMN "public"."sys_audit"."history_Items" IS '历史申请记录';
-
--- ----------------------------
--- Records of sys_audit
--- ----------------------------
-INSERT INTO "public"."sys_audit" VALUES (5644795737210949, 0, '', 5644795691335749, 1, '{"operatorId":5644795691335749,"licenseId":0,"idcardFrontPath":"5644203265556549","idcardBackPath":"5644223065948229","idcardNo":"445222198511272414","idcardExpiredDate":"2038-02-22 16:00:00","idcardAddress":"广东省揭西县五经富镇第七村委石印村109号","legalContactName":"曾周","legalContactMobile":"13544335566","businessLicenseName":"深圳市企迅科技有限公司","businessLicenseAddress":"深圳市龙岗区坂田街道岗头社区坂雪岗大道4033号江南时代大厦2号楼301-6","businessLicensePath":"5644199362428997","businessLicenseScope":"无","businessLicenseRegCapital":"无","businessLicenseTermTime":"2221-12-31T16:00:00.000Z","businessLicenseOrgCode":"","businessLicenseCreditCode":"914403000838748535","businessLicenseLegal":"黄超朋","businessLicenseLegalPath":"","remake":""}', '2022-11-20 00:05:49.275195', NULL, '', '2022-11-13 00:05:49');
 
 -- ----------------------------
 -- Table structure for sys_casbin
@@ -3392,6 +3353,9 @@ CREATE TABLE "public"."sys_casbin" (
 -- ----------------------------
 -- Records of sys_casbin
 -- ----------------------------
+INSERT INTO "public"."sys_casbin" VALUES ('g', '5699282126110789', 'Super.Admin', 'kysion.com', '', '', '');
+INSERT INTO "public"."sys_casbin" VALUES ('g', '5699282403065925', 'Super.Admin', 'kysion.com', '', '', '');
+INSERT INTO "public"."sys_casbin" VALUES ('g', '5699303772323909', 'Super.Admin', 'kysion.com', '', '', '');
 
 -- ----------------------------
 -- Table structure for sys_config
@@ -3410,7 +3374,11 @@ COMMENT ON COLUMN "public"."sys_config"."value" IS '配置信息';
 -- ----------------------------
 -- Records of sys_config
 -- ----------------------------
-INSERT INTO "public"."sys_config" VALUES ('baidu_sdk_conf', '[{"identifier":"certificate_orc","description":"百度OCR识别","appID":"28256014","aesKey":"b2be05d92c4a0450","apiKey":"n2VFMDG8UtqW24k22XEZiDhK","secretKey":"KTcFYIjxy6WdpoghrsyRNDCRebz5lstn"}]', '2022-11-05 05:57:35', '2022-11-05 05:57:35');
+INSERT INTO "public"."sys_config" VALUES ('baidu_sdk_conf', '[{"identifier":"certificate_orc","description":"百度OCR识别","appID":"28256014","aesKey":"b2be05d92c4a0450","apiKey":"n2VFMDG8UtqW24k22XEZiDhK","secretKey":"KTcFYIjxy6WdpoghrsyRNDCRebz5lstn"},{"identifier":"certificate_nlp","description":"SDK测试数据","appID":"875634231","aesKey":"b2be05d92c4a0450","apiKey":"t4cuMDG8UtqW24k22XEZiDhK","secretKey":"LyypYIjxu6WdpoghrsyRNDCRebz5lstn"},{"identifier":"test","description":"","appID":"234","aesKey":"234","apiKey":"234","secretKey":"234"},{"identifier":"112123","description":"","appID":"123","aesKey":"123","apiKey":"32","secretKey":"34234"},{"identifier":"34534","description":"345","appID":"345","aesKey":"345","apiKey":"345345","secretKey":"345"},{"identifier":"345","description":"345","appID":"345","aesKey":"345","apiKey":"345","secretKey":"345"},{"identifier":"222","description":"2","appID":"23","aesKey":"23","apiKey":"23","secretKey":"3233"}]', '2022-11-05 05:57:35', '2022-11-26 09:28:41');
+INSERT INTO "public"."sys_config" VALUES ('aliyun_sdk_conf', '[{"identifier":"certificate_ssm","description":"阿里云SDK短信服务测试数据","appID":"876542083","aesKey":"qcfR43Jd92c4a0450","apiKey":"pli9TDG8UtqW24k22XEZiDhK","secretKey":"OOpeYIjxu6WdpoghrsyRNDCRebz5lstn"},{"identifier":"certificate_ocr","description":"阿里云SDK测试数据2","appID":"876542009","aesKey":"qP0243Jd92c4a0450","apiKey":"pOY9TDG8UtqW24k22XEZiDhK","secretKey":"OiiTrYIjxu6WdpoghrsyRNDCRebz5lstn"}]', '2022-11-25 16:59:35', '2022-11-25 17:06:31');
+INSERT INTO "public"."sys_config" VALUES ('huawei_sdk_conf', '[{"identifier":"certificate_ocr","description":"华为云SDK测试","appID":"876542083","aesKey":"qcfR43Jd92c4a0450","apiKey":"pli9TDG8UtqW24k22XEZiDhK","secretKey":"OOpeYIjxu6WdpoghrsyRNDCRebz5lstn"}]', '2022-11-26 20:02:55', '2022-11-26 22:08:49');
+INSERT INTO "public"."sys_config" VALUES ('tencent_sdk_conf', '[{"identifier":"certificate_nlp","description":"腾讯云SDK测试数据","appID":"876542083","aesKey":"qcfR43Jd92c4a0450","apiKey":"pli9TDG8UtqW24k22XEZiDhK","secretKey":"OOpeYIjxu6WdpoghrsyRNDCRebz5lstn","active":"certificate_nlp","version":"2019-12-09","region":"上海"}]', '2022-11-26 23:02:57', '2022-11-26 23:02:57');
+INSERT INTO "public"."sys_config" VALUES ('ctyun_sdk_conf', '[{"identifier":"certificate_sms","description":"天翼云SDK测试数据","appID":"876542003","appKey":"OOpeYIjxu6WdpoghrsyRNDCRebz5lstn","appSecret":"pli9TDG8UtqW24k22XEZiDhK","accessKey":"aqcfR43Jd92c4a0450","security_key":"voluptateqcfR43Jd92c4a0450"}]', '2022-11-28 09:19:13', '2022-11-28 09:19:13');
 
 -- ----------------------------
 -- Table structure for sys_file
@@ -3438,7 +3406,7 @@ COMMENT ON COLUMN "public"."sys_file"."ext" IS '扩展名';
 COMMENT ON COLUMN "public"."sys_file"."size" IS '文件大小';
 COMMENT ON COLUMN "public"."sys_file"."category" IS '文件分类';
 COMMENT ON COLUMN "public"."sys_file"."user_id" IS '用户ID';
-COMMENT ON COLUMN "public"."sys_file"."license_id" IS '资质ID';
+COMMENT ON COLUMN "public"."sys_file"."license_id" IS '主体ID';
 
 -- ----------------------------
 -- Records of sys_file
@@ -3467,6 +3435,10 @@ COMMENT ON COLUMN "public"."sys_logs"."category" IS '分类';
 COMMENT ON COLUMN "public"."sys_logs"."level" IS '等级';
 COMMENT ON COLUMN "public"."sys_logs"."content" IS '日志内容';
 COMMENT ON COLUMN "public"."sys_logs"."context" IS '上下文数据';
+
+-- ----------------------------
+-- Records of sys_logs
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -3534,7 +3506,7 @@ CREATE TABLE "public"."sys_permission" (
   "parent_id" int8,
   "name" varchar(64) COLLATE "pg_catalog"."default" NOT NULL,
   "description" varchar(128) COLLATE "pg_catalog"."default",
-  "identifier" varchar(64) COLLATE "pg_catalog"."default",
+  "identifier" varchar(128) COLLATE "pg_catalog"."default",
   "type" int4,
   "created_at" timestamp(6),
   "updated_at" timestamp(6)
@@ -3617,8 +3589,9 @@ CREATE TABLE "public"."sys_user" (
   "password" varchar(64) COLLATE "pg_catalog"."default" NOT NULL,
   "state" int4,
   "type" int4,
-  "updated_at" timestamp(6),
+  "mobile" varchar(16) COLLATE "pg_catalog"."default",
   "created_at" timestamp(6),
+  "updated_at" timestamp(6),
   "deleted_at" timestamp(6)
 )
 ;
@@ -3626,19 +3599,20 @@ COMMENT ON COLUMN "public"."sys_user"."username" IS '账号';
 COMMENT ON COLUMN "public"."sys_user"."password" IS '密码';
 COMMENT ON COLUMN "public"."sys_user"."state" IS '状态：0未激活、1正常、-1封号、-2异常、-3已注销';
 COMMENT ON COLUMN "public"."sys_user"."type" IS '用户类型，0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心';
+COMMENT ON COLUMN "public"."sys_user"."mobile" IS '手机号';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO "public"."sys_user" VALUES (5302581852373061, 'Super.Admin', '651bf328709cd3531b251a03281c4103', 1, 32, NULL, NULL, NULL);
-INSERT INTO "public"."sys_user" VALUES (5492063864225861, 'Boss', 'b528eb513e867f8486d5692a4b60426a', 1, 32, '2022-10-17 00:44:06', '2022-10-17 00:44:06', NULL);
+INSERT INTO "public"."sys_user" VALUES (5302581852373061, 'Super.Admin', '651bf328709cd3531b251a03281c4103', 1, 32, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."sys_user" VALUES (5751143024558149, 'Boss', '9a33fc0f21173b28af9a7a613640a6128eea56a2875150005ec5e93b480dd06f', 1, 32, NULL, NULL, NULL, NULL);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."sys_area_id_seq"
 OWNED BY "public"."sys_area"."id";
-SELECT setval('"public"."sys_area_id_seq"', 10008, true);
+SELECT setval('"public"."sys_area_id_seq"', 1, false);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -3648,90 +3622,6 @@ OWNED BY "public"."sys_area"."id";
 SELECT setval('"public"."sys_area_id_seq1"', 1, false);
 
 -- ----------------------------
--- Primary Key structure for table schema_migrations
--- ----------------------------
-ALTER TABLE "public"."schema_migrations" ADD CONSTRAINT "schema_migrations_pkey" PRIMARY KEY ("version");
-
--- ----------------------------
 -- Auto increment value for sys_area
 -- ----------------------------
 SELECT setval('"public"."sys_area_id_seq1"', 1, false);
-
--- ----------------------------
--- Primary Key structure for table sys_area
--- ----------------------------
-ALTER TABLE "public"."sys_area" ADD CONSTRAINT "sys_area_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Uniques structure for table sys_audit
--- ----------------------------
-ALTER TABLE "public"."sys_audit" ADD CONSTRAINT "sys_audit_id_key" UNIQUE ("id");
-ALTER TABLE "public"."sys_audit" ADD CONSTRAINT "sys_audit_union_id_category_key" UNIQUE ("union_id", "category");
-
--- ----------------------------
--- Primary Key structure for table sys_audit
--- ----------------------------
-ALTER TABLE "public"."sys_audit" ADD CONSTRAINT "sys_audit_log_copy1_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Primary Key structure for table sys_config
--- ----------------------------
-ALTER TABLE "public"."sys_config" ADD CONSTRAINT "sys_config_pkey" PRIMARY KEY ("name");
-
--- ----------------------------
--- Primary Key structure for table sys_file
--- ----------------------------
-ALTER TABLE "public"."sys_file" ADD CONSTRAINT "sys_file_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Primary Key structure for table sys_logs
--- ----------------------------
-ALTER TABLE "public"."sys_logs" ADD CONSTRAINT "sys_logs_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Uniques structure for table sys_organization
--- ----------------------------
-ALTER TABLE "public"."sys_organization" ADD CONSTRAINT "scope_union" UNIQUE ("name", "parent_id");
-COMMENT ON CONSTRAINT "scope_union" ON "public"."sys_organization" IS '相同父级下名称需要唯一';
-
--- ----------------------------
--- Primary Key structure for table sys_organization
--- ----------------------------
-ALTER TABLE "public"."sys_organization" ADD CONSTRAINT "sys_organizational_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Uniques structure for table sys_permission
--- ----------------------------
-ALTER TABLE "public"."sys_permission" ADD CONSTRAINT "sys_permission_identifier_key" UNIQUE ("identifier");
-
--- ----------------------------
--- Primary Key structure for table sys_permission
--- ----------------------------
-ALTER TABLE "public"."sys_permission" ADD CONSTRAINT "sys_permission_pkey" PRIMARY KEY ("id", "name");
-
--- ----------------------------
--- Indexes structure for table sys_role
--- ----------------------------
-CREATE UNIQUE INDEX "name_unique" ON "public"."sys_role" USING btree (
-  "name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
-);
-
--- ----------------------------
--- Primary Key structure for table sys_role
--- ----------------------------
-ALTER TABLE "public"."sys_role" ADD CONSTRAINT "sys_role_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Primary Key structure for table sys_sms_logs
--- ----------------------------
-ALTER TABLE "public"."sys_sms_logs" ADD CONSTRAINT "sys_sms_logs_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Uniques structure for table sys_user
--- ----------------------------
-ALTER TABLE "public"."sys_user" ADD CONSTRAINT "username" UNIQUE ("username");
-
--- ----------------------------
--- Primary Key structure for table sys_user
--- ----------------------------
-ALTER TABLE "public"."sys_user" ADD CONSTRAINT "sys_user_pkey" PRIMARY KEY ("id", "username");

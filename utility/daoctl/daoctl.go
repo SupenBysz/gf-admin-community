@@ -1,7 +1,7 @@
 package daoctl
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/text/gstr"
@@ -28,7 +28,7 @@ func GetById[T any](db *gdb.Model, id int64) *T {
 	return result
 }
 
-func makeCountArr(db *gdb.Model, searchFields []model.FilterInfo) (total int64) {
+func makeCountArr(db *gdb.Model, searchFields []sys_model.FilterInfo) (total int64) {
 	db, err := makeBuilder(db, searchFields)
 	if err != nil {
 		return 0
@@ -37,7 +37,7 @@ func makeCountArr(db *gdb.Model, searchFields []model.FilterInfo) (total int64) 
 	return
 }
 
-func makeOrderBy(db *gdb.Model, orderBy []model.OrderBy) *gdb.Model {
+func makeOrderBy(db *gdb.Model, orderBy []sys_model.OrderBy) *gdb.Model {
 	// 需要排序
 	if len(orderBy) > 0 && orderBy != nil {
 		// 出来会是一条sql语句
@@ -61,7 +61,7 @@ func makeOrderBy(db *gdb.Model, orderBy []model.OrderBy) *gdb.Model {
 	return db
 }
 
-func makeBuilder(db *gdb.Model, searchFieldArr []model.FilterInfo) (*gdb.Model, error) {
+func makeBuilder(db *gdb.Model, searchFieldArr []sys_model.FilterInfo) (*gdb.Model, error) {
 	// 需要过滤
 	if searchFieldArr != nil && len(searchFieldArr) > 0 {
 		for index, field := range searchFieldArr {
@@ -169,7 +169,7 @@ func makeBuilder(db *gdb.Model, searchFieldArr []model.FilterInfo) (*gdb.Model, 
 	return db, nil
 }
 
-func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool) (response *model.CollectRes[T], err error) {
+func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport bool) (response *sys_model.CollectRes[T], err error) {
 	// 查询具体的值
 	queryDb, _ := makeBuilder(db, searchFields.Filter)
 	queryDb = makeOrderBy(queryDb, searchFields.OrderBy)
@@ -181,7 +181,7 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 		err = queryDb.Page(searchFields.Page, searchFields.PageSize).Scan(&entities)
 	}
 
-	response = &model.CollectRes[T]{
+	response = &sys_model.CollectRes[T]{
 		List:          &entities,
 		PaginationRes: makePaginationArr(db, searchFields.Pagination, searchFields.Filter),
 	}
@@ -189,30 +189,35 @@ func Query[T any](db *gdb.Model, searchFields *model.SearchParams, IsExport bool
 	return response, nil
 }
 
-func makePaginationArr(db *gdb.Model, pagination model.Pagination, searchFields []model.FilterInfo) model.PaginationRes {
+func makePaginationArr(db *gdb.Model, pagination sys_model.Pagination, searchFields []sys_model.FilterInfo) sys_model.PaginationRes {
 	total := makeCountArr(db, searchFields)
-	return model.PaginationRes{
+
+	// 如果每页大小为 -1 则不进行分页
+	if pagination.PageSize == -1 {
+		pagination.PageSize = gconv.Int(total)
+	}
+	return sys_model.PaginationRes{
 		Pagination: pagination,
 		PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize))),
 	}
 }
 
-func Find[T any](db *gdb.Model, orderBy []model.OrderBy, searchFields ...model.FilterInfo) (response *model.CollectRes[T], err error) {
-	return Query[T](db, &model.SearchParams{
+func Find[T any](db *gdb.Model, orderBy []sys_model.OrderBy, searchFields ...sys_model.FilterInfo) (response *sys_model.CollectRes[T], err error) {
+	return Query[T](db, &sys_model.SearchParams{
 		Filter: searchFields,
-		Pagination: model.Pagination{
+		Pagination: sys_model.Pagination{
 			Page:     1,
-			PageSize: 1000,
+			PageSize: -1,
 		},
 		OrderBy: orderBy,
 	}, true)
 }
 
-func GetAll[T any](db *gdb.Model, info *model.Pagination) (response *model.CollectRes[T], err error) {
+func GetAll[T any](db *gdb.Model, info *sys_model.Pagination) (response *sys_model.CollectRes[T], err error) {
 	total, err := db.Count()
 	entities := make([]T, 0, total)
 	if info == nil {
-		info = &model.Pagination{
+		info = &sys_model.Pagination{
 			Page:     1,
 			PageSize: gconv.Int(total),
 		}
@@ -223,9 +228,9 @@ func GetAll[T any](db *gdb.Model, info *model.Pagination) (response *model.Colle
 	}
 	err = db.Page(info.Page, info.PageSize).Scan(&entities)
 
-	return &model.CollectRes[T]{
+	return &sys_model.CollectRes[T]{
 		List: &entities,
-		PaginationRes: model.PaginationRes{
+		PaginationRes: sys_model.PaginationRes{
 			Pagination: *info,
 			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(info.PageSize))),
 		},

@@ -3,11 +3,11 @@ package sdk_baidu
 import (
 	"context"
 	"database/sql"
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/dao"
-	"github.com/SupenBysz/gf-admin-community/model/do"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
-	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -18,26 +18,26 @@ import (
 )
 
 type sSdkBaidu struct {
-	BaiduSdkConfTokenList []model.BaiduSdkConfToken
+	BaiduSdkConfTokenList []sys_model.BaiduSdkConfToken
 	CacheDuration         time.Duration
 	sysConfigName         string
 }
 
 func init() {
-	service.RegisterSdkBaidu(New())
+	sys_service.RegisterSdkBaidu(New())
 }
 
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkBaidu {
 	return &sSdkBaidu{
-		BaiduSdkConfTokenList: make([]model.BaiduSdkConfToken, 0),
+		BaiduSdkConfTokenList: make([]sys_model.BaiduSdkConfToken, 0),
 		CacheDuration:         time.Hour,
 		sysConfigName:         "baidu_sdk_conf",
 	}
 }
 
 // fetchBaiduSdkConfToken 根据 identifier 获取百度API Token
-func (s *sSdkBaidu) fetchBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.BaiduSdkConfToken, err error) {
+func (s *sSdkBaidu) fetchBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.BaiduSdkConfToken, err error) {
 	info, err := s.GetBaiduSdkConf(ctx, identifier)
 	if err != nil {
 		return nil, err
@@ -53,21 +53,21 @@ func (s *sSdkBaidu) fetchBaiduSdkConfToken(ctx context.Context, identifier strin
 
 	response, err := g.Client().Post(ctx, host, param)
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	newTokenInfo := model.BaiduSdkConfAccessToken{}
+	newTokenInfo := sys_model.BaiduSdkConfAccessToken{}
 
 	err = gjson.DecodeTo(response.ReadAllString(), &newTokenInfo)
 	if nil != err {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	var result *model.BaiduSdkConfToken = nil
+	var result *sys_model.BaiduSdkConfToken = nil
 	newItems := garray.New()
 	for _, item := range s.BaiduSdkConfTokenList {
 		if item.Identifier == identifier {
-			result = &model.BaiduSdkConfToken{
+			result = &sys_model.BaiduSdkConfToken{
 				BaiduSdkConf:            *info,
 				BaiduSdkConfAccessToken: newTokenInfo,
 			}
@@ -79,7 +79,7 @@ func (s *sSdkBaidu) fetchBaiduSdkConfToken(ctx context.Context, identifier strin
 	}
 
 	if result == nil {
-		result = &model.BaiduSdkConfToken{
+		result = &sys_model.BaiduSdkConfToken{
 			BaiduSdkConf:            *info,
 			BaiduSdkConfAccessToken: newTokenInfo,
 		}
@@ -96,7 +96,7 @@ func (s *sSdkBaidu) syncBaiduSdkConfTokenList(ctx context.Context) error {
 		return err
 	}
 
-	newTokenItems := make([]model.BaiduSdkConfToken, 0)
+	newTokenItems := make([]sys_model.BaiduSdkConfToken, 0)
 	for _, conf := range *items {
 		for _, tokenInfo := range s.BaiduSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
@@ -111,7 +111,7 @@ func (s *sSdkBaidu) syncBaiduSdkConfTokenList(ctx context.Context) error {
 }
 
 // GetBaiduSdkConfToken 根据 identifier 查询百度SDK应用配置和Token信息
-func (s *sSdkBaidu) GetBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.BaiduSdkConfToken, err error) {
+func (s *sSdkBaidu) GetBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.BaiduSdkConfToken, err error) {
 	for _, conf := range s.BaiduSdkConfTokenList {
 		if conf.Identifier == identifier {
 			return &conf, nil
@@ -121,18 +121,18 @@ func (s *sSdkBaidu) GetBaiduSdkConfToken(ctx context.Context, identifier string)
 }
 
 // GetBaiduSdkConfList 获取百度SDK应用配置列表
-func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) (*[]model.BaiduSdkConf, error) {
-	items := make([]model.BaiduSdkConf, 0)
-	data := entity.SysConfig{}
-	err := dao.SysConfig.Ctx(ctx).
+func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) (*[]sys_model.BaiduSdkConf, error) {
+	items := make([]sys_model.BaiduSdkConf, 0)
+	data := sys_entity.SysConfig{}
+	err := sys_dao.SysConfig.Ctx(ctx).
 		Cache(gdb.CacheOption{
 			Duration: s.CacheDuration,
 			Name:     s.sysConfigName,
 			Force:    true,
 		}).
-		Where(do.SysConfig{Name: s.sysConfigName}).Scan(&data)
+		Where(sys_do.SysConfig{Name: s.sysConfigName}).Scan(&data)
 	if err != nil && err != sql.ErrNoRows {
-		return &items, service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息获取失败"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if data.Value == "" {
@@ -147,7 +147,7 @@ func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) (*[]model.BaiduSdkC
 }
 
 // GetBaiduSdkConf 根据 identifier 查询百度SDK应用配置信息
-func (s *sSdkBaidu) GetBaiduSdkConf(ctx context.Context, identifier string) (*model.BaiduSdkConf, error) {
+func (s *sSdkBaidu) GetBaiduSdkConf(ctx context.Context, identifier string) (*sys_model.BaiduSdkConf, error) {
 	items, err := s.GetBaiduSdkConfList(ctx)
 	if err != nil {
 		return nil, err
@@ -158,15 +158,15 @@ func (s *sSdkBaidu) GetBaiduSdkConf(ctx context.Context, identifier string) (*mo
 			return &conf, nil
 		}
 	}
-	return nil, service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询百度SDK应用配置信息失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询百度SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
 // SaveBaiduSdkConf 保存百度SDK应用配信息
-func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info model.BaiduSdkConf, isCreate bool) (*model.BaiduSdkConf, error) {
+func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info sys_model.BaiduSdkConf, isCreate bool) (*sys_model.BaiduSdkConf, error) {
 	items, _ := s.GetBaiduSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]model.BaiduSdkConf, 0)
+	newItems := make([]sys_model.BaiduSdkConf, 0)
 	for _, conf := range *items {
 		if conf.Identifier == info.Identifier {
 			isHas = true
@@ -180,25 +180,25 @@ func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info model.BaiduSdkCon
 		if isCreate {
 			newItems = append(newItems, info)
 		} else {
-			return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息保存失败，标识符错误"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息保存失败，标识符错误"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := dao.SysConfig.Ctx(ctx).Count(do.SysConfig{Name: s.sysConfigName})
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{Name: s.sysConfigName})
 	if count > 0 {
-		_, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString})
+		_, err = sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString})
 	} else {
-		_, err = dao.SysConfig.Ctx(ctx).Insert(do.SysConfig{Name: s.sysConfigName, Value: jsonString})
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{Name: s.sysConfigName, Value: jsonString})
 	}
 
 	if nil != err {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息保存失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除列表缓存
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 	// 同步 Token 列表
 	s.syncBaiduSdkConfTokenList(ctx)
 	return &info, nil
@@ -219,23 +219,23 @@ func (s *sSdkBaidu) DeleteBaiduSdkConf(ctx context.Context, identifier string) (
 		newItems.Append(conf)
 	}
 	if !isHas {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "要删除的百度SDK配置信息不存在", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "要删除的百度SDK配置信息不存在", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
-	if _, err = dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString}); err != nil {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息删除失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	if _, err = sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除列表缓存
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 	// 同步 Token 列表
 	s.syncBaiduSdkConfTokenList(ctx)
 	return true, nil
 }
 
 // OCRBankCard OCR识别银行卡
-func (s *sSdkBaidu) OCRBankCard(ctx context.Context, imageBase64 string) (*model.OCRBankCard, error) {
+func (s *sSdkBaidu) OCRBankCard(ctx context.Context, imageBase64 string) (*sys_model.OCRBankCard, error) {
 	// 请求参数
 	param := g.Map{
 		"image": imageBase64,
@@ -253,22 +253,22 @@ func (s *sSdkBaidu) OCRBankCard(ctx context.Context, imageBase64 string) (*model
 		Post(ctx, "https://aip.baidubce.com/rest/2.0/ocr/v1/bankcard?access_token="+tokenInfo.AccessToken, param)
 
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", sys_dao.SysFile.Table())
 	}
 
 	// json解析
 	jsonObj, err := gjson.DecodeToJson(response.ReadAll())
 
 	if err != nil || jsonObj.IsNil() {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", sys_dao.SysFile.Table())
 	}
 
 	if jsonObj.Get("error_code").Int() != 0 {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", sys_dao.SysFile.Table())
 	}
 
 	// 组装返回数据
-	ret := model.OCRBankCard{
+	ret := sys_model.OCRBankCard{
 		Direction:      jsonObj.Get("direction", -1).Int(),
 		BankCardNumber: jsonObj.Get("result.bank_card_number", "").String(),
 		ValidDate:      jsonObj.Get("result.valid_date", "").String(),
@@ -282,7 +282,7 @@ func (s *sSdkBaidu) OCRBankCard(ctx context.Context, imageBase64 string) (*model
 }
 
 // OCRIDCard OCR识别身份证
-func (s *sSdkBaidu) OCRIDCard(ctx context.Context, imageBase64 string, detectRisk string, idCardSide string) (*model.BaiduSdkOCRIDCard, error) {
+func (s *sSdkBaidu) OCRIDCard(ctx context.Context, imageBase64 string, detectRisk string, idCardSide string) (*sys_model.BaiduSdkOCRIDCard, error) {
 
 	param := g.Map{
 		"image":            imageBase64,
@@ -300,23 +300,23 @@ func (s *sSdkBaidu) OCRIDCard(ctx context.Context, imageBase64 string, detectRis
 		Post(ctx, "https://aip.baidubce.com/rest/2.0/ocr/v1/idcard?access_token="+tokenInfo.AccessToken, param)
 
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", sys_dao.SysFile.Table())
 	}
 
 	jsonObj, err := gjson.DecodeToJson(response.ReadAll())
 
 	if err != nil || jsonObj.IsNil() {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", sys_dao.SysFile.Table())
 	}
 
 	if jsonObj.Get("error_code").Int() != 0 {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", sys_dao.SysFile.Table())
 	}
 
-	ret := model.BaiduSdkOCRIDCard{}
+	ret := sys_model.BaiduSdkOCRIDCard{}
 
 	if idCardSide == "front" {
-		ret.OCRIDCardA = &model.BaiduSdkOCRIDCardA{
+		ret.OCRIDCardA = &sys_model.BaiduSdkOCRIDCardA{
 			Direction:      jsonObj.Get("direction", -1).Int(),
 			ImageStateText: jsonObj.Get("image_status", "unknown").String(),
 			RiskType:       jsonObj.Get("risk_type", "unknown").String(),
@@ -328,7 +328,7 @@ func (s *sSdkBaidu) OCRIDCard(ctx context.Context, imageBase64 string, detectRis
 			Nation:         jsonObj.Get("words_result.民族.words", "").String(),
 		}
 	} else if idCardSide == "back" {
-		ret.OCRIDCardB = &model.BaiduSdkOCRIDCardB{
+		ret.OCRIDCardB = &sys_model.BaiduSdkOCRIDCardB{
 			ExpiryDate:       jsonObj.Get("words_result.失效日期.words", "").String(),
 			IssuingAuthority: jsonObj.Get("words_result.签发机关.words", "").String(),
 			IssuingDate:      jsonObj.Get("words_result.签发日期.words", "").String(),
@@ -339,7 +339,7 @@ func (s *sSdkBaidu) OCRIDCard(ctx context.Context, imageBase64 string, detectRis
 }
 
 // OCRBusinessLicense OCR识别营业执照
-func (s *sSdkBaidu) OCRBusinessLicense(ctx context.Context, imageBase64 string) (*model.BusinessLicenseOCR, error) {
+func (s *sSdkBaidu) OCRBusinessLicense(ctx context.Context, imageBase64 string) (*sys_model.BusinessLicenseOCR, error) {
 	param := g.Map{
 		"image":     imageBase64,
 		"risk_warn": "true",
@@ -354,20 +354,20 @@ func (s *sSdkBaidu) OCRBusinessLicense(ctx context.Context, imageBase64 string) 
 		Post(ctx, "https://aip.baidubce.com/rest/2.0/ocr/v1/business_license?access_token="+tokenInfo.AccessToken, param)
 
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("识别证照信息失败"), "", sys_dao.SysFile.Table())
 	}
 
 	jsonObj, err := gjson.DecodeToJson(response.ReadAll())
 
 	if err != nil || jsonObj.IsNil() {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照识别数据失败"), "", sys_dao.SysFile.Table())
 	}
 
 	if jsonObj.Get("error_code").Int() != 0 {
-		return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("证照识别失败"), "", sys_dao.SysFile.Table())
 	}
 
-	ret := model.BusinessLicenseOCR{
+	ret := sys_model.BusinessLicenseOCR{
 		Direction:         jsonObj.Get("direction", -1).Int(),
 		RiskType:          jsonObj.Get("risk_type", "unknown").String(),
 		CreditCode:        jsonObj.Get("words_result.社会信用代码.words", "").String(),

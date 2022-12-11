@@ -1,7 +1,7 @@
 package sysapi
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -18,12 +18,12 @@ type GetBaiduSdkConfReq struct {
 
 type CreateBaiduSdkConfReq struct {
 	g.Meta `path:"/baidu/createBaiduSdkConf" method:"POST" tags:"系统配置" summary:"创建百度SDK应用配置|信息" dc:"系统配置：固定为仅系统供超级管理员可用"`
-	model.BaiduSdkConf
+	sys_model.BaiduSdkConf
 }
 
 type UpdateBaiduSdkConfReq struct {
 	g.Meta `path:"/baidu/updateBaiduSdkConf" method:"POST" tags:"系统配置" summary:"更新百度SDK应用配置|信息" dc:"系统配置：固定为仅系统供超级管理员可用"`
-	model.BaiduSdkConf
+	sys_model.BaiduSdkConf
 }
 
 type DeleteBaiduSdkConfReq struct {
@@ -31,8 +31,8 @@ type DeleteBaiduSdkConfReq struct {
 	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
 }
 
-type BaiduSdkConfRes model.BaiduSdkConf
-type BaiduSdkConfListRes model.CollectRes[model.BaiduSdkConf]
+type BaiduSdkConfRes sys_model.BaiduSdkConf
+type BaiduSdkConfListRes sys_model.CollectRes[sys_model.BaiduSdkConf]
 
 // 阿里云SDk
 
@@ -47,12 +47,12 @@ type GetAliyunSdkConfReq struct {
 
 type CreateAliyunSdkConfReq struct {
 	g.Meta `path:"/aliyun/createAliyunSdkConf" method:"POST" tags:"系统配置" summary:"创建阿里云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.AliyunSdkConf
+	sys_model.AliyunSdkConf
 }
 
 type UpdateAliyunSdkConfReq struct {
 	g.Meta `path:"/aliyun/updateAliyunSdkConf" method:"POST" tags:"系统配置" summary:"更新阿里云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.AliyunSdkConf
+	sys_model.AliyunSdkConf
 }
 
 type DeleteAliyunSdkConfReq struct {
@@ -60,8 +60,8 @@ type DeleteAliyunSdkConfReq struct {
 	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
 }
 
-type AliyunSdkConfRes model.AliyunSdkConf
-type AliyunSdkConfListRes model.CollectRes[model.AliyunSdkConf]
+type AliyunSdkConfRes sys_model.AliyunSdkConf
+type AliyunSdkConfListRes sys_model.CollectRes[sys_model.AliyunSdkConf]
 
 // 华为云SDk
 
@@ -76,12 +76,12 @@ type GetHuaweiSdkConfReq struct {
 
 type CreateHuaweiSdkConfReq struct {
 	g.Meta `path:"/huawei/createHuaweiSdkConf" method:"POST" tags:"系统配置" summary:"创建华为云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.HuaweiSdkConf
+	sys_model.HuaweiSdkConf
 }
 
 type UpdateHuaweiSdkConfReq struct {
 	g.Meta `path:"/huawei/updateHuaweiSdkConf" method:"POST" tags:"系统配置" summary:"更新华为云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.HuaweiSdkConf
+	sys_model.HuaweiSdkConf
 }
 
 type DeleteHuaweiSdkConfReq struct {
@@ -89,8 +89,8 @@ type DeleteHuaweiSdkConfReq struct {
 	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
 }
 
-type HuaweiSdkConfRes model.HuaweiSdkConf
-type HuaweiSdkConfListRes model.CollectRes[model.HuaweiSdkConf]
+type HuaweiSdkConfRes sys_model.HuaweiSdkConf
+type HuaweiSdkConfListRes sys_model.CollectRes[sys_model.HuaweiSdkConf]
 
 // 腾讯云 SDK
 
@@ -105,12 +105,12 @@ type GetTencentSdkConfReq struct {
 
 type CreateTencentSdkConfReq struct {
 	g.Meta `path:"tencent/createTencentSdkConf" method:"POST" tags:"系统配置" summary:"创建腾讯云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.TencentSdkConf
+	sys_model.TencentSdkConf
 }
 
 type UpdateTencentSdkConfReq struct {
 	g.Meta `path:"/tencent/updateTencentSdkConf" method:"POST" tags:"系统配置" summary:"更新腾讯云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.TencentSdkConf
+	sys_model.TencentSdkConf
 }
 
 type DeleteTencentSdkConfReq struct {
@@ -118,8 +118,8 @@ type DeleteTencentSdkConfReq struct {
 	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
 }
 
-type TencentSdkConfRes model.TencentSdkConf
-type TencentSdkConfListRes model.CollectRes[model.TencentSdkConf]
+type TencentSdkConfRes sys_model.TencentSdkConf
+type TencentSdkConfListRes sys_model.CollectRes[sys_model.TencentSdkConf]
 
 // 天翼云 SDK
 
@@ -134,12 +134,12 @@ type GetCtyunSdkConfReq struct {
 
 type CreateCtyunSdkConfReq struct {
 	g.Meta `path:"ctyun/createCtyunSdkConf" method:"POST" tags:"系统配置" summary:"创建天翼云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.CtyunSdkConf
+	sys_model.CtyunSdkConf
 }
 
 type UpdateCtyunSdkConfReq struct {
 	g.Meta `path:"/ctyun/updateCtyunSdkConf" method:"POST" tags:"系统配置" summary:"更新天翼云SDK应用配置|信息" dc:"系统配置：固定位仅供系统超级管理员可用"`
-	model.CtyunSdkConf
+	sys_model.CtyunSdkConf
 }
 
 type DeleteCtyunSdkConfReq struct {
@@ -147,5 +147,5 @@ type DeleteCtyunSdkConfReq struct {
 	Identifier string `json:"identifier" v:"required#标识符参数错误" dc:"业务标识符"`
 }
 
-type CtyunSdkConfRes model.CtyunSdkConf
-type CtyunSdkConfListRes model.CollectRes[model.CtyunSdkConf]
+type CtyunSdkConfRes sys_model.CtyunSdkConf
+type CtyunSdkConfListRes sys_model.CollectRes[sys_model.CtyunSdkConf]

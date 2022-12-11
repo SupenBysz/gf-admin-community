@@ -1,25 +1,25 @@
 package sysapi
 
 import (
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
 
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 )
 
 type QueryRoleListReq struct {
 	g.Meta `path:"/queryRoleList" method:"post" summary:"获取所有角色|列表" tags:"角色"`
-	model.SearchParams
+	sys_model.SearchParams
 }
 
 type CreateRoleInfoReq struct {
 	g.Meta `path:"/createRole" method:"post" summary:"新增角色|信息" tags:"角色"`
-	model.SysRole
+	sys_model.SysRole
 }
 
 type UpdateRoleInfoReq struct {
 	g.Meta `path:"/updateRole" method:"post" summary:"更新角色|信息" tags:"角色"`
-	model.SysRole
+	sys_model.SysRole
 }
 
 type DeleteRoleInfoReq struct {
@@ -60,6 +60,6 @@ type GetRolePermissionsReq struct {
 	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type RoleListRes model.CollectRes[entity.SysRole]
-type RoleInfoRes entity.SysRole
-type UserListRes model.CollectRes[model.SysUser]
+type RoleListRes sys_model.CollectRes[sys_entity.SysRole]
+type RoleInfoRes sys_entity.SysRole
+type UserListRes sys_model.CollectRes[sys_model.SysUser]

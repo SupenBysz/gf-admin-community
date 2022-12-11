@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
+	sysController "github.com/SupenBysz/gf-admin-community/controller"
+	"github.com/SupenBysz/gf-admin-community/internal/consts"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/validator"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/util/gmode"
-	"github.com/SupenBysz/gf-admin-community/api_v1"
-	sysController "github.com/SupenBysz/gf-admin-community/controller"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
-	"github.com/SupenBysz/gf-admin-community/service"
-	"github.com/SupenBysz/gf-admin-community/utility/validator"
 
 	"github.com/yitter/idgenerator-go/idgen"
 
@@ -49,10 +50,6 @@ var (
 			}
 
 			{
-
-			}
-
-			{
 				// HOOK, 开发阶段禁止浏览器缓存,方便调试
 				if gmode.IsDevelop() {
 					s.BindHookHandler("/*", ghttp.HookBeforeServe, func(r *ghttp.Request) {
@@ -62,8 +59,13 @@ var (
 			}
 
 			{
-				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-				consts.Global.UserDefaultType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
+				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
+				// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
+				consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
+				// 加载不允许登录的用户类型
+				consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.allowLoginUserType", "[-1]").Ints())
+				// 去重
+				consts.Global.NotAllowLoginUserTypeArr.Unique()
 			}
 
 			{
@@ -88,7 +90,7 @@ var (
 
 			{
 				// CASBIN 初始化
-				service.Casbin().Enforcer()
+				sys_service.Casbin().Enforcer()
 			}
 
 			{
@@ -97,15 +99,15 @@ var (
 				s.Group(apiPrefix, func(group *ghttp.RouterGroup) {
 					// 注册中间件
 					group.Middleware(
-						service.Middleware().Casbin,
-						service.Middleware().CTX,
-						service.Middleware().ResponseHandler,
+						sys_service.Middleware().Casbin,
+						sys_service.Middleware().CTX,
+						sys_service.Middleware().ResponseHandler,
 					)
 
 					// 匿名路由绑定
 					group.Group("/", func(group *ghttp.RouterGroup) {
 						// 鉴权：登录，注册，找回密码等
-						group.Group("/auth", func(group *ghttp.RouterGroup) { group.Bind(sysController.Auth) })
+						group.Group("/sys_auth", func(group *ghttp.RouterGroup) { group.Bind(sysController.Auth) })
 						// 图型验证码、短信验证码、地区
 						group.Group("/common", func(group *ghttp.RouterGroup) {
 							group.Bind(
@@ -123,13 +125,11 @@ var (
 					group.Group("/", func(group *ghttp.RouterGroup) {
 						// 注册中间件
 						group.Middleware(
-							service.Middleware().Auth,
+							sys_service.Middleware().Auth,
 						)
 
 						// 文件上传
-						group.Group("/common/file", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysFile) })
-						// 通用资质管理
-						group.Group("/common/audit", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysAudit) })
+						group.Group("/common/sys_file", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysFile) })
 						// 系统配置
 						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysConfig) })
 						// 用户
@@ -144,7 +144,6 @@ var (
 				})
 			}
 
-			s.SetDumpRouterMap(true)
 			s.Run()
 			return nil
 		},

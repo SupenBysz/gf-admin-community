@@ -1,19 +1,19 @@
 package sysapi
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
 type CreateUserReq struct {
 	g.Meta `path:"/createUser" method:"post" summary:"新增用户|信息" tags:"用户"`
-	model.UserInnerRegister
+	sys_model.UserInnerRegister
 }
 
 type QueryUserListReq struct {
 	g.Meta `path:"/queryUserList" method:"post" summary:"获取用户|列表" tags:"用户"`
-	model.SearchParams
+	sys_model.SearchParams
 }
 
 type SetUserRoleIdsReq struct {
@@ -40,8 +40,8 @@ type SetUsernameByIdReq struct {
 
 type UpdateUserPasswordReq struct {
 	g.Meta `path:"/updateUserPassword" method:"post" summary:"修改用户密码" tags:"用户"`
-	model.UpdateUserPassword
+	sys_model.UpdateUserPassword
 }
 
-type UserInfoRes entity.SysUser
-type UserInfoListRes model.CollectRes[entity.SysUser]
+type UserInfoRes sys_entity.SysUser
+type UserInfoListRes sys_model.CollectRes[sys_entity.SysUser]
