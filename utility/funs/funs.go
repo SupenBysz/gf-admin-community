@@ -1,4 +1,4 @@
-package kyFuns
+package funs
 
 func If[R any](condition bool, trueVal, falseVal R) R {
 	if condition {
