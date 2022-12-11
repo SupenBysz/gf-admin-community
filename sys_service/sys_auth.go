@@ -10,13 +10,12 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/auth"
-	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type (
 	ISysAuth interface {
-		InstallHook(actionType sys_enum_auth.ActionTypeEnum, userType sys_enum_user.TypeEnum, hookFunc sys_model.AuthHookFunc) int64
+		InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_model.AuthHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.TokenInfo, error)

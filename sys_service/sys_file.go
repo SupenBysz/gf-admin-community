@@ -10,12 +10,12 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	sys_enum_upload "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/upload"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type (
 	IFile interface {
-		InstallHook(state sys_enum_upload.EventStateEnum, hookFunc sys_model.FileHookFunc) int64
+		InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Upload(ctx context.Context, in sys_model.FileUploadInput, userId int64) (*sys_model.FileUploadOutput, error)

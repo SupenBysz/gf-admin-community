@@ -8,14 +8,13 @@ package sys_service
 import (
 	"context"
 
-	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 )
 
 type (
 	ISysRole interface {
-		QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sysapi.RoleListRes, error)
+		QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sys_model.RoleListRes, error)
 		Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Save(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
