@@ -1,8 +1,10 @@
 package sys_enum_upload
 
-import "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+import (
+	"github.com/SupenBysz/gf-admin-community/utility/enum"
+)
 
-type EventStateEnum sys_enum.Code
+type EventStateEnum enum.Code
 
 type eventState struct {
 	AfterCache EventStateEnum
@@ -11,16 +13,16 @@ type eventState struct {
 }
 
 var EventState = eventState{
-	AfterCache: sys_enum.New(1, "已缓存"),
-	BeforeSave: sys_enum.New(2, "保存前"),
-	AfterSave:  sys_enum.New(4, "保存后"),
+	AfterCache: enum.New(1, "已缓存"),
+	BeforeSave: enum.New(2, "保存前"),
+	AfterSave:  enum.New(4, "保存后"),
 }
 
 func (e eventState) New(code int, description string) EventStateEnum {
 	if (code&EventState.AfterCache.Code()) == EventState.AfterCache.Code() ||
 		(code&EventState.BeforeSave.Code()) == EventState.BeforeSave.Code() ||
 		(code&EventState.AfterSave.Code()) == EventState.AfterSave.Code() {
-		return sys_enum.New(code, description)
+		return enum.New(code, description)
 	}
 	panic("uploadEventState: error")
 }
