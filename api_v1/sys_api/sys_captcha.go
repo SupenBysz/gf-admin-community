@@ -1,4 +1,4 @@
-package sysapi
+package sys_api
 
 import (
 	"github.com/gogf/gf/v2/frame/g"

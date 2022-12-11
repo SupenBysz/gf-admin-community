@@ -2,7 +2,7 @@ package sysController
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
+	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
@@ -11,7 +11,7 @@ var Captcha = cCaptcha{}
 
 type cCaptcha struct{}
 
-func (a *cCaptcha) Index(ctx context.Context, _ *sysapi.CaptchaIndexReq) (res *sysapi.CaptchaIndexRes, err error) {
+func (a *cCaptcha) Index(ctx context.Context, _ *sys_api.CaptchaIndexReq) (res *sys_api.CaptchaIndexRes, err error) {
 	err = sys_service.Captcha().MakeCaptcha(ctx)
 	return
 }

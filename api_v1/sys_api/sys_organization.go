@@ -1,4 +1,4 @@
-package sysapi
+package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -43,7 +43,6 @@ type DeleteOrganizationInfoReq struct {
 }
 
 type OrganizationInfoRes sys_entity.SysOrganization
-type OrganizationInfoListRes sys_model.CollectRes[sys_entity.SysOrganization]
 
 type OrganizationInfoTreeRes sys_model.SysOrganizationTree
 type OrganizationInfoTreeListRes []sys_model.SysOrganizationTree

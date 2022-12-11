@@ -3,7 +3,7 @@ package sys_file
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/upload"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"io"
 	"net/http"
 	"os"
@@ -52,7 +52,7 @@ type _TmpFileInfo struct {
 type _UserUploadItemsCache []_TmpFileInfo
 
 // InstallHook 安装Hook
-func (s *sFile) InstallHook(state sys_enum_upload.EventStateEnum, hookFunc sys_model.FileHookFunc) int64 {
+func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: sys_model.FileHookInfo{Key: state, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -168,8 +168,8 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&sys_enum_upload.EventState.AfterCache.Code() == sys_enum_upload.EventState.AfterCache.Code() {
-				hook.Value.Value(ctx, sys_enum_upload.EventState.AfterCache, sys_entity.SysFile{
+			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterCache.Code() == sys_enum.Upload.EventState.AfterCache.Code() {
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterCache, sys_entity.SysFile{
 					Id:        data.Id,
 					Name:      data.Name,
 					Src:       data.Path,
@@ -239,8 +239,8 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&sys_enum_upload.EventState.BeforeSave.Code() == sys_enum_upload.EventState.BeforeSave.Code() {
-				hook.Value.Value(ctx, sys_enum_upload.EventState.BeforeSave, data)
+			if hook.Value.Key.Code()&sys_enum.Upload.EventState.BeforeSave.Code() == sys_enum.Upload.EventState.BeforeSave.Code() {
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.BeforeSave, data)
 			}
 		}
 	})
@@ -256,8 +256,8 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&sys_enum_upload.EventState.AfterSave.Code() == sys_enum_upload.EventState.AfterSave.Code() {
-				hook.Value.Value(ctx, sys_enum_upload.EventState.AfterSave, data)
+			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterSave.Code() == sys_enum.Upload.EventState.AfterSave.Code() {
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, data)
 			}
 		}
 	})

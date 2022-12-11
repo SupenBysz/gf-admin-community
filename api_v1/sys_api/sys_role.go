@@ -1,4 +1,4 @@
-package sysapi
+package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -60,6 +60,5 @@ type GetRolePermissionsReq struct {
 	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type RoleListRes sys_model.CollectRes[sys_entity.SysRole]
 type RoleInfoRes sys_entity.SysRole
 type UserListRes sys_model.CollectRes[sys_model.SysUser]

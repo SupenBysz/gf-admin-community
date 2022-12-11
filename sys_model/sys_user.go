@@ -2,7 +2,7 @@ package sys_model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type SysUsers []sys_entity.SysUser
@@ -40,5 +40,5 @@ type UpdateUserPassword struct {
 
 type SysUserRes CollectRes[SysUser]
 
-type UserHookFunc HookFunc[sys_enum_user.EventEnum, sys_entity.SysUser]
-type UserHookInfo HookEventType[sys_enum_user.EventEnum, UserHookFunc]
+type UserHookFunc HookFunc[sys_enum.UserEvent, sys_entity.SysUser]
+type UserHookInfo HookEventType[sys_enum.UserEvent, UserHookFunc]

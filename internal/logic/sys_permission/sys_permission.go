@@ -2,7 +2,6 @@ package sys_permission
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -62,9 +61,9 @@ func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName
 }
 
 // QueryPermissionList 查询权限
-func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sysapi.SysPermissionInfoListRes, error) {
+func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error) {
 	result, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, false)
-	return (*sysapi.SysPermissionInfoListRes)(result), err
+	return (*sys_model.SysPermissionInfoListRes)(result), err
 }
 
 // GetPermissionList 根据ID获取下级权限信息，返回列表

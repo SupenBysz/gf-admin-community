@@ -1,5 +1,7 @@
 package sys_model
 
+import "github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+
 type SysOrganizationInfo struct {
 	Id          int64  `json:"id"          description:""`
 	Name        string `json:"name"        description:"名称" v:"required|length:2,32#名称不能为空|名称长度仅限2~32个字符"`
@@ -12,3 +14,5 @@ type SysOrganizationTree struct {
 	CascadeDeep int                    `json:"cascadeDeep" description:"级联深度" v:"min:0"`
 	Children    *[]SysOrganizationTree `json:"children" orm:"-" dc:"下级组织架构"`
 }
+
+type OrganizationInfoListRes CollectRes[sys_entity.SysOrganization]

@@ -1,8 +1,7 @@
-package sysapi
+package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -46,7 +45,3 @@ type DeletePermissionReq struct {
 	g.Meta `path:"/deletePermission" method:"post" summary:"删除权限" tags:"权限"`
 	Id     int64 `json:"id" v:"required#权限ID校验失败" dc:"权限ID"`
 }
-
-type SysPermissionInfoRes sys_entity.SysPermission
-type SysPermissionInfoListRes sys_model.CollectRes[sys_entity.SysPermission]
-type SysPermissionInfoTreeRes []sys_model.SysPermissionTree

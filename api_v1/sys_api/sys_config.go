@@ -1,4 +1,4 @@
-package sysapi
+package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"

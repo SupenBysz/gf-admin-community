@@ -2,7 +2,6 @@ package sys_organization
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -35,10 +34,10 @@ func New() *sSysOrganization {
 }
 
 // QueryOrganizationList 获取组织架构信息列表
-func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info sys_model.SearchParams) (*sysapi.OrganizationInfoListRes, error) {
+func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info sys_model.SearchParams) (*sys_model.OrganizationInfoListRes, error) {
 	result, err := daoctl.Query[sys_entity.SysOrganization](sys_dao.SysOrganization.Ctx(ctx), &info, false)
 
-	return (*sysapi.OrganizationInfoListRes)(result), err
+	return (*sys_model.OrganizationInfoListRes)(result), err
 }
 
 // GetOrganizationList 获取组织架构信息列表
