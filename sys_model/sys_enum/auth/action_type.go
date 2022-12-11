@@ -1,0 +1,28 @@
+package sys_enum_auth
+
+import (
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+)
+
+type ActionTypeEnum sys_enum.Code
+
+type actionType struct {
+	Login    ActionTypeEnum
+	Logout   ActionTypeEnum
+	Register ActionTypeEnum
+}
+
+var ActionType = actionType{
+	Login:    sys_enum.New(1, "登录"),
+	Logout:   sys_enum.New(2, "退出"),
+	Register: sys_enum.New(4, "注册"),
+}
+
+func (e actionType) New(code int, description string) ActionTypeEnum {
+	if (code&ActionType.Login.Code()) == ActionType.Login.Code() ||
+		(code&ActionType.Logout.Code()) == ActionType.Logout.Code() ||
+		(code&ActionType.Register.Code()) == ActionType.Register.Code() {
+		return sys_enum.New(code, description)
+	}
+	panic("kyAuth.ActionType.New: error")
+}

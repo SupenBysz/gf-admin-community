@@ -1,8 +1,8 @@
 package sysapi
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -18,7 +18,7 @@ type GetPermissionByNameReq struct {
 
 type QueryPermissionListReq struct {
 	g.Meta `path:"/queryPermissionList" method:"post" summary:"根据ID获取下级权限|列表，返回列表" tags:"权限"`
-	model.SearchParams
+	sys_model.SearchParams
 }
 
 type GetPermissionListReq struct {
@@ -34,12 +34,12 @@ type GetPermissionTreeReq struct {
 
 type CreatePermissionReq struct {
 	g.Meta `path:"/createPermission" method:"post" summary:"新增权限|信息" tags:"权限"`
-	model.SysPermission
+	sys_model.SysPermission
 }
 
 type UpdatePermissionReq struct {
 	g.Meta `path:"/updatePermission" method:"post" summary:"保存权限|信息" tags:"权限"`
-	model.SysPermission
+	sys_model.SysPermission
 }
 
 type DeletePermissionReq struct {
@@ -47,6 +47,6 @@ type DeletePermissionReq struct {
 	Id     int64 `json:"id" v:"required#权限ID校验失败" dc:"权限ID"`
 }
 
-type SysPermissionInfoRes entity.SysPermission
-type SysPermissionInfoListRes model.CollectRes[entity.SysPermission]
-type SysPermissionInfoTreeRes []model.SysPermissionTree
+type SysPermissionInfoRes sys_entity.SysPermission
+type SysPermissionInfoListRes sys_model.CollectRes[sys_entity.SysPermission]
+type SysPermissionInfoTreeRes []sys_model.SysPermissionTree

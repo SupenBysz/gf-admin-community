@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sysapi"
-	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
 // Auth 鉴权
@@ -14,7 +14,7 @@ type cAuth struct{}
 
 // Login 登陆
 func (a *cAuth) Login(ctx context.Context, req *sysapi.LoginReq) (res *sysapi.LoginRes, err error) {
-	result, err := service.SysAuth().Login(ctx, req.LoginInfo)
+	result, err := sys_service.SysAuth().Login(ctx, req.LoginInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (a *cAuth) Login(ctx context.Context, req *sysapi.LoginReq) (res *sysapi.Lo
 // LoginByMobile 通过手机号码+验证码登陆
 func (c *cAuth) LoginByMobile(ctx context.Context, req *sysapi.LoginByMobileReq) (res *sysapi.LoginByMobileRes, err error) {
 	// 获取
-	result, err := service.SysAuth().LoginByMobile(ctx, req.LoginByMobileInfo)
+	result, err := sys_service.SysAuth().LoginByMobile(ctx, req.LoginByMobileInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (c *cAuth) LoginByMobile(ctx context.Context, req *sysapi.LoginByMobileReq)
 
 // Register 注册
 func (a *cAuth) Register(ctx context.Context, req *sysapi.RegisterReq) (res api_v1.BoolRes, err error) {
-	_, err = service.SysAuth().Register(ctx, req.SysUserRegister)
+	_, err = sys_service.SysAuth().Register(ctx, req.SysUserRegister)
 
 	if err != nil {
 		return false, err
@@ -45,7 +45,7 @@ func (a *cAuth) Register(ctx context.Context, req *sysapi.RegisterReq) (res api_
 
 // ForgotPassword 忘记密码
 func (a *cAuth) ForgotPassword(ctx context.Context, req *sysapi.ForgotPasswordReq) (res *sysapi.ForgotPasswordRes, err error) {
-	result, err := service.SysAuth().ForgotPassword(ctx, req.ForgotPassword)
+	result, err := sys_service.SysAuth().ForgotPassword(ctx, req.ForgotPassword)
 
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (a *cAuth) ForgotPassword(ctx context.Context, req *sysapi.ForgotPasswordRe
 
 // ResetPassword 重置密码
 func (a *cAuth) ResetPassword(ctx context.Context, req *sysapi.ResetPasswordReq) (res api_v1.BoolRes, err error) {
-	_, err = service.SysAuth().ResetPassword(ctx, req.Password, req.ConfirmPassword, req.IdKey)
+	_, err = sys_service.SysAuth().ResetPassword(ctx, req.Password, req.ConfirmPassword, req.IdKey)
 	if err != nil {
 		return false, err
 	}

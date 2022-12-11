@@ -3,11 +3,11 @@ package sdk_aliyun
 import (
 	"context"
 	"database/sql"
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/dao"
-	"github.com/SupenBysz/gf-admin-community/model/do"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
-	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -20,26 +20,26 @@ import (
 
 // 阿里云服务平台
 type sSdkAliyun struct {
-	AliyunSdkConfTokenList []model.AliyunSdkConfToken
+	AliyunSdkConfTokenList []sys_model.AliyunSdkConfToken
 	CacheDuration          time.Duration
 	sysConfigName          string
 }
 
 func init() {
-	service.RegisterSdkAliyun(New())
+	sys_service.RegisterSdkAliyun(New())
 }
 
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkAliyun {
 	return &sSdkAliyun{
-		AliyunSdkConfTokenList: make([]model.AliyunSdkConfToken, 0),
+		AliyunSdkConfTokenList: make([]sys_model.AliyunSdkConfToken, 0),
 		CacheDuration:          time.Hour,
 		sysConfigName:          "aliyun_sdk_conf",
 	}
 }
 
 // fetchALiYHunSdkConfToken 根据 identifier 获取阿里云API Token  （API获取方式）
-func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.AliyunSdkConfToken, err error) {
+func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConfToken, err error) {
 	info, err := s.GetAliyunSdkConf(ctx, identifier)
 	if err != nil {
 		return nil, err
@@ -79,22 +79,22 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 
 	response, err := g.Client().Post(ctx, host, param)
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取阿里云API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取阿里云API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 接受返回数据，json解析
-	newTokenInfo := model.AliyunAccessToken{}
+	newTokenInfo := sys_model.AliyunAccessToken{}
 
 	err = gjson.DecodeTo(response.ReadAllString(), &newTokenInfo)
 	if nil != err {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取百度API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	var result *model.AliyunSdkConfToken = nil
+	var result *sys_model.AliyunSdkConfToken = nil
 	newItems := garray.New()
 	for _, item := range s.AliyunSdkConfTokenList {
 		if item.Identifier == identifier {
-			result = &model.AliyunSdkConfToken{
+			result = &sys_model.AliyunSdkConfToken{
 				AliyunSdkConf:     *info,
 				AliyunAccessToken: newTokenInfo,
 			}
@@ -106,7 +106,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 	}
 
 	if result == nil {
-		result = &model.AliyunSdkConfToken{
+		result = &sys_model.AliyunSdkConfToken{
 			AliyunSdkConf:     *info,
 			AliyunAccessToken: newTokenInfo,
 		}
@@ -118,7 +118,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 }
 
 // GetAliyunSdkToken 通过SDK获取Token （SDK获取方式）
-func (s *sSdkAliyun) GetAliyunSdkToken(ctx context.Context, tokenInfo model.AliyunSdkConfToken, err error) {
+func (s *sSdkAliyun) GetAliyunSdkToken(ctx context.Context, tokenInfo sys_model.AliyunSdkConfToken, err error) {
 	// client, err := sdk.NewClientWithAccessKey("cn-shanghai", "<yourAccessKey Id>", "<yourAccessKey Secret>")
 	// if err != nil {
 	// 	panic(err)
@@ -137,7 +137,7 @@ func (s *sSdkAliyun) GetAliyunSdkToken(ctx context.Context, tokenInfo model.Aliy
 }
 
 // GetAliyunSdkConfToken 根据 identifier 查询百度SDK应用配置和Token信息
-func (s *sSdkAliyun) GetAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.AliyunSdkConfToken, err error) {
+func (s *sSdkAliyun) GetAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConfToken, err error) {
 	for _, conf := range s.AliyunSdkConfTokenList {
 		if conf.Identifier == identifier {
 			return &conf, nil
@@ -153,7 +153,7 @@ func (s *sSdkAliyun) syncAliyunSdkConfTokenList(ctx context.Context) error {
 		return err
 	}
 
-	newTokenItems := make([]model.AliyunSdkConfToken, 0)
+	newTokenItems := make([]sys_model.AliyunSdkConfToken, 0)
 	for _, conf := range *items {
 		for _, tokenInfo := range s.AliyunSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
@@ -168,21 +168,21 @@ func (s *sSdkAliyun) syncAliyunSdkConfTokenList(ctx context.Context) error {
 }
 
 // GetAliyunSdkConfList 获取阿里云SDK应用配置列表
-func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]model.AliyunSdkConf, error) {
-	items := make([]model.AliyunSdkConf, 0)
+func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]sys_model.AliyunSdkConf, error) {
+	items := make([]sys_model.AliyunSdkConf, 0)
 
-	data := entity.SysConfig{}
+	data := sys_entity.SysConfig{}
 
-	err := dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+	err := sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
 		Duration: s.CacheDuration,
 		Name:     s.sysConfigName,
 		Force:    true,
-	}).Where(do.SysConfig{
+	}).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
 	if err != nil && err != sql.ErrNoRows {
-		return &items, service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息获取失败"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if data.Value == "" {
@@ -197,7 +197,7 @@ func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]model.AliyunS
 }
 
 // GetAliyunSdkConf 根据identifier标识获取SDK配置信息
-func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (tokenInfo *model.AliyunSdkConf, err error) {
+func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConf, err error) {
 	items, err := s.GetAliyunSdkConfList(ctx)
 
 	if err != nil {
@@ -211,15 +211,15 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 		}
 	}
 
-	return nil, service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询阿里云SDK应用配置信息失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询阿里云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
 // SaveAliyunSdkConf 保存百度SDK应用配信息, isCreate判断是更新还是新建
-func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info model.AliyunSdkConf, isCreate bool) (*model.AliyunSdkConf, error) {
+func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error) {
 	items, _ := s.GetAliyunSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]model.AliyunSdkConf, 0)
+	newItems := make([]sys_model.AliyunSdkConf, 0)
 	for _, conf := range *items {
 		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在
 			isHas = true
@@ -234,34 +234,34 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info model.AliyunSdk
 		if isCreate {
 			newItems = append(newItems, info)
 		} else {
-			return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息保存失败，标识符错误"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息保存失败，标识符错误"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 	}
 
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := dao.SysConfig.Ctx(ctx).Count(do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = dao.SysConfig.Ctx(ctx).Data(do.SysConfig{Value: jsonString}).Where(do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = dao.SysConfig.Ctx(ctx).Insert(do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
 	}
 
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息保存失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除缓存列表
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步token列表
 	return &info, nil
@@ -282,17 +282,17 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 	}
 
 	if !isHas {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "要删除的阿里云SDK配置信息不存在", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "要删除的阿里云SDK配置信息不存在", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString}); err != nil {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息删除失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除缓存列表
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步Token列表
 	s.syncAliyunSdkConfTokenList(ctx)

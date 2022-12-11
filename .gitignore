@@ -21,6 +21,7 @@ manifest/config/config.yaml
 hack/config.yaml
 temp/
 responses/upload
-.env
+example/.env
 config.yaml
 resources/
+/.env
