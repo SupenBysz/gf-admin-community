@@ -1,10 +1,10 @@
 package sys_enum_auth
 
 import (
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/utility/enum"
 )
 
-type ActionTypeEnum sys_enum.Code
+type ActionTypeEnum enum.Code
 
 type actionType struct {
 	Login    ActionTypeEnum
@@ -13,16 +13,16 @@ type actionType struct {
 }
 
 var ActionType = actionType{
-	Login:    sys_enum.New(1, "登录"),
-	Logout:   sys_enum.New(2, "退出"),
-	Register: sys_enum.New(4, "注册"),
+	Login:    enum.New(1, "登录"),
+	Logout:   enum.New(2, "退出"),
+	Register: enum.New(4, "注册"),
 }
 
 func (e actionType) New(code int, description string) ActionTypeEnum {
 	if (code&ActionType.Login.Code()) == ActionType.Login.Code() ||
 		(code&ActionType.Logout.Code()) == ActionType.Logout.Code() ||
 		(code&ActionType.Register.Code()) == ActionType.Register.Code() {
-		return sys_enum.New(code, description)
+		return enum.New(code, description)
 	}
 	panic("kyAuth.ActionType.New: error")
 }

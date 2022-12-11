@@ -1,8 +1,10 @@
 package sys_enum_user
 
-import "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+import (
+	"github.com/SupenBysz/gf-admin-community/utility/enum"
+)
 
-type TypeEnum sys_enum.Code
+type TypeEnum enum.Code
 
 type userType struct {
 	Anonymous   TypeEnum
@@ -16,14 +18,14 @@ type userType struct {
 }
 
 var Type = userType{
-	Anonymous:   sys_enum.New(0, "匿名"),
-	User:        sys_enum.New(1, "用户"),
-	WeBusiness:  sys_enum.New(2, "微商"),
-	Merchant:    sys_enum.New(4, "商户"),
-	Advertiser:  sys_enum.New(8, "广告主"),
-	Facilitator: sys_enum.New(16, "服务商"),
-	Operator:    sys_enum.New(32, "运营商"),
-	SuperAdmin:  sys_enum.New(-1, "超级管理员"),
+	Anonymous:   enum.New(0, "匿名"),
+	User:        enum.New(1, "用户"),
+	WeBusiness:  enum.New(2, "微商"),
+	Merchant:    enum.New(4, "商户"),
+	Advertiser:  enum.New(8, "广告主"),
+	Facilitator: enum.New(16, "服务商"),
+	Operator:    enum.New(32, "运营商"),
+	SuperAdmin:  enum.New(-1, "超级管理员"),
 }
 
 func (e userType) New(code int, description string) TypeEnum {
@@ -35,7 +37,7 @@ func (e userType) New(code int, description string) TypeEnum {
 		(code&Type.Facilitator.Code()) == Type.Facilitator.Code() ||
 		(code&Type.Operator.Code()) == Type.Operator.Code() ||
 		(code&Type.SuperAdmin.Code()) == Type.SuperAdmin.Code() {
-		return sys_enum.New(code, description)
+		return enum.New(code, description)
 	}
 	panic("UserType: error")
 }
