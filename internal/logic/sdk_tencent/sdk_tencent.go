@@ -3,11 +3,11 @@ package sdk_tencent
 import (
 	"context"
 	"database/sql"
-	"github.com/SupenBysz/gf-admin-community/model"
-	"github.com/SupenBysz/gf-admin-community/model/dao"
-	"github.com/SupenBysz/gf-admin-community/model/do"
-	"github.com/SupenBysz/gf-admin-community/model/entity"
-	"github.com/SupenBysz/gf-admin-community/service"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -22,7 +22,7 @@ import (
 // 腾讯云服务平台
 
 type sSdkTencent struct {
-	TencentSdkConfTokenList []model.TencentSdkConfToken
+	TencentSdkConfTokenList []sys_model.TencentSdkConfToken
 	CacheDuration           time.Duration
 	sysConfigName           string
 }
@@ -30,18 +30,18 @@ type sSdkTencent struct {
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkTencent {
 	return &sSdkTencent{
-		TencentSdkConfTokenList: make([]model.TencentSdkConfToken, 0),
+		TencentSdkConfTokenList: make([]sys_model.TencentSdkConfToken, 0),
 		CacheDuration:           time.Hour,
 		sysConfigName:           "tencent_sdk_conf",
 	}
 }
 
 func init() {
-	service.RegisterSdkTencent(New())
+	sys_service.RegisterSdkTencent(New())
 }
 
 // fetchTencentSdkConfToken 根据 identifier 获取腾讯云API Token  （API获取方式）
-func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.TencentSdkConfToken, err error) {
+func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.TencentSdkConfToken, err error) {
 
 	info, err := s.GetTencentSdkConf(ctx, identifier)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier s
 	header["X-TC-Region"] = ""
 	header["X-TC-Timestamp"] = gtime.Now().TimestampStr()
 	header["X-TC-Version"] = info.Version
-	//header["Authorization"] = ""
+	// header["Authorization"] = ""
 	header["X-TC-Language"] = "zh-CN"
 
 	client.Header(header)
@@ -81,22 +81,22 @@ func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier s
 
 	response, err := client.Post(ctx, host, param)
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 接受返回数据，json解析
-	newTokenInfo := model.TencentAccessToken{}
+	newTokenInfo := sys_model.TencentAccessToken{}
 
 	err = gjson.DecodeTo(response.ReadAllString(), &newTokenInfo)
 	if nil != err {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API Token 失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API Token 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	var result *model.TencentSdkConfToken = nil
+	var result *sys_model.TencentSdkConfToken = nil
 	newItems := garray.New()
 	for _, item := range s.TencentSdkConfTokenList {
 		if item.Identifier == identifier {
-			result = &model.TencentSdkConfToken{
+			result = &sys_model.TencentSdkConfToken{
 				TencentSdkConf:     *info,
 				TencentAccessToken: newTokenInfo,
 			}
@@ -108,7 +108,7 @@ func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier s
 	}
 
 	if result == nil {
-		result = &model.TencentSdkConfToken{
+		result = &sys_model.TencentSdkConfToken{
 			TencentSdkConf:     *info,
 			TencentAccessToken: newTokenInfo,
 		}
@@ -120,7 +120,7 @@ func (s *sSdkTencent) fetchTencentSdkConfToken(ctx context.Context, identifier s
 }
 
 // GetTencentSdkConfToken 根据 identifier 查询腾讯SDK应用配置和Token信息
-func (s *sSdkTencent) GetTencentSdkConfToken(ctx context.Context, identifier string) (tokenInfo *model.TencentSdkConfToken, err error) {
+func (s *sSdkTencent) GetTencentSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.TencentSdkConfToken, err error) {
 	for _, conf := range s.TencentSdkConfTokenList {
 		if conf.Identifier == identifier {
 			return &conf, nil
@@ -136,7 +136,7 @@ func (s *sSdkTencent) syncTencentSdkConfTokenList(ctx context.Context) error {
 		return err
 	}
 
-	newTokenItems := make([]model.TencentSdkConfToken, 0)
+	newTokenItems := make([]sys_model.TencentSdkConfToken, 0)
 	for _, conf := range *items {
 		for _, tokenInfo := range s.TencentSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
@@ -151,21 +151,21 @@ func (s *sSdkTencent) syncTencentSdkConfTokenList(ctx context.Context) error {
 }
 
 // GetTencentSdkConfList 获取腾讯云SDK应用配置列表
-func (s *sSdkTencent) GetTencentSdkConfList(ctx context.Context) (*[]model.TencentSdkConf, error) {
-	items := make([]model.TencentSdkConf, 0)
+func (s *sSdkTencent) GetTencentSdkConfList(ctx context.Context) (*[]sys_model.TencentSdkConf, error) {
+	items := make([]sys_model.TencentSdkConf, 0)
 
-	data := entity.SysConfig{}
+	data := sys_entity.SysConfig{}
 
-	err := dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+	err := sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
 		Duration: s.CacheDuration,
 		Name:     s.sysConfigName,
 		Force:    true,
-	}).Where(do.SysConfig{
+	}).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
 	if err != nil && err != sql.ErrNoRows {
-		return &items, service.SysLogs().ErrorSimple(ctx, gerror.New("腾讯云 SDK配置信息获取失败"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("腾讯云 SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if data.Value == "" {
@@ -180,29 +180,29 @@ func (s *sSdkTencent) GetTencentSdkConfList(ctx context.Context) (*[]model.Tence
 }
 
 // GetTencentSdkConf 根据identifier标识获取SDK配置信息
-func (s *sSdkTencent) GetTencentSdkConf(ctx context.Context, identifier string) (tokenInfo *model.TencentSdkConf, err error) {
+func (s *sSdkTencent) GetTencentSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.TencentSdkConf, err error) {
 	items, err := s.GetTencentSdkConfList(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	//循环所有配置，筛选出符合条件的配置
+	// 循环所有配置，筛选出符合条件的配置
 	for _, conf := range *items {
 		if conf.Identifier == identifier {
 			return &conf, nil
 		}
 	}
 
-	return nil, service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询腾讯云SDK应用配置信息失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询腾讯云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
 // SaveTencentSdkConf 保存腾讯SDK应用配信息, isCreate判断是更新还是新建
-func (s *sSdkTencent) SaveTencentSdkConf(ctx context.Context, info model.TencentSdkConf, isCreate bool) (*model.TencentSdkConf, error) {
+func (s *sSdkTencent) SaveTencentSdkConf(ctx context.Context, info sys_model.TencentSdkConf, isCreate bool) (*sys_model.TencentSdkConf, error) {
 	items, _ := s.GetTencentSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]model.TencentSdkConf, 0)
+	newItems := make([]sys_model.TencentSdkConf, 0)
 	for _, conf := range *items {
 		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在
 			isHas = true
@@ -217,34 +217,34 @@ func (s *sSdkTencent) SaveTencentSdkConf(ctx context.Context, info model.Tencent
 		if isCreate {
 			newItems = append(newItems, info)
 		} else {
-			return nil, service.SysLogs().ErrorSimple(ctx, gerror.New("腾讯云SDK配置信息保存失败，标识符错误"), "", dao.SysConfig.Table()+":"+s.sysConfigName)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("腾讯云SDK配置信息保存失败，标识符错误"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 	}
 
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := dao.SysConfig.Ctx(ctx).Count(do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = dao.SysConfig.Ctx(ctx).Data(do.SysConfig{Value: jsonString}).Where(do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = dao.SysConfig.Ctx(ctx).Insert(do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
 	}
 
 	if err != nil {
-		return nil, service.SysLogs().ErrorSimple(ctx, err, "腾讯云SDK配置信息保存失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "腾讯云SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除缓存列表
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步token列表
 	return &info, nil
@@ -265,17 +265,17 @@ func (s *sSdkTencent) DeleteTencentSdkConf(ctx context.Context, identifier strin
 	}
 
 	if !isHas {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "要删除的腾讯云SDK配置信息不存在", dao.SysConfig.Table()+":"+s.sysConfigName)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "要删除的腾讯云SDK配置信息不存在", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if dao.SysConfig.Ctx(ctx).Where(do.SysConfig{Name: s.sysConfigName}).Update(do.SysConfig{Value: jsonString}); err != nil {
-		return false, service.SysLogs().ErrorSimple(ctx, err, "腾讯云SDK配置信息删除失败", dao.SysConfig.Table()+":"+s.sysConfigName)
+	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "腾讯云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 移除缓存列表
-	daoctl.RemoveQueryCache(dao.SysConfig.DB(), s.sysConfigName)
+	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步Token列表
 	s.syncTencentSdkConfTokenList(ctx)

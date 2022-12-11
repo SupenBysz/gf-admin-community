@@ -4,8 +4,8 @@ server:
   dumpRouterMap: false
   routeOverWrite: true
   accessLogEnabled: false
-  SessionIdName: "KysionSessionId"
-  sessionPath: "temp/sessions/gf-admin_sessions"    # Session文件存储目录
+  SessionIdName: "KysionGfAdminCommunitySessionId"
+  sessionPath: "temp/sessions/gf-admin_community_sessions"    # Session文件存储目录
   openapiPath: "/openapi/gf-admin-community.json"
   swaggerPath: "/docs/gf-admin-community"
 

@@ -1,32 +1,32 @@
 package sysapi
 
 import (
-	"github.com/SupenBysz/gf-admin-community/model"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
 type LoginReq struct {
 	g.Meta `path:"/login" method:"post" summary:"登录" tags:"鉴权"`
-	model.LoginInfo
+	sys_model.LoginInfo
 }
 
 type LoginByMobileReq struct {
 	g.Meta `path:"/loginByMobile" method:"post" summary:"手机号登录" tags:"鉴权"`
-	model.LoginByMobileInfo
+	sys_model.LoginByMobileInfo
 }
 
-type LoginByMobileRes model.TokenInfo
+type LoginByMobileRes sys_model.TokenInfo
 
-type LoginRes model.TokenInfo
+type LoginRes sys_model.TokenInfo
 
 type RegisterReq struct {
 	g.Meta `path:"/register" method:"post" summary:"注册" tags:"鉴权"`
-	model.SysUserRegister
+	sys_model.SysUserRegister
 }
 
 type ForgotPasswordReq struct {
 	g.Meta `path:"/forgotPassword" method:"post" summary:"忘记密码" tags:"鉴权"`
-	model.ForgotPassword
+	sys_model.ForgotPassword
 }
 type ForgotPasswordRes struct {
 	IdKey int64 `json:"id" dc:"ResetPassword 接口需要的key"`
