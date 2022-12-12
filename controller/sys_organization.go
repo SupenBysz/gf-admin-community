@@ -14,18 +14,18 @@ var SysOrganization = cSysOrganization{}
 type cSysOrganization struct{}
 
 // QueryOrganizationList 获取组织架构|列表
-func (c *cSysOrganization) QueryOrganizationList(ctx context.Context, req *sys_api.QueryOrganizationListReq) (*sys_api.OrganizationInfoListRes, error) {
+func (c *cSysOrganization) QueryOrganizationList(ctx context.Context, req *sys_api.QueryOrganizationListReq) (*sys_model.OrganizationInfoListRes, error) {
 	return sys_service.SysOrganization().QueryOrganizationList(ctx, req.SearchParams)
 }
 
 // GetOrganizationList 根据ID获取下级组织架构|列表
-func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api.GetOrganizationListReq) (*sys_api.OrganizationInfoListRes, error) {
+func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api.GetOrganizationListReq) (*sys_model.OrganizationInfoListRes, error) {
 	data, count, err := sys_service.SysOrganization().GetOrganizationList(ctx, req.Id, req.IsRecursive)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sys_api.OrganizationInfoListRes{
+	return &sys_model.OrganizationInfoListRes{
 		List: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
