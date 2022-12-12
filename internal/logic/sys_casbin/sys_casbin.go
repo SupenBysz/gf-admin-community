@@ -2,7 +2,7 @@ package sys_casbin
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -70,7 +70,7 @@ func Casbin() *casbin.Enforcer {
 		e = some(where (p.eft == allow))
 		
 		[matchers]
-		m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && (r.act == p.act||p.act == "*")||p.sub ==` + `"` + consts.CasbinSuperAdmin + `"`)
+		m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && (r.act == p.act||p.act == "*")||p.sub ==` + `"` + sys_consts.CasbinSuperAdmin + `"`)
 	if err != nil {
 		glog.Error(gctx.New(), err)
 		return nil
