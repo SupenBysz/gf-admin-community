@@ -14,7 +14,7 @@ var SysRole = cSysRole{}
 type cSysRole struct{}
 
 // GetRoleList 获取角色|列表
-func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListReq) (*sys_api.RoleListRes, error) {
+func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListReq) (*sys_model.RoleListRes, error) {
 	return sys_service.SysRole().QueryRoleList(ctx, req.SearchParams)
 }
 
@@ -76,7 +76,7 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 }
 
 // GetUserRoleList 获取用户拥有的所有角色列表
-func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRolesReq) (*sys_api.RoleListRes, error) {
+func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRolesReq) (*sys_model.RoleListRes, error) {
 	data, err := sys_service.SysRole().GetUserRoleList(ctx, req.UserId)
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 
 	count := len(*data)
 
-	return &sys_api.RoleListRes{
+	return &sys_model.RoleListRes{
 		List: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
