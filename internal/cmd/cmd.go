@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	sysController "github.com/SupenBysz/gf-admin-community/controller"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
 	"github.com/gogf/gf/v2/container/garray"
@@ -61,11 +61,11 @@ var (
 			{
 				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
 				// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-				consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
+				sys_consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
 				// 加载不允许登录的用户类型
-				consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.allowLoginUserType", "[-1]").Ints())
+				sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.allowLoginUserType", "[-1]").Ints())
 				// 去重
-				consts.Global.NotAllowLoginUserTypeArr.Unique()
+				sys_consts.Global.NotAllowLoginUserTypeArr.Unique()
 			}
 
 			{

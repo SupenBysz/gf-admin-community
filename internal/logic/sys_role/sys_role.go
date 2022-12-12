@@ -2,7 +2,7 @@ package sys_role
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -83,7 +83,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 				return err
 			}
 
-			result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(roleInfo.Id), consts.CasbinSuperRole, consts.CasbinDomain)
+			result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(roleInfo.Id), sys_consts.CasbinSuperRole, sys_consts.CasbinDomain)
 
 			if !result || err != nil {
 				return err
@@ -123,7 +123,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
 	}
 
-	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), consts.CasbinDomain)
+	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if len(userIds) > 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "删除角色失败，请先删除角色下的用户"), "", sys_dao.SysRole.Table())
@@ -136,7 +136,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		_, err = sys_dao.SysRole.Ctx(ctx).Delete(sys_do.SysRole{Id: roleId})
 
-		result, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(info.Id), consts.CasbinSuperRole, consts.CasbinDomain)
+		result, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(info.Id), sys_consts.CasbinSuperRole, sys_consts.CasbinDomain)
 
 		if !result || err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
@@ -162,7 +162,7 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId int64, userId int6
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	return sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), consts.CasbinDomain)
+	return sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
 // RemoveRoleForUser 移除角色中的用户
@@ -180,7 +180,7 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), consts.CasbinDomain)
+	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
 // GetRoleUsers 获取角色下的所有用户
@@ -196,7 +196,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64) (*[]sys_model
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "查询角色ID信息不存在")
 	}
 
-	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), consts.CasbinDomain)
+	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
@@ -242,7 +242,7 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "查询用户ID信息不存在"), "", sys_dao.SysRole.Table())
 	}
 
-	roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(userId), consts.CasbinDomain)
+	roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(userId), sys_consts.CasbinDomain)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
@@ -270,7 +270,7 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 
 		// 重新赋予roleId新的权限清单
 		for _, item := range permissionIds {
-			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(roleId), consts.CasbinDomain, gconv.String(item), "allow")
+			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(roleId), sys_consts.CasbinDomain, gconv.String(item), "allow")
 			if err != nil || ret == false {
 				return err
 			}
@@ -286,7 +286,7 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 
 // GetRolePermissions 获取角色权限Ids，返回权限Id数组
 func (s *sSysRole) GetRolePermissions(ctx context.Context, roleId int64) ([]int64, error) {
-	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(roleId), consts.CasbinDomain)
+	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(roleId), sys_consts.CasbinDomain)
 	if err != nil {
 		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "角色权限查询失败", sys_dao.SysRole.Table())
 	}

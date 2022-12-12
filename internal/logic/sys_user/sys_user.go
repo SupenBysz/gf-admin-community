@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
@@ -17,7 +18,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -121,7 +121,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysUser.Table())
 		}
 
-		result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), consts.CasbinDomain)
+		result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 
 		if result == false || err != nil {
 			return result, err
@@ -252,7 +252,7 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 
 		// 重新赋予roleId新的权限清单
 		for _, item := range permissionIds {
-			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(userId), consts.CasbinDomain, gconv.String(item), "allow")
+			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(userId), sys_consts.CasbinDomain, gconv.String(item), "allow")
 			if err != nil || ret == false {
 				return err
 			}
@@ -268,7 +268,7 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 
 // GetUserPermissionIds 获取用户权限，返回权限Id数组
 func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]int64, error) {
-	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(userId), consts.CasbinDomain)
+	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(userId), sys_consts.CasbinDomain)
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户权限查询失败"), "", sys_dao.SysUser.Table())
 	}

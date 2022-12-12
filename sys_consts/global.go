@@ -1,4 +1,4 @@
-package consts
+package sys_consts
 
 import "github.com/gogf/gf/v2/container/garray"
 
