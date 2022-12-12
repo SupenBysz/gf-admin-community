@@ -3,8 +3,8 @@ package cmd
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
-	sysController "github.com/SupenBysz/gf-admin-community/controller"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
+	sysController "github.com/SupenBysz/gf-admin-community/sys_controller"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
 	"github.com/gogf/gf/v2/container/garray"
