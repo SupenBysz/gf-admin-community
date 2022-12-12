@@ -2,7 +2,7 @@ package sys
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/internal/consts"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -112,7 +112,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUs
 	}
 
 	// 校验登录类型
-	if !consts.Global.NotAllowLoginUserTypeArr.Contains(sysUserInfo.Type) {
+	if sys_consts.Global.NotAllowLoginUserTypeArr.Contains(sysUserInfo.Type) {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
