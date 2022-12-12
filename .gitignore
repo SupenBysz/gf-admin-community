@@ -20,8 +20,8 @@ manifest/output/
 manifest/config/config.yaml
 hack/config.yaml
 temp/
-responses/upload
 example/.env
 config.yaml
-resources/
+resources/store
+resources/upload
 /.env
