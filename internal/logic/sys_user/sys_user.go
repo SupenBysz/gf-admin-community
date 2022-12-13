@@ -23,6 +23,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
+
+	proService "github.com/SupenBysz/gf-admin-pro-modules/pro_service"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
@@ -328,6 +330,69 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
+	}
+
+	return true, nil
+}
+
+// ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
+func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error) {
+	// 获取当前登录用户
+	user := sys_service.BizCtx().Get(ctx).ClaimsUser
+
+	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, user.Id)
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeValidationFailed, "当前登录用户身份错误")
+	}
+
+	// 身份权限判断
+	{
+		isContact := false
+		if user.Type == sys_enum.User.Type.Facilitator.Code() {
+			employee, _ := proService.ProFacilitatorEmployee().GetFacilitatorEmployeeById(ctx, user.Id)
+
+			facilitator, _ := proService.ProFacilitator().GetFacilitatorById(ctx, employee.FacilitatorId)
+
+			if facilitator.UserId == employee.Id {
+				isContact = true
+			}
+		} else if user.Type == sys_enum.User.Type.Operator.Code() {
+			employee, _ := proService.ProOperatorEmployee().GetOperatorEmployeeById(ctx, user.Id)
+
+			operator, _ := proService.ProOperator().GetOperatorById(ctx, employee.OperatorId)
+
+			if operator.UserId == employee.Id {
+				isContact = true
+			}
+		}
+
+		// 判断是否是超级管理员或者XX商管理员
+		if !(userInfo.Type == sys_enum.User.Type.SuperAdmin.Code() || isContact) { // -1
+			return false, gerror.New("您没有权限操作！")
+		}
+
+	}
+
+	// 生成密码，重置密码
+	{
+		if password != confirmPassword {
+			return false, gerror.NewCode(gcode.CodeValidationFailed, "两次密码不一致，请重新输入")
+		}
+		// 取盐
+		salt := gconv.String(userId)
+
+		// 加密
+		pwdHash, _ := en_crypto.PwdHash(password, salt)
+
+		result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
+
+		// 受影响的行数
+		count, _ := result.RowsAffected()
+
+		if err != nil || count != 1 {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")
+		}
+
 	}
 
 	return true, nil

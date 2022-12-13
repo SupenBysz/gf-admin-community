@@ -63,3 +63,12 @@ func (c *cSysUser) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUs
 	}
 	return true, nil
 }
+
+// ResetUserPassword 重置用户密码
+func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
+	_, err = sys_service.SysUser().ResetUserPassword(ctx, req.UserId, req.Password, req.ConfirmPassword)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
