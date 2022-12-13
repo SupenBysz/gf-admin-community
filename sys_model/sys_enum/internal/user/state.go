@@ -30,5 +30,5 @@ func (e state) New(code int, description string) StateEnum {
 		(code&State.Canceled.Code()) == State.Canceled.Code() {
 		return enum.New(code, description)
 	}
-	panic("kyUser.UserState.New: error")
+	panic("User.State.New: error")
 }

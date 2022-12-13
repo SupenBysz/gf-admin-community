@@ -39,5 +39,5 @@ func (e userType) New(code int, description string) TypeEnum {
 		(code&Type.SuperAdmin.Code()) == Type.SuperAdmin.Code() {
 		return enum.New(code, description)
 	}
-	panic("UserType: error")
+	panic("User.Type.New: error")
 }
