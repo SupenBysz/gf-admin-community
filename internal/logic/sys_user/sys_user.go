@@ -23,8 +23,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
-
-	proService "github.com/SupenBysz/gf-admin-pro-modules/pro_service"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
@@ -345,32 +343,21 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		return false, gerror.NewCode(gcode.CodeValidationFailed, "当前登录用户身份错误")
 	}
 
-	// 身份权限判断
 	{
-		isContact := false
-		if user.Type == sys_enum.User.Type.Facilitator.Code() {
-			employee, _ := proService.ProFacilitatorEmployee().GetFacilitatorEmployeeById(ctx, user.Id)
-
-			facilitator, _ := proService.ProFacilitator().GetFacilitatorById(ctx, employee.FacilitatorId)
-
-			if facilitator.UserId == employee.Id {
-				isContact = true
+		g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *userInfo)
+					if err != nil {
+						break
+					}
+				}
 			}
-		} else if user.Type == sys_enum.User.Type.Operator.Code() {
-			employee, _ := proService.ProOperatorEmployee().GetOperatorEmployeeById(ctx, user.Id)
+		})
 
-			operator, _ := proService.ProOperator().GetOperatorById(ctx, employee.OperatorId)
-
-			if operator.UserId == employee.Id {
-				isContact = true
-			}
+		if err != nil {
+			return false, err
 		}
-
-		// 判断是否是超级管理员或者XX商管理员
-		if !(userInfo.Type == sys_enum.User.Type.SuperAdmin.Code() || isContact) { // -1
-			return false, gerror.New("您没有权限操作！")
-		}
-
 	}
 
 	// 生成密码，重置密码

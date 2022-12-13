@@ -24,5 +24,5 @@ func (e actionType) New(code int, description string) ActionTypeEnum {
 		(code&ActionType.Register.Code()) == ActionType.Register.Code() {
 		return enum.New(code, description)
 	}
-	panic("kyAuth.ActionType.New: error")
+	panic("Auth.ActionType.New: error")
 }

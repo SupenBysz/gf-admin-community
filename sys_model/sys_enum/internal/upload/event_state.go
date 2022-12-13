@@ -24,5 +24,5 @@ func (e eventState) New(code int, description string) EventStateEnum {
 		(code&EventState.AfterSave.Code()) == EventState.AfterSave.Code() {
 		return enum.New(code, description)
 	}
-	panic("uploadEventState: error")
+	panic("Upload.EventState.New: error")
 }
