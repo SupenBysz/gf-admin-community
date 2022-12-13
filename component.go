@@ -5,7 +5,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
 
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic"
-	_ "github.com/SupenBysz/gf-admin-pro-modules"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 )
 
