@@ -63,7 +63,7 @@ var (
 				// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
 				sys_consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
 				// 加载不允许登录的用户类型
-				sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.allowLoginUserType", "[-1]").Ints())
+				sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.NotAllowLoginUserType", "[-1]").Ints())
 				// 去重
 				sys_consts.Global.NotAllowLoginUserTypeArr.Unique()
 			}
