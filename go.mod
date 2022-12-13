@@ -3,7 +3,7 @@ module github.com/SupenBysz/gf-admin-community
 go 1.19
 
 require (
-	github.com/SupenBysz/gf-admin-pro-modules v0.1.6
+	github.com/SupenBysz/gf-admin-pro-modules v0.1.7
 	github.com/casbin/casbin/v2 v2.56.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.2.0
 	github.com/gogf/gf/v2 v2.2.5
@@ -45,4 +45,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/SupenBysz/gf-admin-pro-modules v0.1.6 => gitlab.mianla.com.cn/kysion/gf-admin-pro-modules.git v0.1.6
+replace github.com/SupenBysz/gf-admin-pro-modules v0.1.7 => gitlab.mianla.com.cn/kysion/gf-admin-pro-modules.git v0.1.7
