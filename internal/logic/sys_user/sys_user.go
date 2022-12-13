@@ -316,10 +316,30 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "两次输入的密码不一致，修改失败")
 	}
 
-	// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
-	hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
-	if sysUserInfo.Password != hash1 {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "原密码输入错误，修改失败")
+	{
+		// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
+		hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
+		if sysUserInfo.Password != hash1 {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "原密码输入错误，修改失败")
+		}
+	}
+
+	{
+		// 处理hook订阅
+		g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if hook.Value.Key.Code()&sys_enum.User.Event.ChangePassword.Code() == sys_enum.User.Event.ChangePassword.Code() {
+					// 调用hook
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ChangePassword, *sysUserInfo)
+					if err != nil {
+						break
+					}
+				}
+			}
+		})
+		if err != nil {
+			return false, err
+		}
 	}
 
 	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
