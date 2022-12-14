@@ -2,6 +2,7 @@ package sys_logs
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -29,6 +30,10 @@ func New() *sSysLogs {
 
 // Write 写日志
 func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs) error {
+	if sys_consts.Global.LogLevelToDatabaseArr.Search(info.Level) == -1 {
+		return err
+	}
+
 	g.Try(ctx, func(ctx context.Context) {
 		if info.Category == sys_dao.SysCasbin.Table() {
 			info.Category = "Casbin"
