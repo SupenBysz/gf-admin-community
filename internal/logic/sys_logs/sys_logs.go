@@ -2,6 +2,7 @@ package sys_logs
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -29,56 +30,62 @@ func New() *sSysLogs {
 
 // Write 写日志
 func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs) error {
-	g.Try(ctx, func(ctx context.Context) {
-		if info.Category == sys_dao.SysCasbin.Table() {
-			info.Category = "Casbin"
-		} else if info.Category == sys_dao.SysFile.Table() {
-			info.Category = "文件管理"
-		} else if info.Category == sys_dao.SysMenu.Table() {
-			info.Category = "菜单管理"
-		} else if info.Category == sys_dao.SysOrganization.Table() {
-			info.Category = "组织管理"
-		} else if info.Category == sys_dao.SysPermission.Table() {
-			info.Category = "权限"
-		} else if info.Category == sys_dao.SysRole.Table() {
-			info.Category = "角色"
-		} else if info.Category == sys_dao.SysSmsLogs.Table() {
-			info.Category = "短信"
-		} else if info.Category == sys_dao.SysUser.Table() {
-			info.Category = "用户"
-		}
+	if info.Category == sys_dao.SysCasbin.Table() {
+		info.Category = "Casbin"
+	} else if info.Category == sys_dao.SysFile.Table() {
+		info.Category = "文件管理"
+	} else if info.Category == sys_dao.SysMenu.Table() {
+		info.Category = "菜单管理"
+	} else if info.Category == sys_dao.SysOrganization.Table() {
+		info.Category = "组织管理"
+	} else if info.Category == sys_dao.SysPermission.Table() {
+		info.Category = "权限"
+	} else if info.Category == sys_dao.SysRole.Table() {
+		info.Category = "角色"
+	} else if info.Category == sys_dao.SysSmsLogs.Table() {
+		info.Category = "短信"
+	} else if info.Category == sys_dao.SysUser.Table() {
+		info.Category = "用户"
+	}
 
+	info.Error = info.Context
+
+	if err != nil {
+		info.Error = err.Error()
+	} else {
 		info.Error = info.Context
+	}
 
-		if err != nil {
-			info.Error = err.Error()
-		} else {
-			info.Error = info.Context
-		}
+	if info.Context != "" {
+		err = gerror.New(info.Context)
+	}
 
-		if info.Context != "" {
-			err = gerror.New(info.Context)
-		}
+	if info.Context == "" {
+		info.Context = info.Error
+	}
 
-		if info.Context == "" {
-			info.Context = info.Error
-		}
-
-		if info.UserId == 0 {
+	if info.UserId == 0 {
+		g.Try(ctx, func(ctx context.Context) {
 			if sys_service.BizCtx().Get(ctx) != nil {
 				info.UserId = sys_service.BizCtx().Get(ctx).ClaimsUser.Id
 			}
-		}
 
-		r := ghttp.RequestFromCtx(ctx)
-		if r != nil {
-			info.Content = gjson.MustEncodeString(g.Map{
-				"url":    r.URL.Path,
-				"body":   r.GetBodyString(),
-				"header": r.Header,
-			})
-		}
-		r.GetBodyString()
+			r := ghttp.RequestFromCtx(ctx)
+			if r != nil {
+				info.Content = gjson.MustEncodeString(g.Map{
+					"url":    r.URL.Path,
+					"body":   r.GetBodyString(),
+					"header": r.Header,
+				})
+			}
+		})
+	}
+
+	if sys_consts.Global.LogLevelToDatabaseArr.Search(info.Level) == -1 {
+		return err
+	}
+
+	g.Try(ctx, func(ctx context.Context) {
 
 		info.Id = idgen.NextId()
 		info.CreatedAt = gtime.Now()
