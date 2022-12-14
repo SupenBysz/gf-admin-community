@@ -24,6 +24,8 @@ service:
   NotAllowLoginUserType: [0]
   # 是否允许用户注册，false时用户注册接口将强制返回失败
   userAllowRegister: true
+  # 需要存储到数据库中的日志，支持：all,error,warn,info
+  logLevelToDatabase: ["all"]
 
 # 日志配置
 logger:

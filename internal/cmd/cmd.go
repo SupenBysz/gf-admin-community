@@ -11,6 +11,8 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/os/glog"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gmode"
 
 	"github.com/yitter/idgenerator-go/idgen"
@@ -62,10 +64,28 @@ var (
 				// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
 				// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
 				sys_consts.Global.DefaultRegisterType = g.Cfg().MustGet(ctx, "service.userDefaultType", 0).Int()
-				// 加载不允许登录的用户类型
-				sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.NotAllowLoginUserType", "[-1]").Ints())
-				// 去重
-				sys_consts.Global.NotAllowLoginUserTypeArr.Unique()
+				// 加载不允许登录的用户类型，并去重
+				sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(ctx, "service.NotAllowLoginUserType", "[-1]").Ints()).SetUnique(true)
+			}
+
+			{
+				// 加载日志写数据库的配置
+				LogLevelToDatabaseArr := garray.NewSortedStrArrayFrom(g.Cfg().MustGet(ctx, "service.logLevelToDatabase", "[\"ALL\"]").Strings()).SetUnique(true)
+
+				LogLevelToDatabaseArr.Iterator(func(_ int, value string) bool {
+					switch gstr.ToUpper(value) {
+					case "ALL":
+						sys_consts.Global.LogLevelToDatabaseArr.Append(glog.LEVEL_ALL)
+						return false
+					case "ERROR":
+						sys_consts.Global.LogLevelToDatabaseArr.Append(glog.LEVEL_ERRO)
+					case "INFO":
+						sys_consts.Global.LogLevelToDatabaseArr.Append(glog.LEVEL_INFO)
+					case "WARN":
+						sys_consts.Global.LogLevelToDatabaseArr.Append(glog.LEVEL_WARN)
+					}
+					return true
+				})
 			}
 
 			{
