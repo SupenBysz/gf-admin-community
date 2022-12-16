@@ -5,17 +5,19 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
-	"github.com/gogf/gf/v2/frame/g"
-
 	"github.com/casbin/casbin/v2"
+	casbinModel "github.com/casbin/casbin/v2/model"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/glog"
-
-	casbinModel "github.com/casbin/casbin/v2/model"
+	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type sCasbin struct {
@@ -53,8 +55,8 @@ func (s *sCasbin) Enforcer() *casbin.Enforcer {
 	return CE
 }
 
-// Casbin 实体  域对象  资源  方法   policy_definition/request_definition
-// Casbin 用户  属于那个角色  属于哪个商户 role_definition
+// Casbin policy|request_definition --> 实体 域 资源 方法
+// Casbin role_definition --> 用户 所属角色 所属域
 func Casbin() *casbin.Enforcer {
 	modelFromString, err := casbinModel.NewModelFromString(`
 		[request_definition]
@@ -90,16 +92,41 @@ func Casbin() *casbin.Enforcer {
 	return CE
 }
 
+// Middleware Casbin中间件实现权限控制
 func (s *sCasbin) Middleware(r *ghttp.Request) {
-	var reqCasbin sys_model.ReqCasbin
-	if err := r.Parse(&reqCasbin); err != nil {
-		response.JsonExit(r, 1, "权限失效")
+	// 如果是登录和获取验证码，直接放行
+	if gstr.Contains(r.URL.Path, "/login") || gstr.Contains(r.URL.Path, "/captcha") {
+		r.Middleware.Next()
+		return
 	}
-	if err := sys_service.Casbin().Check(); err != nil {
-		if r.IsAjaxRequest() {
+
+	// 获取请求URL
+	url := r.URL.Path
+	urlSplit := gstr.Split(url, "/")
+	path := "/" + urlSplit[len(urlSplit)-1]
+
+	// 获取请求的用户
+	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
+
+	// 1.通过请求的URL获取资源id
+	permissionId, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
+	if err != nil {
+		return
+	}
+
+	// 2.检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
+	t, err := s.EnforceCheck(gconv.String(user.Id), "kysion.com", gconv.String(permissionId), "allow")
+
+	if err != nil {
+		if !r.IsAjaxRequest() {
 			response.JsonExit(r, 2, err.Error())
 		}
 	}
+	if !t {
+		response.JsonExit(r, 1, "没有权限")
+		return
+	}
+
 	r.Middleware.Next()
 }
 
@@ -138,7 +165,25 @@ func (s *sCasbin) DeletePermissionsForUser(roleName string) (bool, error) {
 	return s.Enforcer().DeletePermissionsForUser(roleName)
 }
 
-// Enforce 校验
-func (s *sCasbin) Enforce(userName, path, method string) (bool, error) {
-	return s.Enforcer().Enforce(userName, path, method)
+// EnforceCheck 校验  确认访问权限
+func (s *sCasbin) EnforceCheck(userName, path, role, method string) (bool, error) { // 用户id  域 资源  方法
+	t, err := s.Enforcer().Enforce(userName, path, role, method)
+	return t, err
+}
+
+// CheckUserHasPermission 通过权限树ID，校验当前登录用户是否拥有该权限
+func (s *sCasbin) CheckUserHasPermission(ctx context.Context, userId string, roleId string) (bool, error) { // 用户id，角色id，
+	// 获取角色
+	result := sys_entity.SysCasbin{}
+
+	err := sys_dao.SysCasbin.Ctx(ctx).Where(sys_do.SysCasbin{
+		V0: userId,
+		V1: roleId,
+	}).Scan(&result)
+
+	if err != nil || &result == nil {
+		return false, err
+	}
+
+	return true, nil
 }

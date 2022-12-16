@@ -6,6 +6,8 @@
 package sys_service
 
 import (
+	"context"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -22,7 +24,8 @@ type (
 		AddPermissionsForUser(roleName string, path []string) (bool, error)
 		DeletePermissionForUser(roleName, path, method string) (bool, error)
 		DeletePermissionsForUser(roleName string) (bool, error)
-		Enforce(userName, path, method string) (bool, error)
+		EnforceCheck(userName, path, role, method string) (bool, error)
+		CheckUserHasPermission(ctx context.Context, userId string, roleId string) (bool, error)
 	}
 )
 
