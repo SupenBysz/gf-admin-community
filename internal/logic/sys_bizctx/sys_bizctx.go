@@ -19,7 +19,7 @@ func init() {
 
 func New() *sBizCtx {
 	return &sBizCtx{
-		contextKey: g.Cfg().MustGet(context.Background(), "service.HeaderContextKey").String(),
+		contextKey: g.Cfg().MustGet(context.Background(), "service.bizCtxContextKey", "gf-admin-bizctx").String(),
 	}
 }
 

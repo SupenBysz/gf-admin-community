@@ -29,6 +29,10 @@ service:
   # 需要存储到数据库中的日志，支持：all,error,warn,info
   logLevelToDatabase: [ "all" ]
   # 业务审核服务时限，超过时限需要重新申请审核，相关业务有自定义设置时，将自动忽略这里的设置
+  auditExpireDay:
+    default: 15
+  # Session上下文缓存Key
+  bizCtxContextKey: "KysionGfAdminBizCtxContextKye"
 
 # 日志配置
 logger:

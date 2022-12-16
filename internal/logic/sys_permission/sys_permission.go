@@ -210,3 +210,23 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), sys_dao.SysPermission.Table())
 	return true, nil
 }
+
+// GetPermissionTreeIdByUrl 根据请求URL去匹配权限树，返回权限树ID
+func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path string) (int64, error) {
+	if path == "" {
+		return 0, gerror.New("传入的请求url为空")
+	}
+
+	result := sys_entity.SysPermission{}
+
+	// 在权限树标识中匹标识后缀，|为标识符的分隔符
+	path = "%|" + path
+
+	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return result.Id, nil
+}
