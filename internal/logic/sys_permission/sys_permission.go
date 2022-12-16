@@ -76,7 +76,10 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 			Name:     s.CachePrefix + gconv.String(parentId),
 			Force:    true,
 		}).
-		Where(sys_do.SysPermission{ParentId: parentId}).Scan(&result)
+		Where(sys_do.SysPermission{
+			ParentId: parentId,
+			IsShow:   1,
+		}).Scan(&result)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())

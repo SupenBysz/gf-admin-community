@@ -3604,8 +3604,8 @@ COMMENT ON COLUMN "public"."sys_user"."mobile" IS '手机号';
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO "public"."sys_user" VALUES (5302581852373061, 'Super.Admin', '651bf328709cd3531b251a03281c4103', 1, 32, NULL, NULL, NULL, NULL);
-INSERT INTO "public"."sys_user" VALUES (5751143024558149, 'Boss', '9a33fc0f21173b28af9a7a613640a6128eea56a2875150005ec5e93b480dd06f', 1, 32, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."sys_user" VALUES (5302581852373061, 'Super.Admin', 'be86579ef22515322f123fd5b62f6735711d337514132363135ff0871acd7773', 1, 32, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."sys_user" VALUES (5492063864225861, 'Boss', 'a12e963b2c451035dfa7062d3946d0164d32a51802e39240007aefcca2fab4e6', 1, 32, NULL, NULL, NULL, NULL);
 
 -- ----------------------------
 -- Alter sequences owned by

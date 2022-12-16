@@ -26,6 +26,7 @@ type SysPermissionColumns struct {
 	Description string // 描述
 	Identifier  string // 标识符
 	Type        string // 类型：1api，2menu
+	IsShow      string // 是否显示：0不显示 1显示
 	CreatedAt   string //
 	UpdatedAt   string //
 }
@@ -38,6 +39,7 @@ var sysPermissionColumns = SysPermissionColumns{
 	Description: "description",
 	Identifier:  "identifier",
 	Type:        "type",
+	IsShow:      "is_show",
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",
 }
