@@ -4,6 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -30,7 +31,9 @@ func (s *sMiddleware) Auth(r *ghttp.Request) {
 func (s *sMiddleware) CTX(r *ghttp.Request) {
 	// 初始化，务必最开始执行
 	customCtx := &sys_model.Context{
-		ClaimsUser: &sys_model.JwtCustomClaims{},
+		ClaimsUser:        &sys_model.JwtCustomClaims{},
+		SessionErrorQueue: garray.NewArray(),
+		Ipv4:              r.RemoteAddr,
 	}
 
 	sys_service.BizCtx().Init(r, customCtx)
