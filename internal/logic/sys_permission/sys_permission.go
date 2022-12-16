@@ -219,7 +219,8 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 	result := sys_entity.SysPermission{}
 
-	path = "%" + path + "%"
+	// 在权限树标识中匹标识后缀，|为标识符的分隔符
+	path = "%|" + path
 
 	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
 

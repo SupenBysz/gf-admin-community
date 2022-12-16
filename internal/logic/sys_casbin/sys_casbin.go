@@ -94,8 +94,14 @@ func Casbin() *casbin.Enforcer {
 
 // Middleware Casbin中间件实现权限控制
 func (s *sCasbin) Middleware(r *ghttp.Request) {
-	// 如果是登录和获取验证码，直接放行
-	if gstr.Contains(r.URL.Path, "/login") || gstr.Contains(r.URL.Path, "/captcha") {
+	// 获取请求的用户，如果这里返回值为空，
+	// 确保路由注册顺序 sys_service.Middleware().Auth 在前，sys_service.Middleware().Casbin 在后，如下：
+	// sys_service.Middleware().Auth,
+	// sys_service.Middleware().Casbin,
+	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
+
+	// 如果是超级管理员，则直接放行
+	if user.Type == -1 {
 		r.Middleware.Next()
 		return
 	}
@@ -104,9 +110,6 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	url := r.URL.Path
 	urlSplit := gstr.Split(url, "/")
 	path := "/" + urlSplit[len(urlSplit)-1]
-
-	// 获取请求的用户
-	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
 
 	// 1.通过请求的URL获取资源id
 	permissionId, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
