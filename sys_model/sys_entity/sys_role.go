@@ -16,4 +16,6 @@ type SysRole struct {
 	IsSystem    bool        `json:"isSystem"    description:"是否默认角色，true仅能修改名称"`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
 	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
+	UnionMainId int64       `json:"unionMainId" description:"主体id"`
+	IsSys       int         `json:"isSys"       description:"是否允许删除和修改: 0允许  1禁止,并拥有默认权限"`
 }
