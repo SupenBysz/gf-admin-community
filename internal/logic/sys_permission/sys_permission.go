@@ -151,6 +151,7 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error) {
 	data := sys_entity.SysPermission{}
 	gconv.Struct(info, &data)
+	data.Id = 1
 
 	// 如果父级ID大于0，则校验父级权限信息是否存在
 	if data.ParentId > 0 {
@@ -176,6 +177,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 			Name:        data.Name,
 			Description: data.Description,
 			Identifier:  data.Identifier,
+			IsShow:      1,
 			Type:        data.Type,
 		})
 
@@ -211,10 +213,10 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 	return true, nil
 }
 
-// GetPermissionTreeIdByUrl 根据请求URL去匹配权限树，返回权限树ID
-func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path string) (int64, error) {
+// GetPermissionTreeIdByUrl 根据请求URL去匹配权限树，返回权限
+func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error) {
 	if path == "" {
-		return 0, gerror.New("传入的请求url为空")
+		return nil, gerror.New("传入的请求url为空")
 	}
 
 	result := sys_entity.SysPermission{}
@@ -225,8 +227,8 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return result.Id, nil
+	return &result, nil
 }
