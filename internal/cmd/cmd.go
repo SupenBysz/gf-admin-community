@@ -65,7 +65,7 @@ var (
 				s.Group(apiPrefix, func(group *ghttp.RouterGroup) {
 					// 注册中间件
 					group.Middleware(
-						sys_service.Middleware().Casbin,
+						// sys_service.Middleware().Casbin,
 						sys_service.Middleware().CTX,
 						sys_service.Middleware().ResponseHandler,
 					)
@@ -92,6 +92,7 @@ var (
 						// 注册中间件
 						group.Middleware(
 							sys_service.Middleware().Auth,
+							sys_service.Middleware().Casbin,
 						)
 
 						// 文件上传
