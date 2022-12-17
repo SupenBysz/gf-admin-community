@@ -7,7 +7,9 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
 	"github.com/casbin/casbin/v2"
 	casbinModel "github.com/casbin/casbin/v2/model"
@@ -18,10 +20,14 @@ import (
 	"github.com/gogf/gf/v2/os/glog"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/yitter/idgenerator-go/idgen"
 )
+
+type hookInfo sys_model.KeyValueT[int64, sys_model.CasbinHookInfo]
 
 type sCasbin struct {
 	reqCasbin sys_model.ReqCasbin
+	hookArr   []hookInfo
 }
 
 var (
@@ -34,7 +40,33 @@ func init() {
 
 // New Casbin 权限控制
 func New() *sCasbin {
-	return &sCasbin{}
+	return &sCasbin{
+		hookArr: make([]hookInfo, 0),
+	}
+}
+
+// InstallHook 安装Hook
+func (s *sCasbin) InstallHook(event sys_enum.CabinEvent, hookFunc sys_model.CasbinHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_model.CasbinHookInfo{Key: event, Value: hookFunc}}
+	s.hookArr = append(s.hookArr, item)
+	return item.Key
+}
+
+// UnInstallHook 卸载Hook
+func (s *sCasbin) UnInstallHook(savedHookId int64) {
+	newFuncArr := make([]hookInfo, 0)
+	for _, item := range s.hookArr {
+		if item.Key != savedHookId {
+			newFuncArr = append(newFuncArr, item)
+			continue
+		}
+	}
+	s.hookArr = newFuncArr
+}
+
+// CleanAllHook 清除所有Hook
+func (s *sCasbin) CleanAllHook() {
+	s.hookArr = make([]hookInfo, 0)
 }
 
 func (s *sCasbin) Check() error {
@@ -100,6 +132,8 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	// sys_service.Middleware().Casbin,
 	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
 
+	userInfo := daoctl.GetById[sys_entity.SysUser](sys_dao.SysUser.Ctx(r.GetCtx()), user.Id)
+
 	// 如果是超级管理员，则直接放行
 	if user.Type == -1 {
 		r.Middleware.Next()
@@ -112,13 +146,37 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	path := "/" + urlSplit[len(urlSplit)-1]
 
 	// 1.通过请求的URL获取资源id
-	permissionId, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
+	permission, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
+	if err != nil {
+		return
+	}
+
+	{
+		// 硬编码处理在业务层进行判断
+		g.Try(r.GetCtx(), func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				// 如果需要检验
+				if hook.Value.Key.Code()&sys_enum.Casbin.Event.Check.Code() == sys_enum.Casbin.Event.Check.Code() {
+					// 权限树对象和用户对象
+					data := sys_model.CasbinCheckObject{
+						SysUser:       *userInfo,
+						SysPermission: *permission,
+					}
+					err = hook.Value.Value(ctx, sys_enum.Casbin.Event.Check, data)
+					if err != nil {
+						break
+					}
+				}
+			}
+		})
+	}
+
 	if err != nil {
 		return
 	}
 
 	// 2.检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
-	t, err := s.EnforceCheck(gconv.String(user.Id), "kysion.com", gconv.String(permissionId), "allow")
+	t, err := s.EnforceCheck(gconv.String(user.Id), sys_consts.CasbinDomain, gconv.String(permission.Id), "allow")
 
 	if err != nil {
 		if !r.IsAjaxRequest() {
@@ -188,5 +246,19 @@ func (s *sCasbin) CheckUserHasPermission(ctx context.Context, userId string, rol
 		return false, err
 	}
 
+	return true, nil
+}
+
+func (s *sCasbin) CheckUser(ctx context.Context, roleId, permission string) (bool, error) {
+	casbinInfo := sys_entity.SysCasbin{}
+
+	err := sys_dao.SysCasbin.Ctx(ctx).Where(sys_do.SysCasbin{
+		V0: roleId,
+		V2: permission,
+	}).Scan(&casbinInfo)
+
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
