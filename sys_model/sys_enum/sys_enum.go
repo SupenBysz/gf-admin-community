@@ -2,6 +2,7 @@ package sys_enum
 
 import (
 	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
+	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_upload "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/upload"
 	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/user"
 )
@@ -14,10 +15,13 @@ type (
 	UserEvent sys_enum_user.EventEnum
 	UserType  sys_enum_user.TypeEnum
 	UserState sys_enum_user.StateEnum
+
+	CabinEvent sys_enum_casbin.EventEnum
 )
 
 var (
 	Auth   = sys_enum_auth.Auth
 	Upload = sys_enum_upload.Upload
 	User   = sys_enum_user.User
+	Casbin = sys_enum_casbin.Casbin
 )

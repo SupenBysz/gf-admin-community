@@ -23,7 +23,7 @@ type (
 		UpdatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		DeletePermission(ctx context.Context, permissionId int64) (bool, error)
-		GetPermissionTreeIdByUrl(ctx context.Context, path string) (int64, error)
+		GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error)
 	}
 )
 
