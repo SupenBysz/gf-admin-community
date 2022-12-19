@@ -7,7 +7,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
@@ -16,7 +15,6 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 )
