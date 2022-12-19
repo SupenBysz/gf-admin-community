@@ -18,4 +18,6 @@ type SysRole struct {
 	IsSystem    interface{} // 是否默认角色，true仅能修改名称
 	UpdatedAt   *gtime.Time //
 	CreatedAt   *gtime.Time //
+	UnionMainId interface{} // 主体id
+	IsSys       interface{} // 是否允许删除和修改: 0允许  1禁止,并拥有默认权限
 }
