@@ -26,6 +26,8 @@ type SysRoleColumns struct {
 	IsSystem    string // 是否默认角色，true仅能修改名称
 	UpdatedAt   string //
 	CreatedAt   string //
+	UnionMainId string // 主体id
+	IsSys       string // 是否允许删除和修改: 0允许  1禁止,并拥有默认权限
 }
 
 // sysRoleColumns holds the columns for table sys_role.
@@ -36,6 +38,8 @@ var sysRoleColumns = SysRoleColumns{
 	IsSystem:    "is_system",
 	UpdatedAt:   "updated_at",
 	CreatedAt:   "created_at",
+	UnionMainId: "union_main_id",
+	IsSys:       "is_sys",
 }
 
 // NewSysRoleDao creates and returns a new DAO object for table data access.
