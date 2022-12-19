@@ -7,15 +7,16 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
-
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 )
@@ -59,20 +60,24 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		Id:          info.Id,
 		Name:        info.Name,
 		Description: info.Description,
+		UnionMainId: info.UnionMainId,
+		IsSys:       info.IsSys,
 		UpdatedAt:   gtime.Now(),
 	}
 
 	err := sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		if roleInfo.Id == 0 {
 			roleInfo.Id = idgen.NextId()
-			count, err := sys_dao.SysRole.Ctx(ctx).WhereOr(sys_do.SysRole{Name: roleInfo.Name}).Count()
+			// count, err := sys_dao.SysRole.Ctx(ctx).WhereOr(sys_do.SysRole{Name: roleInfo.Name}).Count()
 
+			count, err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Name: info.Name, UnionMainId: info.UnionMainId}).Count()
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "创建角色失败", sys_dao.SysRole.Table())
 			}
 
+			// 通过Union_main_id去判断
 			if count > 0 {
-				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "角色名称已经存在"), "", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "角色名称在该域已经存在"), "", sys_dao.SysRole.Table())
 			}
 
 			roleInfo.CreatedAt = gtime.Now()
