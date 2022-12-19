@@ -16,7 +16,7 @@ type SysPermission struct {
 	Description string      `json:"description" description:"描述"`
 	Identifier  string      `json:"identifier"  description:"标识符"`
 	Type        int         `json:"type"        description:"类型：1api，2menu"`
-	IsShow      int         `json:"isShow"      description:"是否显示：0不显示 1显示"`
 	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
+	IsShow      int         `json:"isShow"      description:"是否显示：0不显示 1显示"`
 }
