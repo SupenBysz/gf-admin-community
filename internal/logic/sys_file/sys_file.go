@@ -3,6 +3,7 @@ package sys_file
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"io"
 	"net/http"
@@ -390,4 +391,23 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	}
 
 	return savePath, nil
+}
+
+// GetFile 根据id获取并返回图片
+func (s *sFile) GetFile(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
+	//userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+
+	// 根据id去数据库sys_file表找到存储路径
+	file := sys_entity.SysFile{}
+	err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{
+		Id: id,
+	}).Scan(&file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
+
+	return &file, nil
 }

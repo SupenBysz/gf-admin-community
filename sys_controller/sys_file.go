@@ -74,3 +74,10 @@ func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sys_api.Uploa
 
 	return (*sys_api.BankCardWithOCRRes)(result), err
 }
+
+func (c *cSysFile) GetFileById(ctx context.Context, req *sys_api.GetFileByIdReq) (res *sys_api.GetFileRes, err error) {
+
+	file, err := sys_service.File().GetFile(ctx, req.Id)
+
+	return (*sys_api.GetFileRes)(file), err
+}
