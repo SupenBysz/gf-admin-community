@@ -98,13 +98,13 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 }
 
 // SetRolePermissions 设置角色权限
-func (c *cSysUser) SetRolePermissions(ctx context.Context, req *sys_api.SetRolePermissionsReq) (api_v1.BoolRes, error) {
+func (c *cSysRole) SetRolePermissions(ctx context.Context, req *sys_api.SetRolePermissionsReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SysRole().SetRolePermissions(ctx, req.Id, req.PermissionIds)
 	return result == true, err
 }
 
 // GetRolePermissionIds 获取角色权限Ids
-func (c *cSysUser) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsReq) (*api_v1.Int64ArrRes, error) {
+func (c *cSysRole) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsReq) (*api_v1.Int64ArrRes, error) {
 	result, err := sys_service.SysRole().GetRolePermissions(ctx, req.Id)
 	return (*api_v1.Int64ArrRes)(&result), err
 }
