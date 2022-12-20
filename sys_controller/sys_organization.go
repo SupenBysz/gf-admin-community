@@ -33,6 +33,7 @@ func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api
 				PageSize: count,
 			},
 			PageTotal: 1,
+			Total:     count,
 		},
 	}, err
 }

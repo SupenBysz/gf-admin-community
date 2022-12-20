@@ -71,6 +71,7 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 				PageSize: count,
 			},
 			PageTotal: 1,
+			Total:     count,
 		},
 	}, err
 }
@@ -93,6 +94,7 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 				PageSize: count,
 			},
 			PageTotal: 1,
+			Total:     count,
 		},
 	}, err
 }
