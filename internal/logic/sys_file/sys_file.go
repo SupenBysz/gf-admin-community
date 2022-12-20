@@ -399,8 +399,6 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 
 // GetFile 根据id获取并返回图片
 func (s *sFile) GetFile(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
-	//userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
-
 	// 根据id去数据库sys_file表找到存储路径
 	file := sys_entity.SysFile{}
 	err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{
@@ -411,6 +409,25 @@ func (s *sFile) GetFile(ctx context.Context, id int64) (*sys_entity.SysFile, err
 		return nil, err
 	}
 
+	// hook 判断是否跨商，是否可以获取图片
+	{
+		g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if (hook.Value.Key.Code() & sys_enum.Upload.EventState.AfterSave.Code()) == sys_enum.Upload.EventState.AfterSave.Code() {
+					// 把file文件传入，业务层根据file文件是否存在主体id进行判断是否可以进行访问
+					err = hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, file)
+					if err == nil {
+						break
+					}
+				}
+			}
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// 加载显示图片
 	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
 
 	return &file, nil
