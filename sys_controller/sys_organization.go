@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 // SysOrganization 组织架
@@ -33,6 +34,7 @@ func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api
 				PageSize: count,
 			},
 			PageTotal: 1,
+			Total:     gconv.Int64(count),
 		},
 	}, err
 }

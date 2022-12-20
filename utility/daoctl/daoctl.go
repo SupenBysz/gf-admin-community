@@ -199,6 +199,7 @@ func makePaginationArr(db *gdb.Model, pagination sys_model.Pagination, searchFie
 	return sys_model.PaginationRes{
 		Pagination: pagination,
 		PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize))),
+		Total:      gconv.Int64(total),
 	}
 }
 
@@ -233,6 +234,7 @@ func GetAll[T any](db *gdb.Model, info *sys_model.Pagination) (response *sys_mod
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: *info,
 			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(info.PageSize))),
+			Total:      gconv.Int64(total),
 		},
 	}, nil
 }

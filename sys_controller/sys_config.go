@@ -6,6 +6,7 @@ import (
 	sys_api "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 // SysConfig 鉴权
@@ -30,6 +31,7 @@ func (s *cSysConfig) GetBaiduSdkConfList(ctx context.Context, _ *sys_api.GetBaid
 	} else {
 		result.List = items
 		result.PageSize = len(*items)
+		result.Total = gconv.Int64(len(*items))
 	}
 
 	return result, nil
@@ -76,6 +78,7 @@ func (s *cSysConfig) GetAliyunSdkConfList(ctx context.Context, _ *sys_api.GetAli
 	} else {
 		result.List = items
 		result.PageSize = len(*items)
+		result.Total = gconv.Int64(len(*items))
 	}
 	return result, nil
 }
@@ -123,6 +126,7 @@ func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sys_api.GetHua
 	} else {
 		result.List = items
 		result.PageSize = len(*items)
+		result.Total = gconv.Int64(len(*items))
 	}
 	return result, nil
 }
@@ -170,6 +174,7 @@ func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sys_api.GetTe
 	} else {
 		result.List = items
 		result.PageSize = len(*items)
+		result.Total = gconv.Int64(len(*items))
 	}
 	return result, nil
 }
@@ -217,6 +222,7 @@ func (s *cSysConfig) GetCtyunSdkConfList(ctx context.Context, _ *sys_api.GetCtyu
 	} else {
 		result.List = items
 		result.PageSize = len(*items)
+		result.Total = gconv.Int64(len(*items))
 	}
 	return result, nil
 }
