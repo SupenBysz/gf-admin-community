@@ -186,6 +186,9 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 		}
 	})
 
+	// 将图片信息保存到数据库
+	s.SaveFile(ctx, absPath, userId, data)
+
 	return &data, nil
 }
 
@@ -228,7 +231,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	// 记录到数据表
 	data := sys_entity.SysFile{
-		Id:        idgen.NextId(),
+		Id:        info.Id,
 		Name:      info.Name,
 		Src:       storageAddr,
 		Url:       storageAddr,
@@ -291,6 +294,7 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 		return &ret, err
 	}
 
+	ret.Id = result.Id
 	ret.OCRIDCardA = OCRInfo.OCRIDCardA
 	ret.OCRIDCardB = OCRInfo.OCRIDCardB
 
@@ -324,7 +328,7 @@ func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCR
 
 	// 给返回数据赋值
 	ret.BaiduSdkOCRBankCard.OCRBankCard = *bankCard
-
+	ret.Id = result.Id
 	return &ret, nil
 }
 
@@ -355,7 +359,7 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusin
 	}
 
 	ret.BusinessLicenseOCR = *OCRInfo
-
+	ret.Id = result.Id
 	return &ret, nil
 }
 
