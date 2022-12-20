@@ -9,6 +9,7 @@ type Pagination struct {
 type PaginationRes struct {
 	Pagination
 	PageTotal int `json:"pageTotal" dc:"总页数"`
+	Total     int `json:"total" dc:"总条数"`
 }
 
 // CollectRes 集合信息
