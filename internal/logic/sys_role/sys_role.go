@@ -27,7 +27,6 @@ func init() {
 	sys_service.RegisterSysRole(New())
 }
 
-// New Auth 验证码管理服务
 func New() *sSysRole {
 	return &sSysRole{}
 }
