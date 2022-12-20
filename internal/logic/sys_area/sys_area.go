@@ -91,7 +91,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 	}
 
 	ret.List = &items
-	ret.Total = len(items)
+	ret.Total = gconv.Int64(len(items))
 
 	// 写入缓存
 	gcache.Set(ctx, s.cachePrefix+gconv.String(parentId), ret, time.Hour*24*7)

@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 // SysRole 角色
@@ -71,7 +72,7 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 				PageSize: count,
 			},
 			PageTotal: 1,
-			Total:     count,
+			Total:     gconv.Int64(count),
 		},
 	}, err
 }
@@ -94,7 +95,7 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 				PageSize: count,
 			},
 			PageTotal: 1,
-			Total:     count,
+			Total:     gconv.Int64(count),
 		},
 	}, err
 }
