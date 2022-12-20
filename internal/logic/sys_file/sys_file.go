@@ -3,6 +3,7 @@ package sys_file
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"io"
 	"net/http"
@@ -185,6 +186,9 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 		}
 	})
 
+	// 将图片信息保存到数据库
+	s.SaveFile(ctx, absPath, userId, data)
+
 	return &data, nil
 }
 
@@ -227,7 +231,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	// 记录到数据表
 	data := sys_entity.SysFile{
-		Id:        idgen.NextId(),
+		Id:        info.Id,
 		Name:      info.Name,
 		Src:       storageAddr,
 		Url:       storageAddr,
@@ -290,6 +294,7 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 		return &ret, err
 	}
 
+	ret.Id = result.Id
 	ret.OCRIDCardA = OCRInfo.OCRIDCardA
 	ret.OCRIDCardB = OCRInfo.OCRIDCardB
 
@@ -323,7 +328,7 @@ func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCR
 
 	// 给返回数据赋值
 	ret.BaiduSdkOCRBankCard.OCRBankCard = *bankCard
-
+	ret.Id = result.Id
 	return &ret, nil
 }
 
@@ -354,7 +359,7 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusin
 	}
 
 	ret.BusinessLicenseOCR = *OCRInfo
-
+	ret.Id = result.Id
 	return &ret, nil
 }
 
@@ -390,4 +395,23 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	}
 
 	return savePath, nil
+}
+
+// GetFile 根据id获取并返回图片
+func (s *sFile) GetFile(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
+	//userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+
+	// 根据id去数据库sys_file表找到存储路径
+	file := sys_entity.SysFile{}
+	err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{
+		Id: id,
+	}).Scan(&file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
+
+	return &file, nil
 }
