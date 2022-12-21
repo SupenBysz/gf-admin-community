@@ -46,8 +46,8 @@ func New() *sCasbin {
 }
 
 // InstallHook 安装Hook
-func (s *sCasbin) InstallHook(event sys_enum.CabinEvent, hookFunc sys_model.CasbinHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.CasbinHookInfo{Key: event, Value: hookFunc}}
+func (s *sCasbin) InstallHook(userType sys_enum.UserType, hookFunc sys_model.CasbinHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_model.CasbinHookInfo{Key: userType, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -148,31 +148,34 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	// 1.通过请求的URL获取资源id
 	permission, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
 	if err != nil {
+		response.JsonExit(r, 1, "没有权限")
 		return
 	}
 
 	{
+		isAdmin := false
 		// 硬编码处理在业务层进行判断
 		g.Try(r.GetCtx(), func(ctx context.Context) {
 			for _, hook := range s.hookArr {
-				// 如果需要检验
-				if hook.Value.Key.Code()&sys_enum.Casbin.Event.Check.Code() == sys_enum.Casbin.Event.Check.Code() {
-					// 权限树对象和用户对象
-					data := sys_model.CasbinCheckObject{
-						SysUser:       *userInfo,
-						SysPermission: *permission,
-					}
-					err = hook.Value.Value(ctx, sys_enum.Casbin.Event.Check, data)
+				// 如果注入的类型一致
+				if hook.Value.Key.Code()&userInfo.Type == userInfo.Type {
+					// 直接把用户数据传入，根据返回的err判断是否跨商
+					isAdmin, err = hook.Value.Value(ctx, *userInfo)
 					if err != nil {
 						break
 					}
 				}
 			}
 		})
-	}
 
-	if err != nil {
-		return
+		if err != nil {
+			response.JsonExit(r, 1, "没有权限")
+			return
+		}
+		if isAdmin == true && err == nil {
+			r.Middleware.Next()
+			return
+		}
 	}
 
 	// 2.检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
@@ -181,6 +184,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	if err != nil {
 		if !r.IsAjaxRequest() {
 			response.JsonExit(r, 2, err.Error())
+			return
 		}
 	}
 	if !t {
@@ -189,6 +193,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	}
 
 	r.Middleware.Next()
+	return
 }
 
 // AddRoleForUserInDomain 添加用户角色关联关系
