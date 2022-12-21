@@ -148,6 +148,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	// 1.通过请求的URL获取资源id
 	permission, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
 	if err != nil {
+		response.JsonExit(r, 1, "没有权限")
 		return
 	}
 
@@ -163,7 +164,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 						SysPermission: *permission,
 					}
 					err = hook.Value.Value(ctx, sys_enum.Casbin.Event.Check, data)
-					if err != nil {
+					if err == nil {
 						break
 					}
 				}
@@ -172,6 +173,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	}
 
 	if err != nil {
+		response.JsonExit(r, 1, "没有权限")
 		return
 	}
 
