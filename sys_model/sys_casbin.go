@@ -1,6 +1,7 @@
 package sys_model
 
 import (
+	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
@@ -12,9 +13,6 @@ type ReqCasbin struct {
 	Action    string `p:"a"`
 }
 
-type CasbinCheckObject struct {
-	SysUser       sys_entity.SysUser
-	SysPermission sys_entity.SysPermission
-}
-type CasbinHookFunc HookFunc[sys_enum.CabinEvent, CasbinCheckObject]
-type CasbinHookInfo HookEventType[sys_enum.CabinEvent, CasbinHookFunc]
+type CasbinHookFunc func(ctx context.Context, info sys_entity.SysUser) (bool, error)
+
+type CasbinHookInfo HookEventType[sys_enum.UserType, CasbinHookFunc]

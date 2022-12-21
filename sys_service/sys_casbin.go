@@ -16,7 +16,7 @@ import (
 
 type (
 	ICasbin interface {
-		InstallHook(event sys_enum.CabinEvent, hookFunc sys_model.CasbinHookFunc) int64
+		InstallHook(userType sys_enum.UserType, hookFunc sys_model.CasbinHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Check() error
