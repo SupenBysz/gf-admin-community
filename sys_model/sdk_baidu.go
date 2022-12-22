@@ -60,11 +60,11 @@ type BusinessLicenseOCR struct {
 
 type OCRBankCard struct {
 	Direction      int    `json:"direction" dc:"图像方向：-1 为定义,0正向,1逆时针90度,2逆时针180度,3逆时针270度"`
-	BankCardNumber string `json:"bank_card_number" dc:"银行卡号"`
-	ValidDate      string `json:"valid_date" dc:"有效期"`
-	BankCardType   int    `json:"bank_card_type" dc:"银行卡类型"`
-	BankName       string `json:"bank_name" dc:"银行名字"`
-	HolderName     string `json:"holder_name" dc:"持卡人名字"`
+	BankCardNumber string `json:"bankCardNumber" dc:"银行卡号"`
+	ValidDate      string `json:"validDate" dc:"有效期"`
+	BankCardType   int    `json:"bankCardType" dc:"银行卡类型"`
+	BankName       string `json:"bankName" dc:"银行名字"`
+	HolderName     string `json:"holderName" dc:"持卡人名字"`
 }
 
 type BaiduSdkOCRBankCard struct {
