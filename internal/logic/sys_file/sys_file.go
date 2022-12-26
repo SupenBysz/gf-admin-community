@@ -397,8 +397,8 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	return savePath, nil
 }
 
-// GetFile 根据id获取并返回图片
-func (s *sFile) GetFile(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
+// GetFileById 根据id获取并返回图片
+func (s *sFile) GetFileById(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
 	// 根据id去数据库sys_file表找到存储路径
 	file := sys_entity.SysFile{}
 	err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{
