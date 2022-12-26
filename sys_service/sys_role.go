@@ -10,10 +10,14 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type (
 	ISysRole interface {
+		InstallHook(userType sys_enum.UserType, hookFunc sys_model.RoleHookFunc) int64
+		UnInstallHook(savedHookId int64)
+		CleanAllHook()
 		QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sys_model.RoleListRes, error)
 		Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
