@@ -140,19 +140,8 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 		return
 	}
 
-	// 获取请求URL
-	url := r.URL.Path
-	urlSplit := gstr.Split(url, "/")
-	path := "/" + urlSplit[len(urlSplit)-1]
-
-	// 1.通过请求的URL获取资源id
-	permission, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
-	if err != nil {
-		response.JsonExit(r, 1, "没有权限")
-		return
-	}
-
 	{
+		var err error = nil
 		isAdmin := false
 		// 硬编码处理在业务层进行判断
 		g.Try(r.GetCtx(), func(ctx context.Context) {
@@ -176,6 +165,18 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 			r.Middleware.Next()
 			return
 		}
+	}
+
+	// 获取请求URL
+	url := r.URL.Path
+	urlSplit := gstr.Split(url, "/")
+	path := "/" + urlSplit[len(urlSplit)-1]
+
+	// 1.通过请求的URL获取资源id
+	permission, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
+	if err != nil {
+		response.JsonExit(r, 1, "没有权限")
+		return
 	}
 
 	// 2.检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
