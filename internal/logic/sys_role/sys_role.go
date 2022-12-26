@@ -58,7 +58,6 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		Name:        info.Name,
 		Description: info.Description,
 		UnionMainId: info.UnionMainId,
-		IsSys:       info.IsSys,
 		UpdatedAt:   gtime.Now(),
 	}
 
