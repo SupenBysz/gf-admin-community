@@ -4,7 +4,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type UploadReq struct {
@@ -35,9 +34,8 @@ type UploadRes sys_model.FileUploadOutput
 type BankCardWithOCRRes sys_model.BankCardWithOCR
 
 type GetFileByIdReq struct {
-	g.Meta  `path:"/getFileById" method:"post" summary:"通过id获取文件" tags:"工具"`
-	Id      int64
-	Request *ghttp.Request
+	g.Meta `path:"/getFileById" method:"post" summary:"通过id获取文件" tags:"工具"`
+	Id     int64
 }
 
 type GetFileRes sys_entity.SysFile

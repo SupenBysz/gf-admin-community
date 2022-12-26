@@ -75,9 +75,10 @@ func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sys_api.Uploa
 	return (*sys_api.BankCardWithOCRRes)(result), err
 }
 
+// GetFileById 通过id获取图片
 func (c *cSysFile) GetFileById(ctx context.Context, req *sys_api.GetFileByIdReq) (res *sys_api.GetFileRes, err error) {
 
-	file, err := sys_service.File().GetFile(ctx, req.Id)
+	file, err := sys_service.File().GetFileById(ctx, req.Id)
 
 	return (*sys_api.GetFileRes)(file), err
 }
