@@ -248,8 +248,16 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 
 // GetRoleUsers 获取角色下的所有用户
 func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64) (*[]sys_model.SysUser, error) {
+	// 获取当前登录用户的UnionMainId
+	unionMainId, err := sys_service.BizCtx().GetUnionMainId(ctx)
+
+	// 获取角色
 	roleInfo := sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+	err = sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+
+	if roleInfo.UnionMainId != unionMainId {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+	}
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
