@@ -90,12 +90,6 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 		IsOrWhere:   false,
 		Value:       userUnionMainId,
 		IsNullValue: false,
-	}, sys_model.FilterInfo{
-		Field:       sys_dao.SysRole.Columns().IsSystem,
-		Where:       "=",
-		IsOrWhere:   true,
-		Value:       "t",
-		IsNullValue: false,
 	})
 
 	info.Filter = newFields
