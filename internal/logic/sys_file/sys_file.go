@@ -187,7 +187,9 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 	})
 
 	// 将图片信息保存到数据库
-	s.SaveFile(ctx, absPath, userId, data)
+	file, _ := s.SaveFile(ctx, absPath, userId, data)
+
+	data.Id = file.Id
 
 	return &data, nil
 }
@@ -231,7 +233,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 
 	// 记录到数据表
 	data := sys_entity.SysFile{
-		Id:        info.Id,
+		Id:        idgen.NextId(),
 		Name:      info.Name,
 		Src:       storageAddr,
 		Url:       storageAddr,
