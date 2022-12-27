@@ -9,14 +9,19 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
 	IBizCtx interface {
+		InstallHook(userType sys_enum.UserType, hookFunc sys_model.BizCtxHookFunc) int64
+		UnInstallHook(savedHookId int64)
+		CleanAllHook()
 		Init(r *ghttp.Request, customCtx *sys_model.Context)
 		Get(ctx context.Context) *sys_model.Context
 		SetUser(ctx context.Context, claimsUser *sys_model.JwtCustomClaims)
+		GetUnionMainId(ctx context.Context) (int64, error)
 	}
 )
 
