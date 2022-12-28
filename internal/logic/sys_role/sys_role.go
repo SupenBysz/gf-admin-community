@@ -84,6 +84,9 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 
 // Create 创建角色信息
 func (s *sSysRole) Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error) {
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+	info.UnionMainId = unionMainId
+
 	info.Id = 0
 	return s.Save(ctx, info)
 }
