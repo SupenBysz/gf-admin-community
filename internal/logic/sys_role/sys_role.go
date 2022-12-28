@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
@@ -19,7 +20,10 @@ import (
 	"github.com/yitter/idgenerator-go/idgen"
 )
 
+type hookInfo sys_model.KeyValueT[int64, sys_model.RoleHookInfo]
+
 type sSysRole struct {
+	hookArr []hookInfo
 }
 
 func init() {
@@ -27,7 +31,33 @@ func init() {
 }
 
 func New() *sSysRole {
-	return &sSysRole{}
+	return &sSysRole{
+		hookArr: make([]hookInfo, 0),
+	}
+}
+
+// InstallHook 安装Hook
+func (s *sSysRole) InstallHook(userType sys_enum.UserType, hookFunc sys_model.RoleHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_model.RoleHookInfo{Key: userType, Value: hookFunc}}
+	s.hookArr = append(s.hookArr, item)
+	return item.Key
+}
+
+// UnInstallHook 卸载Hook
+func (s *sSysRole) UnInstallHook(savedHookId int64) {
+	newFuncArr := make([]hookInfo, 0)
+	for _, item := range s.hookArr {
+		if item.Key != savedHookId {
+			newFuncArr = append(newFuncArr, item)
+			continue
+		}
+	}
+	s.hookArr = newFuncArr
+}
+
+// CleanAllHook 清除所有Hook
+func (s *sSysRole) CleanAllHook() {
+	s.hookArr = make([]hookInfo, 0)
 }
 
 // QueryRoleList 获取角色列表
@@ -174,6 +204,27 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId int64, userId int6
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
+	// 判断是否跨商
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	// 去获取userInfo的UnionMainId和当前登录用户的UnionMainId是否一致，一致说明没跨商，不一致跨商
+	var userUnionMainId int64
+
+	g.Try(ctx, func(ctx context.Context) {
+		for _, hook := range s.hookArr {
+			if hook.Value.Key.Code()&userInfo.Type == userInfo.Type {
+				userUnionMainId, err = hook.Value.Value(ctx, *userInfo)
+				if err != nil {
+					break
+				}
+			}
+		}
+	})
+
+	if unionMainId != userUnionMainId {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+	}
+
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
@@ -280,8 +331,21 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 
 // SetRolePermissions 设置角色权限
 func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64) (bool, error) {
+	// 判断是否跨商设置角色权限
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
 
-	err := sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	roleInfo := sys_entity.SysRole{}
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+
+	if roleInfo.UnionMainId != unionMainId {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+	}
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+	}
+
+	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		{
 			// 先清除roleId所有权限
 			_, err := sys_service.Casbin().DeletePermissionsForUser(gconv.String(roleId))
