@@ -8,11 +8,15 @@ package sys_service
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
 	IJwt interface {
+		InstallHook(userType sys_enum.UserType, hookFunc sys_model.JwtHookFunc) int64
+		UnInstallHook(savedHookId int64)
+		CleanAllHook()
 		GenerateToken(user *sys_entity.SysUser) (*sys_model.TokenInfo, error)
 		CreateToken(claims *sys_model.JwtCustomClaims) (string, error)
 		RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) (string, error)
