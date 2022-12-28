@@ -151,7 +151,6 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error) {
 	data := sys_entity.SysPermission{}
 	gconv.Struct(info, &data)
-	data.Id = 1
 
 	// 如果父级ID大于0，则校验父级权限信息是否存在
 	if data.ParentId > 0 {
