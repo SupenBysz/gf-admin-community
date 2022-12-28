@@ -1,10 +1,13 @@
 package sys_jwt
 
 import (
+	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
+	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -16,8 +19,11 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
+type hookInfo sys_model.KeyValueT[int64, sys_model.JwtHookInfo]
+
 type sJwt struct {
 	SigningKey []byte
+	hookArr    []hookInfo
 }
 
 var (
@@ -33,6 +39,31 @@ func New() *sJwt {
 	return &sJwt{
 		SigningKey: []byte(g.Cfg().MustGet(gctx.New(), "service.tokenSignKey").String()),
 	}
+}
+
+// InstallHook 安装Hook
+func (s *sJwt) InstallHook(userType sys_enum.UserType, hookFunc sys_model.JwtHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_model.JwtHookInfo{Key: userType, Value: hookFunc}}
+
+	s.hookArr = append(s.hookArr, item)
+	return item.Key
+}
+
+// UnInstallHook 卸载Hook
+func (s *sJwt) UnInstallHook(savedHookId int64) {
+	newFuncArr := make([]hookInfo, 0)
+	for _, item := range s.hookArr {
+		if item.Key != savedHookId {
+			newFuncArr = append(newFuncArr, item)
+			continue
+		}
+	}
+	s.hookArr = newFuncArr
+}
+
+// CleanAllHook 清除所有Hook
+func (s *sJwt) CleanAllHook() {
+	s.hookArr = make([]hookInfo, 0)
 }
 
 // GenerateToken 创建一个token
@@ -87,6 +118,25 @@ func (s *sJwt) CustomMiddleware(r *ghttp.Request) {
 		response.JsonExit(r, 401, err.Error())
 		return
 	}
+	var userUnionMainId int64
+	g.Try(r.Context(), func(ctx context.Context) {
+
+		userInfo := sys_entity.SysUser{
+			Id:       claimsUser.Id,
+			Username: claimsUser.Username,
+			State:    claimsUser.State,
+			Type:     claimsUser.Type,
+		}
+		for _, hook := range s.hookArr {
+			if hook.Value.Key.Code()&claimsUser.Type == claimsUser.Type {
+				userUnionMainId, err = hook.Value.Value(ctx, userInfo)
+				if err != nil {
+					break
+				}
+			}
+		}
+	})
+	claimsUser.UnionMainId = userUnionMainId
 	sys_service.BizCtx().SetUser(r.Context(), claimsUser)
 }
 
