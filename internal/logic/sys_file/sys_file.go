@@ -2,6 +2,7 @@ package sys_file
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
@@ -395,8 +396,39 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 }
 
 // GetFileById 根据id获取并返回图片
-func (s *sFile) GetFileById(ctx context.Context, id int64) (*sys_entity.SysFile, error) { // info可以是id、token、
-	// 根据id去数据库sys_file表找到存储路径
+func (s *sFile) GetFileById(ctx context.Context, id int64, v int) (api_v1.MapRes, error) { // 获取图片可以是id、token、路径
+	if v == 0 {
+		// 从缓存获取图片 (缓存查找)
+		cacheFile, err := s.getFileFromCache(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		// 加载显示图片
+		g.RequestFromCtx(ctx).Response.ServeFile(cacheFile.Path)
+
+		var x = g.Map{}
+		gconv.Struct(cacheFile, &x)
+
+		return x, nil
+	} else if v == 1 {
+		// 去sys_file表获取图片 (数据库查找)
+		file, err := s.getFileFromSql(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		// 加载显示图片
+		g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
+
+		var x = g.Map{}
+		gconv.Struct(file, &x)
+
+		return x, nil
+	} else {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "文件获取参数标识错误", sys_dao.SysFile.Table())
+	}
+}
+
+func (s *sFile) getFileFromSql(ctx context.Context, id int64) (*sys_entity.SysFile, error) {
 	file := sys_entity.SysFile{}
 	err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{
 		Id: id,
@@ -424,8 +456,17 @@ func (s *sFile) GetFileById(ctx context.Context, id int64) (*sys_entity.SysFile,
 		return nil, err
 	}
 
-	// 加载显示图片
-	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
-
 	return &file, nil
+}
+
+func (s *sFile) getFileFromCache(ctx context.Context, uploadId int64) (*sys_model.FileUploadOutput, error) {
+	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+
+	file, err := s.GetUploadFile(ctx, uploadId, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }

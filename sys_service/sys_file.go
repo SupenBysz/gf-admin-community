@@ -8,6 +8,7 @@ package sys_service
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
@@ -25,7 +26,7 @@ type (
 		UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput, userId int64) (*sys_model.BankCardWithOCR, error)
 		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense, userId int64) (*sys_model.BusinessLicenseWithOCR, error)
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
-		GetFileById(ctx context.Context, id int64) (*sys_entity.SysFile, error)
+		GetFileById(ctx context.Context, id int64, v int) (api_v1.MapRes, error)
 	}
 )
 
