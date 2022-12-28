@@ -19,8 +19,8 @@ func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListRe
 	return sys_service.SysRole().QueryRoleList(ctx, req.SearchParams)
 }
 
-// CreateeRoleInfo 新增或保存角色|信息
-func (c *cSysRole) CreateeRoleInfo(ctx context.Context, req *sys_api.CreateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
+// CreateRoleInfo 新增或保存角色|信息
+func (c *cSysRole) CreateRoleInfo(ctx context.Context, req *sys_api.CreateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
 	result, err := sys_service.SysRole().Create(ctx, req.SysRole)
 
 	return (*sys_api.RoleInfoRes)(result), err
