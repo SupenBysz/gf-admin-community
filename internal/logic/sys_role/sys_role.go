@@ -331,8 +331,21 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 
 // SetRolePermissions 设置角色权限
 func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64) (bool, error) {
+	// 判断是否跨商设置角色权限
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
 
-	err := sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	roleInfo := sys_entity.SysRole{}
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+
+	if roleInfo.UnionMainId != unionMainId {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+	}
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+	}
+
+	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		{
 			// 先清除roleId所有权限
 			_, err := sys_service.Casbin().DeletePermissionsForUser(gconv.String(roleId))
