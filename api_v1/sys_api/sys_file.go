@@ -35,7 +35,6 @@ type BankCardWithOCRRes sys_model.BankCardWithOCR
 
 type GetFileByIdReq struct {
 	g.Meta `path:"/getFileById" method:"post" summary:"通过id获取文件" tags:"工具"`
-	Id     int64
 }
 
 type GetFileRes sys_entity.SysFile

@@ -2,10 +2,12 @@ package sysController
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -76,9 +78,13 @@ func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sys_api.Uploa
 }
 
 // GetFileById 通过id获取图片
-func (c *cSysFile) GetFileById(ctx context.Context, req *sys_api.GetFileByIdReq) (res *sys_api.GetFileRes, err error) {
+func (c *cSysFile) GetFileById(ctx context.Context, _ *sys_api.GetFileByIdReq) (res *api_v1.MapRes, err error) {
 
-	file, err := sys_service.File().GetFileById(ctx, req.Id)
+	// 获取图片id 还有图片类型 临时还是永久
+	id := g.RequestFromCtx(ctx).GetQuery("id").Int64()
+	v := g.RequestFromCtx(ctx).GetQuery("v").Int() // v=1 永久 v=0 临时
 
-	return (*sys_api.GetFileRes)(file), err
+	file, err := sys_service.File().GetFileById(ctx, id, v)
+
+	return &file, err
 }
