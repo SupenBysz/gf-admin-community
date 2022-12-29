@@ -67,14 +67,27 @@ func (s *sJwt) CleanAllHook() {
 }
 
 // GenerateToken 创建一个token
-func (s *sJwt) GenerateToken(user *sys_entity.SysUser) (*sys_model.TokenInfo, error) {
+func (s *sJwt) GenerateToken(ctx context.Context, user *sys_entity.SysUser) (response *sys_model.TokenInfo, err error) {
+	var userUnionMainId int64 = 0
+	g.Try(ctx, func(ctx context.Context) {
+		for _, hook := range s.hookArr {
+			if hook.Value.Key.Code()&user.Type == user.Type {
+				userUnionMainId, err = hook.Value.Value(ctx, *user)
+				if err != nil {
+					break
+				}
+			}
+		}
+	})
+
 	customClaims := sys_model.JwtCustomClaims{
-		Id:        user.Id,
-		Username:  user.Username,
-		State:     user.State,
-		Type:      user.Type,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		Id:          user.Id,
+		Username:    user.Username,
+		State:       user.State,
+		Type:        user.Type,
+		UnionMainId: userUnionMainId,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
@@ -110,42 +123,9 @@ func (s *sJwt) RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) 
 	return v.(string), err
 }
 
-// CustomMiddleware 自定义调用JWT网关认证
-func (s *sJwt) CustomMiddleware(r *ghttp.Request) {
-	Authorization := r.Header.Get("Authorization")
-	claimsUser, err := s.ParseToken(Authorization)
-	if err != nil {
-		response.JsonExit(r, 401, err.Error())
-		return
-	}
-	var userUnionMainId int64
-	g.Try(r.Context(), func(ctx context.Context) {
-
-		userInfo := sys_entity.SysUser{
-			Id:       claimsUser.Id,
-			Username: claimsUser.Username,
-			State:    claimsUser.State,
-			Type:     claimsUser.Type,
-		}
-		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&claimsUser.Type == claimsUser.Type {
-				userUnionMainId, err = hook.Value.Value(ctx, userInfo)
-				if err != nil {
-					break
-				}
-			}
-		}
-	})
-	claimsUser.UnionMainId = userUnionMainId
-	sys_service.BizCtx().SetUser(r.Context(), claimsUser)
-}
-
 func (s *sJwt) Middleware(r *ghttp.Request) {
-	s.CustomMiddleware(r)
-	r.Middleware.Next()
-}
+	tokenString := r.Header.Get("Authorization")
 
-func (s *sJwt) ParseToken(tokenString string) (*sys_model.JwtCustomClaims, error) {
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
 	}
@@ -153,29 +133,34 @@ func (s *sJwt) ParseToken(tokenString string) (*sys_model.JwtCustomClaims, error
 	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return s.SigningKey, nil
 	})
+
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, gerror.NewSkip(401, "无效TOKEN")
+				err = gerror.New("无效TOKEN")
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
 				// Token is expired
-				return nil, gerror.NewSkip(401, "TOKEN 已过期")
+				err = gerror.New("TOKEN 已过期")
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, gerror.NewSkip(401, "TOKEN 未激活")
+				err = gerror.New("TOKEN 未激活")
 			} else if ve.Errors&jwt.ValidationErrorSignatureInvalid != 0 {
-				return nil, gerror.NewSkip(401, "TOKEN 签名无效")
+				err = gerror.New("TOKEN 签名无效")
 			} else {
-				return nil, gerror.NewSkip(401, "解析TOKEN失败")
+				err = gerror.New("解析TOKEN失败")
 			}
 		}
+		response.JsonExit(r, 401, err.Error())
+		return
 	}
+
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
-			return claims, nil
+			sys_service.BizCtx().SetUser(r.Context(), claims)
+			r.Middleware.Next()
+			return
 		}
-		return nil, gerror.NewSkip(401, "解析TOKEN失败")
-
-	} else {
-		return nil, gerror.NewSkip(401, "解析TOKEN失败")
 	}
+
+	response.JsonExit(r, 401, "解析TOKEN失败")
+	return
 }
