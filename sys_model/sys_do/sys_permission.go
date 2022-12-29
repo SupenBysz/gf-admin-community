@@ -21,4 +21,5 @@ type SysPermission struct {
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
 	IsShow      interface{} // 是否显示：0不显示 1显示
+	Sort        interface{} // 排序字段
 }
