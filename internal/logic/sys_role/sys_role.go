@@ -2,6 +2,7 @@ package sys_role
 
 import (
 	"context"
+	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -104,7 +105,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 				return err
 			}
 		} else {
-			_, err := sys_dao.SysRole.Ctx(ctx).OmitEmpty().Where(sys_do.SysRole{Id: roleInfo.Id}).Update(sys_do.SysRole{
+			_, err := sys_dao.SysRole.Ctx(ctx).OmitNilData().Where(sys_do.SysRole{Id: roleInfo.Id}).Update(sys_do.SysRole{
 				Name:        roleInfo.Name,
 				Description: roleInfo.Description,
 				UpdatedAt:   roleInfo.UpdatedAt,
@@ -210,6 +211,11 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 
 	if roleInfo.UnionMainId != makeUserUnionMainId {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+	}
+
+	if err == sql.ErrNoRows {
+		ret := make([]sys_model.SysUser, 0)
+		return &ret, nil
 	}
 
 	if err != nil {
