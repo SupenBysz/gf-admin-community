@@ -29,6 +29,7 @@ type SysPermissionColumns struct {
 	CreatedAt   string //
 	UpdatedAt   string //
 	IsShow      string // 是否显示：0不显示 1显示
+	Sort        string // 排序字段
 }
 
 // sysPermissionColumns holds the columns for table sys_permission.
@@ -42,6 +43,7 @@ var sysPermissionColumns = SysPermissionColumns{
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",
 	IsShow:      "is_show",
+	Sort:        "sort",
 }
 
 // NewSysPermissionDao creates and returns a new DAO object for table data access.
