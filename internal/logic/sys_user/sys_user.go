@@ -286,7 +286,9 @@ func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]in
 
 // SetUsername 修改自己的账号登陆名称
 func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error) {
-	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Username: newUsername})
+	result, err := sys_dao.SysUser.Ctx(ctx).
+		Where(sys_do.SysUser{Id: userId}).
+		Update(sys_do.SysUser{Username: newUsername})
 
 	if err != nil || result == nil {
 		return false, err
@@ -295,17 +297,12 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 }
 
 // UpdateUserPassword 修改用户登录密码
-func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, loginUserName string) (bool, error) {
-
-	if loginUserName == "" {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "需要先登录后才能修改密码")
-	}
-
+func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error) {
 	// 查询到用户信息
-	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, loginUserName)
+	sysUserInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "当前登录用户不存在")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户不存在")
 	}
 
 	// 判断输入的两次密码是否相同
