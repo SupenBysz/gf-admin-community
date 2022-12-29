@@ -61,8 +61,7 @@ func (s *sSysRole) CleanAllHook() {
 }
 
 // QueryRoleList 获取角色列表
-func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams) (*sys_model.RoleListRes, error) {
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
 
 	newFields := make([]sys_model.FilterInfo, 0)
 
@@ -84,9 +83,6 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 
 // Create 创建角色信息
 func (s *sSysRole) Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error) {
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
-	info.UnionMainId = unionMainId
-
 	info.Id = 0
 	return s.Save(ctx, info)
 }
@@ -197,7 +193,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 }
 
 // SetRoleForUser 设置角色用户
-func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId int64, userId int64) (bool, error) {
+func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId, userId, makeUserUnionMainId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -208,7 +204,6 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId int64, userId int6
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	// 判断是否跨商
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
 
 	// 去获取userInfo的UnionMainId和当前登录用户的UnionMainId是否一致，一致说明没跨商，不一致跨商
 	var userUnionMainId int64
@@ -224,7 +219,7 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId int64, userId int6
 		}
 	})
 
-	if unionMainId != userUnionMainId {
+	if makeUserUnionMainId != userUnionMainId {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
 	}
 
@@ -254,14 +249,11 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 }
 
 // GetRoleUsers 获取角色下的所有用户
-func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64) (*[]sys_model.SysUser, error) {
-	// 获取当前登录用户的UnionMainId
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
-
+func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) (*[]sys_model.SysUser, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
-	if roleInfo.UnionMainId != unionMainId {
+	if roleInfo.UnionMainId != makeUserUnionMainId {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
 	}
 
@@ -333,14 +325,13 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 }
 
 // SetRolePermissions 设置角色权限
-func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64) (bool, error) {
-	// 判断是否跨商设置角色权限
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error) {
 
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
-	if roleInfo.UnionMainId != unionMainId {
+	// 判断是否跨商设置角色权限
+	if roleInfo.UnionMainId != makeUserUnionMainId {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
 	}
 
