@@ -8,7 +8,6 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 // SysFile 文件
@@ -18,8 +17,6 @@ type cSysFile struct{}
 
 // Upload 上传文件
 func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys_api.UploadRes, err error) {
-	// sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
-
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
 
 	if userId <= 0 {
@@ -36,8 +33,6 @@ func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys
 
 // UploadIDCardWithOCR 上传身份证
 func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sys_api.UploadIDCardWithOCRReq) (res *sys_api.IDCardWithOCRRes, err error) {
-	// sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
-
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
 
 	if userId <= 0 {
@@ -51,8 +46,6 @@ func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sys_api.UploadI
 
 // UploadBusinessLicenseWithOCR 上传营业执照
 func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sys_api.UploadBusinessLicenseWithOCRReq) (*sys_api.UploadBusinessLicenseWithOCRRes, error) {
-	sys_service.Jwt().CustomMiddleware(ghttp.RequestFromCtx(ctx))
-
 	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
 
 	if userId <= 0 {

@@ -104,7 +104,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUs
 		return nil, gerror.New("账号查已注销")
 	}
 
-	tokenInfo, err := sys_service.Jwt().GenerateToken(sysUserInfo)
+	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, sysUserInfo)
 	if err != nil {
 		return nil, err
 	}
