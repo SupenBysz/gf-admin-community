@@ -1,9 +1,7 @@
 package sys_model
 
 import (
-	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type SysRole struct {
@@ -15,7 +13,3 @@ type SysRole struct {
 }
 
 type RoleListRes CollectRes[sys_entity.SysRole]
-
-type RoleHookFunc func(ctx context.Context, userInfo sys_entity.SysUser) (int64, error)
-
-type RoleHookInfo HookEventType[sys_enum.UserType, RoleHookFunc]
