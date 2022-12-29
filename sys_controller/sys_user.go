@@ -6,6 +6,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/errors/gcode"
+	"github.com/gogf/gf/v2/errors/gerror"
 )
 
 // SysUser 鉴权
@@ -48,25 +50,17 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 	return (*api_v1.Int64ArrRes)(&result), err
 }
 
-// SetUsername 设置用户登陆名
-func (c *cSysUser) SetUsername(ctx context.Context, req *sys_api.SetUsernameByIdReq) (api_v1.BoolRes, error) {
-	result, err := sys_service.SysUser().SetUsername(ctx, req.NewUsername)
-	return result == true, err
-}
-
-// UpdateUserPassword 修改密码
-func (c *cSysUser) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUserPasswordReq) (api_v1.BoolRes, error) {
-	_, err := sys_service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword)
-
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 // ResetUserPassword 重置用户密码
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
-	_, err = sys_service.SysUser().ResetUserPassword(ctx, req.UserId, req.Password, req.ConfirmPassword)
+	// 获取当前登录用户
+	user := sys_service.BizCtx().Get(ctx).ClaimsUser
+
+	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, user.Id)
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeValidationFailed, "当前登录用户身份错误")
+	}
+
+	_, err = sys_service.SysUser().ResetUserPassword(ctx, req.UserId, req.Password, req.ConfirmPassword, *userInfo)
 	if err != nil {
 		return false, err
 	}

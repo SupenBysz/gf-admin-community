@@ -285,8 +285,7 @@ func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]in
 }
 
 // SetUsername 修改自己的账号登陆名称
-func (s *sSysUser) SetUsername(ctx context.Context, newUsername string) (bool, error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error) {
 	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Username: newUsername})
 
 	if err != nil || result == nil {
@@ -296,9 +295,7 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string) (bool, e
 }
 
 // UpdateUserPassword 修改用户登录密码
-func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword) (bool, error) {
-	// 获取到当前登录用户
-	loginUserName := sys_service.BizCtx().Get(ctx).ClaimsUser.Username
+func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, loginUserName string) (bool, error) {
 
 	if loginUserName == "" {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "需要先登录后才能修改密码")
@@ -354,20 +351,14 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 }
 
 // ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
-func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error) {
-	// 获取当前登录用户
-	user := sys_service.BizCtx().Get(ctx).ClaimsUser
-
-	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, user.Id)
-	if err != nil {
-		return false, gerror.NewCode(gcode.CodeValidationFailed, "当前登录用户身份错误")
-	}
-
+func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error) {
+	// hook判断当前登录身份是否可以重置密码
 	{
+		var err error
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *userInfo)
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, userInfo)
 					if err != nil {
 						break
 					}
