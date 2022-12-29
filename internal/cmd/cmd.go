@@ -107,6 +107,8 @@ var (
 						group.Group("/permission", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysPermission) })
 						// 组织架构
 						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysOrganization) })
+						// 我的
+						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysMy) })
 					})
 				})
 			}

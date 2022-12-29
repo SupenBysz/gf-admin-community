@@ -33,16 +33,6 @@ type GetUserPermissionIdsReq struct {
 	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
-type SetUsernameByIdReq struct {
-	g.Meta      `path:"/setUsername" method:"post" summary:"设置用户登陆名称" tags:"用户"`
-	NewUsername string `json:"newUsername" v:"required#新用户名称" dc:"新的用户名称"`
-}
-
-type UpdateUserPasswordReq struct {
-	g.Meta `path:"/updateUserPassword" method:"post" summary:"修改用户密码" tags:"用户"`
-	sys_model.UpdateUserPassword
-}
-
 type UserInfoRes sys_entity.SysUser
 type UserInfoListRes sys_model.CollectRes[sys_entity.SysUser]
 
