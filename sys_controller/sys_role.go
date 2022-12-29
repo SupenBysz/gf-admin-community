@@ -16,11 +16,16 @@ type cSysRole struct{}
 
 // GetRoleList 获取角色|列表
 func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListReq) (*sys_model.RoleListRes, error) {
-	return sys_service.SysRole().QueryRoleList(ctx, req.SearchParams)
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	return sys_service.SysRole().QueryRoleList(ctx, req.SearchParams, unionMainId)
 }
 
 // CreateRoleInfo 新增或保存角色|信息
 func (c *cSysRole) CreateRoleInfo(ctx context.Context, req *sys_api.CreateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+	req.UnionMainId = unionMainId
+
 	result, err := sys_service.SysRole().Create(ctx, req.SysRole)
 
 	return (*sys_api.RoleInfoRes)(result), err
@@ -42,7 +47,9 @@ func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleIn
 
 // SetRoleForUser 设置角色用户
 func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUserReq) (api_v1.BoolRes, error) {
-	result, err := sys_service.SysRole().SetRoleForUser(ctx, req.RoleId, req.UserId)
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	result, err := sys_service.SysRole().SetRoleForUser(ctx, req.RoleId, req.UserId, unionMainId)
 
 	return result == true, err
 }
@@ -56,7 +63,10 @@ func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRol
 
 // GetRoleUserList 获取角色下的所有用户|列表
 func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUsersReq) (*sys_api.UserListRes, error) {
-	data, err := sys_service.SysRole().GetRoleUsers(ctx, req.RoleId)
+	// 获取当前登录用户的UnionMainId
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	data, err := sys_service.SysRole().GetRoleUsers(ctx, req.RoleId, unionMainId)
 
 	if err != nil {
 		return nil, err
@@ -102,7 +112,9 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 
 // SetRolePermissions 设置角色权限
 func (c *cSysRole) SetRolePermissions(ctx context.Context, req *sys_api.SetRolePermissionsReq) (api_v1.BoolRes, error) {
-	result, err := sys_service.SysRole().SetRolePermissions(ctx, req.Id, req.PermissionIds)
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	result, err := sys_service.SysRole().SetRolePermissions(ctx, req.Id, req.PermissionIds, unionMainId)
 	return result == true, err
 }
 
