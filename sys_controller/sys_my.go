@@ -23,9 +23,9 @@ func (c *cSysMy) SetUsername(ctx context.Context, req *sys_api.SetUsernameByIdRe
 // UpdateUserPassword 修改密码
 func (c *cSysMy) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUserPasswordReq) (api_v1.BoolRes, error) {
 	// 获取到当前登录用户名称
-	loginUserName := sys_service.BizCtx().Get(ctx).ClaimsUser.Username
+	user := sys_service.BizCtx().Get(ctx).ClaimsUser
 
-	_, err := sys_service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword, loginUserName)
+	_, err := sys_service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword, user.Id)
 
 	if err != nil {
 		return false, err
