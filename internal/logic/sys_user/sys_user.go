@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -87,10 +88,26 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 	if result != nil && result.List != nil && len(*result.List) > 0 {
 		for _, user := range *result.List {
 			user.RoleNames = make([]string, 0)
-			roles, err := sys_service.SysRole().GetUserRoleList(ctx, user.Id)
-			if err == nil && len(*roles) > 0 {
-				for _, role := range *roles {
-					user.RoleNames = append(user.RoleNames, role.Name)
+			roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
+
+			if err != nil && err != sql.ErrNoRows {
+				return nil, err
+			}
+
+			if len(roleIds) > 0 {
+				roles, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
+					Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+						Field:     sys_dao.SysRole.Columns().Id,
+						Where:     "in",
+						IsOrWhere: false,
+						Value:     roleIds,
+					}),
+					Pagination: sys_model.Pagination{},
+				}, sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId)
+				if err == nil && len(*roles.List) > 0 {
+					for _, role := range *roles.List {
+						user.RoleNames = append(user.RoleNames, role.Name)
+					}
 				}
 			}
 			user.Password = ""
