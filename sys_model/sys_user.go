@@ -11,7 +11,7 @@ type SysUserRegister struct {
 	Username        string `json:"username" v:"required|length:4,30#请输入用户名称|用户名称长度非法"  dc:"登陆账号"`
 	Password        string `json:"password" v:"required|password#请输入密码|密码长度非法"  dc:"密码"`
 	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"密码"`
-	Captcha         string `json:"sys_captcha" v:"required" dc:"验证码"`
+	Captcha         string `json:"captcha" v:"required" dc:"验证码"`
 }
 
 type UserInnerRegister struct {
