@@ -170,6 +170,8 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		Type:      1,
 		CreatedAt: gtime.Now(),
 	}
+	pwd, _ := en_crypto.PwdHash(data.Password, gconv.String(data.Id))
+	data.Password = pwd
 
 	// 开启事务
 	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
