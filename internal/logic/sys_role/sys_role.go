@@ -18,9 +18,12 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
+	"time"
 )
 
 type sSysRole struct {
+	CachePrefix   string
+	CacheDuration time.Duration
 }
 
 func init() {
@@ -28,16 +31,17 @@ func init() {
 }
 
 func New() *sSysRole {
-	return &sSysRole{}
+	return &sSysRole{
+		CachePrefix:   "" + sys_dao.SysRole.Table() + "_",
+		CacheDuration: time.Hour,
+	}
 }
 
 // QueryRoleList 获取角色列表
 func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
 
-	newFields := make([]sys_model.FilterInfo, 0)
-
 	// 系统角色列表 + 自己商角色列表
-	newFields = append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+	info.Filter = append(info.Filter, sys_model.FilterInfo{
 		Field:       sys_dao.SysRole.Columns().UnionMainId,
 		Where:       "=",
 		IsOrWhere:   false,
@@ -45,9 +49,17 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 		IsNullValue: false,
 	})
 
-	info.Filter = newFields
+	cacheName := ""
 
-	result, err := daoctl.Query[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx), &info, false)
+	for _, item := range info.Filter {
+		cacheName += item.Field + item.Where + gconv.String(item.Value)
+	}
+
+	result, err := daoctl.Query[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: s.CacheDuration,
+		Name:     s.CachePrefix + cacheName,
+		Force:    true,
+	}), &info, false)
 
 	return (*sys_model.RoleListRes)(result), err
 }
