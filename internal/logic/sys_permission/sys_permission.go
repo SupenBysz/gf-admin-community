@@ -186,7 +186,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 	}
 
 	// 移除已缓存的数据
-	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), sys_dao.SysPermission.Table())
+	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), s.CachePrefix)
 	return &data, nil
 }
 
@@ -208,7 +208,7 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 	sys_dao.SysCasbin.Ctx(ctx).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
 
 	// 移除已缓存的数据
-	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), sys_dao.SysPermission.Table())
+	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), s.CachePrefix)
 	return true, nil
 }
 

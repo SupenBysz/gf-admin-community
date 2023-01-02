@@ -12,7 +12,7 @@ import (
 func RemoveQueryCache(db gdb.DB, prefix string) {
 	cacheKeys, _ := db.GetCache().KeyStrings(db.GetCtx())
 	for _, key := range cacheKeys {
-		if gstr.HasPrefix(key, prefix) {
+		if gstr.HasPrefix(key, prefix) || gstr.HasPrefix(key, "SelectCache:"+prefix) {
 			db.GetCache().Remove(db.GetCtx(), key)
 		}
 	}
