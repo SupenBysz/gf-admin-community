@@ -127,6 +127,8 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 			}
 		}
 
+		// 清除缓存
+		daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 		return nil
 	})
 	if err != nil {
@@ -169,6 +171,10 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		if !result || err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
 		}
+		// 清除角色权限
+		sys_service.Casbin().DeletePermissionsForUser(gconv.String(info.Id))
+		// 清除缓存
+		daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 		return nil
 	})
 
@@ -195,6 +201,8 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId, userId, makeUserU
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
+	// 清除缓存
+	daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 	return sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
@@ -213,6 +221,8 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
+	// 清除缓存
+	daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
@@ -315,7 +325,7 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		{
 			// 先清除roleId所有权限
-			_, err := sys_service.Casbin().DeletePermissionsForUser(gconv.String(roleId))
+			_, err = sys_service.Casbin().DeletePermissionsForUser(gconv.String(roleId))
 
 			if len(permissionIds) <= 0 {
 				return err
@@ -329,6 +339,9 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 				return err
 			}
 		}
+		
+		// 清除缓存
+		daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 		return nil
 	})
 	if err != nil {
