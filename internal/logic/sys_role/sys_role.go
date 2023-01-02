@@ -32,7 +32,7 @@ func init() {
 
 func New() *sSysRole {
 	return &sSysRole{
-		CachePrefix:   "" + sys_dao.SysRole.Table() + "_",
+		CachePrefix:   sys_dao.SysRole.Table() + "_",
 		CacheDuration: time.Hour,
 	}
 }
@@ -339,7 +339,7 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 				return err
 			}
 		}
-		
+
 		// 清除缓存
 		daoctl.RemoveQueryCache(sys_dao.SysRole.DB(), s.CachePrefix)
 		return nil
