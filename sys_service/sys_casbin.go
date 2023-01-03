@@ -29,8 +29,7 @@ type (
 		AddPermissionsForUser(roleName string, path []string) (bool, error)
 		DeletePermissionForUser(roleName, path, method string) (bool, error)
 		DeletePermissionsForUser(roleName string) (bool, error)
-		EnforceCheck(userName, path, role, method string) (bool, error)
-		CheckUserHasPermission(ctx context.Context, userId string, roleId string) (bool, error)
+		EnforceCheck(userName, path, role, method interface{}) (bool, error)
 		CheckUser(ctx context.Context, roleId, permission string) (bool, error)
 	}
 )

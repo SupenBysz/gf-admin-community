@@ -10,6 +10,7 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/gogf/gf/v2/container/gmap"
 )
 
 type (
@@ -21,9 +22,14 @@ type (
 		GetPermissionTree(ctx context.Context, parentId int64) (*[]sys_model.SysPermissionTree, error)
 		CreatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		UpdatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
+		ImportPermission(ctx context.Context, infoArr []*sys_model.SysPermission) error
 		SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		DeletePermission(ctx context.Context, permissionId int64) (bool, error)
 		GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error)
+		CheckPermission(ctx context.Context, permissionId interface{}) (bool, error)
+		NewPermission(code int64, identifier string, name string, description string, parentId ...int64) *sys_model.SysPermission
+		PermissionTypeForm(code int64, mapItems *gmap.StrAnyMap) *sys_model.SysPermission
+		SavePermissionToDb(mapItems *gmap.StrAnyMap)
 	}
 )
 
