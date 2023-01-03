@@ -62,6 +62,13 @@ func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName
 
 // QueryPermissionList 查询权限
 func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error) {
+	info.Filter = append(info.Filter, sys_model.FilterInfo{
+		Field:       sys_dao.SysPermission.Columns().IsShow,
+		Where:       "=",
+		IsOrWhere:   false,
+		Value:       1,
+		IsNullValue: false,
+	})
 	result, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, false)
 	return (*sys_model.SysPermissionInfoListRes)(result), err
 }
