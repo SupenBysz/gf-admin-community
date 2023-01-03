@@ -1,11 +1,14 @@
 package sys_consts
 
-import "github.com/gogf/gf/v2/container/garray"
+import (
+	"github.com/gogf/gf/v2/container/garray"
+)
 
 type global struct {
 	DefaultRegisterType      int
 	NotAllowLoginUserTypeArr *garray.SortedIntArray
 	LogLevelToDatabaseArr    *garray.SortedIntArray
+	ApiPreFix                string
 }
 
 var (
@@ -13,5 +16,6 @@ var (
 		DefaultRegisterType:      0,
 		NotAllowLoginUserTypeArr: garray.NewSortedIntArray(),
 		LogLevelToDatabaseArr:    garray.NewSortedIntArray(),
+		ApiPreFix:                "",
 	}
 )

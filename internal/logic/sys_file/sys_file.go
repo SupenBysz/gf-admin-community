@@ -3,6 +3,7 @@ package sys_file
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
@@ -398,7 +399,7 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 // GetUrlById 通过id返回图片url
 func (s *sFile) GetUrlById(ctx context.Context, id string, v int) (string, error) {
 	// 获取到api接口前缀
-	apiPrefix := g.Cfg().MustGet(ctx, "service.apiPrefix").String()
+	apiPrefix := sys_consts.Global.ApiPreFix
 
 	// 拼接请求url
 	url := apiPrefix + "/common/sys_file/getFileById?id="
