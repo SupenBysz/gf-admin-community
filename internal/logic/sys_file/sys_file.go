@@ -395,6 +395,24 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	return savePath, nil
 }
 
+// GetUrlById 通过id返回图片url
+func (s *sFile) GetUrlById(ctx context.Context, id string, v int) (string, error) {
+	// 获取到api接口前缀
+	apiPrefix := g.Cfg().MustGet(ctx, "service.apiPrefix").String()
+
+	// 拼接请求url
+	url := apiPrefix + "/common/sys_file/getFileById?id="
+
+	if v == 0 {
+		return url + gconv.String(id) + "&v=0", nil
+	} else if v == 1 {
+		return url + gconv.String(id) + "&v=1", nil
+	} else {
+		return "", sys_service.SysLogs().ErrorSimple(ctx, nil, "文件获取类型错误", sys_dao.SysFile.Table())
+	}
+
+}
+
 // GetFileById 根据id获取并返回图片
 func (s *sFile) GetFileById(ctx context.Context, id int64, v int) (api_v1.MapRes, error) { // 获取图片可以是id、token、路径
 	if v == 0 {
