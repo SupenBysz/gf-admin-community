@@ -71,7 +71,7 @@ func (s *sSysUser) CleanAllHook() {
 }
 
 // QueryUserList 获取用户列表
-func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, isExport bool) (response *sys_model.SysUserRes, err error) {
+func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserRes, err error) {
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
 
@@ -103,7 +103,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 						Value:     roleIds,
 					}),
 					Pagination: sys_model.Pagination{},
-				}, sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId)
+				}, unionMainId)
 				if err == nil && len(*roles.List) > 0 {
 					for _, role := range *roles.List {
 						user.RoleNames = append(user.RoleNames, role.Name)
