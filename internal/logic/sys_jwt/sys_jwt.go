@@ -80,14 +80,11 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_entity.SysUser) (res
 		}
 	})
 
+	user.Password = ""
+
 	customClaims := sys_model.JwtCustomClaims{
-		Id:          user.Id,
-		Username:    user.Username,
-		State:       user.State,
-		Type:        user.Type,
+		SysUser:     *user,
 		UnionMainId: userUnionMainId,
-		CreatedAt:   user.CreatedAt,
-		UpdatedAt:   user.UpdatedAt,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
