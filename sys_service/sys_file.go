@@ -26,6 +26,7 @@ type (
 		UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput, userId int64) (*sys_model.BankCardWithOCR, error)
 		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense, userId int64) (*sys_model.BusinessLicenseWithOCR, error)
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
+		GetUrlById(ctx context.Context, id string, v int) (string, error)
 		GetFileById(ctx context.Context, id int64, v int) (api_v1.MapRes, error)
 	}
 )
