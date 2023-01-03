@@ -24,10 +24,13 @@ func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (
 
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_api.UserListRes, error) {
-	data, err := sys_service.SysUser().QueryUserList(ctx, &req.SearchParams, false)
+	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+
+	data, err := sys_service.SysUser().QueryUserList(ctx, &req.SearchParams, unionMainId, false)
 	if err != nil {
 		return nil, err
 	}
+
 	return (*sys_api.UserListRes)(data), err
 }
 
