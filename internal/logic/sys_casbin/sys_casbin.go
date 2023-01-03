@@ -233,26 +233,9 @@ func (s *sCasbin) DeletePermissionsForUser(roleName string) (bool, error) {
 }
 
 // EnforceCheck 校验  确认访问权限
-func (s *sCasbin) EnforceCheck(userName, path, role, method string) (bool, error) { // 用户id  域 资源  方法
+func (s *sCasbin) EnforceCheck(userName, path, role, method interface{}) (bool, error) { // 用户id  域 资源  方法
 	t, err := s.Enforcer().Enforce(userName, path, role, method)
 	return t, err
-}
-
-// CheckUserHasPermission 通过权限树ID，校验当前登录用户是否拥有该权限
-func (s *sCasbin) CheckUserHasPermission(ctx context.Context, userId string, roleId string) (bool, error) { // 用户id，角色id，
-	// 获取角色
-	result := sys_entity.SysCasbin{}
-
-	err := sys_dao.SysCasbin.Ctx(ctx).Where(sys_do.SysCasbin{
-		V0: userId,
-		V1: roleId,
-	}).Scan(&result)
-
-	if err != nil || &result == nil {
-		return false, err
-	}
-
-	return true, nil
 }
 
 func (s *sCasbin) CheckUser(ctx context.Context, roleId, permission string) (bool, error) {

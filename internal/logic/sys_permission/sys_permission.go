@@ -3,6 +3,7 @@ package sys_permission
 import (
 	"context"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -299,4 +300,67 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	}
 
 	return &result, nil
+}
+
+// CheckPermission 校验权限
+func (s *sSysPermission) CheckPermission(ctx context.Context, permissionId interface{}) (bool, error) { // 权限id  域 资源  方法
+	user := sys_service.BizCtx().Get(ctx).ClaimsUser.SysUser
+	t, err := sys_service.Casbin().Enforcer().Enforce(user.Id, sys_consts.CasbinDomain, permissionId, "allow")
+	if err != nil {
+		fmt.Printf("权限校验失败[%v]：%v\n", permissionId, err.Error())
+	}
+	if t != true {
+		err = gerror.New("没有权限")
+	}
+	return t, err
+}
+
+// NewPermission 构造权限信息
+func (s *sSysPermission) NewPermission(code int64, identifier string, name string, description string, parentId ...int64) *sys_model.SysPermission {
+	var pid int64 = 0
+
+	if len(parentId) > 0 {
+		pid = parentId[0]
+	}
+
+	result := &sys_model.SysPermission{
+		Id:          code,
+		ParentId:    pid,
+		Name:        name,
+		Description: description,
+		Identifier:  identifier,
+		Type:        1,
+	}
+	return result
+}
+
+// PermissionTypeForm 通过枚举值取枚举类型
+func (s *sSysPermission) PermissionTypeForm(code int64, mapItems *gmap.StrAnyMap) *sys_model.SysPermission {
+	var result *sys_model.SysPermission
+	mapItems.Iterator(func(k string, v interface{}) bool {
+		item := v.(*sys_model.SysPermission)
+		if item.Id == code {
+			result = item
+			return false
+		}
+		return true
+	})
+
+	return result
+}
+
+// SavePermissionToDb 保存限信息到数据库，如果存在会自动忽略
+func (s *sSysPermission) SavePermissionToDb(mapItems *gmap.StrAnyMap) {
+	if mapItems.Size() <= 0 {
+		return
+	}
+
+	waitSaveArr := make([]*sys_model.SysPermission, 0)
+	mapItems.Iterator(func(k string, v interface{}) bool {
+		item := v.(*sys_model.SysPermission)
+		waitSaveArr = append(waitSaveArr, item)
+		return true
+	})
+
+	sys_service.SysPermission().ImportPermission(context.Background(), waitSaveArr)
 }
