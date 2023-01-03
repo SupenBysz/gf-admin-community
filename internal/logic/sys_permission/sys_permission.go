@@ -2,12 +2,14 @@ package sys_permission
 
 import (
 	"context"
+	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -145,6 +147,73 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysPermission.Table())
 	}
 	return s.SavePermission(ctx, info)
+}
+
+// ImportPermission 导入权限
+func (s *sSysPermission) ImportPermission(ctx context.Context, infoArr []*sys_model.SysPermission) error {
+	if len(infoArr) <= 0 {
+		return nil
+	}
+
+	idArr := make([]int64, 0)
+	idMap := gmap.New()
+
+	// 提取所有id
+	for _, permission := range infoArr {
+		idArr = append(idArr, permission.Id)
+		idMap.Set(permission.Id, permission)
+	}
+
+	data := make([]sys_entity.SysPermission, 0)
+	// 加载已导入的权限
+	err := sys_dao.SysPermission.Ctx(ctx).WhereIn(sys_dao.SysPermission.Columns().Id, idArr).Scan(&data)
+	if err != nil {
+		return err
+	}
+
+	all := make([]sys_entity.SysPermission, 0)
+	// 加载所有权限
+	err = sys_dao.SysPermission.Ctx(ctx).Scan(&all)
+	if err != nil {
+		return err
+	}
+
+	waitSaveArr := make([]*sys_model.SysPermission, 0)
+	for _, permission := range infoArr {
+		if idMap.Contains(permission.Id) {
+			continue
+		}
+
+		if permission.ParentId > 0 {
+			has := false
+			for _, sysPermission := range all {
+				if sysPermission.Id == permission.ParentId {
+					has = true
+				}
+			}
+			for _, sysPermission := range infoArr {
+				if sysPermission.Id == permission.ParentId {
+					has = true
+				}
+			}
+			if has == false {
+				fmt.Printf("权限ID父级无效[%v]：%v | %s，%s\n", permission.Id, permission.Name, permission.Identifier, permission.Description)
+				continue
+			}
+		}
+		waitSaveArr = append(waitSaveArr, permission)
+	}
+
+	for _, permission := range waitSaveArr {
+		_, err = sys_dao.SysPermission.Ctx(ctx).Insert(permission)
+		if err != nil {
+			fmt.Printf("权限导入失败[%v]：%v | %s，%s\n", permission.Id, permission.Name, permission.Identifier, permission.Description)
+			fmt.Printf("失败原因：%s\n", err.Error())
+		}
+	}
+	// 移除已缓存的数据
+	daoctl.RemoveQueryCache(sys_dao.SysPermission.DB(), s.CachePrefix)
+	return nil
 }
 
 // SavePermission 新增/保存权限信息
