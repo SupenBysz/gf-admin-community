@@ -9,7 +9,7 @@ import (
 
 type JwtCustomClaims struct {
 	sys_entity.SysUser
-	UnionMainId int64 `json:"-" json:"union_main_id"    description:"主体id"`
+	UnionMainId int64 `json:"unionMainId"    description:"主体id"`
 	jwt.RegisteredClaims
 }
 
