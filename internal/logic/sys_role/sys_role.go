@@ -40,7 +40,7 @@ func New() *sSysRole {
 // QueryRoleList 获取角色列表
 func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
 
-	// 系统角色列表 + 自己商角色列表
+	// 自己商角色列表
 	info.Filter = append(info.Filter, sys_model.FilterInfo{
 		Field:       sys_dao.SysRole.Columns().UnionMainId,
 		Where:       "=",
