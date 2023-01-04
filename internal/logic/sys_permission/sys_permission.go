@@ -63,8 +63,35 @@ func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName
 	return &result, nil
 }
 
-// QueryPermissionList 查询权限
+// QueryPermissionList 查询权限列表
 func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error) {
+	if len(info.OrderBy) != 0 {
+		hasSort := false
+		for _, item := range info.OrderBy {
+			if item.Field == sys_dao.SysPermission.Columns().Sort {
+				hasSort = true
+				break
+			}
+		}
+
+		if hasSort == false {
+			orderByData := append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+				Field: sys_dao.SysPermission.Columns().Sort,
+				Sort:  "ASC",
+			})
+
+			orderByData = append(orderByData, info.OrderBy[0:]...)
+
+			info.OrderBy = orderByData
+
+		}
+	} else {
+		info.OrderBy = append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+			Field: sys_dao.SysPermission.Columns().Sort,
+			Sort:  "ASC",
+		})
+	}
+
 	result, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, false)
 	return (*sys_model.SysPermissionInfoListRes)(result), err
 }
