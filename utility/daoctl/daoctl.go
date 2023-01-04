@@ -50,7 +50,7 @@ func makeOrderBy(db *gdb.Model, orderBy []sys_model.OrderBy) *gdb.Model {
 			})
 
 			// 排序
-			if gstr.CaseCamelLower(orderFiled.Sort) == "asc" || len(orderFiled.Sort) <= 0 {
+			if gstr.ToLower(orderFiled.Sort) == "asc" || len(orderFiled.Sort) <= 0 {
 				db = db.OrderAsc(orderFiled.Field)
 			} else { // desc
 				db = db.OrderDesc(orderFiled.Field)
@@ -77,26 +77,26 @@ func makeBuilder(db *gdb.Model, searchFieldArr []sys_model.FilterInfo) (*gdb.Mod
 				}
 
 				if field.IsOrWhere {
-					if gstr.CaseCamelLower(field.Where) == "in" {
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+					if gstr.ToLower(field.Where) == "in" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereOrNotIn(field.Field, field.Value)
 						} else {
 							db = db.WhereOrIn(field.Field, field.Value)
 						}
-					} else if gstr.CaseCamelLower(field.Where) == "between" {
+					} else if gstr.ToLower(field.Where) == "between" {
 						valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
 						minValue := valueArr[0]
 						maxValue := minValue
 						if len(valueArr) > 1 {
 							maxValue = valueArr[1]
 						}
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereOrNotBetween(field.Field, minValue, maxValue)
 						} else {
 							db = db.WhereOrBetween(field.Field, minValue, maxValue)
 						}
-					} else if gstr.CaseCamelLower(field.Where) == "like" {
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+					} else if gstr.ToLower(field.Where) == "like" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereOrNotLike(field.Field, field.Value)
 						} else {
 							db = db.WhereOrLike(field.Field, field.Value)
@@ -119,26 +119,26 @@ func makeBuilder(db *gdb.Model, searchFieldArr []sys_model.FilterInfo) (*gdb.Mod
 						}
 					}
 				} else {
-					if gstr.CaseCamelLower(field.Where) == "in" {
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+					if gstr.ToLower(field.Where) == "in" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereNotIn(field.Field, field.Value)
 						} else {
 							db = db.WhereIn(field.Field, field.Value)
 						}
-					} else if gstr.CaseCamelLower(field.Where) == "between" {
+					} else if gstr.ToLower(field.Where) == "between" {
 						valueArr := gstr.SplitAndTrim(gconv.String(field.Value), ",")
 						minValue := valueArr[0]
 						maxValue := minValue
 						if len(valueArr) > 1 {
 							maxValue = valueArr[1]
 						}
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereNotBetween(field.Field, minValue, maxValue)
 						} else {
 							db = db.WhereBetween(field.Field, minValue, maxValue)
 						}
-					} else if gstr.CaseCamelLower(field.Where) == "like" {
-						if gstr.CaseCamelLower(field.Modifier) == "not" {
+					} else if gstr.ToLower(field.Where) == "like" {
+						if gstr.ToLower(field.Modifier) == "not" {
 							db = db.WhereNotLike(field.Field, field.Value)
 						} else {
 							db = db.WhereLike(field.Field, gconv.String(field.Value))
