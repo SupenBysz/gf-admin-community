@@ -68,23 +68,11 @@ func (s *sJwt) CleanAllHook() {
 
 // GenerateToken 创建一个token
 func (s *sJwt) GenerateToken(ctx context.Context, user *sys_entity.SysUser) (response *sys_model.TokenInfo, err error) {
-	var userUnionMainId int64 = 0
-	g.Try(ctx, func(ctx context.Context) {
-		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&user.Type == user.Type {
-				userUnionMainId, err = hook.Value.Value(ctx, *user)
-				if err != nil {
-					break
-				}
-			}
-		}
-	})
-
 	user.Password = ""
 
-	customClaims := sys_model.JwtCustomClaims{
-		SysUser:     *user,
-		UnionMainId: userUnionMainId,
+	customClaims := &sys_model.JwtCustomClaims{
+		SysUser: *user,
+		IsAdmin: user.Type == sys_enum.User.Type.SuperAdmin.Code(),
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
@@ -94,7 +82,18 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_entity.SysUser) (res
 		},
 	}
 
-	token, err := s.CreateToken(&customClaims)
+	g.Try(ctx, func(ctx context.Context) {
+		for _, hook := range s.hookArr {
+			if hook.Value.Key.Code()&user.Type == user.Type {
+				customClaims, err = hook.Value.Value(ctx, customClaims)
+				if err != nil {
+					break
+				}
+			}
+		}
+	})
+
+	token, err := s.CreateToken(customClaims)
 
 	if err != nil {
 		return nil, gerror.New("创建登录令牌失败")
