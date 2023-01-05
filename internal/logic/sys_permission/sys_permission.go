@@ -331,7 +331,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 // CheckPermission 校验权限
 func (s *sSysPermission) CheckPermission(ctx context.Context, permissionId interface{}) (bool, error) { // 权限id  域 资源  方法
-	user := sys_service.BizCtx().Get(ctx).ClaimsUser.SysUser
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser.SysUser
 	t, err := sys_service.Casbin().Enforcer().Enforce(user.Id, sys_consts.CasbinDomain, permissionId, "allow")
 	if err != nil {
 		fmt.Printf("权限校验失败[%v]：%v\n", permissionId, err.Error())

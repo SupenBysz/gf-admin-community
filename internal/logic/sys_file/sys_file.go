@@ -479,7 +479,7 @@ func (s *sFile) getFileFromSql(ctx context.Context, id int64) (*sys_entity.SysFi
 }
 
 func (s *sFile) getFileFromCache(ctx context.Context, uploadId int64) (*sys_model.FileUploadOutput, error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	file, err := s.GetUploadFile(ctx, uploadId, userId)
 

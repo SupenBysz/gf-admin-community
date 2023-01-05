@@ -24,7 +24,7 @@ func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (
 
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_api.UserListRes, error) {
-	unionMainId := sys_service.BizCtx().Get(ctx).ClaimsUser.UnionMainId
+	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
 	data, err := sys_service.SysUser().QueryUserList(ctx, &req.SearchParams, unionMainId, false)
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 // ResetUserPassword 重置用户密码
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
 	// 获取当前登录用户
-	user := sys_service.BizCtx().Get(ctx).ClaimsUser
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, user.Id)
 	if err != nil {

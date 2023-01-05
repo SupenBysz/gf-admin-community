@@ -130,7 +130,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	// 确保路由注册顺序 sys_service.Middleware().Auth 在前，sys_service.Middleware().Casbin 在后，如下：
 	// sys_service.Middleware().Auth,
 	// sys_service.Middleware().Casbin,
-	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
+	user := sys_service.SysSession().Get(r.GetCtx()).JwtClaimsUser
 
 	userInfo := daoctl.GetById[sys_entity.SysUser](sys_dao.SysUser.Ctx(r.GetCtx()), user.Id)
 
