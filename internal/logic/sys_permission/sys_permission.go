@@ -182,6 +182,8 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 
 	for i, permissionTree := range permissionTreeArr {
 		if parent != nil {
+			// 设置父级ID
+			permissionTree.ParentId = parent.Id
 			// 继承父级权限类型
 			permissionTree.Type = parent.Type
 			// 拼接上父级权限标识符
