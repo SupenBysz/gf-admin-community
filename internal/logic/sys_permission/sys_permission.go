@@ -243,14 +243,17 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 		data.Id = idgen.NextId()
 		data.CreatedAt = gtime.Now()
 
-		_, err := sys_dao.SysPermission.Ctx(ctx).Insert(data)
+		_, err := sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).Insert(data)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增权限信息失败", sys_dao.SysPermission.Table())
 		}
 	} else {
 		data.UpdatedAt = gtime.Now()
-		_, err := sys_dao.SysPermission.Ctx(ctx).Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
+		_, err := sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
 			ParentId:    data.ParentId,
 			Name:        data.Name,
 			Description: data.Description,
@@ -275,14 +278,20 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 		return false, err
 	}
 
-	_, err = sys_dao.SysPermission.Ctx(ctx).Delete(sys_do.SysPermission{Id: permissionId})
+	_, err = sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Delete(sys_do.SysPermission{Id: permissionId})
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除权限信息失败", sys_dao.SysPermission.Table())
 	}
 
 	// 删除权限定义
-	sys_dao.SysCasbin.Ctx(ctx).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
+	sys_dao.SysCasbin.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
 
 	return true, nil
 }
@@ -298,7 +307,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	// 在权限树标识中匹标识后缀，|为标识符的分隔符
 	path = "%|" + path
 
-	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
+	err := sys_dao.SysPermission.Ctx(ctx).Cache(s.conf).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
 
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -91,7 +92,7 @@ func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs
 
 		info.Id = idgen.NextId()
 		info.CreatedAt = gtime.Now()
-		sys_dao.SysLogs.Ctx(context.Background()).Insert(info)
+		sys_dao.SysLogs.Ctx(context.Background()).Cache(gdb.CacheOption{Duration: -1, Force: false}).Insert(info)
 	})
 
 	return err

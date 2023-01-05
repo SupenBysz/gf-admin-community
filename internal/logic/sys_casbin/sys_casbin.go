@@ -5,7 +5,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -13,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/response"
 	"github.com/casbin/casbin/v2"
 	casbinModel "github.com/casbin/casbin/v2/model"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -21,6 +21,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
+	"time"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_model.CasbinHookInfo]
@@ -28,6 +29,7 @@ type hookInfo sys_model.KeyValueT[int64, sys_model.CasbinHookInfo]
 type sCasbin struct {
 	reqCasbin sys_model.ReqCasbin
 	hookArr   []hookInfo
+	conf      gdb.CacheOption
 }
 
 var (
@@ -41,6 +43,10 @@ func init() {
 // New Casbin 权限控制
 func New() *sCasbin {
 	return &sCasbin{
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 		hookArr: make([]hookInfo, 0),
 	}
 }
@@ -132,7 +138,7 @@ func (s *sCasbin) Middleware(r *ghttp.Request) {
 	// sys_service.Middleware().Casbin,
 	user := sys_service.SysSession().Get(r.GetCtx()).JwtClaimsUser
 
-	userInfo := daoctl.GetById[sys_entity.SysUser](sys_dao.SysUser.Ctx(r.GetCtx()), user.Id)
+	userInfo := daoctl.GetById[sys_entity.SysUser](sys_dao.SysUser.Ctx(r.GetCtx()).Cache(s.conf), user.Id)
 
 	// 如果是超级管理员，则直接放行
 	if user.Type == -1 {
@@ -236,18 +242,4 @@ func (s *sCasbin) DeletePermissionsForUser(roleName string) (bool, error) {
 func (s *sCasbin) EnforceCheck(userName, path, role, method interface{}) (bool, error) { // 用户id  域 资源  方法
 	t, err := s.Enforcer().Enforce(userName, path, role, method)
 	return t, err
-}
-
-func (s *sCasbin) CheckUser(ctx context.Context, roleId, permission string) (bool, error) {
-	casbinInfo := sys_entity.SysCasbin{}
-
-	err := sys_dao.SysCasbin.Ctx(ctx).Where(sys_do.SysCasbin{
-		V0: roleId,
-		V2: permission,
-	}).Scan(&casbinInfo)
-
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }

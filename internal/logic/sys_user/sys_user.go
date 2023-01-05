@@ -90,6 +90,11 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 
 	result, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Cache(s.conf), info, isExport)
 
+	//keys, err := g.DB().GetCache().Keys(ctx)
+	//size, err := g.DB().GetCache().Size(ctx)
+	//fmt.Println("缓存数量：", size)
+	//fmt.Println("缓存数量keys：", keys)
+
 	newList := make([]sys_model.SysUser, 0)
 	if result != nil && result.List != nil && len(*result.List) > 0 {
 		for _, user := range *result.List {
@@ -195,7 +200,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		})
 
-		_, err = sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).OmitNilData().Data(data).Insert()
+		_, err = sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: true}).OmitNilData().Data(data).Insert()
 
 		if err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
@@ -207,7 +212,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色设置失败！"+err.Error(), sys_dao.SysUser.Table())
 			}
 
-			err = sys_dao.SysRole.Ctx(ctx).WhereIn(sys_dao.SysRole.Columns().Id, info.RoleIds).Scan(&result.RoleInfoList)
+			err = sys_dao.SysRole.Ctx(ctx).Cache(s.conf).WhereIn(sys_dao.SysRole.Columns().Id, info.RoleIds).Scan(&result.RoleInfoList)
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败！", sys_dao.SysUser.Table())
 			}
@@ -227,16 +232,17 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		}
 	})
+
+	//keys, err := g.DB().GetCache().Keys(ctx)
+	//size, err := g.DB().GetCache().Size(ctx)
+	//fmt.Println("缓存数量：", size)
+	//fmt.Println("缓存数量keys：", keys)
+
 	return &result, nil
 }
 
-// GetSysUserByUsername 根据用户名获取用户UID
+// GetSysUserByUsername 根据用户名获取用户
 func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (*sys_entity.SysUser, error) {
-	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.View); err != nil {
-		return nil, err
-	}
-
 	data := &sys_entity.SysUser{}
 	err := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Where(sys_do.SysUser{Username: username}).Scan(data)
 
@@ -255,10 +261,6 @@ func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bo
 
 // GetSysUserById 根据用户ID获取用户信息
 func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
-	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.View); err != nil {
-		return nil, err
-	}
 
 	data := &sys_entity.SysUser{}
 	err := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Scan(data, sys_do.SysUser{Id: userId})
