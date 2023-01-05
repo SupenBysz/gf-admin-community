@@ -94,7 +94,7 @@ var (
 						// 注册中间件
 						group.Middleware(
 							sys_service.Middleware().Auth,
-							sys_service.Middleware().CheckPermission,
+							// sys_service.Middleware().CheckPermission,
 						)
 
 						// 文件上传
