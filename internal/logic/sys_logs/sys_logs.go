@@ -68,8 +68,8 @@ func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs
 
 	if info.UserId == 0 {
 		g.Try(ctx, func(ctx context.Context) {
-			if sys_service.BizCtx().Get(ctx) != nil {
-				info.UserId = sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+			if sys_service.SysSession().Get(ctx) != nil {
+				info.UserId = sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 			}
 
 			r := ghttp.RequestFromCtx(ctx)

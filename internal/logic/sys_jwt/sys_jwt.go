@@ -152,7 +152,7 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
-			sys_service.BizCtx().SetUser(r.Context(), claims)
+			sys_service.SysSession().SetUser(r.Context(), claims)
 			r.Middleware.Next()
 			return
 		}

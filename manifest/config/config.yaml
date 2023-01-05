@@ -32,7 +32,7 @@ service:
   auditExpireDay:
     default: 15
   # Session上下文缓存Key
-  bizCtxContextKey: "KysionGfAdminBizCtxContextKye"
+  sessionContextKey: "KysionGfAdminBizCtxContextKye"
 
 # 日志配置
 logger:

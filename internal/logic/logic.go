@@ -12,7 +12,6 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_tencent"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_area"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_auth"
-	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_bizctx"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_captcha"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_casbin"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_file"

@@ -14,7 +14,7 @@ type cSysMy struct{}
 
 // SetUsername 设置用户登陆名
 func (c *cSysMy) SetUsername(ctx context.Context, req *sys_api.SetUsernameByIdReq) (api_v1.BoolRes, error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	result, err := sys_service.SysUser().SetUsername(ctx, req.NewUsername, userId)
 	return result == true, err
@@ -23,7 +23,7 @@ func (c *cSysMy) SetUsername(ctx context.Context, req *sys_api.SetUsernameByIdRe
 // UpdateUserPassword 修改密码
 func (c *cSysMy) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUserPasswordReq) (api_v1.BoolRes, error) {
 	// 获取到当前登录用户名称
-	user := sys_service.BizCtx().Get(ctx).ClaimsUser
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	_, err := sys_service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword, user.Id)
 

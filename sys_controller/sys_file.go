@@ -17,7 +17,7 @@ type cSysFile struct{}
 
 // Upload 上传文件
 func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys_api.UploadRes, err error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	if userId <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "请登陆后再操作"), "", "File")
@@ -33,7 +33,7 @@ func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys
 
 // UploadIDCardWithOCR 上传身份证
 func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sys_api.UploadIDCardWithOCRReq) (res *sys_api.IDCardWithOCRRes, err error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	if userId <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "请登陆后再操作"), "", "File")
@@ -46,7 +46,7 @@ func (c *cSysFile) UploadIDCardWithOCR(ctx context.Context, req *sys_api.UploadI
 
 // UploadBusinessLicenseWithOCR 上传营业执照
 func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sys_api.UploadBusinessLicenseWithOCRReq) (*sys_api.UploadBusinessLicenseWithOCRRes, error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	if userId <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "请登陆后再操作"), "", "File")
@@ -59,7 +59,7 @@ func (c *cSysFile) UploadBusinessLicenseWithOCR(ctx context.Context, req *sys_ap
 
 // UploadBankCardWithOCR 上传银行卡
 func (c *cSysFile) UploadBankCardWithOCR(ctx context.Context, req *sys_api.UploadBankCardWithOCRReq) (res *sys_api.BankCardWithOCRRes, err error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
+	userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
 
 	if userId <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "请登陆后再操作"), "", "File")
