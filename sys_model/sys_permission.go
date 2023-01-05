@@ -2,6 +2,7 @@ package sys_model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/utility/permission"
 )
 
 type SysPermission struct {
@@ -13,11 +14,6 @@ type SysPermission struct {
 	Type        int    `json:"type"        description:"类型：1api、2menu"`
 }
 
-type SysPermissionTree struct {
-	sys_entity.SysPermission
-	Children *[]SysPermissionTree `json:"children"       dc:"下级权限"`
-}
-
 type SysPermissionInfoRes sys_entity.SysPermission
 type SysPermissionInfoListRes CollectRes[sys_entity.SysPermission]
-type SysPermissionInfoTreeRes []SysPermissionTree
+type SysPermissionInfoTreeRes []*permission.SysPermissionTree
