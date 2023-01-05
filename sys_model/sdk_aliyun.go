@@ -32,3 +32,12 @@ type AliyunSdkConfToken struct {
 type AliyunSdkConfList CollectRes[AliyunSdkConf]
 
 // 阿里云服务应用列表
+
+type AliyunOSS struct {
+	Endpoint        string `json:"endpoint"`
+	BasePath        string `json:"basePath"`
+	BucketUrl       string `json:"bucketUrl"`
+	BucketName      string `json:"bucketName"`
+	AccessKeyId     string `json:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret"`
+}
