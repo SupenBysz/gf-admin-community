@@ -10,9 +10,10 @@ import (
 type JwtCustomClaims struct {
 	sys_entity.SysUser
 	UnionMainId int64 `json:"unionMainId"    description:"主体id"`
+	IsAdmin     bool
 	jwt.RegisteredClaims
 }
 
-type JwtHookFunc func(ctx context.Context, userInfo sys_entity.SysUser) (int64, error)
+type JwtHookFunc func(ctx context.Context, claims *JwtCustomClaims) (*JwtCustomClaims, error)
 
 type JwtHookInfo HookEventType[sys_enum.UserType, JwtHookFunc]
