@@ -325,12 +325,12 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree *permission.S
 func (s *sSysPermission) CheckPermissionById(ctx context.Context, permissionId int64) (bool, error) {
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	// 如果是超级管理员则直接放行
-	if session.Type == -1 {
+	// 如果是超级管理员或者某商管理员则直接放行
+	if session.Type == -1 || session.IsAdmin == true {
 		return true, nil
 	}
-	
-	t, err := sys_service.Casbin().Enforcer().Enforce(session.Id, sys_consts.CasbinDomain, permissionId, "allow")
+
+	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, gconv.String(permissionId), "allow")
 
 	if err != nil {
 		fmt.Printf("权限校验失败[%v]：%v\n", permissionId, err.Error())
