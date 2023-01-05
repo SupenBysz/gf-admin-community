@@ -312,7 +312,8 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree *permission.S
 		return true, nil
 	}
 
-	t, err := sys_service.Casbin().Enforcer().Enforce(session.Id, sys_consts.CasbinDomain, tree.Id, "allow")
+	// 检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
+	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, gconv.String(tree.Id), "allow")
 	if err != nil {
 		fmt.Printf("权限校验失败[%v]：%v\n", tree.Id, err.Error())
 	}
