@@ -27,13 +27,22 @@ func GetById[T any](db *gdb.Model, id int64) *T {
 	return result
 }
 
+func GetByIdWithError[T any](db *gdb.Model, id int64) (*T, error) {
+	result := new(T)
+
+	if err := db.Where("id", id).Scan(result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func makeCountArr(db *gdb.Model, searchFields []sys_model.FilterInfo) (total int64) {
 	db, err := makeBuilder(db, searchFields)
 	if err != nil {
 		return 0
 	}
-	total, _ = db.Count("1=1")
-	return
+	count, _ := db.Count("1=1")
+	return gconv.Int64(count)
 }
 
 func makeOrderBy(db *gdb.Model, orderBy []sys_model.OrderBy) *gdb.Model {
