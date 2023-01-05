@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
+	_ "github.com/SupenBysz/gf-admin-community/internal/boot"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	sysController "github.com/SupenBysz/gf-admin-community/sys_controller"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
@@ -10,8 +12,6 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/util/gmode"
-
-	_ "github.com/SupenBysz/gf-admin-community/internal/boot"
 )
 
 var (
@@ -57,6 +57,8 @@ var (
 			{
 				// CASBIN 初始化
 				sys_service.Casbin().Enforcer()
+				// Permission 初始化
+				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.PermissionTree, nil)
 			}
 
 			{

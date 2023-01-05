@@ -10,6 +10,7 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/gogf/gf/v2/container/gmap"
 )
 
@@ -19,17 +20,15 @@ type (
 		GetPermissionByName(ctx context.Context, permissionName string) (*sys_entity.SysPermission, error)
 		QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error)
 		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysPermission, error)
-		GetPermissionTree(ctx context.Context, parentId int64) (*[]sys_model.SysPermissionTree, error)
+		GetPermissionTree(ctx context.Context, parentId int64) ([]*permission.SysPermissionTree, error)
 		CreatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		UpdatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
-		ImportPermission(ctx context.Context, infoArr []*sys_model.SysPermission) error
+		ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error
 		SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		DeletePermission(ctx context.Context, permissionId int64) (bool, error)
 		GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error)
-		CheckPermission(ctx context.Context, permissionId interface{}) (bool, error)
-		NewPermission(code int64, identifier string, name string, description string, parentId ...int64) *sys_model.SysPermission
+		CheckPermission(ctx context.Context, tree *permission.SysPermissionTree) (bool, error)
 		PermissionTypeForm(code int64, mapItems *gmap.StrAnyMap) *sys_model.SysPermission
-		SavePermissionToDb(mapItems *gmap.StrAnyMap)
 	}
 )
 

@@ -54,7 +54,7 @@ func (c *cSysPermission) QueryPermissionListReq(ctx context.Context, req *sys_ap
 // GetPermissionTree 根据ID获取下级权限|树
 func (c *cSysPermission) GetPermissionTree(ctx context.Context, req *sys_api.GetPermissionTreeReq) (*sys_model.SysPermissionInfoTreeRes, error) {
 	result, err := sys_service.SysPermission().GetPermissionTree(ctx, req.Id)
-	return (*sys_model.SysPermissionInfoTreeRes)(result), err
+	return (*sys_model.SysPermissionInfoTreeRes)(&result), err
 }
 
 // CreatePermission 新增权限|信息
