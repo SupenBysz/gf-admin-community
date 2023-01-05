@@ -69,7 +69,7 @@ func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleIn
 // SetRoleForUser 设置角色用户
 func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUserReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetUser); err != nil {
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); err != nil {
 		return false, err
 	}
 
@@ -83,7 +83,7 @@ func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUs
 // RemoveRoleForUser 移除用户所拥有的角色
 func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRoleForUserReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetUser); err != nil {
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); err != nil {
 		return false, err
 	}
 
