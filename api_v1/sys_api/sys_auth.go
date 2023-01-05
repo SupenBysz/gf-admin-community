@@ -33,7 +33,7 @@ type ForgotPasswordRes struct {
 }
 
 type ResetPasswordReq struct {
-	g.Meta          `path:"/resetPassword?cp=5947177123969477" method:"post" summary:"重置密码" tags:"鉴权"`
+	g.Meta          `path:"/resetPassword" method:"post" summary:"重置密码" tags:"鉴权"`
 	Password        string `json:"password" v:"required#请输入密码" dc:"登录密码"`
 	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"确认密码"`
 	IdKey           string `json:"idKey" v:"required#请输入KEY" dc:"KEY，通过ForgotPassword结构获取"`

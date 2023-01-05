@@ -15,6 +15,11 @@ type cSysUser struct{}
 
 // CreateUser 创建用户|信息
 func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (res api_v1.BoolRes, err error) {
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.Create); err != nil {
+		return false, err
+	}
+
 	_, err = sys_service.SysUser().CreateUser(ctx, req.UserInnerRegister, sys_enum.User.State.Normal, sys_enum.User.Type.User)
 
 	return err == nil, err
@@ -39,6 +44,11 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 
 // SetUserRoleIds 设置用户角色
 func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleIdsReq) (api_v1.BoolRes, error) {
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.SetUserRole); err != nil {
+		return false, err
+	}
+
 	result, err := sys_service.SysUser().SetUserRoleIds(ctx, req.RoleIds, req.UserId)
 
 	return result == true, err
@@ -46,6 +56,7 @@ func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleI
 
 // SetUserPermissionIds 设置用户权限
 func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUserPermissionIdsReq) (api_v1.BoolRes, error) {
+
 	result, err := sys_service.SysUser().SetUserPermissionIds(ctx, req.Id, req.PermissionIds)
 	return result == true, err
 }

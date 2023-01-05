@@ -23,6 +23,11 @@ func (c *cSysMy) SetUsername(ctx context.Context, req *sys_api.SetUsernameByIdRe
 
 // UpdateUserPassword 修改密码
 func (c *cSysMy) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUserPasswordReq) (api_v1.BoolRes, error) {
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ChangePassword); err != nil {
+		return false, err
+	}
+	
 	// 获取到当前登录用户名称
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
@@ -30,7 +35,7 @@ func (c *cSysMy) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUser
 	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ChangePassword); err != nil {
 		return false, err
 	}
-	
+
 	_, err := sys_service.SysUser().UpdateUserPassword(ctx, req.UpdateUserPassword, user.Id)
 
 	if err != nil {
