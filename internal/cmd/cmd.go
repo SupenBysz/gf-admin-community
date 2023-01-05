@@ -94,7 +94,7 @@ var (
 						// 注册中间件
 						group.Middleware(
 							sys_service.Middleware().Auth,
-							// sys_service.Middleware().Casbin,  现在权限判断使用具体的方法进行判断
+							sys_service.Middleware().CheckPermission,
 						)
 
 						// 文件上传

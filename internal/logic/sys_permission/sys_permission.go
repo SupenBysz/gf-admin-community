@@ -318,17 +318,22 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 // CheckPermission 校验权限
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree *permission.SysPermissionTree) (bool, error) { // 权限id  域 资源  方法
+	return s.CheckPermissionById(ctx, tree.Id)
+}
+
+// CheckPermissionById 校验权限
+func (s *sSysPermission) CheckPermissionById(ctx context.Context, permissionId int64) (bool, error) {
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员则直接放行
 	if session.Type == -1 {
 		return true, nil
 	}
+	
+	t, err := sys_service.Casbin().Enforcer().Enforce(session.Id, sys_consts.CasbinDomain, permissionId, "allow")
 
-	// 检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
-	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, gconv.String(tree.Id), "allow")
 	if err != nil {
-		fmt.Printf("权限校验失败[%v]：%v\n", tree.Id, err.Error())
+		fmt.Printf("权限校验失败[%v]：%v\n", permissionId, err.Error())
 	}
 	if t != true {
 		err = gerror.New("没有权限")
