@@ -214,7 +214,7 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询阿里云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
-// SaveAliyunSdkConf 保存百度SDK应用配信息, isCreate判断是更新还是新建
+// SaveAliyunSdkConf 保存SDK应用配信息, isCreate判断是更新还是新建
 func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error) {
 	items, _ := s.GetAliyunSdkConfList(ctx)
 
