@@ -10,6 +10,9 @@ type permissionType struct {
 	SetState       *permission.SysPermissionTree
 	ResetPassword  *permission.SysPermissionTree
 	ChangePassword *permission.SysPermissionTree
+	Create         *permission.SysPermissionTree
+	Update         *permission.SysPermissionTree
+	SetUserRole    *permission.SysPermissionTree
 }
 
 var PermissionType = permissionType{
@@ -18,4 +21,8 @@ var PermissionType = permissionType{
 	SetState:       permission.New(5947176737372613, "SetState", "设置状态", "设置某个用户的状态"),
 	ResetPassword:  permission.New(5947177123969477, "ResetPassword", "重置密码", "重置某个用户的登录密码"),
 	ChangePassword: permission.New(5947177469213125, "ChangePassword", "修改密码", "修改自己的登录密码"),
+	Create:         permission.New(5949854362632261, "Create", "创建用户", "创建用户"),
+	Update:         permission.New(5949854362632262, "Update", "修改用户信息", "修改用户信息"),
+	SetUserRole:    permission.New(5949854362632264, "SetUserRole", "设置用户角色", "设置某一个用户的角色"),
 }
+
