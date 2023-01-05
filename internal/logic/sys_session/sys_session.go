@@ -41,5 +41,8 @@ func (s *sSysSession) Get(ctx context.Context) *sys_model.SessionContext {
 
 // SetUser 将上下文信息设置到上下文请求中，注意是完整覆盖
 func (s *sSysSession) SetUser(ctx context.Context, claimsUser *sys_model.JwtCustomClaims) {
+	if claimsUser.Type == -1 {
+		claimsUser.IsAdmin = true
+	}
 	s.Get(ctx).JwtClaimsUser = claimsUser
 }
