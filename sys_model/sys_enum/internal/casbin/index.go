@@ -1,4 +1,4 @@
-package casbin
+package sys_enum_casbin
 
 type casbin struct {
 	Event event

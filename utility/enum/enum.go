@@ -1,47 +1,65 @@
 package enum
 
-import "fmt"
-
-// Code is universal code interface definition.
-type Code interface {
-	// Code returns the integer number of current code.
+type IEnumCodeInt interface {
 	Code() int
-
 	// Description returns the brief description for current code.
 	Description() string
-
-	// String returns current code as a string.
-	String() string
+}
+type IEnumCodeStr interface {
+	Code() string
+	// Description returns the brief description for current code.
+	Description() string
 }
 
-// EnumCode is an implementer for interface Code for internal usage only.
-type EnumCode struct {
-	code        int    // Error code, usually an integer.
+type IEnumCode[TCode int | int64 | string] interface {
+	Code() TCode
+	// Description returns the brief description for current code.
+	Description() string
+}
+
+type IEnumCodeWithData[TCode int | int64 | string, TData any] interface {
+	Code() TCode
+	Data() TData
+	Description() string
+}
+
+// EnumType [T any] is an implementer for interface Code for internal usage only.
+type enumType[TCode int | int64 | string, TData any] struct {
+	code        TCode  // Error code, usually an integer.
+	data        TData  // Brief data for this value.
 	description string // Brief description for this code.
 }
 
 // Code returns the integer number of current code.
-func (c EnumCode) Code() int {
-	return c.code
+func (e *enumType[TCode, TData]) Code() TCode {
+	return e.code
 }
 
 // Description returns the brief description for current code.
-func (c EnumCode) Description() string {
-	return c.description
+func (e *enumType[TCode, TData]) Description() string {
+	return e.description
 }
 
-// String returns current code as a string.
-func (c EnumCode) String() string {
-	if c.description != "" {
-		return fmt.Sprintf(`%d:%s`, c.code, c.description)
-	}
-	return fmt.Sprintf(`%d`, c.code)
+// Data returns the T data of current code.
+func (e *enumType[TCode, TData]) Data() TData {
+	return e.data
 }
 
-func New(code int, description string) Code {
-	result := EnumCode{
+func New[R IEnumCode[TCode], TCode int | int64 | string](code TCode, description string) R {
+	var result interface{}
+	result = &enumType[TCode, interface{}]{
 		code:        code,
 		description: description,
 	}
-	return (Code)(&result)
+	return result.(R)
+}
+
+func NewWithData[TCode int | int64 | string, TData any](code TCode, data TData, description string) *IEnumCodeWithData[TCode, TData] {
+	var result interface{}
+	result = &enumType[TCode, TData]{
+		code:        code,
+		data:        data,
+		description: description,
+	}
+	return result.(*IEnumCodeWithData[TCode, TData])
 }

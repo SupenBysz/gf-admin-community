@@ -4,7 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/enum"
 )
 
-type TypeEnum enum.Code
+type TypeEnum enum.IEnumCode[int]
 
 type userType struct {
 	Anonymous   TypeEnum
@@ -18,14 +18,14 @@ type userType struct {
 }
 
 var Type = userType{
-	Anonymous:   enum.New(0, "匿名"),
-	User:        enum.New(1, "用户"),
-	WeBusiness:  enum.New(2, "微商"),
-	Merchant:    enum.New(4, "商户"),
-	Advertiser:  enum.New(8, "广告主"),
-	Facilitator: enum.New(16, "服务商"),
-	Operator:    enum.New(32, "运营商"),
-	SuperAdmin:  enum.New(-1, "超级管理员"),
+	Anonymous:   enum.New[TypeEnum](0, "匿名"),
+	User:        enum.New[TypeEnum](1, "用户"),
+	WeBusiness:  enum.New[TypeEnum](2, "微商"),
+	Merchant:    enum.New[TypeEnum](4, "商户"),
+	Advertiser:  enum.New[TypeEnum](8, "广告主"),
+	Facilitator: enum.New[TypeEnum](16, "服务商"),
+	Operator:    enum.New[TypeEnum](32, "运营商"),
+	SuperAdmin:  enum.New[TypeEnum](-1, "超级管理员"),
 }
 
 func (e userType) New(code int, description string) TypeEnum {
@@ -37,7 +37,7 @@ func (e userType) New(code int, description string) TypeEnum {
 		(code&Type.Facilitator.Code()) == Type.Facilitator.Code() ||
 		(code&Type.Operator.Code()) == Type.Operator.Code() ||
 		(code&Type.SuperAdmin.Code()) == Type.SuperAdmin.Code() {
-		return enum.New(code, description)
+		return enum.New[TypeEnum](code, description)
 	}
 	panic("User.Type.New: error")
 }
