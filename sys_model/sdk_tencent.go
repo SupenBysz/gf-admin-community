@@ -35,3 +35,12 @@ type TencentSdkConfToken struct {
 type TencentSdkConfList CollectRes[TencentSdkConf]
 
 // 腾讯云服务应用列表
+
+type TencentOSS struct {
+	Bucket     string `json:"bucket"`
+	Region     string `json:"region"`
+	BaseURL    string `json:"baseURL"`
+	SecretID   string `json:"secretID"`
+	SecretKey  string `json:"secretKey"`
+	PathPrefix string `json:"pathPrefix"`
+}
