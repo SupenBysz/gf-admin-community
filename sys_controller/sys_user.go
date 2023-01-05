@@ -24,6 +24,11 @@ func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_api.UserListRes, error) {
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); err != nil {
+		return nil, err
+	}
+
 	data, err := sys_service.SysUser().QueryUserList(ctx, &req.SearchParams, unionMainId, false)
 	if err != nil {
 		return nil, err
@@ -47,6 +52,11 @@ func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUse
 
 // GetUserPermissionIds 获取用户权限Ids
 func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUserPermissionIdsReq) (*api_v1.Int64ArrRes, error) {
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); err != nil {
+		return nil, err
+	}
+
 	result, err := sys_service.SysUser().GetUserPermissionIds(ctx, req.Id)
 	return (*api_v1.Int64ArrRes)(&result), err
 }
@@ -55,6 +65,11 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
 	// 获取当前登录用户
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	// 权限判断
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ResetPassword); err != nil {
+		return false, err
+	}
 
 	_, err = sys_service.SysUser().ResetUserPassword(ctx, req.UserId, req.Password, req.ConfirmPassword, user.SysUser)
 	if err != nil {

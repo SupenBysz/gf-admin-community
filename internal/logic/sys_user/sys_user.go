@@ -73,10 +73,6 @@ func (s *sSysUser) CleanAllHook() {
 
 // QueryUserList 获取用户列表
 func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserRes, err error) {
-	// 权限判断
-	if _, err = sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); err != nil {
-		return nil, err
-	}
 
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
@@ -333,11 +329,6 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 
 // UpdateUserPassword 修改用户登录密码
 func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error) {
-	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ChangePassword); err != nil {
-		return false, err
-	}
-
 	// 查询到用户信息
 	sysUserInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
@@ -389,10 +380,6 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 // ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
 func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error) {
-	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ResetPassword); err != nil {
-		return false, err
-	}
 
 	// hook判断当前登录身份是否可以重置密码
 	{
