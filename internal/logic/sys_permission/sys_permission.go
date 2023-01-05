@@ -174,8 +174,8 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 	return s.SavePermission(ctx, info)
 }
 
-// ImportPermissionTree 导入权限，如果存在则忽略
-func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error {
+// ImportPermissionTree 导入权限，如果存在则忽略，递归导入权限
+func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
 	if len(permissionTreeArr) <= 0 {
 		return nil
 	}
@@ -186,11 +186,13 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			permissionTree.ParentId = parent.Id
 			// 继承父级权限类型
 			permissionTree.Type = parent.Type
-			// 拼接上父级权限标识符
+			// 拼接上父级权限标识符 例如(User::View ...)
 			permissionTree.Identifier = parent.Identifier + "::" + permissionTree.Identifier
 		}
+		// 排序字段
 		permissionTree.Sort = i
 
+		// 通过权限id查询权限数据
 		count, _ := sys_dao.SysPermission.Ctx(ctx).Cache(s.conf).Where(sys_do.SysPermission{Id: permissionTree.Id}).Count()
 
 		// 判断权限数据是否存在，不存在则插入数据
@@ -210,6 +212,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			}
 		}
 
+		// 没有下级权限直接忽略
 		if len(permissionTree.Children) == 0 {
 			if gmode.IsDevelop() {
 				fmt.Printf("权限信息：%+v\t\t已存在，并已忽略\n\n\n", permissionTree.SysPermission)
@@ -217,6 +220,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			continue
 		}
 
+		// 有下级权限，递归插入权限
 		s.ImportPermissionTree(ctx, permissionTree.Children, permissionTree.SysPermission)
 	}
 	return nil
