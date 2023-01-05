@@ -185,7 +185,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			// 继承父级权限类型
 			permissionTree.Type = parent.Type
 			// 拼接上父级权限标识符
-			permissionTree.Name = parent.Name + "::" + permissionTree.Name
+			permissionTree.Identifier = parent.Identifier + "::" + permissionTree.Identifier
 		}
 		permissionTree.Sort = i
 
