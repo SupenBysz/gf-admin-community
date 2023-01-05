@@ -174,8 +174,8 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 	return s.SavePermission(ctx, info)
 }
 
-// ImportPermissionTree 导入权限，如果存在则忽略
-func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error {
+// ImportPermissionTree 导入权限，如果存在则忽略，递归导入权限
+func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
 	if len(permissionTreeArr) <= 0 {
 		return nil
 	}
@@ -186,11 +186,13 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			permissionTree.ParentId = parent.Id
 			// 继承父级权限类型
 			permissionTree.Type = parent.Type
-			// 拼接上父级权限标识符
+			// 拼接上父级权限标识符 例如(User::View ...)
 			permissionTree.Identifier = parent.Identifier + "::" + permissionTree.Identifier
 		}
+		// 排序字段
 		permissionTree.Sort = i
 
+		// 通过权限id查询权限数据
 		count, _ := sys_dao.SysPermission.Ctx(ctx).Cache(s.conf).Where(sys_do.SysPermission{Id: permissionTree.Id}).Count()
 
 		// 判断权限数据是否存在，不存在则插入数据
@@ -210,6 +212,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			}
 		}
 
+		// 没有下级权限直接忽略
 		if len(permissionTree.Children) == 0 {
 			if gmode.IsDevelop() {
 				fmt.Printf("权限信息：%+v\t\t已存在，并已忽略\n\n\n", permissionTree.SysPermission)
@@ -217,6 +220,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			continue
 		}
 
+		// 有下级权限，递归插入权限
 		s.ImportPermissionTree(ctx, permissionTree.Children, permissionTree.SysPermission)
 	}
 	return nil
@@ -239,14 +243,17 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 		data.Id = idgen.NextId()
 		data.CreatedAt = gtime.Now()
 
-		_, err := sys_dao.SysPermission.Ctx(ctx).Insert(data)
+		_, err := sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).Insert(data)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增权限信息失败", sys_dao.SysPermission.Table())
 		}
 	} else {
 		data.UpdatedAt = gtime.Now()
-		_, err := sys_dao.SysPermission.Ctx(ctx).Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
+		_, err := sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
 			ParentId:    data.ParentId,
 			Name:        data.Name,
 			Description: data.Description,
@@ -271,14 +278,20 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 		return false, err
 	}
 
-	_, err = sys_dao.SysPermission.Ctx(ctx).Delete(sys_do.SysPermission{Id: permissionId})
+	_, err = sys_dao.SysPermission.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Delete(sys_do.SysPermission{Id: permissionId})
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除权限信息失败", sys_dao.SysPermission.Table())
 	}
 
 	// 删除权限定义
-	sys_dao.SysCasbin.Ctx(ctx).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
+	sys_dao.SysCasbin.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
 
 	return true, nil
 }
@@ -294,7 +307,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	// 在权限树标识中匹标识后缀，|为标识符的分隔符
 	path = "%|" + path
 
-	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
+	err := sys_dao.SysPermission.Ctx(ctx).Cache(s.conf).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
 
 	if err != nil {
 		return nil, err
@@ -312,7 +325,8 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree *permission.S
 		return true, nil
 	}
 
-	t, err := sys_service.Casbin().Enforcer().Enforce(session.Id, sys_consts.CasbinDomain, tree.Id, "allow")
+	// 检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
+	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, gconv.String(tree.Id), "allow")
 	if err != nil {
 		fmt.Printf("权限校验失败[%v]：%v\n", tree.Id, err.Error())
 	}

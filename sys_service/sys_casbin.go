@@ -6,8 +6,6 @@
 package sys_service
 
 import (
-	"context"
-
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/casbin/casbin/v2"
@@ -30,7 +28,6 @@ type (
 		DeletePermissionForUser(roleName, path, method string) (bool, error)
 		DeletePermissionsForUser(roleName string) (bool, error)
 		EnforceCheck(userName, path, role, method interface{}) (bool, error)
-		CheckUser(ctx context.Context, roleId, permission string) (bool, error)
 	}
 )
 
