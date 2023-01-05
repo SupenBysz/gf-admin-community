@@ -4,7 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/enum"
 )
 
-type EventEnum enum.Code
+type EventEnum enum.IEnumCode[int]
 
 type event struct {
 	BeforeCreate   EventEnum
@@ -14,10 +14,10 @@ type event struct {
 }
 
 var Event = event{
-	BeforeCreate:   enum.New(2, "创建前"),
-	AfterCreate:    enum.New(4, "创建后"),
-	ChangePassword: enum.New(8, "修改密码"),
-	ResetPassword:  enum.New(16, "重置密码"),
+	BeforeCreate:   enum.New[EventEnum](2, "创建前"),
+	AfterCreate:    enum.New[EventEnum](4, "创建后"),
+	ChangePassword: enum.New[EventEnum](8, "修改密码"),
+	ResetPassword:  enum.New[EventEnum](16, "重置密码"),
 }
 
 func (e event) New(code int, description string) EventEnum {
@@ -25,7 +25,7 @@ func (e event) New(code int, description string) EventEnum {
 		(code&Event.AfterCreate.Code()) == Event.AfterCreate.Code() ||
 		(code&Event.ChangePassword.Code()) == Event.ChangePassword.Code() ||
 		(code&Event.ResetPassword.Code()) == Event.ResetPassword.Code() {
-		return enum.New(code, description)
+		return enum.New[EventEnum](code, description)
 	}
 	panic("user.Event.New: error")
 }
