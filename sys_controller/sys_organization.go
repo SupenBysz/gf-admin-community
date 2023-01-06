@@ -18,7 +18,7 @@ type cSysOrganization struct{}
 // QueryOrganizationList 获取组织架构|列表
 func (c *cSysOrganization) QueryOrganizationList(ctx context.Context, req *sys_api.QueryOrganizationListReq) (*sys_model.OrganizationInfoListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -28,7 +28,7 @@ func (c *cSysOrganization) QueryOrganizationList(ctx context.Context, req *sys_a
 // GetOrganizationList 根据ID获取下级组织架构|列表
 func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api.GetOrganizationListReq) (*sys_model.OrganizationInfoListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -53,7 +53,7 @@ func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api
 // GetOrganizationTree 根据ID获取下级组织架构|树
 func (c *cSysOrganization) GetOrganizationTree(ctx context.Context, req *sys_api.GetOrganizationTreeReq) (*sys_api.OrganizationInfoTreeListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (c *cSysOrganization) GetOrganizationTree(ctx context.Context, req *sys_api
 // CreateOrganizationInfo 创建或更新组织架构|信息
 func (c *cSysOrganization) CreateOrganizationInfo(ctx context.Context, req *sys_api.CreateOrganizationInfoReq) (*sys_api.OrganizationInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Create); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Create); has != true {
 		return nil, err
 	}
 
@@ -76,7 +76,7 @@ func (c *cSysOrganization) CreateOrganizationInfo(ctx context.Context, req *sys_
 // UpdateOrganizationInfo 创建或更新组织架构|信息
 func (c *cSysOrganization) UpdateOrganizationInfo(ctx context.Context, req *sys_api.UpdateOrganizationInfoReq) (*sys_api.OrganizationInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Update); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Update); has != true {
 		return nil, err
 	}
 
@@ -87,7 +87,7 @@ func (c *cSysOrganization) UpdateOrganizationInfo(ctx context.Context, req *sys_
 // GetOrganizationInfo 获取组织架构|信息
 func (c *cSysOrganization) GetOrganizationInfo(ctx context.Context, req *sys_api.GetOrganizationInfoReq) (*sys_api.OrganizationInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.ViewDetail); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.ViewDetail); has != true {
 		return nil, err
 	}
 
@@ -99,7 +99,7 @@ func (c *cSysOrganization) GetOrganizationInfo(ctx context.Context, req *sys_api
 // DeleteOrganizationInfo 根据ID删除组织架构
 func (c *cSysOrganization) DeleteOrganizationInfo(ctx context.Context, req *sys_api.DeleteOrganizationInfoReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Delete); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.Delete); has != true {
 		return false, err
 	}
 
