@@ -317,8 +317,23 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 }
 
 // CheckPermission 校验权限
-func (s *sSysPermission) CheckPermission(ctx context.Context, tree *permission.SysPermissionTree) (bool, error) { // 权限id  域 资源  方法
-	return s.CheckPermissionById(ctx, tree.Id)
+func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+	for _, permissionTree := range tree {
+		if has, err = s.CheckPermission(ctx, permissionTree); has == false {
+			return
+		}
+	}
+	return true, nil
+}
+
+// CheckPermissionOr 校验权限，任意一个满足则有权限
+func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+	for _, permissionTree := range tree {
+		if has, err = s.CheckPermission(ctx, permissionTree); has == true {
+			break
+		}
+	}
+	return
 }
 
 // CheckPermissionById 校验权限
