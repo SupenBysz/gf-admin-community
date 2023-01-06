@@ -17,15 +17,11 @@ type cSysUser struct{}
 
 // CreateUser 创建用户|信息
 func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (res api_v1.BoolRes, err error) {
-	return funs.ProxyFunc3[api_v1.BoolRes, sys_model.UserInnerRegister, sys_enum.UserState, sys_enum.UserType, *sys_model.SysUserRegisterRes](
-		ctx,
-		req.UserInnerRegister,
-		sys_enum.User.State.Normal,
-		sys_enum.User.Type.User,
+	return funs.ProxyFunc3[api_v1.BoolRes, sys_model.UserInnerRegister, sys_enum.UserState, sys_enum.UserType, *sys_model.SysUserRegisterRes](ctx,
+		req.UserInnerRegister, sys_enum.User.State.Normal, sys_enum.User.Type.User,
 		func(ctx context.Context, data sys_model.UserInnerRegister, data1 sys_enum.UserState, data2 sys_enum.UserType) (*sys_model.SysUserRegisterRes, error) {
 			return sys_service.SysUser().CreateUser(ctx, data, data1, data2)
-		},
-		false,
+		}, false,
 		sys_enum.User.PermissionType.Create,
 	)
 }
@@ -35,11 +31,8 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
 	return funs.ProxyFunc3[*sys_api.UserListRes](ctx,
-		&req.SearchParams,
-		unionMainId,
-		false,
-		sys_service.SysUser().QueryUserList,
-		nil,
+		&req.SearchParams, unionMainId, false,
+		sys_service.SysUser().QueryUserList, nil,
 		sys_enum.User.PermissionType.List,
 	)
 }
@@ -48,8 +41,7 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleIdsReq) (api_v1.BoolRes, error) {
 	return funs.ProxyFunc2[api_v1.BoolRes](
 		ctx, req.RoleIds, req.UserId,
-		sys_service.SysUser().SetUserRoleIds,
-		false,
+		sys_service.SysUser().SetUserRoleIds, false,
 		sys_enum.User.PermissionType.SetUserRole,
 	)
 }
@@ -58,8 +50,7 @@ func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleI
 func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUserPermissionIdsReq) (api_v1.BoolRes, error) {
 	return funs.ProxyFunc2[api_v1.BoolRes](
 		ctx, req.Id, req.PermissionIds,
-		sys_service.SysUser().SetUserPermissionIds,
-		false,
+		sys_service.SysUser().SetUserPermissionIds, false,
 		sys_enum.User.PermissionType.SetPermission,
 	)
 }
@@ -68,8 +59,7 @@ func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUse
 func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUserPermissionIdsReq) (*api_v1.Int64ArrRes, error) {
 	return funs.ProxyFunc1[*api_v1.Int64ArrRes](
 		ctx, req.Id,
-		sys_service.SysUser().GetUserPermissionIds,
-		nil,
+		sys_service.SysUser().GetUserPermissionIds, nil,
 		sys_enum.User.PermissionType.SetPermission,
 	)
 }
@@ -81,8 +71,7 @@ func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUser
 
 	return funs.ProxyFunc4[api_v1.BoolRes](
 		ctx, req.UserId, req.Password, req.ConfirmPassword, user.SysUser,
-		sys_service.SysUser().ResetUserPassword,
-		false,
+		sys_service.SysUser().ResetUserPassword, false,
 		sys_enum.User.PermissionType.ResetPassword,
 	)
 }
