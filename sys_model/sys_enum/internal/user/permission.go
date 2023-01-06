@@ -4,15 +4,17 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 )
 
+type PermissionTypeEnum = *permission.SysPermissionTree
+
 type permissionType struct {
-	View           *permission.SysPermissionTree
-	List           *permission.SysPermissionTree
-	SetState       *permission.SysPermissionTree
-	ResetPassword  *permission.SysPermissionTree
-	ChangePassword *permission.SysPermissionTree
-	Create         *permission.SysPermissionTree
-	SetUsername    *permission.SysPermissionTree
-	SetUserRole    *permission.SysPermissionTree
+	View           PermissionTypeEnum
+	List           PermissionTypeEnum
+	SetState       PermissionTypeEnum
+	ResetPassword  PermissionTypeEnum
+	ChangePassword PermissionTypeEnum
+	Create         PermissionTypeEnum
+	SetUsername    PermissionTypeEnum
+	SetUserRole    PermissionTypeEnum
 }
 
 var PermissionType = permissionType{

@@ -2,12 +2,14 @@ package permissions
 
 import "github.com/SupenBysz/gf-admin-community/utility/permission"
 
+type PermissionTypeEnum = *permission.SysPermissionTree
+
 type permissionType struct {
-	View   *permission.SysPermissionTree
-	List   *permission.SysPermissionTree
-	Update *permission.SysPermissionTree
-	Delete *permission.SysPermissionTree
-	Create *permission.SysPermissionTree
+	View   PermissionTypeEnum
+	List   PermissionTypeEnum
+	Update PermissionTypeEnum
+	Delete PermissionTypeEnum
+	Create PermissionTypeEnum
 }
 
 var PermissionType = permissionType{
