@@ -17,7 +17,7 @@ type cSysPermission struct{}
 // GetPermissionById 根据权限ID获取权限信|息
 func (c *cSysPermission) GetPermissionById(ctx context.Context, req *sys_api.GetPermissionByIdReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); has != true {
 		return nil, err
 	}
 
@@ -28,7 +28,7 @@ func (c *cSysPermission) GetPermissionById(ctx context.Context, req *sys_api.Get
 // GetPermissionByName 根据权限Name获取权限|信息
 func (c *cSysPermission) GetPermissionByName(ctx context.Context, req *sys_api.GetPermissionByNameReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); has != true {
 		return nil, err
 	}
 
@@ -39,7 +39,7 @@ func (c *cSysPermission) GetPermissionByName(ctx context.Context, req *sys_api.G
 // QueryPermissionListReq 查询权限|列表
 func (c *cSysPermission) QueryPermissionListReq(ctx context.Context, req *sys_api.QueryPermissionListReq) (*sys_model.SysPermissionInfoListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func (c *cSysPermission) QueryPermissionListReq(ctx context.Context, req *sys_ap
 // GetPermissionTree 根据ID获取下级权限|树
 func (c *cSysPermission) GetPermissionTree(ctx context.Context, req *sys_api.GetPermissionTreeReq) (*sys_model.SysPermissionInfoTreeRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -81,7 +81,7 @@ func (c *cSysPermission) GetPermissionTree(ctx context.Context, req *sys_api.Get
 // CreatePermission 新增权限|信息
 func (c *cSysPermission) CreatePermission(ctx context.Context, req *sys_api.CreatePermissionReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Create); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Create); has != true {
 		return nil, err
 	}
 
@@ -92,7 +92,7 @@ func (c *cSysPermission) CreatePermission(ctx context.Context, req *sys_api.Crea
 // UpdatePermission 更新权限|信息
 func (c *cSysPermission) UpdatePermission(ctx context.Context, req *sys_api.UpdatePermissionReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Update); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Update); has != true {
 		return nil, err
 	}
 
@@ -103,7 +103,7 @@ func (c *cSysPermission) UpdatePermission(ctx context.Context, req *sys_api.Upda
 // DeletePermission 删除权限
 func (c *cSysPermission) DeletePermission(ctx context.Context, req *sys_api.DeletePermissionReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Delete); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.Delete); has != true {
 		return false, err
 	}
 

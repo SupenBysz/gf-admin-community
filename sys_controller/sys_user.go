@@ -16,7 +16,7 @@ type cSysUser struct{}
 // CreateUser 创建用户|信息
 func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (res api_v1.BoolRes, err error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.Create); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.Create); has != true {
 		return false, err
 	}
 
@@ -30,7 +30,7 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 // SetUserRoleIds 设置用户角色
 func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleIdsReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.SetUserRole); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.SetUserRole); has != true {
 		return false, err
 	}
 
@@ -64,7 +64,7 @@ func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUse
 // GetUserPermissionIds 获取用户权限Ids
 func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUserPermissionIdsReq) (*api_v1.Int64ArrRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -78,7 +78,7 @@ func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUser
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ResetPassword); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.User.PermissionType.ResetPassword); has != true {
 		return false, err
 	}
 

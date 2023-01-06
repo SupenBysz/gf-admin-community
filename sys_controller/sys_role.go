@@ -18,7 +18,7 @@ type cSysRole struct{}
 // GetRoleList 获取角色|列表
 func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListReq) (*sys_model.RoleListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -30,7 +30,7 @@ func (c *cSysRole) GetRoleList(ctx context.Context, req *sys_api.QueryRoleListRe
 // CreateRoleInfo 新增或保存角色|信息
 func (c *cSysRole) CreateRoleInfo(ctx context.Context, req *sys_api.CreateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Create); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Create); has != true {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (c *cSysRole) CreateRoleInfo(ctx context.Context, req *sys_api.CreateRoleIn
 // UpdateRoleInfo 更新角色信息
 func (c *cSysRole) UpdateRoleInfo(ctx context.Context, req *sys_api.UpdateRoleInfoReq) (*sys_api.RoleInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Update); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Update); has != true {
 		return nil, err
 	}
 
@@ -57,7 +57,7 @@ func (c *cSysRole) UpdateRoleInfo(ctx context.Context, req *sys_api.UpdateRoleIn
 // DeleteRoleInfo 删除角色
 func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleInfoReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Delete); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.Delete); has != true {
 		return false, err
 	}
 
@@ -69,7 +69,7 @@ func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleIn
 // SetRoleForUser 设置角色用户
 func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUserReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
 		return false, err
 	}
 
@@ -83,7 +83,7 @@ func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUs
 // RemoveRoleForUser 移除用户所拥有的角色
 func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRoleForUserReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
 		return false, err
 	}
 
@@ -95,7 +95,7 @@ func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRol
 // GetRoleUserList 获取角色下的所有用户|列表
 func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUsersReq) (*sys_api.UserListRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.List); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.List); has != true {
 		return nil, err
 	}
 
@@ -149,7 +149,7 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 // SetRolePermissions 设置角色权限
 func (c *cSysRole) SetRolePermissions(ctx context.Context, req *sys_api.SetRolePermissionsReq) (api_v1.BoolRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetPermission); err != nil {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetPermission); has != true {
 		return false, err
 	}
 
