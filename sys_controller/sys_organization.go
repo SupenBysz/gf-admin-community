@@ -87,7 +87,7 @@ func (c *cSysOrganization) UpdateOrganizationInfo(ctx context.Context, req *sys_
 // GetOrganizationInfo 获取组织架构|信息
 func (c *cSysOrganization) GetOrganizationInfo(ctx context.Context, req *sys_api.GetOrganizationInfoReq) (*sys_api.OrganizationInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.View); err != nil {
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Organization.PermissionType.ViewDetail); err != nil {
 		return nil, err
 	}
 

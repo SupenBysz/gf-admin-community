@@ -17,7 +17,7 @@ type cSysPermission struct{}
 // GetPermissionById 根据权限ID获取权限信|息
 func (c *cSysPermission) GetPermissionById(ctx context.Context, req *sys_api.GetPermissionByIdReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.View); err != nil {
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); err != nil {
 		return nil, err
 	}
 
@@ -28,7 +28,7 @@ func (c *cSysPermission) GetPermissionById(ctx context.Context, req *sys_api.Get
 // GetPermissionByName 根据权限Name获取权限|信息
 func (c *cSysPermission) GetPermissionByName(ctx context.Context, req *sys_api.GetPermissionByNameReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
-	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.View); err != nil {
+	if _, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); err != nil {
 		return nil, err
 	}
 
