@@ -325,7 +325,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 func (s *sSysPermission) CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
 		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == false {
-			return
+			return false, gerror.New("没有权限：" + permissionTree.Name + "，" + permissionTree.Description)
 		}
 	}
 	return true, nil
