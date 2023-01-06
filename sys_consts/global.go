@@ -49,6 +49,8 @@ var (
 				sys_enum.User.PermissionType.SetUsername,
 				// 设置用户角色，设置某一个用户的角色
 				sys_enum.User.PermissionType.SetUserRole,
+				// 设置用户权限，设置某一个用户的权限
+				sys_enum.User.PermissionType.SetPermission,
 			},
 		},
 		// 组织架构权限树
