@@ -34,7 +34,7 @@ var (
 			},
 			Children: []*permission.SysPermissionTree{
 				// 查看用户，查看某个用户登录账户
-				sys_enum.User.PermissionType.View,
+				sys_enum.User.PermissionType.ViewDetail,
 				// 用户列表，查看所有用户
 				sys_enum.User.PermissionType.List,
 				// 重置密码，重置某个用户的登录密码
@@ -62,7 +62,7 @@ var (
 			},
 			Children: []*permission.SysPermissionTree{
 				// 查看，查看某个组织架构
-				sys_enum.Organization.PermissionType.View,
+				sys_enum.Organization.PermissionType.ViewDetail,
 				// 查看列表，查看所有组织架构列表
 				sys_enum.Organization.PermissionType.List,
 				// 更新，更新某个组织架构
@@ -84,7 +84,7 @@ var (
 			},
 			Children: []*permission.SysPermissionTree{
 				// 查看角色，查看某个角色
-				sys_enum.Role.PermissionType.View,
+				sys_enum.Role.PermissionType.ViewDetail,
 				// 角色列表，查看所有角色
 				sys_enum.Role.PermissionType.List,
 				// 更新角色信息，更新某个角色信息
@@ -110,7 +110,7 @@ var (
 			},
 			Children: []*permission.SysPermissionTree{
 				// 查看权限，查看某个权限
-				sys_enum.Permissions.PermissionType.View,
+				sys_enum.Permissions.PermissionType.ViewDetail,
 				// 权限列表，查看所有权限
 				sys_enum.Permissions.PermissionType.List,
 				// 更新权限，更新某个权限
