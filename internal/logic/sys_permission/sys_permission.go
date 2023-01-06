@@ -319,7 +319,8 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 // CheckPermission 校验权限
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermission(ctx, permissionTree); has == false {
+		// 调用CheckPermissionById判断权限
+		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == false {
 			return
 		}
 	}
