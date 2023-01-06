@@ -316,10 +316,15 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	return &result, nil
 }
 
-// CheckPermission 校验权限
+// CheckPermission 校验权限，如果多个则需要同时满足
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+	return s.CheckPermissionArr(ctx, tree)
+}
+
+// CheckPermissionArr 校验权限
+func (s *sSysPermission) CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermission(ctx, permissionTree); has == false {
+		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == false {
 			return
 		}
 	}
@@ -328,8 +333,13 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
 func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+	return s.CheckPermissionOrArr(ctx, tree)
+}
+
+// CheckPermissionOrArr 校验权限，任意一个满足则有权限
+func (s *sSysPermission) CheckPermissionOrArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermission(ctx, permissionTree); has == true {
+		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == true {
 			break
 		}
 	}
