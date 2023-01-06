@@ -28,7 +28,9 @@ type (
 		DeletePermission(ctx context.Context, permissionId int64) (bool, error)
 		GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error)
 		CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error)
+		CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error)
 		CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error)
+		CheckPermissionOrArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error)
 		CheckPermissionById(ctx context.Context, permissionId int64) (bool, error)
 		PermissionTypeForm(code int64, mapItems *gmap.StrAnyMap) *sys_model.SysPermission
 	}
