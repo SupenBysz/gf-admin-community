@@ -1,6 +1,7 @@
 package sys_consts
 
 import (
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
@@ -12,6 +13,7 @@ type global struct {
 	NotAllowLoginUserTypeArr *garray.SortedIntArray
 	LogLevelToDatabaseArr    *garray.SortedIntArray
 	ApiPreFix                string
+	OrmCacheConf             []*sys_model.TableCacheConf
 }
 
 var (
@@ -20,6 +22,7 @@ var (
 		NotAllowLoginUserTypeArr: garray.NewSortedIntArray(),
 		LogLevelToDatabaseArr:    garray.NewSortedIntArray(),
 		ApiPreFix:                "",
+		OrmCacheConf:             []*sys_model.TableCacheConf{},
 	}
 	// PermissionTree 权限信息定义
 	PermissionTree = []*permission.SysPermissionTree{
