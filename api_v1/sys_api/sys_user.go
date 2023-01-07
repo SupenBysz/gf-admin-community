@@ -7,7 +7,7 @@ import (
 )
 
 type CreateUserReq struct {
-	g.Meta `path:"/createUser?cp=5949854362632261" method:"post" summary:"新增用户|信息" tags:"用户"`
+	g.Meta `path:"/createUser" method:"post" summary:"新增用户|信息" tags:"用户"`
 	sys_model.UserInnerRegister
 }
 
@@ -17,7 +17,7 @@ type QueryUserListReq struct {
 }
 
 type SetUserRoleIdsReq struct {
-	g.Meta  `path:"/createUser?cp=5949854362632261" method:"post" summary:"新增用户|信息" tags:"用户"`
+	g.Meta  `path:"/createUser" method:"post" summary:"新增用户|信息" tags:"用户"`
 	RoleIds []int64 `json:"roleIds" v:"required#角色ID校验失败" dc:"角色ID数组"`
 	UserId  int64   `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
