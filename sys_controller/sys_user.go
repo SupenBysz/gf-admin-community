@@ -37,15 +37,6 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 	)
 }
 
-// SetUserRoleIds 设置用户角色
-func (c *cSysRole) SetUserRoleIds(ctx context.Context, req *sys_api.SetUserRoleIdsReq) (api_v1.BoolRes, error) {
-	return funs.ProxyFunc2[api_v1.BoolRes](
-		ctx, req.RoleIds, req.UserId,
-		sys_service.SysUser().SetUserRoleIds, false,
-		sys_enum.User.PermissionType.SetUserRole,
-	)
-}
-
 // SetUserPermissionIds 设置用户权限
 func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUserPermissionIdsReq) (api_v1.BoolRes, error) {
 	return funs.ProxyFunc2[api_v1.BoolRes](
