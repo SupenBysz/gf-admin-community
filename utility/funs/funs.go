@@ -30,7 +30,7 @@ func FilterUnionMain(ctx context.Context, search *sys_model.SearchParams, unionM
 	}
 
 	// 如果不是管理员，则强制增加主体ID过滤
-	if sessionUser.JwtClaimsUser.IsAdmin == false {
+	if sessionUser.JwtClaimsUser.IsAdmin == false || sessionUser.JwtClaimsUser.UnionMainId > 0 {
 		// 如果过滤条件中不含服务商ID，则追加当前服务商ID
 		newFilter = append(newFilter, sys_model.FilterInfo{
 			Field:     unionMainIdColumnName,
