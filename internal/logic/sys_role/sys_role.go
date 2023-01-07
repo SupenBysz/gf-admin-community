@@ -61,6 +61,17 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 	return (*sys_model.RoleListRes)(result), err
 }
 
+// GetRoleById 根据id获取角色
+func (s *sSysRole) GetRoleById(ctx context.Context, id int64) (*sys_entity.SysRole, error) {
+	result, err := daoctl.GetByIdWithError[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Cache(s.conf), id)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id获取角色失败", sys_dao.SysRole.Table())
+	}
+
+	return result, nil
+}
+
 // Create 创建角色信息
 func (s *sSysRole) Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error) {
 	info.Id = 0
