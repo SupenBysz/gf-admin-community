@@ -4,14 +4,15 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
+	"unsafe"
 )
 
 func AsType[T any](data interface{}) T {
-	v, ok := data.(T)
+	_, ok := data.(T)
 	if ok == true {
 		return data.(T)
 	} else {
-		return v
+		return *(*T)(unsafe.Pointer(&data))
 	}
 }
 
