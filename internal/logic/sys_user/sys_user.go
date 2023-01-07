@@ -209,10 +209,20 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色设置失败！"+err.Error(), sys_dao.SysUser.Table())
 			}
 
-			err = sys_dao.SysRole.Ctx(ctx).Cache(s.conf).WhereIn(sys_dao.SysRole.Columns().Id, info.RoleIds).Scan(&result.RoleInfoList)
+			roleList, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
+				Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+					Field:       sys_dao.SysRole.Columns().Id,
+					Where:       "in",
+					IsOrWhere:   false,
+					Value:       info.RoleIds,
+					IsNullValue: false,
+				}),
+			}, sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId)
+
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败！", sys_dao.SysUser.Table())
 			}
+			result.RoleInfoList = *roleList.List
 		}
 
 		return nil

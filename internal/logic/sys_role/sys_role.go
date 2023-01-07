@@ -40,7 +40,6 @@ func New() *sSysRole {
 
 // QueryRoleList 获取角色列表
 func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
-
 	// 自己商角色列表
 	info.Filter = append(info.Filter, sys_model.FilterInfo{
 		Field:       sys_dao.SysRole.Columns().UnionMainId,
@@ -99,7 +98,6 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 	err := sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
 		if roleInfo.Id == 0 {
 			roleInfo.Id = idgen.NextId()
-			// count, err := sys_dao.SysRole.Ctx(ctx).WhereOr(sys_do.SysRole{Name: roleInfo.Name}).Count()
 
 			count, err := sys_dao.SysRole.Ctx(ctx).Cache(s.conf).Where(sys_do.SysRole{Name: info.Name, UnionMainId: info.UnionMainId}).Count()
 			if err != nil {
@@ -280,7 +278,17 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 
 	userInfoArr := make([]sys_model.SysUser, 0)
 
-	err = sys_dao.SysUser.Ctx(ctx).Cache(s.conf).WhereIn(sys_dao.SysUser.Columns().Id, userIds).Scan(&userInfoArr)
+	userList, err := sys_service.SysUser().QueryUserList(ctx, &sys_model.SearchParams{
+		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+			Field:       sys_dao.SysUser.Columns().Id,
+			Where:       "in",
+			IsOrWhere:   false,
+			Value:       userIds,
+			IsNullValue: false,
+		}),
+	}, makeUserUnionMainId, false)
+
+	userInfoArr = *userList.List
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询用户信息失败", sys_dao.SysRole.Table())
@@ -306,9 +314,9 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 
 // GetUserRoleList 获取用户拥有的所有角色
 func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_entity.SysRole, error) {
-	userInfo := sys_entity.SysUser{}
+	userInfo := &sys_entity.SysUser{}
 
-	err := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Where(sys_do.SysUser{Id: userId}).Scan(&userInfo)
+	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
