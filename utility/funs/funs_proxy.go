@@ -7,7 +7,12 @@ import (
 )
 
 func AsType[T any](data interface{}) T {
-	return data.(T)
+	v, ok := data.(T)
+	if ok == true {
+		return data.(T)
+	} else {
+		return v
+	}
 }
 
 func ProxyFunc[TRes any, TFRes any](ctx context.Context, f func(ctx context.Context) (TFRes, error), def TRes, permissions ...*permission.SysPermissionTree) (TRes, error) {
