@@ -72,7 +72,7 @@ func (s *sSysUser) CleanAllHook() {
 }
 
 // QueryUserList 获取用户列表
-func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserRes, err error) {
+func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
 
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
@@ -126,7 +126,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		result.List = &newList
 	}
 
-	return (*sys_model.SysUserRes)(result), err
+	return (*sys_model.SysUserListRes)(result), err
 }
 
 // SetUserRoleIds 设置用户角色

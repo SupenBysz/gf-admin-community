@@ -27,10 +27,10 @@ func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (
 }
 
 // QueryUserList 获取用户|列表
-func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_api.UserListRes, error) {
+func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_model.SysUserListRes, error) {
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	return funs.ProxyFunc3[*sys_api.UserListRes](ctx,
+	return funs.ProxyFunc3[*sys_model.SysUserListRes](ctx,
 		&req.SearchParams, unionMainId, false,
 		sys_service.SysUser().QueryUserList, nil,
 		sys_enum.User.PermissionType.List,

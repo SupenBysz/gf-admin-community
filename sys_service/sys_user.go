@@ -18,7 +18,7 @@ type (
 		InstallHook(event sys_enum.UserEvent, hookFunc sys_model.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserRes, err error)
+		QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
 		CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error)
 		GetSysUserByUsername(ctx context.Context, username string) (*sys_entity.SysUser, error)
