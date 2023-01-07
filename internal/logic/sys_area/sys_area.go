@@ -106,7 +106,13 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 
 // GetAreaById 根据ID获取区域信息
 func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
-	return daoctl.GetById[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), id)
+
+	if err != nil {
+		return nil
+	}
+
+	return result
 }
 
 // GetAreaByCode 根据区域编号获取区域信息
