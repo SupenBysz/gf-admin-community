@@ -15,6 +15,7 @@ import (
 type (
 	ISysRole interface {
 		QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
+		GetRoleById(ctx context.Context, id int64) (*sys_entity.SysRole, error)
 		Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Save(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)

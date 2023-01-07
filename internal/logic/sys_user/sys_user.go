@@ -132,8 +132,9 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 // SetUserRoleIds 设置用户角色
 func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error) {
 	for _, roleId := range roleIds {
-		roleInfo := sys_entity.SysRole{}
-		err := sys_dao.SysRole.Ctx(ctx).Cache(s.conf).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+		roleInfo := &sys_entity.SysRole{}
+		// 查找角色是否存在
+		roleInfo, err := sys_service.SysRole().GetRoleById(ctx, roleId)
 
 		if err != nil {
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysUser.Table())
