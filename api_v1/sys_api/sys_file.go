@@ -29,12 +29,13 @@ type UploadBankCardWithOCRReq struct {
 type UploadBusinessLicenseWithOCRRes sys_model.BusinessLicenseWithOCR
 
 type IDCardWithOCRRes sys_model.IDCardWithOCR
-type UploadRes sys_model.FileUploadOutput
+type UploadFileInfoRes sys_model.FileInfo
 
 type BankCardWithOCRRes sys_model.BankCardWithOCR
 
 type GetFileByIdReq struct {
 	g.Meta `path:"/getFileById" method:"get" summary:"通过id获取文件" tags:"工具"`
+	Id     int64 `json:"id" v:"required#资源ID错误" dc:"文件资源ID"`
 }
 
-type GetFileRes sys_entity.SysFile
+type UploadFileRes sys_entity.SysFile

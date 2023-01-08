@@ -5,8 +5,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
-type SysUsers []sys_entity.SysUser
-
 type SysUserRegister struct {
 	Username        string `json:"username" v:"required|length:4,30#请输入用户名称|用户名称长度非法"  dc:"登陆账号"`
 	Password        string `json:"password" v:"required|password#请输入密码|密码长度非法"  dc:"密码"`
@@ -38,6 +36,7 @@ type UpdateUserPassword struct {
 	ConfirmPassword string `json:"confirmPassword" v:"required#请确认密码" dc:"确认密码"`
 }
 
+type SysUserList []sys_entity.SysUser
 type SysUserListRes CollectRes[SysUser]
 
 type UserHookFunc HookFunc[sys_enum.UserEvent, sys_entity.SysUser]
