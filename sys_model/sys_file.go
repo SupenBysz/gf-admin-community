@@ -4,6 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gtime"
 )
 
 // FileUploadInput 上传文件输入参数
@@ -13,14 +14,9 @@ type FileUploadInput struct {
 	RandomName bool              `json:"randomName" dc:"是否随机文件名" default:"true"`             // 是否随机命名文件
 }
 
-// FileUploadOutput 上传文件返回参数
-type FileUploadOutput struct {
-	Id     int64  `json:"id" dc:"ID"`           // 数据表ID
-	Name   string `json:"name" dc:"文件名称"`       // 文件名称
-	Path   string `json:"path" dc:"文件路径"`       // 本地路径
-	Url    string `json:"url" dc:"文件访问地址"`      // 访问URL，可能只是URI
-	UserId int64  `json:"userId" dc:"文件所属用户ID"` // 用户ID
-	Size   int64  `json:"size" dc:"文件大小"`       // 文件大小
+type FileInfo struct {
+	sys_entity.SysFile
+	ExpiresAt *gtime.Time
 }
 
 // OCRIDCardFileUploadInput 上传身份证请求参数
@@ -32,7 +28,7 @@ type OCRIDCardFileUploadInput struct {
 
 // IDCardWithOCR 身份证识别响应信息
 type IDCardWithOCR struct {
-	FileUploadOutput
+	sys_entity.SysFile
 	BaiduSdkOCRIDCard
 	// OCRBusinessLicense OCRBusinessLicense `json:"orcBusinessLicense" dc:"营业执照识别的信息"`
 }
@@ -44,7 +40,7 @@ type OCRBusinessLicense struct {
 
 // BusinessLicenseWithOCR 营业执照识别响应信息
 type BusinessLicenseWithOCR struct {
-	FileUploadOutput
+	sys_entity.SysFile
 	BusinessLicenseOCR
 }
 
@@ -56,7 +52,7 @@ type BankCardWithOCRInput struct {
 // BankCardWithOCR 银行卡识别响应信息
 type BankCardWithOCR struct {
 	// 上传文件返回数据
-	FileUploadOutput
+	sys_entity.SysFile
 
 	// SDK返回的识别数据
 	BaiduSdkOCRBankCard
