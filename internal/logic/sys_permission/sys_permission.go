@@ -257,6 +257,9 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 
 		// 判断权限数据是否存在，不存在则插入数据
 		if count == 0 {
+			if permissionTree.Id == 0 {
+				permissionTree.Id = idgen.NextId()
+			}
 			result, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(permissionTree.SysPermission)
 
 			if err != nil {
