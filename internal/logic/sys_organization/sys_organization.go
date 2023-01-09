@@ -44,9 +44,7 @@ func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info sys_m
 // GetOrganizationList 获取组织架构信息列表
 func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysOrganization, int, error) {
 	result := make([]sys_entity.SysOrganization, 0)
-	err := sys_dao.SysOrganization.Ctx(ctx).
-		// 数据查询结果缓存起来
-		Cache(s.conf).Where(sys_do.SysOrganization{ParentId: parentId}).Scan(&result)
+	err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{ParentId: parentId}).Scan(&result)
 
 	if err != nil {
 		return nil, -1, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
@@ -121,7 +119,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 	parentInfo := sys_entity.SysOrganization{}
 	cascadeDeep := 1
 	if info.ParentId > 0 {
-		result, err := sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).
+		result, err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 			One(sys_do.SysOrganization{Id: info.ParentId})
 
 		if err != nil {
@@ -140,7 +138,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 	}
 
 	if info.Id <= 0 {
-		result, err := sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).
+		result, err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 			One(sys_do.SysOrganization{ParentId: info.ParentId, Name: info.Name})
 
 		if err != nil {
@@ -155,10 +153,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 		result.Struct(&orgInfo)
 
 		info.Id = idgen.NextId()
-		_, err = sys_dao.SysOrganization.Ctx(ctx).Cache(gdb.CacheOption{
-			Duration: -1,
-			Force:    false,
-		}).Insert(sys_do.SysOrganization{
+		_, err = sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(sys_do.SysOrganization{
 			Id:          info.Id,
 			Name:        info.Name,
 			ParentId:    info.ParentId,
@@ -180,7 +175,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			Description: info.Description,
 		}, nil
 	} else {
-		result, err := sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).
+		result, err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 			Where(sys_do.SysOrganization{ParentId: info.Id, Name: info.Name}).
 			WhereNot(sys_dao.SysOrganization.Columns().Id, info.Id).
 			One()
@@ -193,7 +188,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "更新组织机构信息失败，请更换其它名称"), "", sys_dao.SysOrganization.Table())
 		}
 
-		result, err = sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).Where(sys_do.SysOrganization{Id: info.Id}).One()
+		result, err = sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{Id: info.Id}).One()
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "更新组织机构信息失败", sys_dao.SysOrganization.Table())
@@ -208,10 +203,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 
 		info.ParentId = oldInfo.ParentId
 
-		_, err = sys_dao.SysOrganization.Ctx(ctx).Cache(gdb.CacheOption{
-			Duration: -1,
-			Force:    false,
-		}).Where(sys_do.SysOrganization{Id: info.Id}).
+		_, err = sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{Id: info.Id}).
 			Update(sys_do.SysOrganization{Name: info.Name, CascadeDeep: oldInfo.CascadeDeep, Description: info.Description})
 
 		if err != nil {
@@ -232,7 +224,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 
 // GetOrganizationInfo 获取组织架构信息
 func (s *sSysOrganization) GetOrganizationInfo(ctx context.Context, id int64) (*sys_entity.SysOrganization, error) {
-	result, err := sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).Where(sys_do.SysOrganization{Id: id}).One()
+	result, err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{Id: id}).One()
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询组织机构信息失败", sys_dao.SysOrganization.Table())
@@ -251,7 +243,7 @@ func (s *sSysOrganization) GetOrganizationInfo(ctx context.Context, id int64) (*
 // DeleteOrganizationInfo 删除组织架构信息
 func (s *sSysOrganization) DeleteOrganizationInfo(ctx context.Context, id int64) (bool, error) {
 
-	count, err := sys_dao.SysOrganization.Ctx(ctx).Cache(s.conf).Where(sys_do.SysOrganization{ParentId: id}).Count()
+	count, err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{ParentId: id}).Count()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除组织机构信息失败", sys_dao.SysOrganization.Table())
@@ -262,10 +254,7 @@ func (s *sSysOrganization) DeleteOrganizationInfo(ctx context.Context, id int64)
 	}
 
 	info := sys_entity.SysOrganization{}
-	err = sys_dao.SysOrganization.Ctx(ctx).Cache(gdb.CacheOption{
-		Duration: -1,
-		Force:    false,
-	}).
+	err = sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 		Where(sys_do.SysOrganization{Id: id}).Scan(&info)
 
 	if err != nil {
