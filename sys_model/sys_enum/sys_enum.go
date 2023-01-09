@@ -24,6 +24,8 @@ type (
 	UserState sys_enum_user.StateEnum
 
 	CabinEvent sys_enum_casbin.EventEnum
+
+	PermissionMatchMode sys_enum_permissions.MatchModeEnum
 )
 
 var (
