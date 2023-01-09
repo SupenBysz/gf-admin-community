@@ -253,7 +253,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 		permissionTree.Sort = i
 
 		// 通过权限id查询权限数据
-		count, _ := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysPermission{Id: permissionTree.Id}).Count()
+		count, _ := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysPermission{Identifier: permissionTree.Identifier}).Count()
 
 		// 判断权限数据是否存在，不存在则插入数据
 		if count == 0 {
