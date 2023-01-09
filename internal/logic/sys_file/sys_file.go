@@ -409,8 +409,13 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 		file := &sys_entity.SysFile{}
 		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 			Where(sys_do.SysFile{Id: id})
+
 		if sessionUser.IsAdmin == false {
-			model = model.Where(sys_do.SysFile{UnionMainId: sessionUser.UnionMainId})
+			// 判断用户是否有权限
+			can, _ := sys_service.SysPermission().CheckPermission(ctx, sys_enum.File.PermissionType.ViewDetail)
+			if can == false {
+				model = model.Where(sys_do.SysFile{UnionMainId: sessionUser.UnionMainId})
+			}
 		}
 		err := model.Scan(file)
 
