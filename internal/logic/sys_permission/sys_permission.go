@@ -11,19 +11,19 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/yitter/idgenerator-go/idgen"
-	"time"
 )
 
 type sSysPermission struct {
-	conf gdb.CacheOption
 }
 
 func init() {
@@ -32,12 +32,7 @@ func init() {
 
 // New sSysPermission 权限控制逻辑实现
 func New() *sSysPermission {
-	return &sSysPermission{
-		conf: gdb.CacheOption{
-			Duration: time.Hour,
-			Force:    false,
-		},
-	}
+	return &sSysPermission{}
 }
 
 // GetPermissionById 根据权限ID获取权限信息
@@ -102,6 +97,42 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 	}
 
 	return (*sys_model.SysPermissionInfoListRes)(result), err
+}
+
+// GetPermissionsByResource 根据资源获取权限Ids, 资源一般为用户ID、角色ID，员工ID等
+func (s *sSysPermission) GetPermissionsByResource(ctx context.Context, resource string) ([]int64, error) {
+	permissionItems, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(resource, sys_consts.CasbinDomain)
+	if err != nil {
+		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "权限查询失败", sys_dao.SysPermission.Table())
+	}
+
+	permissionRes := make([]sys_entity.SysPermission, 0)
+	_, err = sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).All(&permissionRes)
+	if err != nil {
+		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "权限查询失败", sys_dao.SysPermission.Table())
+	}
+
+	if len(permissionRes) <= 0 {
+		return []int64{}, nil
+	}
+
+	permissionIds := garray.New()
+
+	for _, permission := range permissionRes {
+		for _, items := range permissionItems {
+			if len(items) >= 3 {
+				if gstr.IsNumeric(items[2]) {
+					if permission.Id == gconv.Int64(items[2]) {
+						permissionIds.Append(gconv.Int64(items[2]))
+					}
+				} else if permission.Identifier == items[2] {
+					permissionIds.Append(permission.Id)
+				}
+			}
+		}
+	}
+
+	return gconv.Int64s(permissionIds.Unique().Slice()), nil
 }
 
 // GetPermissionList 根据ID获取下级权限信息，返回列表
@@ -206,7 +237,6 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 		{
 			// 先清除资源所有权限
 			_, err = sys_service.Casbin().DeletePermissionsForUser(resourceIdentifier)
-
 			if len(permissionIds) <= 0 {
 				return err
 			}
@@ -214,7 +244,11 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 
 		// 重新赋予资源新的权限
 		for _, item := range *items {
-			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(resourceIdentifier, sys_consts.CasbinDomain, item.Identifier, "allow")
+			permissionResourceKey := gconv.String(item.Id)
+			if item.MatchMode > 0 {
+				permissionResourceKey = item.Identifier
+			}
+			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(resourceIdentifier, sys_consts.CasbinDomain, permissionResourceKey, "allow")
 			if err != nil || ret == false {
 				return err
 			}
@@ -370,13 +404,12 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 // CheckPermission 校验权限，如果多个则需要同时满足
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
-	return s.CheckPermissionArr(ctx, tree)
-}
-
-// CheckPermissionArr 校验权限
-func (s *sSysPermission) CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermissionByIdentifier(ctx, permissionTree.Identifier); has == false {
+		permissionResourceKey := gconv.String(permissionTree.Id)
+		if permissionTree.MatchMode > 0 {
+			permissionResourceKey = permissionTree.Identifier
+		}
+		if has, err = s.CheckPermissionByIdentifier(ctx, permissionResourceKey); has == false {
 			return false, gerror.New("没有权限：" + permissionTree.Name + "，" + permissionTree.Description)
 		}
 	}
@@ -385,13 +418,12 @@ func (s *sSysPermission) CheckPermissionArr(ctx context.Context, tree []*permiss
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
 func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
-	return s.CheckPermissionOrArr(ctx, tree)
-}
-
-// CheckPermissionOrArr 校验权限，任意一个满足则有权限
-func (s *sSysPermission) CheckPermissionOrArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermissionByIdentifier(ctx, permissionTree.Identifier); has == true {
+		permissionResourceKey := gconv.String(permissionTree.Id)
+		if permissionTree.MatchMode > 0 {
+			permissionResourceKey = permissionTree.Identifier
+		}
+		if has, err = s.CheckPermissionByIdentifier(ctx, permissionResourceKey); has == true {
 			break
 		}
 	}
