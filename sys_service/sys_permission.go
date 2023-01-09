@@ -19,6 +19,7 @@ type (
 		GetPermissionById(ctx context.Context, permissionId int64) (*sys_entity.SysPermission, error)
 		GetPermissionByIdentifier(ctx context.Context, identifier string) (*sys_entity.SysPermission, error)
 		QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error)
+		GetPermissionsByResource(ctx context.Context, resource string) ([]int64, error)
 		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysPermission, error)
 		GetPermissionTree(ctx context.Context, parentId int64) ([]*permission.SysPermissionTree, error)
 		CreatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
@@ -29,9 +30,7 @@ type (
 		DeletePermission(ctx context.Context, permissionId int64) (bool, error)
 		GetPermissionTreeIdByUrl(ctx context.Context, path string) (*sys_entity.SysPermission, error)
 		CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error)
-		CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error)
 		CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error)
-		CheckPermissionOrArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error)
 		CheckPermissionByIdentifier(ctx context.Context, identifier string) (bool, error)
 		PermissionTypeForm(code int64, mapItems *gmap.StrAnyMap) *sys_model.SysPermission
 	}
