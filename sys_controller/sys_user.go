@@ -65,7 +65,7 @@ func (c *cSysUser) SetUserPermissionIds(ctx context.Context, req *sys_api.SetUse
 func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUserPermissionIdsReq) (api_v1.Int64ArrRes, error) {
 	return funs.ProxyFunc[api_v1.Int64ArrRes](
 		ctx, func(ctx context.Context) ([]int64, error) {
-			return sys_service.SysUser().GetUserPermissionIds(
+			return sys_service.SysPermission().GetPermissionsByResource(
 				ctx,
 				req.Id,
 			)

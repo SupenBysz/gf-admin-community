@@ -10,7 +10,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"time"
 
-	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -312,24 +311,6 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 	}
 
 	return true, nil
-}
-
-// GetUserPermissionIds 获取用户权限，返回权限Id数组
-func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]int64, error) {
-	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(userId), sys_consts.CasbinDomain)
-	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户权限查询失败"), "", sys_dao.SysUser.Table())
-	}
-
-	permissionIds := garray.NewFrom(g.Slice{})
-
-	for _, items := range result {
-		if len(items) >= 3 {
-			permissionIds.Append(items[2])
-		}
-	}
-
-	return gconv.Int64s(permissionIds.Unique().Slice()), nil
 }
 
 // SetUsername 修改自己的账号登陆名称
