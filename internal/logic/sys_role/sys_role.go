@@ -10,11 +10,9 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -342,22 +340,4 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 	}
 
 	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(roleId), permissionIds)
-}
-
-// GetRolePermissions 获取角色权限Ids，返回权限Id数组
-func (s *sSysRole) GetRolePermissions(ctx context.Context, roleId int64) ([]int64, error) {
-	result, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(gconv.String(roleId), sys_consts.CasbinDomain)
-	if err != nil {
-		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "角色权限查询失败", sys_dao.SysRole.Table())
-	}
-
-	permissionIds := garray.NewFrom(g.Slice{})
-
-	for _, items := range result {
-		if len(items) >= 3 {
-			permissionIds.Append(items[2])
-		}
-	}
-
-	return gconv.Int64s(permissionIds.Unique().Slice()), nil
 }
