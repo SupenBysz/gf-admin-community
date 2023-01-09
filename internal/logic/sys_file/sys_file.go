@@ -48,8 +48,6 @@ func New() *sFile {
 	}
 }
 
-type _UserUploadItemsCache []sys_model.FileInfo
-
 // InstallHook 安装Hook
 func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: sys_model.FileHookInfo{Key: state, Value: hookFunc}}
@@ -109,8 +107,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 
 	newUserUploadItemsCache := kmap.New[int64, *sys_model.FileInfo]()
 	strUserId := gconv.String(sessionUser.Id)
-	userCacheKey := s.cachePrefix + "_" + gconv.String(sessionUser.UnionMainId) + "_" + strUserId
-	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
+	userCacheJson := gfile.Join(tmpPath, s.cachePrefix+"_"+strUserId+".json")
 	{
 		// 用户指定时间内上传文件最大数量限制
 		userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
@@ -134,7 +131,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
-
+	// /tmp/upload/upload_5943795150028869.json
 	if in.Name != "" {
 		in.File.Filename = in.Name
 	}
@@ -188,10 +185,10 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 // GetUploadFile 根据上传ID 获取上传文件信息
 func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error) {
 	strUserId := gconv.String(userId)
-	userCacheKey := s.cachePrefix + strUserId
 	tmpPath := gfile.Temp("upload")
-	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
-	userUploadInfoCache := make([]*sys_model.FileInfo, 0)
+	userCacheJson := gfile.Join(tmpPath, s.cachePrefix+"_"+strUserId+".json")
+
+	userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
 	gjson.DecodeTo(gfile.GetContents(userCacheJson), &userUploadInfoCache)
 
 	messageStr := "文件不存在"
@@ -200,10 +197,9 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 		messageStr = message[0]
 	}
 
-	for _, item := range userUploadInfoCache {
-		if item.Id == uploadId {
-			return item, nil
-		}
+	item, has := userUploadInfoCache.Search(uploadId)
+	if item != nil && has {
+		return item, nil
 	}
 
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, messageStr, sys_dao.SysFile.Table())
