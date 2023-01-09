@@ -1,14 +1,12 @@
 package api_v1
 
-import "github.com/gogf/gf/v2/frame/g"
-
 type BoolRes bool
 type IntRes int
 type Int64Res int64
 type Int64ArrRes []int64
-type MapRes g.Map
-type ListRes g.List
-type ArrayRes g.Array
+type MapRes map[string]interface{}
+type ListRes []map[string]interface{}
+type ArrayRes []interface{}
 
 type DataRes interface{}
 
