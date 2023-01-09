@@ -7,6 +7,7 @@
 package kconv
 
 import (
+	"github.com/SupenBysz/gf-admin-community/utility/funs"
 	"github.com/gogf/gf/v2/util/gconv"
 	"reflect"
 	"strings"
@@ -35,7 +36,8 @@ import (
 //     It ignores the map key, if it does not match.
 func Struct[T any](params interface{}, pointer T, mapping ...map[string]string) (res T) {
 	if nil != gconv.Scan(params, pointer, mapping...) {
-		return nil
+		var ret interface{}
+		return funs.AsType[T](ret)
 	}
 	return pointer
 }
@@ -47,16 +49,18 @@ func StructWithError[T any](params interface{}, pointer T, mapping ...map[string
 // StructTag acts as Struct but also with support for priority tag feature, which retrieves the
 // specified tags for `params` key-value items to struct attribute names mapping.
 // The parameter `priorityTag` supports multiple tags that can be joined with char ','.
-func StructTag[T any](params interface{}, pointer interface{}, priorityTag string) (res T) {
+func StructTag[T any](params interface{}, pointer T, priorityTag string) (res T) {
 	if nil == doStruct(params, pointer, nil, priorityTag) {
-		return nil
+		var ret interface{}
+		return funs.AsType[T](ret)
 	}
 	return pointer
 }
 func StructTagWithError[T any](params interface{}, pointer T, priorityTag string) (res T, err error) {
 	err = doStruct(params, pointer, nil, priorityTag)
 	if err == nil {
-		return nil, err
+		var ret interface{}
+		return funs.AsType[T](ret), err
 	}
 	return pointer, nil
 }

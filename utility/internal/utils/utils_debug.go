@@ -6,10 +6,6 @@
 
 package utils
 
-import (
-	"github.com/gogf/gf/v2/internal/command"
-)
-
 const (
 	// Debug key for checking if in debug mode.
 	commandEnvKeyForDebugKey = "gf.debug"
@@ -22,7 +18,7 @@ var (
 
 func init() {
 	// Debugging configured.
-	value := command.GetOptWithEnv(commandEnvKeyForDebugKey)
+	value := GetOptWithEnv(commandEnvKeyForDebugKey)
 	if value == "" || value == "0" || value == "false" {
 		isDebugEnabled = false
 	} else {
