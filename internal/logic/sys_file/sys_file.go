@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"io"
 	"net/http"
 	"os"
@@ -106,28 +107,31 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		}
 	}
 
-	newUserUploadItemsCache := make([]*sys_model.FileInfo, 0)
+	newUserUploadItemsCache := kmap.New[int64, *sys_model.FileInfo]()
 	strUserId := gconv.String(sessionUser.Id)
 	userCacheKey := s.cachePrefix + "_" + gconv.String(sessionUser.UnionMainId) + "_" + strUserId
 	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
 	{
 		// 用户指定时间内上传文件最大数量限制
-		userUploadInfoCache := make([]*sys_model.FileInfo, 0)
+		userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
 		jsonString := gfile.GetContents(userCacheJson)
-		gjson.DecodeTo(jsonString, &userUploadInfoCache)
+
+		g.Try(ctx, func(ctx context.Context) {
+			gjson.DecodeTo(jsonString, &userUploadInfoCache)
+		})
 
 		now := gtime.Now()
-		for _, item := range userUploadInfoCache {
+		userUploadInfoCache.Iterator(func(k int64, item *sys_model.FileInfo) bool {
 			info := &sys_model.FileInfo{}
-			gconv.Struct(item, &info)
 			if info.CreatedAt.Add(s.CacheDuration).After(now) {
-				newUserUploadItemsCache = append(newUserUploadItemsCache, info)
+				newUserUploadItemsCache.Set(info.Id, info)
 			}
-		}
+			return true
+		})
 
 		fileMaxUploadCountMinute := g.Cfg().MustGet(ctx, "service.fileMaxUploadCountMinute", 10).Int()
 		// 限定1分钟内允许上传的最大数量
-		if len(newUserUploadItemsCache) >= fileMaxUploadCountMinute {
+		if newUserUploadItemsCache.Size() >= fileMaxUploadCountMinute {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
@@ -165,7 +169,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 	}
 
 	// 追加到缓存队列
-	newUserUploadItemsCache = append(newUserUploadItemsCache, data)
+	newUserUploadItemsCache.Set(data.Id, data)
 
 	// 写入缓存
 	gfile.PutContents(userCacheJson, gjson.MustEncodeString(newUserUploadItemsCache))
@@ -207,9 +211,13 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 }
 
 // SaveFile 保存文件
-func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_entity.SysFile) (*sys_entity.SysFile, error) {
+func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error) {
 	if !gfile.Exists(info.Src) {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "文件不存在", sys_dao.SysFile.Table())
+	}
+
+	if storageAddr == info.Src {
+		return info, nil
 	}
 
 	gfile.Chmod(gfile.Dir(storageAddr), gfile.DefaultPermCopy)
@@ -220,13 +228,13 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_enti
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.BeforeSave.Code() == sys_enum.Upload.EventState.BeforeSave.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.BeforeSave, *info)
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.BeforeSave, info.SysFile)
 			}
 		}
 	})
 
 	data := &sys_do.SysFile{}
-	gconv.Struct(info, data)
+	gconv.Struct(info.SysFile, data)
 	_, err := sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
@@ -239,7 +247,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_enti
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterSave.Code() == sys_enum.Upload.EventState.AfterSave.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, *info)
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, info.SysFile)
 			}
 		}
 	})

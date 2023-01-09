@@ -20,7 +20,7 @@ type (
 		CleanAllHook()
 		Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error)
 		GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error)
-		SaveFile(ctx context.Context, storageAddr string, info *sys_entity.SysFile) (*sys_entity.SysFile, error)
+		SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error)
 		UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error)
 		UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput) (*sys_model.BankCardWithOCR, error)
 		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense) (*sys_model.BusinessLicenseWithOCR, error)
