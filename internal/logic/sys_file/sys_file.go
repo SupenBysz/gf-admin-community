@@ -230,7 +230,14 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 	data := &sys_do.SysFile{}
 	gconv.Struct(info.SysFile, data)
-	_, err := sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
+
+	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
+	if count == 0 {
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
+	} else {
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Update()
+	}
+
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
 	}
