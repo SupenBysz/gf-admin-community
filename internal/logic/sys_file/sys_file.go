@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"io"
 	"net/http"
@@ -131,7 +132,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
-	// /tmp/upload/upload_5943795150028869.json
+	
 	if in.Name != "" {
 		in.File.Filename = in.Name
 	}
@@ -228,8 +229,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		}
 	})
 
-	data := &sys_do.SysFile{}
-	gconv.Struct(info.SysFile, data)
+	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
 
 	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
