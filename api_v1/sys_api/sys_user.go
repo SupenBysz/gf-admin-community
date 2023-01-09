@@ -24,7 +24,7 @@ type SetUserPermissionIdsReq struct {
 
 type GetUserPermissionIdsReq struct {
 	g.Meta `path:"/getUserPermissionIds" method:"post" summary:"获取用户权限|ID数组" tags:"用户"`
-	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	Id     string `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
 type UserInfoRes sys_entity.SysUser
