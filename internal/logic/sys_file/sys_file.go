@@ -42,7 +42,7 @@ func init() {
 
 func New() *sFile {
 	return &sFile{
-		cachePrefix:   "upload_",
+		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
 		CacheDuration: time.Hour * 2,
 	}
@@ -122,9 +122,8 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 
 		now := gtime.Now()
 		userUploadInfoCache.Iterator(func(k int64, item *sys_model.FileInfo) bool {
-			info := &sys_model.FileInfo{}
-			if info.ExpiresAt.Add(s.CacheDuration).After(now) {
-				newUserUploadItemsCache.Set(info.Id, info)
+			if item.ExpiresAt.Add(s.CacheDuration).After(now) {
+				newUserUploadItemsCache.Set(item.Id, item)
 			}
 			return true
 		})
