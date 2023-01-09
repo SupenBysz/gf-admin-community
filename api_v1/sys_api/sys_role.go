@@ -55,9 +55,9 @@ type SetRolePermissionsReq struct {
 	PermissionIds []int64 `json:"permissionIds" v:"array#权限ID集合参数无效" dc:"权限ID集合"`
 }
 
-type GetRolePermissionsReq struct {
+type GetRolePermissionsIdsReq struct {
 	g.Meta `path:"/getRolePermissionIds" method:"post" summary:"获取角色权限Ids" tags:"角色"`
-	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
+	Id     string `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
 type RoleInfoRes sys_entity.SysRole
