@@ -26,10 +26,11 @@ type SysPermissionColumns struct {
 	Description string // 描述
 	Identifier  string // 标识符
 	Type        string // 类型：1api，2menu
+	MatchMode   string // 匹配模式：ID：0，标识符：1
+	IsShow      string // 是否显示：0不显示 1显示
+	Sort        string // 排序
 	CreatedAt   string //
 	UpdatedAt   string //
-	IsShow      string // 是否显示：0不显示 1显示
-	Sort        string // 排序字段
 }
 
 // sysPermissionColumns holds the columns for table sys_permission.
@@ -40,10 +41,11 @@ var sysPermissionColumns = SysPermissionColumns{
 	Description: "description",
 	Identifier:  "identifier",
 	Type:        "type",
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
+	MatchMode:   "match_mode",
 	IsShow:      "is_show",
 	Sort:        "sort",
+	CreatedAt:   "created_at",
+	UpdatedAt:   "updated_at",
 }
 
 // NewSysPermissionDao creates and returns a new DAO object for table data access.
