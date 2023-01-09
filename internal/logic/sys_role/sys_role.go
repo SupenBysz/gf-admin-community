@@ -216,10 +216,10 @@ func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId, userId, makeUserU
 		Force:    false,
 	})
 
-	//keys, err := sys_dao.SysRole.DB().GetCache().Keys(ctx)
-	//size, err := sys_dao.SysRole.DB().GetCache().Size(ctx)
-	//fmt.Println("缓存数量还剩：", size)
-	//fmt.Println("缓存数量还剩：", keys)
+	// keys, err := sys_dao.SysRole.DB().GetCache().Keys(ctx)
+	// size, err := sys_dao.SysRole.DB().GetCache().Size(ctx)
+	// fmt.Println("缓存数量还剩：", size)
+	// fmt.Println("缓存数量还剩：", keys)
 
 	return sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
@@ -341,7 +341,6 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 
 // SetRolePermissions 设置角色权限
 func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error) {
-
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Cache(s.conf).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -351,39 +350,10 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 	}
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色信息查询失败", sys_dao.SysRole.Table())
 	}
 
-	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
-		{
-			// 先清除roleId所有权限
-			_, err = sys_service.Casbin().DeletePermissionsForUser(gconv.String(roleId))
-
-			if len(permissionIds) <= 0 {
-				return err
-			}
-		}
-
-		// 重新赋予roleId新的权限清单
-		for _, item := range permissionIds {
-			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(roleId), sys_consts.CasbinDomain, gconv.String(item), "allow")
-			if err != nil || ret == false {
-				return err
-			}
-		}
-
-		// 清除缓存
-		sys_dao.SysRole.Ctx(ctx).Cache(gdb.CacheOption{
-			Duration: -1,
-			Force:    false,
-		})
-		return nil
-	})
-	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置角色权限失败", sys_dao.SysRole.Table())
-	}
-
-	return true, nil
+	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(roleId), permissionIds)
 }
 
 // GetRolePermissions 获取角色权限Ids，返回权限Id数组

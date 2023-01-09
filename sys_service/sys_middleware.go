@@ -15,7 +15,6 @@ type (
 		CTX(r *ghttp.Request)
 		CORS(r *ghttp.Request)
 		ResponseHandler(r *ghttp.Request)
-		CheckPermission(r *ghttp.Request)
 	}
 )
 

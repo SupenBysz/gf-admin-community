@@ -86,10 +86,10 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 
 	result, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Cache(s.conf), info, isExport)
 
-	//keys, err := g.DB().GetCache().Keys(ctx)
-	//size, err := g.DB().GetCache().Size(ctx)
-	//fmt.Println("缓存数量：", size)
-	//fmt.Println("缓存数量keys：", keys)
+	// keys, err := g.DB().GetCache().Keys(ctx)
+	// size, err := g.DB().GetCache().Size(ctx)
+	// fmt.Println("缓存数量：", size)
+	// fmt.Println("缓存数量keys：", keys)
 
 	newList := make([]sys_model.SysUser, 0)
 	if result != nil && result.List != nil && len(*result.List) > 0 {
@@ -240,12 +240,18 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 	})
 
-	//keys, err := g.DB().GetCache().Keys(ctx)
-	//size, err := g.DB().GetCache().Size(ctx)
-	//fmt.Println("缓存数量：", size)
-	//fmt.Println("缓存数量keys：", keys)
-
 	return &result, nil
+}
+
+// SetUserPermissions 设置用户权限
+func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permissionIds []int64) (bool, error) {
+	_, err := s.GetSysUserById(ctx, userId)
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysRole.Table())
+	}
+
+	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(userId), permissionIds)
 }
 
 // GetSysUserByUsername 根据用户名获取用户

@@ -53,11 +53,11 @@ func (s *sSysPermission) GetPermissionById(ctx context.Context, permissionId int
 	return &result, nil
 }
 
-// GetPermissionByName 根据权限Name获取权限信息
-func (s *sSysPermission) GetPermissionByName(ctx context.Context, permissionName string) (*sys_entity.SysPermission, error) {
+// GetPermissionByIdentifier 根据权限Name获取权限信息
+func (s *sSysPermission) GetPermissionByIdentifier(ctx context.Context, identifier string) (*sys_entity.SysPermission, error) {
 	result := sys_entity.SysPermission{}
 
-	err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysPermission{Name: permissionName}).Scan(&result)
+	err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysPermission{Identifier: identifier}).Scan(&result)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())
@@ -96,6 +96,11 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 	}
 
 	result, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())
+	}
+
 	return (*sys_model.SysPermissionInfoListRes)(result), err
 }
 
@@ -172,6 +177,61 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysPermission.Table())
 	}
 	return s.SavePermission(ctx, info)
+}
+
+// SetPermissionsByResource 设置资源权限
+func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceIdentifier string, permissionIds []int64) (response bool, err error) {
+	var items *[]sys_entity.SysPermission
+	if len(permissionIds) > 0 {
+		data, _ := sys_service.SysPermission().QueryPermissionList(ctx, sys_model.SearchParams{
+			Filter: []sys_model.FilterInfo{
+				{
+					Field: sys_dao.SysPermission.Columns().Id,
+					Where: "in",
+					Value: permissionIds,
+				},
+			},
+			Pagination: sys_model.Pagination{
+				Page:     1,
+				PageSize: 10000,
+			},
+		})
+		if data != nil {
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "权限ID校验失败失败", sys_dao.SysRole.Table())
+		}
+		items = data.List
+	}
+
+	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+		{
+			// 先清除资源所有权限
+			_, err = sys_service.Casbin().DeletePermissionsForUser(resourceIdentifier)
+
+			if len(permissionIds) <= 0 {
+				return err
+			}
+		}
+
+		// 重新赋予资源新的权限
+		for _, item := range *items {
+			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(resourceIdentifier, sys_consts.CasbinDomain, item.Identifier, "allow")
+			if err != nil || ret == false {
+				return err
+			}
+		}
+
+		// 清除缓存
+		sys_dao.SysRole.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		})
+		return nil
+	})
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户权限失败", sys_dao.SysRole.Table())
+	}
+
+	return true, nil
 }
 
 // ImportPermissionTree 导入权限，如果存在则忽略，递归导入权限
@@ -313,7 +373,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 // CheckPermissionArr 校验权限
 func (s *sSysPermission) CheckPermissionArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == false {
+		if has, err = s.CheckPermissionByIdentifier(ctx, permissionTree.Identifier); has == false {
 			return false, gerror.New("没有权限：" + permissionTree.Name + "，" + permissionTree.Description)
 		}
 	}
@@ -328,15 +388,15 @@ func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permiss
 // CheckPermissionOrArr 校验权限，任意一个满足则有权限
 func (s *sSysPermission) CheckPermissionOrArr(ctx context.Context, tree []*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	for _, permissionTree := range tree {
-		if has, err = s.CheckPermissionById(ctx, permissionTree.Id); has == true {
+		if has, err = s.CheckPermissionByIdentifier(ctx, permissionTree.Identifier); has == true {
 			break
 		}
 	}
 	return
 }
 
-// CheckPermissionById 校验权限
-func (s *sSysPermission) CheckPermissionById(ctx context.Context, permissionId int64) (bool, error) {
+// CheckPermissionByIdentifier 通过标识符校验权限
+func (s *sSysPermission) CheckPermissionByIdentifier(ctx context.Context, identifier string) (bool, error) {
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
@@ -344,10 +404,10 @@ func (s *sSysPermission) CheckPermissionById(ctx context.Context, permissionId i
 		return true, nil
 	}
 
-	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, gconv.String(permissionId), "allow")
+	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, identifier, "allow")
 
 	if err != nil {
-		fmt.Printf("权限校验失败[%v]：%v\n", permissionId, err.Error())
+		fmt.Printf("权限校验失败[%v]：%v\n", identifier, err.Error())
 	}
 	if t != true {
 		err = gerror.New("没有权限")

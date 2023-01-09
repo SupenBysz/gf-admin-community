@@ -86,27 +86,3 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 		response.JsonExit(r, code.Code(), "", res)
 	}
 }
-
-// CheckPermission 权限鉴权
-func (s *sMiddleware) CheckPermission(r *ghttp.Request) {
-	val := r.GetParam("cp")
-
-	if val.IsEmpty() {
-		r.Middleware.Next()
-		return
-	}
-
-	if !val.IsInt() {
-		response.JsonExit(r, 401, "没有权限")
-		return
-	}
-
-	has, err := sys_service.SysPermission().CheckPermissionById(r.Context(), val.Int64())
-
-	if has == false || err != nil {
-		response.JsonExit(r, 401, "没有权限")
-		return
-	}
-
-	r.Middleware.Next()
-}
