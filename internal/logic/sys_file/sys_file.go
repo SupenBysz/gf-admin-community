@@ -233,9 +233,9 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
-		_, err = sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
 	} else {
-		_, err = sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Update()
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Where(sys_do.SysFile{Id: data.Id}).Update()
 	}
 
 	if err != nil {
