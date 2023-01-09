@@ -123,7 +123,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		now := gtime.Now()
 		userUploadInfoCache.Iterator(func(k int64, item *sys_model.FileInfo) bool {
 			info := &sys_model.FileInfo{}
-			if info.CreatedAt.Add(s.CacheDuration).After(now) {
+			if info.ExpiresAt.Add(s.CacheDuration).After(now) {
 				newUserUploadItemsCache.Set(info.Id, info)
 			}
 			return true
@@ -407,9 +407,12 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 	}
 	{
 		file := &sys_entity.SysFile{}
-		err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
-			Where(sys_do.SysFile{Id: id, UnionMainId: sessionUser.UnionMainId}).
-			Scan(file)
+		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+			Where(sys_do.SysFile{Id: id})
+		if sessionUser.IsAdmin == false {
+			model = model.Where(sys_do.SysFile{UnionMainId: sessionUser.UnionMainId})
+		}
+		err := model.Scan(file)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().WarnSimple(ctx, err, errorMessage, sys_dao.SysFile.Table())
