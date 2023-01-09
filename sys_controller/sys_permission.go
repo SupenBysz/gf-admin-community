@@ -25,14 +25,14 @@ func (c *cSysPermission) GetPermissionById(ctx context.Context, req *sys_api.Get
 	return (*sys_model.SysPermissionInfoRes)(result), err
 }
 
-// GetPermissionByName 根据权限Name获取权限|信息
-func (c *cSysPermission) GetPermissionByName(ctx context.Context, req *sys_api.GetPermissionByNameReq) (*sys_model.SysPermissionInfoRes, error) {
+// GetPermissionByIdentifier 根据权限标识符获取权限|信息
+func (c *cSysPermission) GetPermissionByIdentifier(ctx context.Context, req *sys_api.GetPermissionByIdentifierReq) (*sys_model.SysPermissionInfoRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Permissions.PermissionType.ViewDetail); has != true {
 		return nil, err
 	}
 
-	result, err := sys_service.SysPermission().GetPermissionByName(ctx, req.Name)
+	result, err := sys_service.SysPermission().GetPermissionByIdentifier(ctx, req.Identifier)
 	return (*sys_model.SysPermissionInfoRes)(result), err
 }
 
