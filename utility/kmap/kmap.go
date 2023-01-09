@@ -3,6 +3,7 @@ package kmap
 import (
 	"github.com/SupenBysz/gf-admin-community/utility/deepcopy"
 	"github.com/SupenBysz/gf-admin-community/utility/empty"
+	"github.com/SupenBysz/gf-admin-community/utility/funs"
 	"github.com/SupenBysz/gf-admin-community/utility/json"
 	"github.com/SupenBysz/gf-admin-community/utility/rwmutex"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -208,9 +209,9 @@ func (m *HashMap[TK, TD]) doSetWithLockCheck(key TK, value interface{}) TD {
 		value = f()
 	}
 	if value != nil {
-		m.data[key] = value
+		m.data[key] = funs.AsType[TD](value)
 	}
-	return value
+	return funs.AsType[TD](value)
 }
 
 // GetOrSet returns the value by key,
@@ -461,7 +462,7 @@ func (m *HashMap[TK, TD]) DeepCopy() *HashMap[TK, TD] {
 	defer m.mu.RUnlock()
 	data := make(map[TK]TD, len(m.data))
 	for k, v := range m.data {
-		data[k] = deepcopy.Copy(v)
+		data[k] = funs.AsType[TD](deepcopy.Copy(v))
 	}
 	return NewFrom(data, m.mu.IsSafe())
 }
