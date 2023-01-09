@@ -19,4 +19,5 @@ type SysPermission struct {
 	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
 	IsShow      int         `json:"isShow"      description:"是否显示：0不显示 1显示"`
+	Sort        int         `json:"sort"        description:"排序字段"`
 }

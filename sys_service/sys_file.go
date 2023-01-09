@@ -18,13 +18,15 @@ type (
 		InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		Upload(ctx context.Context, in sys_model.FileUploadInput, userId int64) (*sys_model.FileUploadOutput, error)
-		GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileUploadOutput, error)
-		SaveFile(ctx context.Context, storageAddr string, userId int64, info sys_model.FileUploadOutput) (*sys_entity.SysFile, error)
-		UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput, userId int64) (*sys_model.IDCardWithOCR, error)
-		UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput, userId int64) (*sys_model.BankCardWithOCR, error)
-		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense, userId int64) (*sys_model.BusinessLicenseWithOCR, error)
+		Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error)
+		GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error)
+		SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error)
+		UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error)
+		UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput) (*sys_model.BankCardWithOCR, error)
+		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense) (*sys_model.BusinessLicenseWithOCR, error)
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
+		GetUrlById(id int64) string
+		GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
 	}
 )
 

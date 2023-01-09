@@ -30,17 +30,17 @@ func (s *sMiddleware) Auth(r *ghttp.Request) {
 // CTX 自定义上下文对象
 func (s *sMiddleware) CTX(r *ghttp.Request) {
 	// 初始化，务必最开始执行
-	customCtx := &sys_model.Context{
-		ClaimsUser:        &sys_model.JwtCustomClaims{},
+	customSessionCtx := &sys_model.SessionContext{
+		JwtClaimsUser:     &sys_model.JwtCustomClaims{},
 		SessionErrorQueue: garray.NewArray(),
 		Ipv4:              r.RemoteAddr,
 	}
 
-	sys_service.BizCtx().Init(r, customCtx)
+	sys_service.SysSession().Init(r, customSessionCtx)
 
 	// 将自定义的上下文对象传递到模板变量中使用
 	r.Assigns(g.Map{
-		"Context": customCtx,
+		"Context": customSessionCtx,
 	})
 	// 执行下一步请求逻辑
 	r.Middleware.Next()
@@ -85,8 +85,4 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 	} else {
 		response.JsonExit(r, code.Code(), "", res)
 	}
-}
-
-func (s *sMiddleware) Casbin(r *ghttp.Request) {
-	sys_service.Casbin().Middleware(r)
 }

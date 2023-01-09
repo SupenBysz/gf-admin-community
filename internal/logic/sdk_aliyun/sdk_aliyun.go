@@ -21,8 +21,8 @@ import (
 // 阿里云服务平台
 type sSdkAliyun struct {
 	AliyunSdkConfTokenList []sys_model.AliyunSdkConfToken
-	CacheDuration          time.Duration
 	sysConfigName          string
+	conf                   gdb.CacheOption
 }
 
 func init() {
@@ -33,8 +33,11 @@ func init() {
 func New() *sSdkAliyun {
 	return &sSdkAliyun{
 		AliyunSdkConfTokenList: make([]sys_model.AliyunSdkConfToken, 0),
-		CacheDuration:          time.Hour,
 		sysConfigName:          "aliyun_sdk_conf",
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 	}
 }
 
@@ -173,11 +176,7 @@ func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]sys_model.Ali
 
 	data := sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
-		Duration: s.CacheDuration,
-		Name:     s.sysConfigName,
-		Force:    true,
-	}).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
@@ -214,7 +213,7 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询阿里云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
-// SaveAliyunSdkConf 保存百度SDK应用配信息, isCreate判断是更新还是新建
+// SaveAliyunSdkConf 保存SDK应用配信息, isCreate判断是更新还是新建
 func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error) {
 	items, _ := s.GetAliyunSdkConfList(ctx)
 
@@ -241,16 +240,22 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.Aliyu
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -287,7 +292,10 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

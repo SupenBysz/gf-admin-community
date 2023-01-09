@@ -27,6 +27,7 @@ type hookInfo sys_model.KeyValueT[int64, sys_model.AuthHookInfo]
 
 type sSysAuth struct {
 	hookArr []hookInfo
+	conf    gdb.CacheOption
 }
 
 func init() {
@@ -36,6 +37,10 @@ func init() {
 // New Auth 验证码管理服务
 func New() *sSysAuth {
 	return &sSysAuth{
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 		hookArr: make([]hookInfo, 0),
 	}
 }
@@ -104,7 +109,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUs
 		return nil, gerror.New("账号查已注销")
 	}
 
-	tokenInfo, err := sys_service.Jwt().GenerateToken(sysUserInfo)
+	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, sysUserInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +162,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
-	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
+	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Cache(s.conf).Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
@@ -170,10 +175,15 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		Type:      1,
 		CreatedAt: gtime.Now(),
 	}
+	pwd, _ := en_crypto.PwdHash(data.Password, gconv.String(data.Id))
+	data.Password = pwd
 
 	// 开启事务
 	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
-		_, err := tx.Model(data).Insert(data)
+		_, err := tx.Model(data).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Insert(data)
 
 		if err != nil {
 			return err
@@ -206,7 +216,10 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
-	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
+	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Count(sys_do.SysUser{Username: info.Username})
 	if count <= 0 || err != nil {
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名错误")
 	}
@@ -244,7 +257,10 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	// 加密
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 
-	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})
+	result, err := sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})
 
 	// 受影响的行数
 	count, _ := result.RowsAffected()

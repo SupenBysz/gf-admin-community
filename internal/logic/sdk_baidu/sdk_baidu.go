@@ -19,8 +19,8 @@ import (
 
 type sSdkBaidu struct {
 	BaiduSdkConfTokenList []sys_model.BaiduSdkConfToken
-	CacheDuration         time.Duration
 	sysConfigName         string
+	conf                  gdb.CacheOption
 }
 
 func init() {
@@ -31,8 +31,11 @@ func init() {
 func New() *sSdkBaidu {
 	return &sSdkBaidu{
 		BaiduSdkConfTokenList: make([]sys_model.BaiduSdkConfToken, 0),
-		CacheDuration:         time.Hour,
 		sysConfigName:         "baidu_sdk_conf",
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 	}
 }
 
@@ -124,12 +127,7 @@ func (s *sSdkBaidu) GetBaiduSdkConfToken(ctx context.Context, identifier string)
 func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) (*[]sys_model.BaiduSdkConf, error) {
 	items := make([]sys_model.BaiduSdkConf, 0)
 	data := sys_entity.SysConfig{}
-	err := sys_dao.SysConfig.Ctx(ctx).
-		Cache(gdb.CacheOption{
-			Duration: s.CacheDuration,
-			Name:     s.sysConfigName,
-			Force:    true,
-		}).
+	err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).
 		Where(sys_do.SysConfig{Name: s.sysConfigName}).Scan(&data)
 	if err != nil && err != sql.ErrNoRows {
 		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
@@ -186,11 +184,17 @@ func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info sys_model.BaiduSd
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{Name: s.sysConfigName})
+	count, err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).Count(sys_do.SysConfig{Name: s.sysConfigName})
 	if count > 0 {
-		_, err = sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString})
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString})
 	} else {
-		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{Name: s.sysConfigName, Value: jsonString})
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Insert(sys_do.SysConfig{Name: s.sysConfigName, Value: jsonString})
 	}
 
 	if nil != err {
@@ -223,7 +227,10 @@ func (s *sSdkBaidu) DeleteBaiduSdkConf(ctx context.Context, identifier string) (
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
-	if _, err = sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if _, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "百度SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

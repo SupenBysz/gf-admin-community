@@ -10,9 +10,9 @@ type GetPermissionByIdReq struct {
 	Id     int64 `json:"id" v:"required#权限ID校验失败" dc:"权限ID"`
 }
 
-type GetPermissionByNameReq struct {
-	g.Meta `path:"/getPermissionByName" method:"post" summary:"根据权限Name获取权限|信息" tags:"权限"`
-	Name   string `json:"name" v:"required|max-length:64#权限Name校验失败|仅支持最大字符长度64" dc:"权限Name"`
+type GetPermissionByIdentifierReq struct {
+	g.Meta     `path:"/getPermissionByIdentifier" method:"post" summary:"根据权限标识符获取权限|信息" tags:"权限"`
+	Identifier string `json:"name" v:"required|max-length:64#权限Name校验失败|仅支持最大字符长度64" dc:"权限标识符"`
 }
 
 type QueryPermissionListReq struct {

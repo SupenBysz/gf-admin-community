@@ -8,13 +8,13 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/gogf/gf/v2/os/gcache"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/util/gconv"
 	"time"
 )
 
 type sArea struct {
-	cachePrefix string
+	conf gdb.CacheOption
 }
 
 func init() {
@@ -23,7 +23,10 @@ func init() {
 
 func New() *sArea {
 	return &sArea{
-		cachePrefix: "area_",
+		conf: gdb.CacheOption{
+			Duration: time.Hour * 24 * 7,
+			Force:    false,
+		},
 	}
 }
 
@@ -35,16 +38,18 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 
 	{
 		// 如果缓存有数据则直接从缓存加载
-		ret, _ := gcache.Get(ctx, s.cachePrefix+gconv.String(parentId))
-		if !ret.IsEmpty() {
-			response := sys_model.AreaListRes{}
-			if nil != ret.Struct(&response) {
-				return &response, nil
-			}
-		}
+		// ret, _ := gcache.Get(ctx, s.cachePrefix+gconv.String(parentId))
+		//    cache := sys_dao.SysArea.DB().GetCache()
+
+		//if !ret.IsEmpty() {
+		//	response := sys_model.AreaListRes{}
+		//	if nil != ret.Struct(&response) {
+		//		return &response, nil
+		//	}
+		//}
 	}
 
-	result, _ := daoctl.Query[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), &sys_model.SearchParams{
+	result, _ := daoctl.Query[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), &sys_model.SearchParams{
 		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().ParentId,
 			Where:       "=",
@@ -91,22 +96,29 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 	}
 
 	ret.List = &items
+	ret.Total = gconv.Int64(len(items))
 
 	// 写入缓存
-	gcache.Set(ctx, s.cachePrefix+gconv.String(parentId), ret, time.Hour*24*7)
+	// gcache.Set(ctx, s.cachePrefix+gconv.String(parentId), ret, time.Hour*24*7)
 
 	return ret, nil
 }
 
 // GetAreaById 根据ID获取区域信息
 func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
-	return daoctl.GetById[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), id)
+
+	if err != nil {
+		return nil
+	}
+
+	return result
 }
 
 // GetAreaByCode 根据区域编号获取区域信息
 func (s *sArea) GetAreaByCode(ctx context.Context, areaCode string) *sys_entity.SysArea {
 	result := sys_entity.SysArea{}
-	if sys_dao.SysArea.Ctx(ctx).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
+	if sys_dao.SysArea.Ctx(ctx).Cache(s.conf).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
 		return nil
 	}
 	return &result

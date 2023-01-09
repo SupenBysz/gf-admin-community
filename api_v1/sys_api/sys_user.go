@@ -16,12 +16,6 @@ type QueryUserListReq struct {
 	sys_model.SearchParams
 }
 
-type SetUserRoleIdsReq struct {
-	g.Meta  `path:"/setUserRoleIds" method:"post" summary:"设置用户角色" tags:"用户"`
-	RoleIds []int64 `json:"roleIds" v:"required#角色ID校验失败" dc:"角色ID数组"`
-	UserId  int64   `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
-}
-
 type SetUserPermissionIdsReq struct {
 	g.Meta        `path:"/setUserPermissionIds" method:"post" summary:"设置用户权限" tags:"用户"`
 	Id            int64   `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
@@ -31,16 +25,6 @@ type SetUserPermissionIdsReq struct {
 type GetUserPermissionIdsReq struct {
 	g.Meta `path:"/getUserPermissionIds" method:"post" summary:"获取用户权限|ID数组" tags:"用户"`
 	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
-}
-
-type SetUsernameByIdReq struct {
-	g.Meta      `path:"/setUsername" method:"post" summary:"设置用户登陆名称" tags:"用户"`
-	NewUsername string `json:"newUsername" v:"required#新用户名称" dc:"新的用户名称"`
-}
-
-type UpdateUserPasswordReq struct {
-	g.Meta `path:"/updateUserPassword" method:"post" summary:"修改用户密码" tags:"用户"`
-	sys_model.UpdateUserPassword
 }
 
 type UserInfoRes sys_entity.SysUser

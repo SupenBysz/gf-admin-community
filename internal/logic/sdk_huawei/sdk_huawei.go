@@ -21,16 +21,19 @@ import (
 
 type sSdkHuawei struct {
 	HuaWeiSdkConfTokenList []sys_model.HuaweiSdkConfToken
-	CacheDuration          time.Duration
 	sysConfigName          string
+	conf                   gdb.CacheOption
 }
 
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkHuawei {
 	return &sSdkHuawei{
 		HuaWeiSdkConfTokenList: make([]sys_model.HuaweiSdkConfToken, 0),
-		CacheDuration:          time.Hour,
 		sysConfigName:          "huawei_sdk_conf",
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 	}
 }
 
@@ -150,11 +153,7 @@ func (s *sSdkHuawei) GetHuaweiSdkConfList(ctx context.Context) (*[]sys_model.Hua
 
 	data := sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
-		Duration: s.CacheDuration,
-		Name:     s.sysConfigName,
-		Force:    true,
-	}).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
@@ -218,16 +217,22 @@ func (s *sSdkHuawei) SaveHuaweiSdkConf(ctx context.Context, info sys_model.Huawe
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Cache(s.conf).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+			Duration: -1,
+			Force:    false,
+		}).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -236,9 +241,6 @@ func (s *sSdkHuawei) SaveHuaweiSdkConf(ctx context.Context, info sys_model.Huawe
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "华为云SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
-
-	// 移除缓存列表
-	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步token列表
 	return &info, nil
@@ -264,7 +266,10 @@ func (s *sSdkHuawei) DeleteHuaweiSdkConf(ctx context.Context, identifier string)
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: -1,
+		Force:    false,
+	}).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "华为云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -28,9 +29,8 @@ import (
 type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
 
 type sSysUser struct {
-	CacheDuration time.Duration
-	CachePrefix   string
-	hookArr       []hookInfo
+	conf    gdb.CacheOption
+	hookArr []hookInfo
 }
 
 func init() {
@@ -39,9 +39,11 @@ func init() {
 
 func New() *sSysUser {
 	return &sSysUser{
-		CacheDuration: time.Hour,
-		CachePrefix:   sys_dao.SysUser.Table() + "_",
-		hookArr:       make([]hookInfo, 0),
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
+		hookArr: make([]hookInfo, 0),
 	}
 }
 
@@ -70,7 +72,8 @@ func (s *sSysUser) CleanAllHook() {
 }
 
 // QueryUserList 获取用户列表
-func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, isExport bool) (response *sys_model.SysUserRes, err error) {
+func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
+
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
 
@@ -81,16 +84,37 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		}
 	}
 
-	result, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), info, isExport)
+	result, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Cache(s.conf), info, isExport)
+
+	// keys, err := g.DB().GetCache().Keys(ctx)
+	// size, err := g.DB().GetCache().Size(ctx)
+	// fmt.Println("缓存数量：", size)
+	// fmt.Println("缓存数量keys：", keys)
 
 	newList := make([]sys_model.SysUser, 0)
 	if result != nil && result.List != nil && len(*result.List) > 0 {
 		for _, user := range *result.List {
 			user.RoleNames = make([]string, 0)
-			roles, err := sys_service.SysRole().GetUserRoleList(ctx, user.Id)
-			if err == nil && len(*roles) > 0 {
-				for _, role := range *roles {
-					user.RoleNames = append(user.RoleNames, role.Name)
+			roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
+
+			if err != nil && err != sql.ErrNoRows {
+				return nil, err
+			}
+
+			if len(roleIds) > 0 {
+				roles, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
+					Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+						Field:     sys_dao.SysRole.Columns().Id,
+						Where:     "in",
+						IsOrWhere: false,
+						Value:     roleIds,
+					}),
+					Pagination: sys_model.Pagination{},
+				}, unionMainId)
+				if err == nil && len(*roles.List) > 0 {
+					for _, role := range *roles.List {
+						user.RoleNames = append(user.RoleNames, role.Name)
+					}
 				}
 			}
 			user.Password = ""
@@ -102,14 +126,15 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		result.List = &newList
 	}
 
-	return (*sys_model.SysUserRes)(result), err
+	return (*sys_model.SysUserListRes)(result), err
 }
 
 // SetUserRoleIds 设置用户角色
 func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error) {
 	for _, roleId := range roleIds {
-		roleInfo := sys_entity.SysRole{}
-		err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+		roleInfo := &sys_entity.SysRole{}
+		// 查找角色是否存在
+		roleInfo, err := sys_service.SysRole().GetRoleById(ctx, roleId)
 
 		if err != nil {
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysUser.Table())
@@ -133,7 +158,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 
 // CreateUser 创建用户
 func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error) {
-	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
+	count, _ := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", sys_dao.SysUser.Table())
 	}
@@ -172,7 +197,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		})
 
-		_, err := sys_dao.SysUser.Ctx(ctx).OmitNilData().Data(data).Insert()
+		_, err = sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: true}).OmitNilData().Data(data).Insert()
 
 		if err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
@@ -184,10 +209,20 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色设置失败！"+err.Error(), sys_dao.SysUser.Table())
 			}
 
-			err = sys_dao.SysRole.Ctx(ctx).WhereIn(sys_dao.SysRole.Columns().Id, info.RoleIds).Scan(&result.RoleInfoList)
+			roleList, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
+				Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+					Field:       sys_dao.SysRole.Columns().Id,
+					Where:       "in",
+					IsOrWhere:   false,
+					Value:       info.RoleIds,
+					IsNullValue: false,
+				}),
+			}, sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId)
+
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败！", sys_dao.SysUser.Table())
 			}
+			result.RoleInfoList = *roleList.List
 		}
 
 		return nil
@@ -204,13 +239,25 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		}
 	})
+
 	return &result, nil
 }
 
-// GetSysUserByUsername 根据用户名获取用户UID
+// SetUserPermissions 设置用户权限
+func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permissionIds []int64) (bool, error) {
+	_, err := s.GetSysUserById(ctx, userId)
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysRole.Table())
+	}
+
+	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(userId), permissionIds)
+}
+
+// GetSysUserByUsername 根据用户名获取用户
 func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (*sys_entity.SysUser, error) {
 	data := &sys_entity.SysUser{}
-	err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: username}).Scan(data)
+	err := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Where(sys_do.SysUser{Username: username}).Scan(data)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysUser.Table())
@@ -221,14 +268,15 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (*
 
 // HasSysUserByUsername 判断用户名是否存在
 func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bool {
-	count, _ := sys_dao.SysUser.Ctx(ctx).Count(sys_do.SysUser{Username: username})
+	count, _ := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Count(sys_do.SysUser{Username: username})
 	return count > 0
 }
 
 // GetSysUserById 根据用户ID获取用户信息
 func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+
 	data := &sys_entity.SysUser{}
-	err := sys_dao.SysUser.Ctx(ctx).Scan(data, sys_do.SysUser{Id: userId})
+	err := sys_dao.SysUser.Ctx(ctx).Cache(s.conf).Scan(data, sys_do.SysUser{Id: userId})
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysUser.Table())
@@ -285,9 +333,10 @@ func (s *sSysUser) GetUserPermissionIds(ctx context.Context, userId int64) ([]in
 }
 
 // SetUsername 修改自己的账号登陆名称
-func (s *sSysUser) SetUsername(ctx context.Context, newUsername string) (bool, error) {
-	userId := sys_service.BizCtx().Get(ctx).ClaimsUser.Id
-	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Username: newUsername})
+func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error) {
+	result, err := sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).
+		Where(sys_do.SysUser{Id: userId}).
+		Update(sys_do.SysUser{Username: newUsername})
 
 	if err != nil || result == nil {
 		return false, err
@@ -296,19 +345,12 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string) (bool, e
 }
 
 // UpdateUserPassword 修改用户登录密码
-func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword) (bool, error) {
-	// 获取到当前登录用户
-	loginUserName := sys_service.BizCtx().Get(ctx).ClaimsUser.Username
-
-	if loginUserName == "" {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "需要先登录后才能修改密码")
-	}
-
+func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error) {
 	// 查询到用户信息
-	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, loginUserName)
+	sysUserInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "当前登录用户不存在")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户不存在")
 	}
 
 	// 判断输入的两次密码是否相同
@@ -344,7 +386,7 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
 
-	_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
+	_, err = sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
 
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
@@ -354,20 +396,15 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 }
 
 // ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
-func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error) {
-	// 获取当前登录用户
-	user := sys_service.BizCtx().Get(ctx).ClaimsUser
+func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error) {
 
-	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, user.Id)
-	if err != nil {
-		return false, gerror.NewCode(gcode.CodeValidationFailed, "当前登录用户身份错误")
-	}
-
+	// hook判断当前登录身份是否可以重置密码
 	{
+		var err error
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *userInfo)
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, userInfo)
 					if err != nil {
 						break
 					}
@@ -391,7 +428,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		// 加密
 		pwdHash, _ := en_crypto.PwdHash(password, salt)
 
-		result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
+		result, err := sys_dao.SysUser.Ctx(ctx).Cache(gdb.CacheOption{Duration: -1, Force: false}).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
 
 		// 受影响的行数
 		count, _ := result.RowsAffected()

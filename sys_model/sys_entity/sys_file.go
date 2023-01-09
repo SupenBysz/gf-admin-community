@@ -10,15 +10,15 @@ import (
 
 // SysFile is the golang structure for table sys_file.
 type SysFile struct {
-	Id        int64       `json:"id"        description:"自增ID"`
-	Name      string      `json:"name"      description:"文件名称"`
-	Src       string      `json:"src"       description:"存储路径"`
-	Url       string      `json:"url"       description:"URL地址"`
-	Ext       string      `json:"ext"       description:"扩展名"`
-	Size      int64       `json:"size"      description:"文件大小"`
-	Category  string      `json:"category"  description:"文件分类"`
-	UserId    int64       `json:"userId"    description:"用户ID"`
-	LicenseId int64       `json:"licenseId" description:"主体ID"`
-	CreatedAt *gtime.Time `json:"createdAt" description:""`
-	UpdatedAt *gtime.Time `json:"updatedAt" description:""`
+	Id          int64       `json:"id"          description:"自增ID"`
+	Name        string      `json:"name"        description:"文件名称"`
+	Src         string      `json:"src"         description:"存储路径"`
+	Url         string      `json:"url"         description:"URL地址"`
+	Ext         string      `json:"ext"         description:"扩展名"`
+	Size        int64       `json:"size"        description:"文件大小"`
+	Category    string      `json:"category"    description:"文件分类"`
+	UserId      int64       `json:"userId"      description:"用户ID"`
+	UnionMainId int64       `json:"unionMainId" description:"关联主体ID"`
+	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
+	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
 }

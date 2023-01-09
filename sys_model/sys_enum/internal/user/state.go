@@ -4,7 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/enum"
 )
 
-type StateEnum enum.Code
+type StateEnum enum.IEnumCode[int]
 
 type state struct {
 	Unactivated StateEnum
@@ -15,11 +15,11 @@ type state struct {
 }
 
 var State = state{
-	Unactivated: enum.New(0, "未激活"),
-	Normal:      enum.New(1, "正常"),
-	Suspended:   enum.New(-1, "封号"),
-	Abnormality: enum.New(-2, "异常"),
-	Canceled:    enum.New(-3, "已注销"),
+	Unactivated: enum.New[StateEnum](0, "未激活"),
+	Normal:      enum.New[StateEnum](1, "正常"),
+	Suspended:   enum.New[StateEnum](-1, "封号"),
+	Abnormality: enum.New[StateEnum](-2, "异常"),
+	Canceled:    enum.New[StateEnum](-3, "已注销"),
 }
 
 func (e state) New(code int, description string) StateEnum {
@@ -28,7 +28,7 @@ func (e state) New(code int, description string) StateEnum {
 		(code&State.Suspended.Code()) == State.Suspended.Code() ||
 		(code&State.Abnormality.Code()) == State.Abnormality.Code() ||
 		(code&State.Canceled.Code()) == State.Canceled.Code() {
-		return enum.New(code, description)
+		return enum.New[StateEnum](code, description)
 	}
 	panic("User.State.New: error")
 }

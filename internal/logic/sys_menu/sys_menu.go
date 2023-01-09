@@ -14,8 +14,7 @@ import (
 )
 
 type sSysMenu struct {
-	CacheDuration time.Duration
-	CachePrefix   string
+	conf gdb.CacheOption
 }
 
 func init() {
@@ -25,15 +24,17 @@ func init() {
 // New sSysMenu 菜单逻辑实现
 func New() *sSysMenu {
 	return &sSysMenu{
-		CacheDuration: time.Hour,
-		CachePrefix:   sys_dao.SysMenu.Table() + "_",
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
 	}
 }
 
 // GetMenuById 根据ID获取菜单信息
 func (s *sSysMenu) GetMenuById(ctx context.Context, menuId int64) (*sys_entity.SysMenu, error) {
 	result := sys_entity.SysMenu{}
-	err := sys_dao.SysMenu.Ctx(ctx).Scan(&result, sys_do.SysMenu{Id: menuId})
+	err := sys_dao.SysMenu.Ctx(ctx).Cache(s.conf).Scan(&result, sys_do.SysMenu{Id: menuId})
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "菜单信息查询失败", sys_dao.SysMenu.Table())
 	}
@@ -71,7 +72,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info sys_model.SysMenu) (*sys_e
 			data.CreatedAt = gtime.Now()
 			data.UpdatedAt = gtime.Now()
 
-			_, err = tx.Model(sys_dao.SysMenu).OmitEmptyWhere().Insert(data)
+			_, err = tx.Model(sys_dao.SysMenu).Cache(gdb.CacheOption{Duration: -1, Force: false}).OmitEmptyWhere().Insert(data)
 
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "新增菜单信息失", sys_dao.SysMenu.Table())

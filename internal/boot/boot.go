@@ -34,6 +34,10 @@ func initGlobal() {
 	sys_consts.Global.DefaultRegisterType = g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0).Int()
 	// 加载不允许登录的用户类型，并去重
 	sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(context.Background(), "service.notAllowLoginUserType", "[-1]").Ints()).SetUnique(true)
+	// 加载接口前缀
+	sys_consts.Global.ApiPreFix = g.Cfg().MustGet(context.Background(), "service.apiPrefix").String()
+	// 加载ORM表缓存参数
+	g.Cfg().MustGet(context.Background(), "service.ormCache", []interface{}{}).Structs(&sys_consts.Global.OrmCacheConf)
 }
 
 // initIdGenerator 初始化ID生成器

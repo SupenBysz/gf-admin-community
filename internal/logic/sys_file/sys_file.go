@@ -2,8 +2,12 @@ package sys_file
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"io"
 	"net/http"
 	"os"
@@ -44,12 +48,7 @@ func New() *sFile {
 	}
 }
 
-type _TmpFileInfo struct {
-	CreatedAt *gtime.Time
-	sys_model.FileUploadOutput
-}
-
-type _UserUploadItemsCache []_TmpFileInfo
+type _UserUploadItemsCache []sys_model.FileInfo
 
 // InstallHook 安装Hook
 func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64 {
@@ -76,7 +75,8 @@ func (s *sFile) CleanAllHook() {
 }
 
 // Upload 同一上传文件
-func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId int64) (*sys_model.FileUploadOutput, error) {
+func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error) {
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	uploadPath := g.Cfg().MustGet(ctx, "upload.tmpPath").String()
 	tmpPath := gfile.Temp("upload")
 	{
@@ -107,28 +107,31 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 		}
 	}
 
-	newUserUploadItemsCache := make([]_TmpFileInfo, 0)
-	strUserId := gconv.String(userId)
-	userCacheKey := s.cachePrefix + strUserId
+	newUserUploadItemsCache := kmap.New[int64, *sys_model.FileInfo]()
+	strUserId := gconv.String(sessionUser.Id)
+	userCacheKey := s.cachePrefix + "_" + gconv.String(sessionUser.UnionMainId) + "_" + strUserId
 	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
 	{
 		// 用户指定时间内上传文件最大数量限制
-		userUploadInfoCache := make([]_TmpFileInfo, 0)
+		userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
 		jsonString := gfile.GetContents(userCacheJson)
-		gjson.DecodeTo(jsonString, &userUploadInfoCache)
+
+		g.Try(ctx, func(ctx context.Context) {
+			gjson.DecodeTo(jsonString, &userUploadInfoCache)
+		})
 
 		now := gtime.Now()
-		for _, item := range userUploadInfoCache {
-			var info _TmpFileInfo
-			gconv.Struct(item, &info)
+		userUploadInfoCache.Iterator(func(k int64, item *sys_model.FileInfo) bool {
+			info := &sys_model.FileInfo{}
 			if info.CreatedAt.Add(s.CacheDuration).After(now) {
-				newUserUploadItemsCache = append(newUserUploadItemsCache, info)
+				newUserUploadItemsCache.Set(info.Id, info)
 			}
-		}
+			return true
+		})
 
 		fileMaxUploadCountMinute := g.Cfg().MustGet(ctx, "service.fileMaxUploadCountMinute", 10).Int()
 		// 限定1分钟内允许上传的最大数量
-		if len(newUserUploadItemsCache) >= fileMaxUploadCountMinute {
+		if newUserUploadItemsCache.Size() >= fileMaxUploadCountMinute {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
@@ -148,20 +151,25 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 	}
 
 	absPath := gfile.Join(savePath, fileName)
-	data := sys_model.FileUploadOutput{
-		Id:     id,
-		Name:   fileName,
-		Path:   absPath,
-		Url:    absPath,
-		Size:   in.File.Size,
-		UserId: userId,
+	data := &sys_model.FileInfo{
+		SysFile: sys_entity.SysFile{
+			Id:          id,
+			Name:        fileName,
+			Src:         absPath,
+			Url:         absPath,
+			Ext:         gfile.Ext(absPath),
+			Size:        in.File.Size,
+			Category:    "",
+			UserId:      sessionUser.Id,
+			UnionMainId: sessionUser.UnionMainId,
+			CreatedAt:   gtime.Now(),
+			UpdatedAt:   nil,
+		},
+		ExpiresAt: gtime.Now().Add(s.CacheDuration),
 	}
 
 	// 追加到缓存队列
-	newUserUploadItemsCache = append(newUserUploadItemsCache, _TmpFileInfo{
-		CreatedAt:        gtime.Now().Add(s.CacheDuration),
-		FileUploadOutput: data,
-	})
+	newUserUploadItemsCache.Set(data.Id, data)
 
 	// 写入缓存
 	gfile.PutContents(userCacheJson, gjson.MustEncodeString(newUserUploadItemsCache))
@@ -169,32 +177,22 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, userId
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterCache.Code() == sys_enum.Upload.EventState.AfterCache.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterCache, sys_entity.SysFile{
-					Id:        data.Id,
-					Name:      data.Name,
-					Src:       data.Path,
-					Url:       data.Url,
-					Ext:       gfile.Ext(absPath),
-					Size:      gfile.Size(absPath),
-					Category:  "",
-					UserId:    data.UserId,
-					CreatedAt: gtime.Now(),
-					UpdatedAt: nil,
-				})
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterCache, data.SysFile)
 			}
 		}
 	})
 
-	return &data, nil
+	data.Url = s.GetUrlById(data.Id)
+	return &data.SysFile, nil
 }
 
 // GetUploadFile 根据上传ID 获取上传文件信息
-func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileUploadOutput, error) {
+func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error) {
 	strUserId := gconv.String(userId)
 	userCacheKey := s.cachePrefix + strUserId
 	tmpPath := gfile.Temp("upload")
 	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
-	userUploadInfoCache := make([]_TmpFileInfo, 0)
+	userUploadInfoCache := make([]*sys_model.FileInfo, 0)
 	gjson.DecodeTo(gfile.GetContents(userCacheJson), &userUploadInfoCache)
 
 	messageStr := "文件不存在"
@@ -204,10 +202,8 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 	}
 
 	for _, item := range userUploadInfoCache {
-		var info _TmpFileInfo
-		gconv.Struct(item, &info)
-		if info.Id == uploadId {
-			return &info.FileUploadOutput, nil
+		if item.Id == uploadId {
+			return item, nil
 		}
 	}
 
@@ -215,37 +211,31 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 }
 
 // SaveFile 保存文件
-func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, info sys_model.FileUploadOutput) (*sys_entity.SysFile, error) {
-	if !gfile.Exists(info.Path) {
+func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error) {
+	if !gfile.Exists(info.Src) {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "文件不存在", sys_dao.SysFile.Table())
 	}
 
-	gfile.Chmod(gfile.Dir(storageAddr), gfile.DefaultPermCopy)
-	if err := gfile.CopyFile(info.Path, storageAddr); err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+	if storageAddr == info.Src {
+		return info, nil
 	}
 
-	// 记录到数据表
-	data := sys_entity.SysFile{
-		Id:        idgen.NextId(),
-		Name:      info.Name,
-		Src:       storageAddr,
-		Url:       storageAddr,
-		Ext:       gfile.Ext(storageAddr),
-		Size:      info.Size,
-		UserId:    userId,
-		CreatedAt: gtime.Now(),
+	gfile.Chmod(gfile.Dir(storageAddr), gfile.DefaultPermCopy)
+	if err := gfile.CopyFile(info.Src, storageAddr); err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
 	}
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.BeforeSave.Code() == sys_enum.Upload.EventState.BeforeSave.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.BeforeSave, data)
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.BeforeSave, info.SysFile)
 			}
 		}
 	})
 
-	_, err := sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
+	data := &sys_do.SysFile{}
+	gconv.Struct(info.SysFile, data)
+	_, err := sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
 	}
@@ -257,26 +247,26 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, userId int64, 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterSave.Code() == sys_enum.Upload.EventState.AfterSave.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, data)
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, info.SysFile)
 			}
 		}
 	})
-	return &data, nil
+	return info, nil
 }
 
 // UploadIDCard 上传身份证照片
-func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput, userId int64) (*sys_model.IDCardWithOCR, error) {
-	result, err := s.Upload(ctx, in.FileUploadInput, userId)
+func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error) {
+	result, err := s.Upload(ctx, in.FileUploadInput)
 
 	if err != nil {
 		return nil, err
 	}
 
 	ret := sys_model.IDCardWithOCR{
-		FileUploadOutput: *result,
+		SysFile: *result,
 	}
 
-	fileBase64, err := gbase64.EncodeFileToString(result.Path)
+	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
 		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "解析证照信息失败", sys_dao.SysFile.Table())
@@ -290,6 +280,7 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 		return &ret, err
 	}
 
+	//	ret.Id = result.Id
 	ret.OCRIDCardA = OCRInfo.OCRIDCardA
 	ret.OCRIDCardB = OCRInfo.OCRIDCardB
 
@@ -297,19 +288,19 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 }
 
 // UploadBankCard 上传银行卡照片
-func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput, userId int64) (*sys_model.BankCardWithOCR, error) {
-	result, err := s.Upload(ctx, in.FileUploadInput, userId)
+func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput) (*sys_model.BankCardWithOCR, error) {
+	result, err := s.Upload(ctx, in.FileUploadInput)
 
 	if err != nil {
 		return nil, err
 	}
 
 	ret := sys_model.BankCardWithOCR{
-		FileUploadOutput: *result,
+		SysFile: *result,
 	}
 
 	// 图片数据进行base64编码
-	fileBase64, err := gbase64.EncodeFileToString(result.Path)
+	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
 		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "解析证照信息失败", sys_dao.SysFile.Table())
@@ -323,23 +314,23 @@ func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCR
 
 	// 给返回数据赋值
 	ret.BaiduSdkOCRBankCard.OCRBankCard = *bankCard
-
+	// ret.Id = result.Id
 	return &ret, nil
 }
 
 // UploadBusinessLicense 上传营业执照照片
-func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense, userId int64) (*sys_model.BusinessLicenseWithOCR, error) {
-	result, err := s.Upload(ctx, in.FileUploadInput, userId)
+func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense) (*sys_model.BusinessLicenseWithOCR, error) {
+	result, err := s.Upload(ctx, in.FileUploadInput)
 
 	if err != nil {
 		return nil, err
 	}
 
 	ret := sys_model.BusinessLicenseWithOCR{
-		FileUploadOutput: *result,
+		SysFile: *result,
 	}
 
-	fileBase64, err := gbase64.EncodeFileToString(result.Path)
+	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
 		return &ret, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照信息失败"), "", sys_dao.SysFile.Table())
@@ -354,7 +345,7 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusin
 	}
 
 	ret.BusinessLicenseOCR = *OCRInfo
-
+	//	ret.Id = result.Id
 	return &ret, nil
 }
 
@@ -390,4 +381,44 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 	}
 
 	return savePath, nil
+}
+
+// GetUrlById 通过id返回图片url
+func (s *sFile) GetUrlById(id int64) string {
+	// 获取到api接口前缀
+	apiPrefix := sys_consts.Global.ApiPreFix
+
+	// 拼接请求url
+	return apiPrefix + "/common/sys_file/getFileById?id=" + gconv.String(id)
+}
+
+// GetFileById 根据id获取并返回文件信息
+func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error) { // 获取图片可以是id、token、路径
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	{
+		// 优先尝试从缓存获取图片 (缓存查找)
+		cacheFile, _ := s.GetUploadFile(ctx, id, sessionUser.Id, errorMessage)
+
+		if cacheFile != nil {
+			cacheFile.Url = s.GetUrlById(cacheFile.Id)
+			return cacheFile, nil
+		}
+	}
+	{
+		file := &sys_entity.SysFile{}
+		err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+			Where(sys_do.SysFile{Id: id, UnionMainId: sessionUser.UnionMainId}).
+			Scan(file)
+
+		if err != nil {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, err, errorMessage, sys_dao.SysFile.Table())
+		}
+
+		file.Url = s.GetUrlById(file.Id)
+		return &sys_model.FileInfo{
+			SysFile:   *file,
+			ExpiresAt: nil,
+		}, nil
+	}
 }

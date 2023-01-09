@@ -55,3 +55,11 @@ type HuaweiSdkConfToken struct {
 }
 
 type HuaweiSdkConfList CollectRes[HuaweiSdkConf]
+
+type HuaweiOSS struct {
+	Path      string `json:"path"`
+	Bucket    string `json:"bucket"`
+	Endpoint  string `json:"endpoint"`
+	AccessKey string `json:"accessKey"`
+	SecretKey string `json:"secretKey"`
+}

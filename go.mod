@@ -3,15 +3,15 @@ module github.com/SupenBysz/gf-admin-community
 go 1.19
 
 require (
-	github.com/casbin/casbin/v2 v2.56.0
+	github.com/casbin/casbin/v2 v2.60.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.2.0
-	github.com/gogf/gf/v2 v2.2.5
-	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/gogf/gf/v2 v2.2.6
+	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/joho/godotenv v1.4.0
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/yitter/idgenerator-go v1.3.2
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/crypto v0.5.0
+	golang.org/x/sync v0.1.0
 )
 
 require (
@@ -38,8 +38,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.7.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20190501045829-6d32002ffd75 // indirect
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
-	golang.org/x/text v0.3.8-0.20211105212822-18b340fc7af2 // indirect
+	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

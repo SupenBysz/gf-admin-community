@@ -5,23 +5,25 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/response"
 	"github.com/casbin/casbin/v2"
 	casbinModel "github.com/casbin/casbin/v2/model"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/glog"
-	"github.com/gogf/gf/v2/text/gstr"
-	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/yitter/idgenerator-go/idgen"
+	"time"
 )
+
+type hookInfo sys_model.KeyValueT[int64, sys_model.CasbinHookInfo]
 
 type sCasbin struct {
 	reqCasbin sys_model.ReqCasbin
+	hookArr   []hookInfo
+	conf      gdb.CacheOption
 }
 
 var (
@@ -34,7 +36,37 @@ func init() {
 
 // New Casbin 权限控制
 func New() *sCasbin {
-	return &sCasbin{}
+	return &sCasbin{
+		conf: gdb.CacheOption{
+			Duration: time.Hour,
+			Force:    false,
+		},
+		hookArr: make([]hookInfo, 0),
+	}
+}
+
+// InstallHook 安装Hook
+func (s *sCasbin) InstallHook(userType sys_enum.UserType, hookFunc sys_model.CasbinHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_model.CasbinHookInfo{Key: userType, Value: hookFunc}}
+	s.hookArr = append(s.hookArr, item)
+	return item.Key
+}
+
+// UnInstallHook 卸载Hook
+func (s *sCasbin) UnInstallHook(savedHookId int64) {
+	newFuncArr := make([]hookInfo, 0)
+	for _, item := range s.hookArr {
+		if item.Key != savedHookId {
+			newFuncArr = append(newFuncArr, item)
+			continue
+		}
+	}
+	s.hookArr = newFuncArr
+}
+
+// CleanAllHook 清除所有Hook
+func (s *sCasbin) CleanAllHook() {
+	s.hookArr = make([]hookInfo, 0)
 }
 
 func (s *sCasbin) Check() error {
@@ -92,47 +124,6 @@ func Casbin() *casbin.Enforcer {
 	return CE
 }
 
-// Middleware Casbin中间件实现权限控制
-func (s *sCasbin) Middleware(r *ghttp.Request) {
-	// 获取请求的用户，如果这里返回值为空，
-	// 确保路由注册顺序 sys_service.Middleware().Auth 在前，sys_service.Middleware().Casbin 在后，如下：
-	// sys_service.Middleware().Auth,
-	// sys_service.Middleware().Casbin,
-	user := sys_service.BizCtx().Get(r.GetCtx()).ClaimsUser
-
-	// 如果是超级管理员，则直接放行
-	if user.Type == -1 {
-		r.Middleware.Next()
-		return
-	}
-
-	// 获取请求URL
-	url := r.URL.Path
-	urlSplit := gstr.Split(url, "/")
-	path := "/" + urlSplit[len(urlSplit)-1]
-
-	// 1.通过请求的URL获取资源id
-	permissionId, err := sys_service.SysPermission().GetPermissionTreeIdByUrl(r.Context(), path)
-	if err != nil {
-		return
-	}
-
-	// 2.检验是否具备权限 (需要访问资源的用户, 域 , 资源 , 行为)
-	t, err := s.EnforceCheck(gconv.String(user.Id), "kysion.com", gconv.String(permissionId), "allow")
-
-	if err != nil {
-		if !r.IsAjaxRequest() {
-			response.JsonExit(r, 2, err.Error())
-		}
-	}
-	if !t {
-		response.JsonExit(r, 1, "没有权限")
-		return
-	}
-
-	r.Middleware.Next()
-}
-
 // AddRoleForUserInDomain 添加用户角色关联关系
 func (s *sCasbin) AddRoleForUserInDomain(userName string, roleName string, domain string) (bool, error) {
 	return s.Enforcer().AddRoleForUserInDomain(userName, roleName, domain)
@@ -169,24 +160,7 @@ func (s *sCasbin) DeletePermissionsForUser(roleName string) (bool, error) {
 }
 
 // EnforceCheck 校验  确认访问权限
-func (s *sCasbin) EnforceCheck(userName, path, role, method string) (bool, error) { // 用户id  域 资源  方法
+func (s *sCasbin) EnforceCheck(userName, path, role, method interface{}) (bool, error) { // 用户id  域 资源  方法
 	t, err := s.Enforcer().Enforce(userName, path, role, method)
 	return t, err
-}
-
-// CheckUserHasPermission 通过权限树ID，校验当前登录用户是否拥有该权限
-func (s *sCasbin) CheckUserHasPermission(ctx context.Context, userId string, roleId string) (bool, error) { // 用户id，角色id，
-	// 获取角色
-	result := sys_entity.SysCasbin{}
-
-	err := sys_dao.SysCasbin.Ctx(ctx).Where(sys_do.SysCasbin{
-		V0: userId,
-		V1: roleId,
-	}).Scan(&result)
-
-	if err != nil || &result == nil {
-		return false, err
-	}
-
-	return true, nil
 }
