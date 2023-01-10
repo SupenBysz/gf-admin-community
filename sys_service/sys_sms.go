@@ -5,8 +5,14 @@
 
 package sys_service
 
+import (
+	"context"
+)
+
 type (
-	ISysSms interface{}
+	ISysSms interface {
+		Verify(ctx context.Context, mobile int64, captcha string, typeIdentifier ...string) (bool, error)
+	}
 )
 
 var (
