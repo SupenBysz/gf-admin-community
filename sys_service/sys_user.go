@@ -26,7 +26,9 @@ type (
 		HasSysUserByUsername(ctx context.Context, username string) bool
 		GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
 		SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
+		DeleteUser(ctx context.Context, id int64) (bool, error)
 		SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error)
+		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
 		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error)
 	}

@@ -313,11 +313,60 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 	return true, nil
 }
 
+// DeleteUser 删除用户信息，该方法一般由后端业务层内部调用
+func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
+	_, err := s.GetSysUserById(ctx, id)
+	if err != nil {
+		return false, err
+	}
+
+	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+		// 移除员工权限
+		_, err = sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(id), []int64{0})
+		if err != nil {
+			return err
+		}
+
+		// 移除员工角色
+		sys_service.SysUser().SetUserRoleIds(ctx, []int64{0}, id)
+		if err != nil {
+			return err
+		}
+
+		// 删除用户
+		_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Unscoped().Delete(sys_do.SysUser{Id: id})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除员工信息失败", sys_dao.SysUser.Table())
+	}
+	return true, nil
+}
+
 // SetUsername 修改自己的账号登陆名称
 func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error) {
 	result, err := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+		Data(sys_do.SysUser{Username: newUsername}).
 		Where(sys_do.SysUser{Id: userId}).
-		Update(sys_do.SysUser{Username: newUsername})
+		Update()
+
+	if err != nil || result == nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// SetUserState 设置用户状态
+func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error) {
+	result, err := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+		Data(sys_do.SysUser{State: state.Code()}).
+		Where(sys_do.SysUser{Id: userId}).
+		Update()
 
 	if err != nil || result == nil {
 		return false, err
