@@ -417,7 +417,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 }
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
-func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
 	for _, permissionTree := range tree {
 		permissionResourceKey := gconv.String(permissionTree.Id)
 		if permissionTree.MatchMode > 0 {

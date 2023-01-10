@@ -16,3 +16,5 @@ type SysOrganizationTree struct {
 }
 
 type OrganizationInfoListRes CollectRes[sys_entity.SysOrganization]
+
+type OrganizationInfo sys_entity.SysOrganization

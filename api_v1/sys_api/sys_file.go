@@ -2,7 +2,6 @@ package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -38,4 +37,4 @@ type GetFileByIdReq struct {
 	Id     int64 `json:"id" v:"required#资源ID错误" dc:"文件资源ID"`
 }
 
-type UploadFileRes sys_entity.SysFile
+type UploadFileRes sys_model.UploadFile
