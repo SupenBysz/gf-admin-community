@@ -391,7 +391,7 @@ func (s *sFile) GetUrlById(id int64) string {
 	apiPrefix := sys_consts.Global.ApiPreFix
 
 	// 拼接请求url
-	return apiPrefix + "/common/sys_file/getFileById?id=" + gconv.String(id)
+	return apiPrefix + "/common/file/getFileById?id=" + gconv.String(id)
 }
 
 // GetFileById 根据id获取并返回文件信息
