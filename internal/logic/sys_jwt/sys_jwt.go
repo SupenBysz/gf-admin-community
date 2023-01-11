@@ -120,7 +120,11 @@ func (s *sJwt) RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) 
 }
 
 func (s *sJwt) Middleware(r *ghttp.Request) {
-	tokenString := r.Header.Get("Authorization")
+	tokenString := gstr.Trim(r.Header.Get("Authorization"))
+
+	if gstr.ToUpper(r.Method) == "GET" && tokenString == "" {
+		tokenString = r.GetParam("token", "").String()
+	}
 
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
