@@ -2,7 +2,6 @@ package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -27,8 +26,8 @@ type GetUserPermissionIdsReq struct {
 	Id     string `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
-type UserInfoRes sys_entity.SysUser
-type UserInfoListRes sys_model.CollectRes[sys_entity.SysUser]
+type UserInfoRes sys_model.UserInfo
+type UserInfoListRes sys_model.UserInfoList
 
 type ResetUserPasswordReq struct {
 	g.Meta          `path:"/resetUserPasswordReq" method:"post" summary:"重置用户密码" tags:"用户"`

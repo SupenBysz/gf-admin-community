@@ -19,6 +19,8 @@ type FileInfo struct {
 	ExpiresAt *gtime.Time
 }
 
+type UploadFile sys_entity.SysFile
+
 // OCRIDCardFileUploadInput 上传身份证请求参数
 type OCRIDCardFileUploadInput struct {
 	FileUploadInput

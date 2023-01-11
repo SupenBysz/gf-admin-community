@@ -36,7 +36,8 @@ type UpdateUserPassword struct {
 	ConfirmPassword string `json:"confirmPassword" v:"required#请确认密码" dc:"确认密码"`
 }
 
-type SysUserList []sys_entity.SysUser
+type UserInfo sys_entity.SysUser
+type UserInfoList CollectRes[sys_entity.SysUser]
 type SysUserListRes CollectRes[SysUser]
 
 type UserHookFunc HookFunc[sys_enum.UserEvent, sys_entity.SysUser]

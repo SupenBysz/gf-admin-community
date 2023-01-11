@@ -3,8 +3,6 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
-
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 )
 
 type QueryRoleListReq struct {
@@ -60,5 +58,5 @@ type GetRolePermissionsIdsReq struct {
 	Id     string `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type RoleInfoRes sys_entity.SysRole
+type RoleInfoRes sys_model.RoleInfo
 type UserListRes sys_model.CollectRes[sys_model.SysUser]

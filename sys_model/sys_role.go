@@ -13,3 +13,5 @@ type SysRole struct {
 }
 
 type RoleListRes CollectRes[sys_entity.SysRole]
+
+type RoleInfo sys_entity.SysRole
