@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/permission"
 )
 
 func If[R any](condition bool, trueVal, falseVal R) R {
@@ -43,4 +44,19 @@ func FilterUnionMain(ctx context.Context, search *sys_model.SearchParams, unionM
 	search.Filter = newFilter
 
 	return search
+}
+
+func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*permission.SysPermissionTree) (TRes, error) {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, permissions...); has != true {
+		var ret TRes
+		return ret, err
+	}
+	return f()
+}
+func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*permission.SysPermissionTree) (TRes, error) {
+	if has, err := sys_service.SysPermission().CheckPermissionOr(ctx, permissions...); has != true {
+		var ret TRes
+		return ret, err
+	}
+	return f()
 }
