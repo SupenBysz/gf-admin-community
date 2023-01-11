@@ -214,7 +214,7 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceIdentifier string, permissionIds []int64) (response bool, err error) {
 	var items *[]sys_entity.SysPermission
 	if len(permissionIds) > 0 {
-		data, _ := sys_service.SysPermission().QueryPermissionList(ctx, sys_model.SearchParams{
+		data, err := sys_service.SysPermission().QueryPermissionList(ctx, sys_model.SearchParams{
 			Filter: []sys_model.FilterInfo{
 				{
 					Field: sys_dao.SysPermission.Columns().Id,
@@ -227,7 +227,7 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 				PageSize: 10000,
 			},
 		})
-		if data != nil {
+		if err != nil {
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "权限ID校验失败失败", sys_dao.SysRole.Table())
 		}
 		items = data.List
