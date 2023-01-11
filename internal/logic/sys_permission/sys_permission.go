@@ -227,7 +227,7 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 				PageSize: 10000,
 			},
 		})
-		if data != nil {
+		if data == nil {
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "权限ID校验失败失败", sys_dao.SysRole.Table())
 		}
 		items = data.List
@@ -249,7 +249,8 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 				permissionResourceKey = item.Identifier
 			}
 			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(resourceIdentifier, sys_consts.CasbinDomain, permissionResourceKey, "allow")
-			if err != nil || ret == false {
+			// if err != nil && ret == false {  //一个失败其他继续设置
+			if err != nil || ret == false { // 一个失败，退出
 				return err
 			}
 		}
