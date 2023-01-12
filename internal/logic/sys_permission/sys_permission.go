@@ -90,7 +90,7 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 		})
 	}
 
-	result, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
+	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())

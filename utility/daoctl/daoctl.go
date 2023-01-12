@@ -253,7 +253,7 @@ func makeBuilder(db *gdb.Model, searchFieldArr []sys_model.FilterInfo) (*gdb.Mod
 	return db, nil
 }
 
-func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport bool) (response *sys_model.CollectRes[*T], err error) {
+func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport bool) (response *sys_model.CollectRes[T], err error) {
 	// 查询具体的值
 	queryDb, _ := makeBuilder(db, searchFields.Filter)
 	queryDb = makeOrderBy(queryDb, searchFields.OrderBy)
@@ -263,7 +263,7 @@ func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport 
 		searchFields.PageNum = 1
 	}
 
-	entities := make([]*T, 0)
+	entities := make([]T, 0)
 	if searchFields == nil || IsExport {
 		searchFields.PageSize = -1
 		err = queryDb.Scan(&entities)
@@ -271,7 +271,7 @@ func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport 
 		err = queryDb.Page(searchFields.PageNum, searchFields.PageSize).Scan(&entities)
 	}
 
-	response = &sys_model.CollectRes[*T]{
+	response = &sys_model.CollectRes[T]{
 		Records:       entities,
 		PaginationRes: makePaginationArr(db, searchFields.Pagination, searchFields.Filter),
 	}
@@ -294,7 +294,7 @@ func makePaginationArr(db *gdb.Model, pagination sys_model.Pagination, searchFie
 	}
 }
 
-func Find[T any](db *gdb.Model, orderBy []sys_model.OrderBy, searchFields ...sys_model.FilterInfo) (response *sys_model.CollectRes[*T], err error) {
+func Find[T any](db *gdb.Model, orderBy []sys_model.OrderBy, searchFields ...sys_model.FilterInfo) (response *sys_model.CollectRes[T], err error) {
 	return Query[T](db, &sys_model.SearchParams{
 		Filter: searchFields,
 		Pagination: sys_model.Pagination{
