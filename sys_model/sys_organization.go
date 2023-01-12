@@ -12,9 +12,9 @@ type SysOrganizationInfo struct {
 type SysOrganizationTree struct {
 	SysOrganizationInfo
 	CascadeDeep int                    `json:"cascadeDeep" description:"级联深度" v:"min:0"`
-	Children    *[]SysOrganizationTree `json:"children" orm:"-" dc:"下级组织架构"`
+	Children    []*SysOrganizationTree `json:"children" orm:"-" dc:"下级组织架构"`
 }
 
-type OrganizationInfoListRes CollectRes[sys_entity.SysOrganization]
+type OrganizationInfoListRes CollectRes[*sys_entity.SysOrganization]
 
 type OrganizationInfo sys_entity.SysOrganization

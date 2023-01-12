@@ -76,4 +76,4 @@ type BaiduSdkConfToken struct {
 	BaiduSdkConfAccessToken
 }
 
-type BaiduSdkConfList CollectRes[BaiduSdkConf]
+type BaiduSdkConfList CollectRes[*BaiduSdkConf]

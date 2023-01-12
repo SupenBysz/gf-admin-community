@@ -13,9 +13,9 @@ import (
 
 type (
 	ISdkCtyun interface {
-		GetCtyunSdkConfList(ctx context.Context) (*[]sys_model.CtyunSdkConf, error)
+		GetCtyunSdkConfList(ctx context.Context) ([]*sys_model.CtyunSdkConf, error)
 		GetCtyunSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.CtyunSdkConf, err error)
-		SaveCtyunSdkConf(ctx context.Context, info sys_model.CtyunSdkConf, isCreate bool) (*sys_model.CtyunSdkConf, error)
+		SaveCtyunSdkConf(ctx context.Context, info *sys_model.CtyunSdkConf, isCreate bool) (*sys_model.CtyunSdkConf, error)
 		DeleteCtyunSdkConf(ctx context.Context, identifier string) (bool, error)
 	}
 )

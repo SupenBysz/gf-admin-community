@@ -2,7 +2,7 @@ package sys_model
 
 // Pagination 分页信息
 type Pagination struct {
-	Page     int `json:"page" v:"min:1#当前页不能小于1" default:"1" dc:"当前页"`
+	PageNum  int `json:"pageNum" v:"min:1#当前页不能小于1" default:"1" dc:"当前页"`
 	PageSize int `json:"pageSize" v:"min:10|max:500#每页数量不能小于10|每页数量不能大于500" default:"20" dc:"每页数量"`
 }
 
@@ -14,7 +14,7 @@ type PaginationRes struct {
 
 // CollectRes 集合信息
 type CollectRes[T any] struct {
-	List *[]T `json:"list" dc:"数据列表"`
+	Records []T `json:"records" dc:"数据列表"`
 	PaginationRes
 }
 

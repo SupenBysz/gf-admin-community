@@ -15,8 +15,8 @@ import (
 type (
 	ISysOrganization interface {
 		QueryOrganizationList(ctx context.Context, info sys_model.SearchParams) (*sys_model.OrganizationInfoListRes, error)
-		GetOrganizationList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysOrganization, int, error)
-		GetOrganizationTree(ctx context.Context, parentId int64) (*[]sys_model.SysOrganizationTree, error)
+		GetOrganizationList(ctx context.Context, parentId int64, IsRecursive bool) ([]*sys_entity.SysOrganization, int, error)
+		GetOrganizationTree(ctx context.Context, parentId int64) ([]*sys_model.SysOrganizationTree, error)
 		CreateOrganizationInfo(ctx context.Context, info sys_model.SysOrganizationInfo) (*sys_entity.SysOrganization, error)
 		UpdateOrganizationInfo(ctx context.Context, info sys_model.SysOrganizationInfo) (*sys_entity.SysOrganization, error)
 		SaveOrganizationInfo(ctx context.Context, info sys_model.SysOrganizationInfo) (*sys_entity.SysOrganization, error)

@@ -19,7 +19,7 @@ func (s *cSysConfig) GetBaiduSdkConfList(ctx context.Context, _ *sys_api.GetBaid
 	result := &sys_api.BaiduSdkConfListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 20,
 			},
 			PageTotal: 1,
@@ -29,9 +29,9 @@ func (s *cSysConfig) GetBaiduSdkConfList(ctx context.Context, _ *sys_api.GetBaid
 	if items, err := sys_service.SdkBaidu().GetBaiduSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
-		result.List = items
-		result.PageSize = len(*items)
-		result.Total = gconv.Int64(len(*items))
+		result.Records = items
+		result.PageSize = len(items)
+		result.Total = gconv.Int64(len(items))
 	}
 
 	return result, nil
@@ -45,13 +45,13 @@ func (s *cSysConfig) GetBaiduSdkConf(ctx context.Context, req *sys_api.GetBaiduS
 
 // CreateBaiduSdkConf 创建百度SDK应用配置|信息
 func (s *cSysConfig) CreateBaiduSdkConf(ctx context.Context, req *sys_api.CreateBaiduSdkConfReq) (*sys_api.BaiduSdkConfRes, error) {
-	result, err := sys_service.SdkBaidu().SaveBaiduSdkConf(ctx, req.BaiduSdkConf, true)
+	result, err := sys_service.SdkBaidu().SaveBaiduSdkConf(ctx, &req.BaiduSdkConf, true)
 	return (*sys_api.BaiduSdkConfRes)(result), err
 }
 
 // UpdateBaiduSdkConf 更新百度SDK应用配置|信息
 func (s *cSysConfig) UpdateBaiduSdkConf(ctx context.Context, req *sys_api.UpdateBaiduSdkConfReq) (*sys_api.BaiduSdkConfRes, error) {
-	result, err := sys_service.SdkBaidu().SaveBaiduSdkConf(ctx, req.BaiduSdkConf, false)
+	result, err := sys_service.SdkBaidu().SaveBaiduSdkConf(ctx, &req.BaiduSdkConf, false)
 	return (*sys_api.BaiduSdkConfRes)(result), err
 }
 
@@ -66,7 +66,7 @@ func (s *cSysConfig) GetAliyunSdkConfList(ctx context.Context, _ *sys_api.GetAli
 	result := &sys_api.AliyunSdkConfListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 20,
 			},
 			PageTotal: 1,
@@ -76,9 +76,9 @@ func (s *cSysConfig) GetAliyunSdkConfList(ctx context.Context, _ *sys_api.GetAli
 	if items, err := sys_service.SdkAliyun().GetAliyunSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
-		result.List = items
-		result.PageSize = len(*items)
-		result.Total = gconv.Int64(len(*items))
+		result.Records = items
+		result.PageSize = len(items)
+		result.Total = gconv.Int64(len(items))
 	}
 	return result, nil
 }
@@ -91,13 +91,13 @@ func (s *cSysConfig) GetAliyunSdkConf(ctx context.Context, req *sys_api.GetAliyu
 
 // CreateAliyunSdkConf 创建阿里云SDK应用配置|信息
 func (s *cSysConfig) CreateAliyunSdkConf(ctx context.Context, req *sys_api.CreateAliyunSdkConfReq) (*sys_api.AliyunSdkConfRes, error) {
-	result, err := sys_service.SdkAliyun().SaveAliyunSdkConf(ctx, req.AliyunSdkConf, true)
+	result, err := sys_service.SdkAliyun().SaveAliyunSdkConf(ctx, &req.AliyunSdkConf, true)
 	return (*sys_api.AliyunSdkConfRes)(result), err
 }
 
 // UpdateAliyunSdkConf 更新阿里云SDK应用配置|信息
 func (s *cSysConfig) UpdateAliyunSdkConf(ctx context.Context, req *sys_api.UpdateAliyunSdkConfReq) (*sys_api.AliyunSdkConfRes, error) {
-	result, err := sys_service.SdkAliyun().SaveAliyunSdkConf(ctx, req.AliyunSdkConf, false)
+	result, err := sys_service.SdkAliyun().SaveAliyunSdkConf(ctx, &req.AliyunSdkConf, false)
 	return (*sys_api.AliyunSdkConfRes)(result), err
 }
 
@@ -114,7 +114,7 @@ func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sys_api.GetHua
 	result := &sys_api.HuaweiSdkConfListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 20,
 			},
 			PageTotal: 1,
@@ -124,9 +124,9 @@ func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sys_api.GetHua
 	if items, err := sys_service.SdkHuawei().GetHuaweiSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
-		result.List = items
-		result.PageSize = len(*items)
-		result.Total = gconv.Int64(len(*items))
+		result.Records = items
+		result.PageSize = len(items)
+		result.Total = gconv.Int64(len(items))
 	}
 	return result, nil
 }
@@ -139,13 +139,13 @@ func (s *cSysConfig) GetHuaweiSdkConf(ctx context.Context, req *sys_api.GetHuawe
 
 // CreateHuaweiSdkConf 创建华为云SDK应用配置|信息
 func (s *cSysConfig) CreateHuaweiSdkConf(ctx context.Context, req *sys_api.CreateHuaweiSdkConfReq) (*sys_api.HuaweiSdkConfRes, error) {
-	result, err := sys_service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, true)
+	result, err := sys_service.SdkHuawei().SaveHuaweiSdkConf(ctx, &req.HuaweiSdkConf, true)
 	return (*sys_api.HuaweiSdkConfRes)(result), err
 }
 
 // UpdateHuaweiSdkConf 更新华为云SDK应用配置|信息
 func (s *cSysConfig) UpdateHuaweiSdkConf(ctx context.Context, req *sys_api.UpdateHuaweiSdkConfReq) (*sys_api.HuaweiSdkConfRes, error) {
-	result, err := sys_service.SdkHuawei().SaveHuaweiSdkConf(ctx, req.HuaweiSdkConf, false)
+	result, err := sys_service.SdkHuawei().SaveHuaweiSdkConf(ctx, &req.HuaweiSdkConf, false)
 	return (*sys_api.HuaweiSdkConfRes)(result), err
 }
 
@@ -162,7 +162,7 @@ func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sys_api.GetTe
 	result := &sys_api.TencentSdkConfListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 20,
 			},
 			PageTotal: 1,
@@ -172,9 +172,9 @@ func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sys_api.GetTe
 	if items, err := sys_service.SdkTencent().GetTencentSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
-		result.List = items
-		result.PageSize = len(*items)
-		result.Total = gconv.Int64(len(*items))
+		result.Records = items
+		result.PageSize = len(items)
+		result.Total = gconv.Int64(len(items))
 	}
 	return result, nil
 }
@@ -187,13 +187,13 @@ func (s *cSysConfig) GetTencentSdkConf(ctx context.Context, req *sys_api.GetTenc
 
 // CreateTencentSdkConf 创建腾讯云SDK应用配置|信息
 func (s *cSysConfig) CreateTencentSdkConf(ctx context.Context, req *sys_api.CreateTencentSdkConfReq) (*sys_api.TencentSdkConfRes, error) {
-	result, err := sys_service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, true)
+	result, err := sys_service.SdkTencent().SaveTencentSdkConf(ctx, &req.TencentSdkConf, true)
 	return (*sys_api.TencentSdkConfRes)(result), err
 }
 
 // UpdateTencentSdkConf 更新腾讯云SDK应用配置|信息
 func (s *cSysConfig) UpdateTencentSdkConf(ctx context.Context, req *sys_api.UpdateTencentSdkConfReq) (*sys_api.TencentSdkConfRes, error) {
-	result, err := sys_service.SdkTencent().SaveTencentSdkConf(ctx, req.TencentSdkConf, false)
+	result, err := sys_service.SdkTencent().SaveTencentSdkConf(ctx, &req.TencentSdkConf, false)
 	return (*sys_api.TencentSdkConfRes)(result), err
 }
 
@@ -210,7 +210,7 @@ func (s *cSysConfig) GetCtyunSdkConfList(ctx context.Context, _ *sys_api.GetCtyu
 	result := &sys_api.CtyunSdkConfListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 20,
 			},
 			PageTotal: 1,
@@ -220,9 +220,9 @@ func (s *cSysConfig) GetCtyunSdkConfList(ctx context.Context, _ *sys_api.GetCtyu
 	if items, err := sys_service.SdkCtyun().GetCtyunSdkConfList(ctx); err != nil {
 		return nil, err
 	} else {
-		result.List = items
-		result.PageSize = len(*items)
-		result.Total = gconv.Int64(len(*items))
+		result.Records = items
+		result.PageSize = len(items)
+		result.Total = gconv.Int64(len(items))
 	}
 	return result, nil
 }
@@ -235,17 +235,17 @@ func (s *cSysConfig) GetCtyunSdkConf(ctx context.Context, req *sys_api.GetCtyunS
 
 // CreateCtyunSdkConf 创建天翼云SDK应用配置|信息
 func (s *cSysConfig) CreateCtyunSdkConf(ctx context.Context, req *sys_api.CreateCtyunSdkConfReq) (*sys_api.CtyunSdkConfRes, error) {
-	result, err := sys_service.SdkCtyun().SaveCtyunSdkConf(ctx, req.CtyunSdkConf, true)
+	result, err := sys_service.SdkCtyun().SaveCtyunSdkConf(ctx, &req.CtyunSdkConf, true)
 	return (*sys_api.CtyunSdkConfRes)(result), err
 }
 
 // UpdateCtyunSdkConf 更新天翼云SDK应用配置|信息
 func (s *cSysConfig) UpdateCtyunSdkConf(ctx context.Context, req *sys_api.UpdateCtyunSdkConfReq) (*sys_api.CtyunSdkConfRes, error) {
-	result, err := sys_service.SdkCtyun().SaveCtyunSdkConf(ctx, req.CtyunSdkConf, false)
+	result, err := sys_service.SdkCtyun().SaveCtyunSdkConf(ctx, &req.CtyunSdkConf, false)
 	return (*sys_api.CtyunSdkConfRes)(result), err
 }
 
-// DeleteTengxunSdkConf 删除天翼云SDK应用配置|信息
+// DeleteCtyunSdkConf 删除天翼云SDK应用配置|信息
 func (s *cSysConfig) DeleteCtyunSdkConf(ctx context.Context, req *sys_api.DeleteCtyunSdkConfReq) (api_v1.BoolRes, error) {
 	result, err := sys_service.SdkCtyun().DeleteCtyunSdkConf(ctx, req.Identifier)
 	return result == true, err

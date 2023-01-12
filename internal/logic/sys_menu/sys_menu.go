@@ -55,7 +55,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info sys_model.SysMenu) (*sys_e
 		}
 	}
 
-	err := sys_dao.SysMenu.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err := sys_dao.SysMenu.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 保存菜单权限信息
 		sysPermission, err := sys_service.SysPermission().SavePermission(ctx, sys_model.SysPermission{
 			Id:          data.Id,

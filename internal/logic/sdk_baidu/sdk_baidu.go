@@ -18,7 +18,7 @@ import (
 )
 
 type sSdkBaidu struct {
-	BaiduSdkConfTokenList []sys_model.BaiduSdkConfToken
+	BaiduSdkConfTokenList []*sys_model.BaiduSdkConfToken
 	sysConfigName         string
 	conf                  gdb.CacheOption
 }
@@ -30,7 +30,7 @@ func init() {
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkBaidu {
 	return &sSdkBaidu{
-		BaiduSdkConfTokenList: make([]sys_model.BaiduSdkConfToken, 0),
+		BaiduSdkConfTokenList: make([]*sys_model.BaiduSdkConfToken, 0),
 		sysConfigName:         "baidu_sdk_conf",
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -99,8 +99,8 @@ func (s *sSdkBaidu) syncBaiduSdkConfTokenList(ctx context.Context) error {
 		return err
 	}
 
-	newTokenItems := make([]sys_model.BaiduSdkConfToken, 0)
-	for _, conf := range *items {
+	newTokenItems := make([]*sys_model.BaiduSdkConfToken, 0)
+	for _, conf := range items {
 		for _, tokenInfo := range s.BaiduSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
 				newTokenItems = append(newTokenItems, tokenInfo)
@@ -117,31 +117,31 @@ func (s *sSdkBaidu) syncBaiduSdkConfTokenList(ctx context.Context) error {
 func (s *sSdkBaidu) GetBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.BaiduSdkConfToken, err error) {
 	for _, conf := range s.BaiduSdkConfTokenList {
 		if conf.Identifier == identifier {
-			return &conf, nil
+			return conf, nil
 		}
 	}
 	return s.fetchBaiduSdkConfToken(ctx, identifier)
 }
 
 // GetBaiduSdkConfList 获取百度SDK应用配置列表
-func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) (*[]sys_model.BaiduSdkConf, error) {
-	items := make([]sys_model.BaiduSdkConf, 0)
+func (s *sSdkBaidu) GetBaiduSdkConfList(ctx context.Context) ([]*sys_model.BaiduSdkConf, error) {
+	items := make([]*sys_model.BaiduSdkConf, 0)
 	data := sys_entity.SysConfig{}
 	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).
 		Where(sys_do.SysConfig{Name: s.sysConfigName}).Scan(&data)
 	if err != nil && err != sql.ErrNoRows {
-		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("百度SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if data.Value == "" {
-		return &items, nil
+		return items, nil
 	}
 
 	if nil == gjson.DecodeTo(data.Value, &items) {
-		return &items, nil
+		return items, nil
 	}
 
-	return &items, nil
+	return items, nil
 }
 
 // GetBaiduSdkConf 根据 identifier 查询百度SDK应用配置信息
@@ -151,21 +151,21 @@ func (s *sSdkBaidu) GetBaiduSdkConf(ctx context.Context, identifier string) (*sy
 		return nil, err
 	}
 
-	for _, conf := range *items {
+	for _, conf := range items {
 		if conf.Identifier == identifier {
-			return &conf, nil
+			return conf, nil
 		}
 	}
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询百度SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
 // SaveBaiduSdkConf 保存百度SDK应用配信息
-func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info sys_model.BaiduSdkConf, isCreate bool) (*sys_model.BaiduSdkConf, error) {
+func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info *sys_model.BaiduSdkConf, isCreate bool) (*sys_model.BaiduSdkConf, error) {
 	items, _ := s.GetBaiduSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]sys_model.BaiduSdkConf, 0)
-	for _, conf := range *items {
+	newItems := make([]*sys_model.BaiduSdkConf, 0)
+	for _, conf := range items {
 		if conf.Identifier == info.Identifier {
 			isHas = true
 			newItems = append(newItems, info)
@@ -199,7 +199,7 @@ func (s *sSdkBaidu) SaveBaiduSdkConf(ctx context.Context, info sys_model.BaiduSd
 	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 	// 同步 Token 列表
 	s.syncBaiduSdkConfTokenList(ctx)
-	return &info, nil
+	return info, nil
 }
 
 // DeleteBaiduSdkConf 删除百度SDK应用配置信息
@@ -208,7 +208,7 @@ func (s *sSdkBaidu) DeleteBaiduSdkConf(ctx context.Context, identifier string) (
 
 	isHas := false
 	newItems := garray.New(false)
-	for _, conf := range *items {
+	for _, conf := range items {
 		if conf.Identifier == identifier {
 			isHas = true
 			continue

@@ -212,7 +212,7 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 
 // SetPermissionsByResource 设置资源权限
 func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceIdentifier string, permissionIds []int64) (response bool, err error) {
-	var items *[]sys_entity.SysPermission
+	var items []*sys_entity.SysPermission
 	if len(permissionIds) > 0 {
 		data, err := sys_service.SysPermission().QueryPermissionList(ctx, sys_model.SearchParams{
 			Filter: []sys_model.FilterInfo{
@@ -223,17 +223,17 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 				},
 			},
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 10000,
 			},
 		})
 		if err != nil {
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "权限ID校验失败失败", sys_dao.SysRole.Table())
 		}
-		items = data.List
+		items = data.Records
 	}
 
-	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err = sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
 			// 先清除资源所有权限
 			_, err = sys_service.Casbin().DeletePermissionsForUser(resourceIdentifier)
@@ -243,7 +243,7 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 		}
 
 		// 重新赋予资源新的权限
-		for _, item := range *items {
+		for _, item := range items {
 			permissionResourceKey := gconv.String(item.Id)
 			if item.MatchMode > 0 {
 				permissionResourceKey = item.Identifier

@@ -38,10 +38,10 @@ func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api
 	}
 
 	return &sys_model.OrganizationInfoListRes{
-		List: data,
+		Records: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: count,
 			},
 			PageTotal: 1,
@@ -59,7 +59,7 @@ func (c *cSysOrganization) GetOrganizationTree(ctx context.Context, req *sys_api
 
 	result, err := sys_service.SysOrganization().GetOrganizationTree(ctx, req.Id)
 
-	return (*sys_api.OrganizationInfoTreeListRes)(result), err
+	return (*sys_api.OrganizationInfoTreeListRes)(&result), err
 }
 
 // CreateOrganizationInfo 创建或更新组织架构|信息

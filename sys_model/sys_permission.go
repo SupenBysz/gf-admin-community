@@ -15,5 +15,5 @@ type SysPermission struct {
 }
 
 type SysPermissionInfoRes sys_entity.SysPermission
-type SysPermissionInfoListRes CollectRes[sys_entity.SysPermission]
+type SysPermissionInfoListRes CollectRes[*sys_entity.SysPermission]
 type SysPermissionInfoTreeRes []*permission.SysPermissionTree

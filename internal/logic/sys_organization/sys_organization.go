@@ -42,8 +42,8 @@ func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info sys_m
 }
 
 // GetOrganizationList 获取组织架构信息列表
-func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysOrganization, int, error) {
-	result := make([]sys_entity.SysOrganization, 0)
+func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int64, IsRecursive bool) ([]*sys_entity.SysOrganization, int, error) {
+	result := make([]*sys_entity.SysOrganization, 0)
 	err := sys_dao.SysOrganization.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysOrganization{ParentId: parentId}).Scan(&result)
 
 	if err != nil {
@@ -53,40 +53,40 @@ func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int
 	// 如果需要返回下级，则递归加载
 	if IsRecursive == true && len(result) > 0 {
 		for _, organization := range result {
-			var children *[]sys_entity.SysOrganization
+			var children []*sys_entity.SysOrganization
 			children, count, err := s.GetOrganizationList(ctx, organization.Id, IsRecursive)
 
 			if err != nil {
 				return nil, count, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
 			}
 
-			if children == nil || len(*children) <= 0 {
+			if children == nil || len(children) <= 0 {
 				continue
 			}
 
-			for _, sSysOrganization := range *children {
+			for _, sSysOrganization := range children {
 				result = append(result, sSysOrganization)
 			}
 		}
 	}
 
-	return &result, len(result), nil
+	return result, len(result), nil
 }
 
 // GetOrganizationTree 获取组织架构信息树
-func (s *sSysOrganization) GetOrganizationTree(ctx context.Context, parentId int64) (*[]sys_model.SysOrganizationTree, error) {
+func (s *sSysOrganization) GetOrganizationTree(ctx context.Context, parentId int64) ([]*sys_model.SysOrganizationTree, error) {
 	result, _, err := s.GetOrganizationList(ctx, parentId, false)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
 	}
 
-	response := make([]sys_model.SysOrganizationTree, 0)
+	response := make([]*sys_model.SysOrganizationTree, 0)
 
 	// 有数据，则递归加载
-	if len(*result) > 0 {
-		for _, organization := range *result {
-			item := sys_model.SysOrganizationTree{}
+	if len(result) > 0 {
+		for _, organization := range result {
+			item := &sys_model.SysOrganizationTree{}
 			gconv.Struct(organization, &item)
 
 			item.Children, err = s.GetOrganizationTree(ctx, organization.Id)
@@ -98,7 +98,7 @@ func (s *sSysOrganization) GetOrganizationTree(ctx context.Context, parentId int
 			response = append(response, item)
 		}
 	}
-	return &response, nil
+	return response, nil
 }
 
 // CreateOrganizationInfo 创建组织架构信息

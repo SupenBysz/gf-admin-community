@@ -44,4 +44,4 @@ type DeleteOrganizationInfoReq struct {
 type OrganizationInfoRes sys_model.OrganizationInfo
 
 type OrganizationInfoTreeRes sys_model.SysOrganizationTree
-type OrganizationInfoTreeListRes []sys_model.SysOrganizationTree
+type OrganizationInfoTreeListRes []*sys_model.SysOrganizationTree

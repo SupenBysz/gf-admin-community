@@ -14,9 +14,9 @@ import (
 type (
 	ISdkTencent interface {
 		GetTencentSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.TencentSdkConfToken, err error)
-		GetTencentSdkConfList(ctx context.Context) (*[]sys_model.TencentSdkConf, error)
+		GetTencentSdkConfList(ctx context.Context) ([]*sys_model.TencentSdkConf, error)
 		GetTencentSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.TencentSdkConf, err error)
-		SaveTencentSdkConf(ctx context.Context, info sys_model.TencentSdkConf, isCreate bool) (*sys_model.TencentSdkConf, error)
+		SaveTencentSdkConf(ctx context.Context, info *sys_model.TencentSdkConf, isCreate bool) (*sys_model.TencentSdkConf, error)
 		DeleteTencentSdkConf(ctx context.Context, identifier string) (bool, error)
 	}
 )

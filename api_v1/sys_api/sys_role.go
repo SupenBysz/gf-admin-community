@@ -59,4 +59,4 @@ type GetRolePermissionsIdsReq struct {
 }
 
 type RoleInfoRes sys_model.RoleInfo
-type UserListRes sys_model.CollectRes[sys_model.SysUser]
+type UserListRes sys_model.CollectRes[*sys_model.SysUser]

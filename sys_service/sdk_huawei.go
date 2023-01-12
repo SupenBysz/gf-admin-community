@@ -14,9 +14,9 @@ import (
 type (
 	ISdkHuawei interface {
 		GetHuaweiSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.HuaweiSdkConfToken, err error)
-		GetHuaweiSdkConfList(ctx context.Context) (*[]sys_model.HuaweiSdkConf, error)
+		GetHuaweiSdkConfList(ctx context.Context) ([]*sys_model.HuaweiSdkConf, error)
 		GetHuaweiSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.HuaweiSdkConf, err error)
-		SaveHuaweiSdkConf(ctx context.Context, info sys_model.HuaweiSdkConf, isCreate bool) (*sys_model.HuaweiSdkConf, error)
+		SaveHuaweiSdkConf(ctx context.Context, info *sys_model.HuaweiSdkConf, isCreate bool) (*sys_model.HuaweiSdkConf, error)
 		DeleteHuaweiSdkConf(ctx context.Context, identifier string) (bool, error)
 	}
 )

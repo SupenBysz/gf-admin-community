@@ -54,7 +54,7 @@ type HuaweiSdkConfToken struct {
 	HuaweiAccessToken
 }
 
-type HuaweiSdkConfList CollectRes[HuaweiSdkConf]
+type HuaweiSdkConfList CollectRes[*HuaweiSdkConf]
 
 type HuaweiOSS struct {
 	Path      string `json:"path"`

@@ -41,12 +41,12 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		// ret, _ := gcache.Get(ctx, s.cachePrefix+gconv.String(parentId))
 		//    cache := sys_dao.SysArea.DB().GetCache()
 
-		//if !ret.IsEmpty() {
+		// if !ret.IsEmpty() {
 		//	response := sys_model.AreaListRes{}
 		//	if nil != ret.Struct(&response) {
 		//		return &response, nil
 		//	}
-		//}
+		// }
 	}
 
 	result, _ := daoctl.Query[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), &sys_model.SearchParams{
@@ -64,7 +64,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 			IsNullValue: false,
 		}),
 		Pagination: sys_model.Pagination{
-			Page:     1,
+			PageNum:  1,
 			PageSize: 100,
 		},
 		OrderBy: append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
@@ -72,30 +72,30 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		}),
 	}, false)
 
-	items := make([]sys_model.Area, 0)
+	items := make([]*sys_model.Area, 0)
 	ret := &sys_model.AreaListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 0,
 			},
 			PageTotal: 0,
 		},
-		List: &items,
+		Records: items,
 	}
 
-	if len(*result.List) == 0 {
+	if len(result.Records) == 0 {
 		return ret, nil
 	}
 
-	for _, area := range *result.List {
-		info := sys_model.Area{}
-		if nil == gconv.Struct(area, &info) {
+	for _, area := range result.Records {
+		info := &sys_model.Area{}
+		if nil == gconv.Struct(area, info) {
 			items = append(items, info)
 		}
 	}
 
-	ret.List = &items
+	ret.Records = items
 	ret.Total = gconv.Int64(len(items))
 
 	// 写入缓存

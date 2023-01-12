@@ -180,7 +180,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	data.Password = pwd
 
 	// 开启事务
-	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err := tx.Model(data).Hook(daoctl.CacheHookHandler).Insert(data)
 
 		if err != nil {

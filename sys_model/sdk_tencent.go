@@ -32,7 +32,7 @@ type TencentSdkConfToken struct {
 	TencentAccessToken
 }
 
-type TencentSdkConfList CollectRes[TencentSdkConf]
+type TencentSdkConfList CollectRes[*TencentSdkConf]
 
 // 腾讯云服务应用列表
 

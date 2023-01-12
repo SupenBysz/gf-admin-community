@@ -20,7 +20,7 @@ import (
 
 // 阿里云服务平台
 type sSdkAliyun struct {
-	AliyunSdkConfTokenList []sys_model.AliyunSdkConfToken
+	AliyunSdkConfTokenList []*sys_model.AliyunSdkConfToken
 	sysConfigName          string
 	conf                   gdb.CacheOption
 }
@@ -32,7 +32,7 @@ func init() {
 // New SdkBaidu 系统配置逻辑实现
 func New() *sSdkAliyun {
 	return &sSdkAliyun{
-		AliyunSdkConfTokenList: make([]sys_model.AliyunSdkConfToken, 0),
+		AliyunSdkConfTokenList: make([]*sys_model.AliyunSdkConfToken, 0),
 		sysConfigName:          "aliyun_sdk_conf",
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -143,7 +143,7 @@ func (s *sSdkAliyun) GetAliyunSdkToken(ctx context.Context, tokenInfo sys_model.
 func (s *sSdkAliyun) GetAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConfToken, err error) {
 	for _, conf := range s.AliyunSdkConfTokenList {
 		if conf.Identifier == identifier {
-			return &conf, nil
+			return conf, nil
 		}
 	}
 	return s.fetchAliyunSdkConfToken(ctx, identifier)
@@ -156,8 +156,8 @@ func (s *sSdkAliyun) syncAliyunSdkConfTokenList(ctx context.Context) error {
 		return err
 	}
 
-	newTokenItems := make([]sys_model.AliyunSdkConfToken, 0)
-	for _, conf := range *items {
+	newTokenItems := make([]*sys_model.AliyunSdkConfToken, 0)
+	for _, conf := range items {
 		for _, tokenInfo := range s.AliyunSdkConfTokenList {
 			if tokenInfo.Identifier == conf.Identifier {
 				newTokenItems = append(newTokenItems, tokenInfo)
@@ -171,8 +171,8 @@ func (s *sSdkAliyun) syncAliyunSdkConfTokenList(ctx context.Context) error {
 }
 
 // GetAliyunSdkConfList 获取阿里云SDK应用配置列表
-func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]sys_model.AliyunSdkConf, error) {
-	items := make([]sys_model.AliyunSdkConf, 0)
+func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) ([]*sys_model.AliyunSdkConf, error) {
+	items := make([]*sys_model.AliyunSdkConf, 0)
 
 	data := sys_entity.SysConfig{}
 
@@ -181,18 +181,18 @@ func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) (*[]sys_model.Ali
 	}).Scan(&data)
 
 	if err != nil && err != sql.ErrNoRows {
-		return &items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if data.Value == "" {
-		return &items, nil
+		return items, nil
 	}
 
 	if nil == gjson.DecodeTo(data.Value, &items) {
-		return &items, nil
+		return items, nil
 	}
 
-	return &items, nil
+	return items, nil
 }
 
 // GetAliyunSdkConf 根据identifier标识获取SDK配置信息
@@ -204,9 +204,9 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 	}
 
 	// 循环所有配置，筛选出符合条件的配置
-	for _, conf := range *items {
+	for _, conf := range items {
 		if conf.Identifier == identifier {
-			return &conf, nil
+			return conf, nil
 		}
 	}
 
@@ -214,12 +214,12 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 }
 
 // SaveAliyunSdkConf 保存SDK应用配信息, isCreate判断是更新还是新建
-func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error) {
+func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info *sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error) {
 	items, _ := s.GetAliyunSdkConfList(ctx)
 
 	isHas := false
-	newItems := make([]sys_model.AliyunSdkConf, 0)
-	for _, conf := range *items {
+	newItems := make([]*sys_model.AliyunSdkConf, 0)
+	for _, conf := range items {
 		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在
 			isHas = true
 			newItems = append(newItems, info)
@@ -263,7 +263,7 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info sys_model.Aliyu
 	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
 
 	// 同步token列表
-	return &info, nil
+	return info, nil
 }
 
 // DeleteAliyunSdkConf 删除百度SDK应用配置信息
@@ -272,7 +272,7 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 
 	isHas := false
 	newItems := garray.New(false)
-	for _, conf := range *items {
+	for _, conf := range items {
 		if conf.Identifier == identifier {
 			isHas = true
 			continue

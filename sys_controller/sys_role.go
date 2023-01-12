@@ -108,13 +108,13 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 		return nil, err
 	}
 
-	count := len(*data)
+	count := len(data)
 
 	return &sys_api.UserListRes{
-		List: data,
+		Records: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: count,
 			},
 			PageTotal: 1,
@@ -131,13 +131,13 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 		return nil, err
 	}
 
-	count := len(*data)
+	count := len(data)
 
 	return &sys_model.RoleListRes{
-		List: data,
+		Records: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: count,
 			},
 			PageTotal: 1,

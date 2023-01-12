@@ -15,9 +15,9 @@ type (
 	ISdkAliyun interface {
 		GetAliyunSdkToken(ctx context.Context, tokenInfo sys_model.AliyunSdkConfToken, err error)
 		GetAliyunSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConfToken, err error)
-		GetAliyunSdkConfList(ctx context.Context) (*[]sys_model.AliyunSdkConf, error)
+		GetAliyunSdkConfList(ctx context.Context) ([]*sys_model.AliyunSdkConf, error)
 		GetAliyunSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.AliyunSdkConf, err error)
-		SaveAliyunSdkConf(ctx context.Context, info sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error)
+		SaveAliyunSdkConf(ctx context.Context, info *sys_model.AliyunSdkConf, isCreate bool) (*sys_model.AliyunSdkConf, error)
 		DeleteAliyunSdkConf(ctx context.Context, identifier string) (bool, error)
 	}
 )

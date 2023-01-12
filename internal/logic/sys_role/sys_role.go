@@ -93,7 +93,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		UpdatedAt:   gtime.Now(),
 	}
 
-	err := sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err := sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		if roleInfo.Id == 0 {
 			roleInfo.Id = idgen.NextId()
 
@@ -166,7 +166,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "删除角色ID不存在"), "", sys_dao.SysRole.Table())
 	}
 
-	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Delete(sys_do.SysRole{Id: roleId})
 
 		result, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(info.Id), sys_consts.CasbinSuperRole, sys_consts.CasbinDomain)
@@ -235,7 +235,7 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 }
 
 // GetRoleUsers 获取角色下的所有用户
-func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) (*[]sys_model.SysUser, error) {
+func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -244,8 +244,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 	}
 
 	if err == sql.ErrNoRows {
-		ret := make([]sys_model.SysUser, 0)
-		return &ret, nil
+		return []*sys_model.SysUser{}, nil
 	}
 
 	if err != nil {
@@ -262,7 +261,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	userInfoArr := make([]sys_model.SysUser, 0)
+	userInfoArr := make([]*sys_model.SysUser, 0)
 
 	userList, err := sys_service.SysUser().QueryUserList(ctx, &sys_model.SearchParams{
 		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
@@ -274,32 +273,32 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 		}),
 	}, makeUserUnionMainId, false)
 
-	userInfoArr = *userList.List
+	userInfoArr = userList.Records
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询用户信息失败", sys_dao.SysRole.Table())
 	}
 
-	result := make([]sys_model.SysUser, 0)
+	result := make([]*sys_model.SysUser, 0)
 	// 移除密码信息
 	for _, user := range userInfoArr {
 		user.Password = ""
 		user.RoleNames = make([]string, 0)
 
 		roles, err := sys_service.SysRole().GetUserRoleList(ctx, user.Id)
-		if err == nil && len(*roles) > 0 {
-			for _, role := range *roles {
+		if err == nil && len(roles) > 0 {
+			for _, role := range roles {
 				user.RoleNames = append(user.RoleNames, role.Name)
 			}
 		}
 		result = append(result, user)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // GetUserRoleList 获取用户拥有的所有角色
-func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_entity.SysRole, error) {
+func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
 	userInfo := &sys_entity.SysUser{}
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
@@ -318,11 +317,11 @@ func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) (*[]sys_en
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	roleInfoArr := make([]sys_entity.SysRole, 0)
+	roleInfoArr := make([]*sys_entity.SysRole, 0)
 
 	err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).WhereIn(sys_dao.SysRole.Columns().Id, roleIds).Scan(&roleInfoArr)
 
-	return &roleInfoArr, nil
+	return roleInfoArr, nil
 }
 
 // SetRolePermissions 设置角色权限

@@ -90,9 +90,9 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 	// fmt.Println("缓存数量：", size)
 	// fmt.Println("缓存数量keys：", keys)
 
-	newList := make([]sys_model.SysUser, 0)
-	if result != nil && result.List != nil && len(*result.List) > 0 {
-		for _, user := range *result.List {
+	newList := make([]*sys_model.SysUser, 0)
+	if result != nil && result.Records != nil && len(result.Records) > 0 {
+		for _, user := range result.Records {
 			user.RoleNames = make([]string, 0)
 			roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
 
@@ -110,8 +110,8 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 					}),
 					Pagination: sys_model.Pagination{},
 				}, unionMainId)
-				if err == nil && len(*roles.List) > 0 {
-					for _, role := range *roles.List {
+				if err == nil && len(roles.Records) > 0 {
+					for _, role := range roles.Records {
 						user.RoleNames = append(user.RoleNames, role.Name)
 					}
 				}
@@ -122,7 +122,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 	}
 
 	if newList != nil {
-		result.List = &newList
+		result.Records = newList
 	}
 
 	return (*sys_model.SysUserListRes)(result), err
@@ -183,10 +183,10 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 
 	result := sys_model.SysUserRegisterRes{
 		UserInfo:     data,
-		RoleInfoList: make([]sys_entity.SysRole, 0),
+		RoleInfoList: make([]*sys_entity.SysRole, 0),
 	}
 
-	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
@@ -221,7 +221,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败！", sys_dao.SysUser.Table())
 			}
-			result.RoleInfoList = *roleList.List
+			result.RoleInfoList = roleList.Records
 		}
 
 		return nil
@@ -287,7 +287,7 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entit
 
 // SetUserPermissionIds 设置用户权限
 func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error) {
-	err := sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err := sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
 			// 先清除roleId所有权限
 			_, err := sys_service.Casbin().DeletePermissionsForUser(gconv.String(userId))
@@ -320,7 +320,7 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 		return false, err
 	}
 
-	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx *gdb.TX) error {
+	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 移除员工权限
 		_, err = sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(id), []int64{0})
 		if err != nil {
