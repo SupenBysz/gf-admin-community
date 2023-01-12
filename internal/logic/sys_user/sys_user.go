@@ -83,7 +83,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		}
 	}
 
-	result, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), info, isExport)
+	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), info, isExport)
 
 	// keys, err := g.DB().GetCache().Keys(ctx)
 	// size, err := g.DB().GetCache().Size(ctx)

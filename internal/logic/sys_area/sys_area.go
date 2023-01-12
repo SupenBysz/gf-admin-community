@@ -49,7 +49,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		// }
 	}
 
-	result, _ := daoctl.Query[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), &sys_model.SearchParams{
+	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), &sys_model.SearchParams{
 		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().ParentId,
 			Where:       "=",

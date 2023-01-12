@@ -53,7 +53,7 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 		cacheName += item.Field + item.Where + gconv.String(item.Value)
 	}
 
-	result, err := daoctl.Query[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
+	result, err := daoctl.Query[*sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
 
 	return (*sys_model.RoleListRes)(result), err
 }
