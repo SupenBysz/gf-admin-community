@@ -258,8 +258,14 @@ func Query[T any](db *gdb.Model, searchFields *sys_model.SearchParams, IsExport 
 	queryDb, _ := makeBuilder(db, searchFields.Filter)
 	queryDb = makeOrderBy(queryDb, searchFields.OrderBy)
 
+	if searchFields.PageSize == 0 {
+		searchFields.PageSize = 20
+		searchFields.Page = 1
+	}
+
 	entities := make([]T, 0)
 	if searchFields == nil || IsExport {
+		searchFields.PageSize = -1
 		err = queryDb.Scan(&entities)
 	} else {
 		err = queryDb.Page(searchFields.Page, searchFields.PageSize).Scan(&entities)
@@ -280,6 +286,7 @@ func makePaginationArr(db *gdb.Model, pagination sys_model.Pagination, searchFie
 	if pagination.PageSize == -1 {
 		pagination.PageSize = gconv.Int(total)
 	}
+
 	return sys_model.PaginationRes{
 		Pagination: pagination,
 		PageTotal:  gconv.Int(math.Ceil(gconv.Float64(total) / gconv.Float64(pagination.PageSize))),
