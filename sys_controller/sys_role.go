@@ -108,13 +108,13 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 		return nil, err
 	}
 
-	count := len(*data)
+	count := len(data)
 
 	return &sys_api.UserListRes{
-		List: data,
+		Records: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: count,
 			},
 			PageTotal: 1,
@@ -131,13 +131,13 @@ func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRole
 		return nil, err
 	}
 
-	count := len(*data)
+	count := len(data)
 
 	return &sys_model.RoleListRes{
-		List: data,
+		Records: data,
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: count,
 			},
 			PageTotal: 1,
@@ -160,7 +160,7 @@ func (c *cSysRole) SetRolePermissions(ctx context.Context, req *sys_api.SetRoleP
 }
 
 // GetRolePermissionIds 获取角色权限Ids
-func (c *cSysRole) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsReq) (*api_v1.Int64ArrRes, error) {
-	result, err := sys_service.SysRole().GetRolePermissions(ctx, req.Id)
+func (c *cSysRole) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsIdsReq) (*api_v1.Int64ArrRes, error) {
+	result, err := sys_service.SysPermission().GetPermissionsByResource(ctx, req.Id)
 	return (*api_v1.Int64ArrRes)(&result), err
 }

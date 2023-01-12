@@ -17,7 +17,7 @@ type CtyunSdkConfInfo struct {
 }
 
 // CtyunSdkConfList天翼云应用配置列表
-type CtyunSdkConfList CollectRes[CtyunSdkConf]
+type CtyunSdkConfList CollectRes[*CtyunSdkConf]
 
 // 因为我看平台的认证方式好像不是token认证，是通过AK/SK进行认证的，所以我暂时没写token信息
 

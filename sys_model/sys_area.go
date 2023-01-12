@@ -9,4 +9,4 @@ type Area struct {
 	ParentId      int64  `json:"parentId"      description:"地区父节点"`
 }
 
-type AreaListRes CollectRes[Area]
+type AreaListRes CollectRes[*Area]

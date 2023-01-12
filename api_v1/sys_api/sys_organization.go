@@ -2,7 +2,6 @@ package sys_api
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -42,7 +41,7 @@ type DeleteOrganizationInfoReq struct {
 	Id     int64 `json:"id" v:"required#缺少ID参数" dc:"组织架构ID"`
 }
 
-type OrganizationInfoRes sys_entity.SysOrganization
+type OrganizationInfoRes sys_model.OrganizationInfo
 
 type OrganizationInfoTreeRes sys_model.SysOrganizationTree
-type OrganizationInfoTreeListRes []sys_model.SysOrganizationTree
+type OrganizationInfoTreeListRes []*sys_model.SysOrganizationTree

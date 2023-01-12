@@ -3,6 +3,7 @@ package sys_enum
 import (
 	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
 	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
+	sys_enum_file "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
 	sys_enum_oss "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
 	sys_enum_permissions "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/permissions"
@@ -23,6 +24,8 @@ type (
 	UserState sys_enum_user.StateEnum
 
 	CabinEvent sys_enum_casbin.EventEnum
+
+	PermissionMatchMode sys_enum_permissions.MatchModeEnum
 )
 
 var (
@@ -31,6 +34,7 @@ var (
 	Upload = sys_enum_upload.Upload
 	User   = sys_enum_user.User
 	Casbin = sys_enum_casbin.Casbin
+	File   = sys_enum_file.File
 
 	Organization = sys_enum_organization.Organization
 	Role         = sys_enum_role.Role

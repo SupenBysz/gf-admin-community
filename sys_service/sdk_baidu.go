@@ -14,9 +14,9 @@ import (
 type (
 	ISdkBaidu interface {
 		GetBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.BaiduSdkConfToken, err error)
-		GetBaiduSdkConfList(ctx context.Context) (*[]sys_model.BaiduSdkConf, error)
+		GetBaiduSdkConfList(ctx context.Context) ([]*sys_model.BaiduSdkConf, error)
 		GetBaiduSdkConf(ctx context.Context, identifier string) (*sys_model.BaiduSdkConf, error)
-		SaveBaiduSdkConf(ctx context.Context, info sys_model.BaiduSdkConf, isCreate bool) (*sys_model.BaiduSdkConf, error)
+		SaveBaiduSdkConf(ctx context.Context, info *sys_model.BaiduSdkConf, isCreate bool) (*sys_model.BaiduSdkConf, error)
 		DeleteBaiduSdkConf(ctx context.Context, identifier string) (bool, error)
 		OCRBankCard(ctx context.Context, imageBase64 string) (*sys_model.OCRBankCard, error)
 		OCRIDCard(ctx context.Context, imageBase64 string, detectRisk string, idCardSide string) (*sys_model.BaiduSdkOCRIDCard, error)

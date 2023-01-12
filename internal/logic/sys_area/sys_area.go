@@ -41,15 +41,15 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		// ret, _ := gcache.Get(ctx, s.cachePrefix+gconv.String(parentId))
 		//    cache := sys_dao.SysArea.DB().GetCache()
 
-		//if !ret.IsEmpty() {
+		// if !ret.IsEmpty() {
 		//	response := sys_model.AreaListRes{}
 		//	if nil != ret.Struct(&response) {
 		//		return &response, nil
 		//	}
-		//}
+		// }
 	}
 
-	result, _ := daoctl.Query[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), &sys_model.SearchParams{
+	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), &sys_model.SearchParams{
 		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().ParentId,
 			Where:       "=",
@@ -64,7 +64,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 			IsNullValue: false,
 		}),
 		Pagination: sys_model.Pagination{
-			Page:     1,
+			PageNum:  1,
 			PageSize: 100,
 		},
 		OrderBy: append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
@@ -72,30 +72,30 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		}),
 	}, false)
 
-	items := make([]sys_model.Area, 0)
+	items := make([]*sys_model.Area, 0)
 	ret := &sys_model.AreaListRes{
 		PaginationRes: sys_model.PaginationRes{
 			Pagination: sys_model.Pagination{
-				Page:     1,
+				PageNum:  1,
 				PageSize: 0,
 			},
 			PageTotal: 0,
 		},
-		List: &items,
+		Records: items,
 	}
 
-	if len(*result.List) == 0 {
+	if len(result.Records) == 0 {
 		return ret, nil
 	}
 
-	for _, area := range *result.List {
-		info := sys_model.Area{}
-		if nil == gconv.Struct(area, &info) {
+	for _, area := range result.Records {
+		info := &sys_model.Area{}
+		if nil == gconv.Struct(area, info) {
 			items = append(items, info)
 		}
 	}
 
-	ret.List = &items
+	ret.Records = items
 	ret.Total = gconv.Int64(len(items))
 
 	// 写入缓存
@@ -106,7 +106,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 
 // GetAreaById 根据ID获取区域信息
 func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
-	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Cache(s.conf), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), id)
 
 	if err != nil {
 		return nil
@@ -118,7 +118,7 @@ func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
 // GetAreaByCode 根据区域编号获取区域信息
 func (s *sArea) GetAreaByCode(ctx context.Context, areaCode string) *sys_entity.SysArea {
 	result := sys_entity.SysArea{}
-	if sys_dao.SysArea.Ctx(ctx).Cache(s.conf).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
+	if sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
 		return nil
 	}
 	return &result

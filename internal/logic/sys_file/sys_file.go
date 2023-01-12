@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"io"
 	"net/http"
@@ -42,13 +43,11 @@ func init() {
 
 func New() *sFile {
 	return &sFile{
-		cachePrefix:   "upload_",
+		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
 		CacheDuration: time.Hour * 2,
 	}
 }
-
-type _UserUploadItemsCache []sys_model.FileInfo
 
 // InstallHook 安装Hook
 func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64 {
@@ -109,8 +108,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 
 	newUserUploadItemsCache := kmap.New[int64, *sys_model.FileInfo]()
 	strUserId := gconv.String(sessionUser.Id)
-	userCacheKey := s.cachePrefix + "_" + gconv.String(sessionUser.UnionMainId) + "_" + strUserId
-	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
+	userCacheJson := gfile.Join(tmpPath, s.cachePrefix+"_"+strUserId+".json")
 	{
 		// 用户指定时间内上传文件最大数量限制
 		userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
@@ -122,9 +120,8 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 
 		now := gtime.Now()
 		userUploadInfoCache.Iterator(func(k int64, item *sys_model.FileInfo) bool {
-			info := &sys_model.FileInfo{}
-			if info.CreatedAt.Add(s.CacheDuration).After(now) {
-				newUserUploadItemsCache.Set(info.Id, info)
+			if item.ExpiresAt.Add(s.CacheDuration).After(now) {
+				newUserUploadItemsCache.Set(item.Id, item)
 			}
 			return true
 		})
@@ -135,7 +132,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
-
+	
 	if in.Name != "" {
 		in.File.Filename = in.Name
 	}
@@ -189,10 +186,10 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 // GetUploadFile 根据上传ID 获取上传文件信息
 func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error) {
 	strUserId := gconv.String(userId)
-	userCacheKey := s.cachePrefix + strUserId
 	tmpPath := gfile.Temp("upload")
-	userCacheJson := gfile.Join(tmpPath, userCacheKey+".json")
-	userUploadInfoCache := make([]*sys_model.FileInfo, 0)
+	userCacheJson := gfile.Join(tmpPath, s.cachePrefix+"_"+strUserId+".json")
+
+	userUploadInfoCache := kmap.New[int64, *sys_model.FileInfo]()
 	gjson.DecodeTo(gfile.GetContents(userCacheJson), &userUploadInfoCache)
 
 	messageStr := "文件不存在"
@@ -201,10 +198,9 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 		messageStr = message[0]
 	}
 
-	for _, item := range userUploadInfoCache {
-		if item.Id == uploadId {
-			return item, nil
-		}
+	item, has := userUploadInfoCache.Search(uploadId)
+	if item != nil && has {
+		return item, nil
 	}
 
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, messageStr, sys_dao.SysFile.Table())
@@ -233,9 +229,15 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		}
 	})
 
-	data := &sys_do.SysFile{}
-	gconv.Struct(info.SysFile, data)
-	_, err := sys_dao.SysFile.Ctx(ctx).Data(info).OmitEmpty().Insert()
+	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
+
+	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
+	if count == 0 {
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
+	} else {
+		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Where(sys_do.SysFile{Id: data.Id}).Update()
+	}
+
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
 	}
@@ -389,7 +391,7 @@ func (s *sFile) GetUrlById(id int64) string {
 	apiPrefix := sys_consts.Global.ApiPreFix
 
 	// 拼接请求url
-	return apiPrefix + "/common/sys_file/getFileById?id=" + gconv.String(id)
+	return apiPrefix + "/common/file/getFileById?id=" + gconv.String(id)
 }
 
 // GetFileById 根据id获取并返回文件信息
@@ -407,9 +409,17 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 	}
 	{
 		file := &sys_entity.SysFile{}
-		err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
-			Where(sys_do.SysFile{Id: id, UnionMainId: sessionUser.UnionMainId}).
-			Scan(file)
+		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+			Where(sys_do.SysFile{Id: id})
+
+		if sessionUser.IsAdmin == false {
+			// 判断用户是否有权限
+			can, _ := sys_service.SysPermission().CheckPermission(ctx, sys_enum.File.PermissionType.ViewDetail)
+			if can == false {
+				model = model.Where(sys_do.SysFile{UnionMainId: sessionUser.UnionMainId})
+			}
+		}
+		err := model.Scan(file)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().WarnSimple(ctx, err, errorMessage, sys_dao.SysFile.Table())

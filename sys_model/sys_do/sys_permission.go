@@ -18,8 +18,9 @@ type SysPermission struct {
 	Description interface{} // 描述
 	Identifier  interface{} // 标识符
 	Type        interface{} // 类型：1api，2menu
+	MatchMode   interface{} // 匹配模式：ID：0，标识符：1
+	IsShow      interface{} // 是否显示：0不显示 1显示
+	Sort        interface{} // 排序
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
-	IsShow      interface{} // 是否显示：0不显示 1显示
-	Sort        interface{} // 排序字段
 }

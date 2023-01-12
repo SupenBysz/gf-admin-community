@@ -29,7 +29,7 @@ type AliyunSdkConfToken struct {
 	AliyunAccessToken
 }
 
-type AliyunSdkConfList CollectRes[AliyunSdkConf]
+type AliyunSdkConfList CollectRes[*AliyunSdkConf]
 
 // 阿里云服务应用列表
 
