@@ -15,21 +15,6 @@ var SysUser = cSysUser{}
 
 type cSysUser struct{}
 
-// CreateUser 创建用户|信息
-func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (res *sys_model.SysUserRegisterRes, err error) {
-	return funs.CheckPermission(ctx,
-		func() (*sys_model.SysUserRegisterRes, error) {
-			return sys_service.SysUser().CreateUser(
-				ctx,
-				req.UserInnerRegister,
-				sys_enum.User.State.Normal,
-				sys_enum.User.Type.User,
-			)
-		},
-		sys_enum.User.PermissionType.Create,
-	)
-}
-
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_model.SysUserListRes, error) {
 	return funs.CheckPermission(ctx,
