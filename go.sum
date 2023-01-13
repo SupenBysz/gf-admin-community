@@ -28,8 +28,8 @@ github.com/go-logr/stdr v1.2.2/go.mod h1:mMo/vtBO5dYbehREoey6XUKy/eSumjCCveDpRre
 github.com/go-redis/redis/v8 v8.11.4/go.mod h1:2Z2wHZXdQpCDXEGzqMockDpNyYvi2l4Pxt6RJr792+w=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
-github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.2.0 h1:Q0DarZS4ZguchLRPxJ4I8d7zxO2ss0VAvZTskvj6nUc=
-github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.2.0/go.mod h1:U6MusRvTLmXGnsr0ofjO4JlKX0Io2YNACiY2Vk4PqNE=
+github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.3.0 h1:o8GPI57JdX9SMttVFYYHMFzwmtYuUvTtFcHKn5mSotU=
+github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.3.0/go.mod h1:U6MusRvTLmXGnsr0ofjO4JlKX0Io2YNACiY2Vk4PqNE=
 github.com/gogf/gf/v2 v2.0.0/go.mod h1:apktt6TleWtCIwpz63vBqUnw8MX8gWKoZyxgDpXFtgM=
 github.com/gogf/gf/v2 v2.3.0 h1:Uz4z6tMqnpH9azLFrfBX1R1k/73d7QPC2E4Ab8L3y4g=
 github.com/gogf/gf/v2 v2.3.0/go.mod h1:tsbmtwcAl2chcYoq/fP9W2FZf06aw4i89X34nbSHo9Y=

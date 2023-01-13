@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/casbin/casbin/v2 v2.60.0
-	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.2.0
+	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.3.0
 	github.com/gogf/gf/v2 v2.3.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/joho/godotenv v1.4.0
