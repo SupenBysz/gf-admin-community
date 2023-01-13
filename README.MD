@@ -5,63 +5,58 @@
 # ...
 ## 1、技术选型
 ### 开发工具
-<img src="https://img.shields.io/badge/goland-2022.2.3+-blue"/>
-<img src="https://img.shields.io/badge/vscode-1.71.2+-blue"/>
+<img src="https://img.shields.io/badge/goland-2022.2.3+-blue" alt="推荐" />
+<img src="https://img.shields.io/badge/vscode-1.71.2+-blue" alt="" />
 
 - 推荐 goland 2022.2.3+
 
 #### 语言/框架/类库
-<img src="https://img.shields.io/badge/golang-1.19+-green"/>
-<img src="https://img.shields.io/badge/goframe-2.2.0+-green"/>
-<img src="https://img.shields.io/badge/casbin-2.56.0+-green"/>
-<img src="https://img.shields.io/badge/golang jwt-4.4.2+-green"/>
-<img src="https://img.shields.io/badge/idgenerator go-1.3.2+-green"/>
-
-- golang 1.19+
-- goframe 2.2.4+
-- goframe 2.56.0+
-- golang-jwt 4.4.2+
-- idgenerator-go 1.3.2+
+<img src="https://img.shields.io/badge/golang-1.19+-green" alt="" />
+<img src="https://img.shields.io/badge/goframe-2.3.0+-green" alt="" />
+<img src="https://img.shields.io/badge/casbin-2.60.0+-green" alt="" />
+<img src="https://img.shields.io/badge/golang jwt-4.4.3+-green" alt="" />
+<img src="https://img.shields.io/badge/idgenerator go-1.3.2+-green" alt="" />
 
 #### 数据库
-<img src="https://img.shields.io/badge/PostgreSQL-14.5+-red"/>
-
-- PostgreSQL-14.5+
+<img src="https://img.shields.io/badge/PostgreSQL-14.5+-red" alt="" />
 
 #### 脚本工具
-<img src="https://img.shields.io/badge/goframe cli-2.2.0.plus-red"/>
-
-- goframe cli 2.2.0.plus
+<img src="https://img.shields.io/badge/goframe cli-2.3.0+-red" alt="" />
 
 # 二、项目结构
 ```
 /
 ├── api_v1            对外接口：考虑到版本管理需要，往往以api/v1...存在。
-│   └── sys_api                对外提供服务的输入/输出数据结构定义。
-├── hack              工具脚本：存放项目开发工具、脚本等内容。例如，CLI工具的配置，各种shell/bat脚本等文件
-├── internal          内部逻辑：业务逻辑存放目录。通过Golang internal特性对外部隐藏可见性。
-│   ├── cmd           入口指令：命令行管理目录。可以管理维护多个命令行。
-│   ├── consts        常量定义：内部逻辑专用常量。
-│   ├── logic         业务封装：业务逻辑封装管理，特定的业务逻辑实现和封装。往往是项目中最复杂的部分。
+│   └── sys_api               对外提供服务的输入/输出数据结构定义。
+├── database          迁移脚本：数据库脚本及迁移或升级脚本
+├── example           运行例子：当前组件模块用于测试调试启动入口文件
+├── hack              工具脚本：存放组件开发工具、脚本等内容。例如，CLI工具的配置，各种shell/bat脚本等文件
+├── internal          组件逻辑：组件逻辑存放目录。通过internal特性对外部隐藏可见性。
+│   ├── boot          引导封装：封装了当前组件常用的初始化行为，简化业务的的调用。
+│   ├── cmd           入口指令：一般配合main入口使用，当前作为业务项目引用应用的参考。
+│   ├── logic         模块封装：组件逻辑封装管理。
 ├── manifest          交付清单：包含程序编译、部署、运行、配置的文件。
+│   ├── tps           模板文件：包含dao，do，entity生成的模板，一般配合Makefile使用
 │   └── config        配置管理：配置文件存放目录。
-├── model             结构模型：数据结构管理模块，管理数据实体对象，以及输入与输出数据结构定义。
-|   ├── dao           数据访问：数据访问对象，这是一层抽象对象，用于和底层数据库交互，仅包含最基础的 CURD 方法
-|   ├── do            领域对象：用于dao数据操作中业务模型与实例模型转换，由工具维护，用户不能修改。
-│   └── entity        数据模型：数据模型是模型与数据集合的一对一关系，由工具维护，用户不能修改。
-├── resource          静态资源：静态资源文件。这些文件往往可以通过 资源打包/镜像编译 的形式注入到发布文件中。
-├── service           业务接口：用于业务模块解耦的接口定义层。具体的接口实现在logic中进行注入。
+├── resources         静态资源：静态资源文件。这些文件往往可以通过 资源打包/镜像编译 的形式注入到发布文件中。
+├── sys_consts        常量定义：组件专用常量或公共类型及变量定义。
 ├── sys_controller    接口处理：接收/解析用户输入参数的入口/接口层。
+├── sys_model         结构模型：数据结构管理模块，管理数据实体对象，以及输入与输出数据结构定义。
+│   ├── sys_dao       数据访问：数据访问对象，这是一层抽象对象，用于和底层数据库交互，仅包含最基础的 CURD 方法
+│   ├── sys_do        领域对象：用于dao数据操作中业务模型与实例模型转换，由工具维护，用户不能修改。
+│   ├── sys_entity    数据模型：数据模型是模型与数据集合的一对一关系，由工具维护，用户不能修改。
+│   └── sys_enum      枚举定义：枚举类型及变量定义。
+├── sys_service       模块接口：用于组件解耦的接口定义层。具体的接口实现在logic中进行注入。
 ├── utility           实用类库：一般以独立文件形式的通用类库
 ├── go.mod            依赖管理：使用Go Module包管理的依赖描述文件。
-└── main.go           项目入口
+└── component.go      组件入口
 ```
 
-### 以模块方式向业务项目服务，作为通用基础模块来独立维护
+### 以组件方式向业务项目服务，作为通用基础模块来独立维护
 > 接口包含两部分：接口定义（api）+ 接口实现（sys_controller）<br>
 > 负责提供标准接口服务，其它项目直接引用即可
 
-> 服务包含两部分：模型结构（model）+ 服务接口（service）<br>
+> 服务包含两部分：模型结构（model）+ 服务接口（sys_service）<br>
 > 负责接收并响应调用的输入与输出，包括对输入参数的过滤、转换、校验，对输出数据结构的维护，并调用 service 实现业务逻辑处理。
 
 ### 主要功能
@@ -118,16 +113,16 @@ gf build main.go
 ```
 4、运行
 > 由于是以组件方式提供服务，所以不能调试运行，需要先编译出来后可以执行。<br>
-> 项目被引用运行时，是可以实现调试目的。
+> 项目被引用运行时，是可以实现调试目的。<br>
+> 相关引用参考 example/main.go internal/cmd/cmd.go internal/boot/boot.go
 
 #### 项目脚手架命令: 
-- `make cli`: 安装或升级脚手架命令。
 - `make dao`: 根据“hack”文件夹中的配置文件为“Entity/DAO/DO”生成go文件。
 - `make service`: 解析“逻辑”文件夹生成服务接口文件到“service”文件夹。
 > 不推荐直接在本项目使用 gf gen 等命令，将会导致文件生成的位置不在预期位置，如果一定要用先了解相关参数后再用。
 
 # 四、风格规范
-&emsp;&emsp;代码风格并不影响程序的运行，也不会给你的程序带来潜在的危险。但一段好的代码风格，能让人阅读起来特别舒服，特别的阅读别人代码的时候。
+&emsp;&emsp;代码风格并不影响程序的运行，也不会给你的程序带来潜在的危险。但一段好的代码风格，能让人阅读起来特别舒服，特别是阅读别人代码的时候。
 ## 代码风格规范
 ### 1、包名
 &emsp;&emsp;统一使用小写，用下划线作为分隔符，以自然语义缩写或全称作为分隔
@@ -155,15 +150,15 @@ int Foo(bool isBar) {
 ### 接口规范
 1、所有逻辑接口需要封装成控制器对象，统一保存在controller文件夹下<br>
 2、一个控制器接口方法首字母大写的驼峰命名方式<br>
-3、每个接口方法只能包含2个参数，分别为接口上下文对象 Context 和 请求参数定义（以Req结尾的类型参数定义）。接口方法返回值只能有2个固定的返回值，第一个是要返回的数据，第二个是错误异常信息。<br>例如：
+3、每个接口方法只能包含2个参数，分别为接口上下文对象 Context 和 请求参数定义（以Req结尾的类型参数定义）。接口方法返回值只能有2个固定返回值，第一个是要返回的数据，第二个是错误异常信息。<br>例如：
 ```
 func (a *cAuth) Login(ctx context.Context, req *sysapi.LoginReq) (res *sysapi.LoginRes, err error) {
     return nil, nil
 }
 ```
 - 方法参数：ctx context.Context 为请求上下文，不需要用到上下文时，变量 ctx 可用下划线代替
-- 方法参数：req *sysapi.LoginReq 为请求参数定义，必须以Req结尾，且必须是指针对象，不需要用到前端请求参数时，变量 req 可用下划线代替
-- 方法返回：*sysapi.LoginRes 为方法第一个返回参数，且必须以Res结尾，返回值的变量名称为可选，如：(*sysapi.LoginRes,error)
+- 方法参数：req *sys_api.LoginReq 为请求参数定义，必须以Req结尾，且必须是指针对象，不需要用到前端请求参数时，变量 req 可用下划线代替
+- 方法返回：*sys_api.LoginRes 为方法第一个返回参数，且必须以Res结尾，返回值的变量名称为可选，如：(*sys_api.LoginRes,error)
 - 方法返回：err error 为方法第二个返回参数，必填项，该参数类型固定且不可修改
 ### 请求参数规范
 &emsp;&emsp;请求参数的定义统一在对象成员属性中实现约束、描述、验证规则等相关定义，例如：
@@ -197,7 +192,7 @@ type LoginReq struct {
 - Type 代表了某次提交的类型，比如是修复一个 bug 还是增加了一个新的 feature。常用类型如下：
   - feat：新增 feature
   - fix：修复 bug
-  - docs：仅仅修改了文档，比如 README、CHANGLELOG 等等
+  - docs：仅仅修改了文档，比如 README、CHANGELOG 等等
   - style：仅仅修改了空格、格式缩进、多行等等，不改变逻辑
   - refactor：代码重构，没有加新的功能或者修复 bug
   - perf：优化相关，比如提升性能、体验等
