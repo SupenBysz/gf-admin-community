@@ -47,7 +47,7 @@ var (
 				// 修改密码，修改自己的登录密码
 				sys_enum.User.PermissionType.ChangePassword,
 				// "创建用户，创建一个新用户"
-				sys_enum.User.PermissionType.Create,
+				// sys_enum.User.PermissionType.Create,
 				// 修改用户名称，修改用户登录账户名称信息
 				sys_enum.User.PermissionType.SetUsername,
 				// 设置用户角色，设置某一个用户的角色
