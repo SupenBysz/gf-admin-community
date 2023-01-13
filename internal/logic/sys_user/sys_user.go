@@ -148,7 +148,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 		result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 
 		if result == false || err != nil {
-			return result, err
+			return result, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户角色失败", sys_dao.SysUser.Table())
 		}
 	}
 
