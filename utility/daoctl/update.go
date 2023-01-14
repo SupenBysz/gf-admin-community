@@ -3,7 +3,7 @@ package daoctl
 import "github.com/gogf/gf/v2/database/gdb"
 
 func Update(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) {
-	result, err := model.Update(dataAndWhere)
+	result, err := model.Update(dataAndWhere...)
 
 	if err != nil {
 		return 0
@@ -15,7 +15,7 @@ func Update(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) 
 }
 
 func UpdateWithError(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64, err error) {
-	result, err := model.Update(dataAndWhere)
+	result, err := model.Update(dataAndWhere...)
 	if err != nil {
 		return 0, err
 	}
