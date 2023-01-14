@@ -2,7 +2,7 @@ package daoctl
 
 import "github.com/gogf/gf/v2/database/gdb"
 
-func Insert[T any](model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
+func Insert(model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
 	result, err := model.Insert(data)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func InsertWithError(model *gdb.Model, data ...interface{}) (lastInsertId int64,
 	return lastInsertId, rowsAffected, err
 }
 
-func InsertIgnore[T any](model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
+func InsertIgnore(model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
 	result, err := model.InsertIgnore(data)
 
 	if err != nil {
