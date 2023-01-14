@@ -2,8 +2,8 @@ package daoctl
 
 import "github.com/gogf/gf/v2/database/gdb"
 
-func Delete(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) {
-	result, err := model.Delete(dataAndWhere)
+func Delete(model *gdb.Model) (rowsAffected int64) {
+	result, err := model.Delete()
 
 	if err != nil {
 		return 0
@@ -14,8 +14,8 @@ func Delete(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) 
 	return rowsAffected
 }
 
-func DeleteWithError(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64, err error) {
-	result, err := model.Delete(dataAndWhere)
+func DeleteWithError(model *gdb.Model) (rowsAffected int64, err error) {
+	result, err := model.Delete()
 	if err != nil {
 		return 0, err
 	}
