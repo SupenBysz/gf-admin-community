@@ -94,22 +94,30 @@ func RemoveQueryCache(db gdb.DB, prefix string) {
 	}
 }
 
-func GetById[T any](db *gdb.Model, id int64) *T {
+func Get[T any](model *gdb.Model) *T {
 	result := new(T)
 
-	if err := db.Where("id", id).Scan(result); err != nil {
+	if err := model.Scan(result); err != nil {
 		return nil
 	}
 	return result
 }
 
-func GetByIdWithError[T any](db *gdb.Model, id int64) (*T, error) {
+func GetWithError[T any](model *gdb.Model) (*T, error) {
 	result := new(T)
 
-	if err := db.Where("id", id).Scan(result); err != nil {
+	if err := model.Scan(result); err != nil {
 		return nil, err
 	}
 	return result, nil
+}
+
+func GetById[T any](model *gdb.Model, id int64) *T {
+	return Get[T](model.Where("id", id))
+}
+
+func GetByIdWithError[T any](model *gdb.Model, id int64) (*T, error) {
+	return GetWithError[T](model.Where("id", id))
 }
 
 func makeCountArr(db *gdb.Model, searchFields []sys_model.FilterInfo) (total int64) {
