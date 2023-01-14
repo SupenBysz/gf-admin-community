@@ -2,7 +2,7 @@ package daoctl
 
 import "github.com/gogf/gf/v2/database/gdb"
 
-func Update[T any](model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) {
+func Update(model *gdb.Model, dataAndWhere ...interface{}) (rowsAffected int64) {
 	result, err := model.Update(dataAndWhere)
 
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 )
 
-func Save[T any](model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
+func Save(model *gdb.Model, data ...interface{}) (lastInsertId int64, rowsAffected int64) {
 	result, err := model.Save(data)
 
 	if err != nil {
