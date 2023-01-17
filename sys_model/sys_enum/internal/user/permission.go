@@ -27,5 +27,5 @@ var PermissionType = permissionType{
 	// Create:         permission.New(5949854362632261, "Create", "创建用户", "创建一个新用户"),
 	SetUsername:   permission.New(5949854362632262, "Update", "修改用户名称", "修改用户登录账户名称信息"),
 	SetUserRole:   permission.New(5949854362632264, "SetUserRole", "设置用户角色", "设置某一个用户的角色"),
-	SetPermission: permission.New(5949854362632264, "SetPermission", "设置用户权限", "设置某一个用户的权限"),
+	SetPermission: permission.New(5949854362632265, "SetPermission", "设置用户权限", "设置某一个用户的权限"),
 }

@@ -20,7 +20,7 @@ type (
 		GetPermissionByIdentifier(ctx context.Context, identifier string) (*sys_entity.SysPermission, error)
 		QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error)
 		GetPermissionsByResource(ctx context.Context, resource string) ([]int64, error)
-		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) (*[]sys_entity.SysPermission, error)
+		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) ([]*sys_entity.SysPermission, error)
 		GetPermissionTree(ctx context.Context, parentId int64) ([]*permission.SysPermissionTree, error)
 		CreatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		UpdatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
