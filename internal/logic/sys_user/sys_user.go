@@ -261,6 +261,8 @@ func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permiss
 
 // GetSysUserByUsername 根据用户名获取用户
 func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (response *sys_entity.SysUser, err error) {
+	s.initInnerCacheItems(ctx)
+
 	s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
 		if v.Username == username {
 			response = v
@@ -285,6 +287,8 @@ func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bo
 
 // GetSysUserById 根据用户ID获取用户信息
 func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+	s.initInnerCacheItems(ctx)
+
 	data, has := s.mapInt64Items.Search(userId)
 
 	if !has {
