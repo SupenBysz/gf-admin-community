@@ -204,10 +204,6 @@ func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) 
 		}
 	}
 
-	sort.Slice(response, func(i, j int) bool {
-		return response[i].Sort < response[j].Sort
-	})
-
 	return response, nil
 }
 
