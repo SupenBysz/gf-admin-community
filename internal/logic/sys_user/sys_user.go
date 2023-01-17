@@ -8,8 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"time"
-
+	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -28,8 +27,8 @@ import (
 type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
 
 type sSysUser struct {
-	conf    gdb.CacheOption
-	hookArr []hookInfo
+	hookArr       []hookInfo
+	mapInt64Items *kmap.HashMap[int64, *sys_entity.SysUser]
 }
 
 func init() {
@@ -38,11 +37,8 @@ func init() {
 
 func New() *sSysUser {
 	return &sSysUser{
-		conf: gdb.CacheOption{
-			Duration: time.Hour,
-			Force:    false,
-		},
-		hookArr: make([]hookInfo, 0),
+		hookArr:       make([]hookInfo, 0),
+		mapInt64Items: kmap.New[int64, *sys_entity.SysUser](),
 	}
 }
 
@@ -70,9 +66,23 @@ func (s *sSysUser) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
+func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
+	if s.mapInt64Items.Size() > 0 {
+		return
+	}
+
+	items := daoctl.Scan[[]*sys_entity.SysUser](
+		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
+	)
+	s.mapInt64Items.Clear()
+	for _, sysPermission := range *items {
+		s.mapInt64Items.Set(sysPermission.Id, sysPermission)
+	}
+}
+
 // QueryUserList 获取用户列表
 func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
-
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
 
@@ -84,11 +94,6 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 	}
 
 	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), info, isExport)
-
-	// keys, err := g.DB().GetCache().Keys(ctx)
-	// size, err := g.DB().GetCache().Size(ctx)
-	// fmt.Println("缓存数量：", size)
-	// fmt.Println("缓存数量keys：", keys)
 
 	newList := make([]*sys_model.SysUser, 0)
 	if result != nil && result.Records != nil && len(result.Records) > 0 {
@@ -239,6 +244,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 	})
 
+	s.mapInt64Items.Set(result.UserInfo.Id, &result.UserInfo)
 	return &result, nil
 }
 
@@ -254,34 +260,38 @@ func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permiss
 }
 
 // GetSysUserByUsername 根据用户名获取用户
-func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (*sys_entity.SysUser, error) {
-	data := &sys_entity.SysUser{}
-	err := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysUser{Username: username}).Scan(data)
+func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (response *sys_entity.SysUser, err error) {
+	s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
+		if v.Username == username {
+			response = v
+			return false
+		}
+		return true
+	})
 
-	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysUser.Table())
+	if response == nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	return data, nil
+	response.Password = masker.MaskString(response.Password, masker.Password)
+	return
 }
 
 // HasSysUserByUsername 判断用户名是否存在
 func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bool {
-	count, _ := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Count(sys_do.SysUser{Username: username})
-	return count > 0
+	data, _ := s.GetSysUserByUsername(ctx, username)
+	return data != nil
 }
 
 // GetSysUserById 根据用户ID获取用户信息
 func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+	data, has := s.mapInt64Items.Search(userId)
 
-	data := &sys_entity.SysUser{}
-	err := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Scan(data, sys_do.SysUser{Id: userId})
-
-	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysUser.Table())
+	if !has {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	data.Password = masker.MaskString(data.Password, masker.Password)
+	data.Password = ""
 	return data, nil
 }
 
@@ -345,6 +355,8 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除员工信息失败", sys_dao.SysUser.Table())
 	}
+
+	s.mapInt64Items.Remove(id)
 	return true, nil
 }
 
@@ -358,6 +370,9 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 	if err != nil || result == nil {
 		return false, err
 	}
+	data := s.mapInt64Items.Get(userId)
+	data.Username = newUsername
+	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -371,6 +386,10 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 	if err != nil || result == nil {
 		return false, err
 	}
+
+	data := s.mapInt64Items.Get(userId)
+	data.State = state.Code()
+	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -422,6 +441,9 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
 	}
 
+	data := s.mapInt64Items.Get(userId)
+	data.Password = pwdHash
+	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -467,6 +489,9 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")
 		}
 
+		data := s.mapInt64Items.Get(userId)
+		data.Password = pwdHash
+		s.mapInt64Items.Set(userId, data)
 	}
 
 	return true, nil
