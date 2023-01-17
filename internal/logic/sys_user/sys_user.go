@@ -8,6 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
+	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -21,7 +22,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/masker"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
@@ -265,7 +265,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 
 	s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
 		if v.Username == username {
-			response = v
+			response = kconv.Struct(v, &sys_entity.SysUser{})
 			return false
 		}
 		return true
@@ -275,8 +275,26 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	response.Password = masker.MaskString(response.Password, masker.Password)
+	response.Password = ""
 	return
+}
+
+// CheckPassword 检查密码是否正确
+func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password string) (bool, error) {
+	s.initInnerCacheItems(ctx)
+	data, has := s.mapInt64Items.Search(userId)
+
+	if !has {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
+	}
+
+	// 取盐
+	salt := gconv.String(userId)
+
+	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
+	pwdHash, err := en_crypto.PwdHash(password, salt)
+
+	return data.Password == pwdHash, err
 }
 
 // HasSysUserByUsername 判断用户名是否存在
@@ -296,7 +314,8 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entit
 	}
 
 	data.Password = ""
-	return data, nil
+
+	return kconv.Struct(data, &sys_entity.SysUser{}), nil
 }
 
 // SetUserPermissionIds 设置用户权限

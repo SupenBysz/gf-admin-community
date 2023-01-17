@@ -81,14 +81,11 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
-	// 取盐
-	salt := gconv.String(sysUserInfo.Id)
-
-	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
-	pwdHash, err := en_crypto.PwdHash(req.Password, salt)
-
 	// 判断是否相等
-	if pwdHash != sysUserInfo.Password {
+	if ok, err := sys_service.SysUser().CheckPassword(ctx, sysUserInfo.Id, req.Password); !ok {
+		if err != nil {
+			return nil, err
+		}
 		return nil, gerror.New("用户密码错误")
 	}
 
