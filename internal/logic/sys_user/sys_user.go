@@ -546,7 +546,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 
 		user, err := s.GetSysUserById(ctx, userId)
 
-		if err == nil {
+		if err != nil {
 			return false, err
 		}
 
