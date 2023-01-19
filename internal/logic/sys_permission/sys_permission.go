@@ -404,6 +404,13 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 // CheckPermission 校验权限，如果多个则需要同时满足
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	// 如果是超级管理员或者某商管理员则直接放行
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
+		return true, nil
+	}
+
 	for _, permissionTree := range tree {
 		permissionResourceKey := gconv.String(permissionTree.Id)
 		if permissionTree.MatchMode > 0 {
@@ -418,6 +425,12 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
 func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
+	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
+	// 如果是超级管理员或者某商管理员则直接放行
+	if session.Type == -1 || session.IsAdmin == true {
+		return true, nil
+	}
+
 	for _, permissionTree := range tree {
 		permissionResourceKey := gconv.String(permissionTree.Id)
 		if permissionTree.MatchMode > 0 {
@@ -432,14 +445,14 @@ func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permiss
 
 // CheckPermissionByIdentifier 通过标识符校验权限
 func (s *sSysPermission) CheckPermissionByIdentifier(ctx context.Context, identifier string) (bool, error) {
-	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
-	if session.Type == -1 || session.IsAdmin == true {
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
 		return true, nil
 	}
 
-	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(session.Id), sys_consts.CasbinDomain, identifier, "allow")
+	t, err := sys_service.Casbin().Enforcer().Enforce(gconv.String(sessionUser.Id), sys_consts.CasbinDomain, identifier, "allow")
 
 	if err != nil {
 		fmt.Printf("权限校验失败[%v]：%v\n", identifier, err.Error())
