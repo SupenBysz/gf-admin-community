@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
+	"github.com/SupenBysz/gf-admin-community/utility/masker"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -17,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
+	"math"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
@@ -86,11 +88,79 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 	if info != nil {
 		newFields := make([]sys_model.FilterInfo, 0)
 
+		// 移除类型筛选条件
 		for _, field := range info.Filter {
 			if field.Field != sys_dao.SysUser.Columns().Type {
 				newFields = append(newFields, field)
 			}
 		}
+	}
+
+	// 如果没有查询条件，则默认从缓存返回数据
+	if info != nil && len(info.Filter) <= 0 {
+		// 初始化内部缓存数据
+		s.initInnerCacheItems(ctx)
+
+		response = &sys_model.SysUserListRes{}
+		if info.Pagination.PageSize <= 0 {
+			info.PageSize = 20
+		}
+		if info.Pagination.PageNum <= 0 {
+			info.PageSize = 1
+		}
+		// 如果缓存没有数据则直接返回
+		if s.mapInt64Items.Size() <= 0 {
+			response.PaginationRes = sys_model.PaginationRes{
+				Pagination: info.Pagination,
+				PageTotal:  0,
+				Total:      0,
+			}
+			response.Records = []*sys_model.SysUser{}
+			return
+		}
+
+		// 设置分页信息
+		response.Pagination = info.Pagination
+		// 初始化分页统计信息
+		response.PaginationRes = sys_model.PaginationRes{
+			Pagination: info.Pagination,
+			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(s.mapInt64Items.Size()) / gconv.Float64(info.PageSize))),
+			Total:      gconv.Int64(s.mapInt64Items.Size()),
+		}
+		beginRowIndex := info.PageNum*info.PageSize - info.PageSize
+		s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
+			if beginRowIndex > 0 {
+				beginRowIndex--
+			} else if len(response.Records) < info.PageSize {
+				// 查询用户所拥有的角色
+				roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(v.Id), sys_consts.CasbinDomain)
+
+				user := kconv.Struct(v, &sys_model.SysUser{})
+				user.RoleNames = []string{}
+
+				// 如果有角色信息则加载角色信息
+				if len(roleIds) > 0 {
+					roles, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
+						Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+							Field:     sys_dao.SysRole.Columns().Id,
+							Where:     "in",
+							IsOrWhere: false,
+							Value:     roleIds,
+						}),
+						Pagination: sys_model.Pagination{},
+					}, unionMainId)
+					if err == nil && len(roles.Records) > 0 {
+						for _, role := range roles.Records {
+							user.RoleNames = append(user.RoleNames, role.Name)
+						}
+					}
+				}
+				user.SysUser = *s.masker(&user.SysUser)
+				response.Records = append(response.Records, user)
+			}
+			return true
+		})
+		return
 	}
 
 	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), info, isExport)
@@ -121,7 +191,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 					}
 				}
 			}
-			user.Password = ""
+			user.SysUser = *s.masker(&user.SysUser)
 			newList = append(newList, user)
 		}
 	}
@@ -275,7 +345,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	response.Password = ""
+	response = s.masker(response)
 	return
 }
 
@@ -313,9 +383,7 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entit
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	data.Password = ""
-
-	return kconv.Struct(data, &sys_entity.SysUser{}), nil
+	return s.masker(kconv.Struct(data, &sys_entity.SysUser{})), nil
 }
 
 // SetUserPermissionIds 设置用户权限
@@ -471,15 +539,21 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 }
 
 // ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
-func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error) {
-
+func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error) {
 	// hook判断当前登录身份是否可以重置密码
 	{
-		var err error
+		s.initInnerCacheItems(ctx)
+
+		user, err := s.GetSysUserById(ctx, userId)
+
+		if err == nil {
+			return false, err
+		}
+
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, userInfo)
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *kconv.Struct(user, &sys_entity.SysUser{}))
 					if err != nil {
 						break
 					}
@@ -518,4 +592,22 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	}
 
 	return true, nil
+}
+
+// GetUserDetail 查看用户详情，含完整手机号
+func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+	s.initInnerCacheItems(ctx)
+	data, has := s.mapInt64Items.Search(userId)
+	if !has {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+	}
+	result := kconv.Struct(data, &sys_entity.SysUser{})
+	result.Password = masker.MaskString(result.Password, masker.Password)
+	return result, nil
+}
+
+func (s *sSysUser) masker(user *sys_entity.SysUser) *sys_entity.SysUser {
+	user.Password = masker.MaskString(user.Password, masker.Password)
+	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
+	return user
 }

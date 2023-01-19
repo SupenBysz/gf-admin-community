@@ -94,6 +94,8 @@ func InitPermission() []*permission.SysPermissionTree {
 			Children: []*permission.SysPermissionTree{
 				// 查看用户，查看某个用户登录账户
 				sys_enum.User.PermissionType.ViewDetail,
+				// 查看更多详情，含完整手机号
+				sys_enum.User.PermissionType.ViewMoreDetail,
 				// 用户列表，查看所有用户
 				sys_enum.User.PermissionType.List,
 				// 重置密码，重置某个用户的登录密码
