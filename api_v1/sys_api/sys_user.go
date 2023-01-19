@@ -26,12 +26,23 @@ type GetUserPermissionIdsReq struct {
 	Id     string `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
+type GetUserDetailReq struct {
+	g.Meta `path:"/getUserDetail" method:"post" summary:"查看详情" dc:"含完整手机号的详情" tags:"用户"`
+	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+}
+
 type UserInfoRes sys_model.UserInfo
 type UserInfoListRes sys_model.UserInfoList
 
 type ResetUserPasswordReq struct {
-	g.Meta          `path:"/resetUserPasswordReq" method:"post" summary:"重置用户密码" tags:"用户"`
+	g.Meta          `path:"/resetUserPassword" method:"post" summary:"重置用户密码" tags:"用户"`
 	Password        string `json:"password" v:"required#请输入密码" dc:"登录密码"`
 	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"确认密码"`
-	UserId          int64  `json:"userId" v:"required#请输入用户id" dc:"用户ID"`
+	Id              int64  `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+}
+
+type SetUserStateReq struct {
+	g.Meta `path:"/setUserState" method:"post" summary:"设置用户状态" tags:"用户"`
+	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	State  int   `json:"state" v:"required|in:-3,-2,-1,0,1#请选择状态|状态设置错误"`
 }

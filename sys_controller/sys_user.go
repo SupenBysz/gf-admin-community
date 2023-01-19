@@ -8,6 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 )
 
 // SysUser 鉴权
@@ -59,21 +60,45 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 	)
 }
 
+// GetUserDetail 查看详情
+func (c *cSysUser) GetUserDetail(ctx context.Context, req *sys_api.GetUserDetailReq) (*sys_api.UserInfoRes, error) {
+	return funs.CheckPermission(ctx,
+		func() (*sys_api.UserInfoRes, error) {
+			ret, err := sys_service.SysUser().GetUserDetail(
+				ctx,
+				req.Id,
+			)
+			return kconv.Struct(ret, &sys_api.UserInfoRes{}), err
+		},
+		sys_enum.User.PermissionType.ViewMoreDetail,
+	)
+}
+
 // ResetUserPassword 重置用户密码
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
 	return funs.CheckPermission(ctx,
 		func() (api_v1.BoolRes, error) {
-			// 获取当前登录用户
-			user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 			ret, err := sys_service.SysUser().ResetUserPassword(
 				ctx,
-				req.UserId,
+				req.Id,
 				req.Password,
 				req.ConfirmPassword,
-				user.SysUser,
 			)
 			return ret == true, err
 		},
 		sys_enum.User.PermissionType.ResetPassword,
+	)
+}
+
+// SetUserState 设置用户状态
+func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateReq) (res api_v1.BoolRes, err error) {
+	return funs.CheckPermission(ctx,
+		func() (api_v1.BoolRes, error) {
+			ret, err := sys_service.SysUser().SetUserState(
+				ctx, req.Id, sys_enum.User.State.New(req.State, ""),
+			)
+			return ret == true, err
+		},
+		sys_enum.User.PermissionType.SetState,
 	)
 }

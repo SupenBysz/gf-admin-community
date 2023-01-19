@@ -31,7 +31,8 @@ type (
 		SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error)
 		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
-		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error)
+		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
+		GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
 	}
 )
 
