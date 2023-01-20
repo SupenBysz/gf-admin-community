@@ -19,6 +19,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
+	"sort"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
@@ -158,6 +159,10 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 				user.SysUser = *s.masker(&user.SysUser)
 				response.Records = append(response.Records, user)
 			}
+
+			sort.Slice(response.Records, func(i, j int) bool {
+				return response.Records[i].CreatedAt.After(response.Records[j].CreatedAt)
+			})
 			return true
 		})
 		return
@@ -305,6 +310,9 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	if err != nil {
 		return nil, err
 	}
+
+	s.mapInt64Items.Set(data.Id, &data)
+
 	// 建后
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
@@ -313,8 +321,6 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		}
 	})
-
-	s.mapInt64Items.Set(result.UserInfo.Id, &result.UserInfo)
 	return &result, nil
 }
 
@@ -463,7 +469,6 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 	}
 	data := s.mapInt64Items.Get(userId)
 	data.Username = newUsername
-	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -480,7 +485,6 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 
 	data := s.mapInt64Items.Get(userId)
 	data.State = state.Code()
-	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -534,7 +538,6 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 	data := s.mapInt64Items.Get(userId)
 	data.Password = pwdHash
-	s.mapInt64Items.Set(userId, data)
 	return true, nil
 }
 
@@ -588,7 +591,6 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 
 		data := s.mapInt64Items.Get(userId)
 		data.Password = pwdHash
-		s.mapInt64Items.Set(userId, data)
 	}
 
 	return true, nil
