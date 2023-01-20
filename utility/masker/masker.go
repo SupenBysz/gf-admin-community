@@ -1,6 +1,7 @@
 package masker
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -30,9 +31,37 @@ var (
 	Password      = maskRule{matchString: "required|length:1,128"}
 	IDCard        = maskRule{matchString: "required|size:18"}
 	BankCard      = maskRule{matchString: "required|bank-card"}
+	Other         = maskRule{matchString: "other"}
 )
 
 func MaskString(in string, maskType MaskType) string {
+	if maskType.MaskType() == Other.MaskType() {
+		if in == "" {
+			return "***"
+		}
+		if strings.Contains(in, "@") {
+			return MaskString(in, MaskEmail)
+		}
+		reg := `^1[0-9]\d{9}$`
+		rgx := regexp.MustCompile(reg)
+		mobileMatch := rgx.MatchString(in)
+		if mobileMatch {
+			return MaskString(in, MaskPhone)
+		}
+		nameRune := []rune(in)
+		lens := len(nameRune)
+		if lens <= 1 {
+			return "******"
+		} else if lens == 2 {
+			return string(nameRune[:1]) + "*"
+		} else if lens == 3 {
+			return string(nameRune[:1]) + "*" + string(nameRune[2:3])
+		} else if lens == 4 {
+			return string(nameRune[:1]) + "**" + string(nameRune[lens-1:lens])
+		} else if lens > 4 {
+			return string(nameRune[:2]) + "***" + string(nameRune[lens-2:lens])
+		}
+	}
 	if maskType.MaskType() == MaskPhone.MaskType() {
 		if len(in) >= 5 {
 			return gstr.SubStr(in, 0, 3) + "******" + gstr.SubStr(in, len(in)-2)
