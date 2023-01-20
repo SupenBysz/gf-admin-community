@@ -10,6 +10,7 @@ import (
 type JwtCustomClaims struct {
 	sys_entity.SysUser
 	UnionMainId int64 `json:"unionMainId"    description:"主体id"`
+	ParentId    int64 `json:"parentId"    description:"上级主体id"`
 	IsAdmin     bool
 	jwt.RegisteredClaims
 }
