@@ -22,6 +22,7 @@ type (
 		Delete(ctx context.Context, roleId int64) (bool, error)
 		SetRoleForUser(ctx context.Context, roleId, userId, makeUserUnionMainId int64) (bool, error)
 		RemoveRoleForUser(ctx context.Context, roleId int64, userId int64) (bool, error)
+		GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
 		GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
 		GetUserRoleList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
 		SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error)
