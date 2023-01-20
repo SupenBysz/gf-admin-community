@@ -93,7 +93,7 @@ func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRol
 }
 
 // GetRoleUserIds 获取角色下的所有用户Ids|列表
-func (c *cSysRole) GetRoleUserIds(ctx context.Context, req *sys_api.GetRoleUserIdsReq) ([]int64, error) {
+func (c *cSysRole) GetRoleUserIds(ctx context.Context, req *sys_api.GetRoleUserIdsReq) (api_v1.Int64ArrRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.ViewMember); has != true {
 		return nil, err
@@ -101,13 +101,7 @@ func (c *cSysRole) GetRoleUserIds(ctx context.Context, req *sys_api.GetRoleUserI
 	// 获取当前登录用户的UnionMainId
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	data, err := sys_service.SysRole().GetRoleUserIds(ctx, req.RoleId, unionMainId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sys_service.SysRole().GetRoleUserIds(ctx, req.RoleId, unionMainId)
 }
 
 // GetRoleUserList 获取角色下的所有用户|列表
