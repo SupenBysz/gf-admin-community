@@ -1,4 +1,4 @@
-package sysController
+package sys_controller
 
 import (
 	"context"
@@ -8,27 +8,13 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 )
 
 // SysUser 鉴权
 var SysUser = cSysUser{}
 
 type cSysUser struct{}
-
-// CreateUser 创建用户|信息
-func (c *cSysUser) CreateUser(ctx context.Context, req *sys_api.CreateUserReq) (res *sys_model.SysUserRegisterRes, err error) {
-	return funs.CheckPermission(ctx,
-		func() (*sys_model.SysUserRegisterRes, error) {
-			return sys_service.SysUser().CreateUser(
-				ctx,
-				req.UserInnerRegister,
-				sys_enum.User.State.Normal,
-				sys_enum.User.Type.User,
-			)
-		},
-		sys_enum.User.PermissionType.Create,
-	)
-}
 
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_model.SysUserListRes, error) {
@@ -74,21 +60,45 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 	)
 }
 
+// GetUserDetail 查看详情
+func (c *cSysUser) GetUserDetail(ctx context.Context, req *sys_api.GetUserDetailReq) (*sys_api.UserInfoRes, error) {
+	return funs.CheckPermission(ctx,
+		func() (*sys_api.UserInfoRes, error) {
+			ret, err := sys_service.SysUser().GetUserDetail(
+				ctx,
+				req.Id,
+			)
+			return kconv.Struct(ret, &sys_api.UserInfoRes{}), err
+		},
+		sys_enum.User.PermissionType.ViewMoreDetail,
+	)
+}
+
 // ResetUserPassword 重置用户密码
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
 	return funs.CheckPermission(ctx,
 		func() (api_v1.BoolRes, error) {
-			// 获取当前登录用户
-			user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 			ret, err := sys_service.SysUser().ResetUserPassword(
 				ctx,
-				req.UserId,
+				req.Id,
 				req.Password,
 				req.ConfirmPassword,
-				user.SysUser,
 			)
 			return ret == true, err
 		},
 		sys_enum.User.PermissionType.ResetPassword,
+	)
+}
+
+// SetUserState 设置用户状态
+func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateReq) (res api_v1.BoolRes, err error) {
+	return funs.CheckPermission(ctx,
+		func() (api_v1.BoolRes, error) {
+			ret, err := sys_service.SysUser().SetUserState(
+				ctx, req.Id, sys_enum.User.State.New(req.State, ""),
+			)
+			return ret == true, err
+		},
+		sys_enum.User.PermissionType.SetState,
 	)
 }

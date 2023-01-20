@@ -90,6 +90,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		Name:        info.Name,
 		Description: info.Description,
 		UnionMainId: info.UnionMainId,
+		IsSystem:    info.IsSystem,
 		UpdatedAt:   gtime.Now(),
 	}
 
@@ -234,8 +235,8 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
-// GetRoleUsers 获取角色下的所有用户
-func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
+// GetRoleUserIds 获取角色下的所有用户ID
+func (s *sSysRole) GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -244,7 +245,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 	}
 
 	if err == sql.ErrNoRows {
-		return []*sys_model.SysUser{}, nil
+		return []int64{}, nil
 	}
 
 	if err != nil {
@@ -260,6 +261,13 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
+
+	return gconv.Int64s(userIds), nil
+}
+
+// GetRoleUsers 获取角色下的所有用户
+func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
+	userIds, err := s.GetRoleUserIds(ctx, roleId, makeUserUnionMainId)
 
 	userInfoArr := make([]*sys_model.SysUser, 0)
 

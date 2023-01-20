@@ -1,4 +1,4 @@
-package sysController
+package sys_controller
 
 import (
 	"context"

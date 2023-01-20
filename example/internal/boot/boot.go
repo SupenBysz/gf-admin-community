@@ -1,11 +1,10 @@
-package cmd
+package boot
 
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
-	_ "github.com/SupenBysz/gf-admin-community/internal/boot"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
-	sysController "github.com/SupenBysz/gf-admin-community/sys_controller"
+	"github.com/SupenBysz/gf-admin-community/sys_controller"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -58,7 +57,7 @@ var (
 				// CASBIN 初始化
 				sys_service.Casbin().Enforcer()
 				// Permission 初始化
-				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.PermissionTree, nil)
+				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
 			}
 
 			{
@@ -75,16 +74,16 @@ var (
 					// 匿名路由绑定
 					group.Group("/", func(group *ghttp.RouterGroup) {
 						// 鉴权：登录，注册，找回密码等
-						group.Group("/sys_auth", func(group *ghttp.RouterGroup) { group.Bind(sysController.Auth) })
+						group.Group("/sys_auth", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.Auth) })
 						// 图型验证码、短信验证码、地区
 						group.Group("/common", func(group *ghttp.RouterGroup) {
 							group.Bind(
 								// 图型验证码
-								sysController.Captcha,
+								sys_controller.Captcha,
 								// 短信验证码
-								sysController.SysSms,
+								sys_controller.SysSms,
 								// 地区
-								sysController.SysArea,
+								sys_controller.SysArea,
 							)
 						})
 					})
@@ -98,19 +97,19 @@ var (
 						)
 
 						// 文件上传
-						group.Group("/common/sys_file", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysFile) })
+						group.Group("/common/sys_file", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFile) })
 						// 系统配置
-						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysConfig) })
+						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysConfig) })
 						// 用户
-						group.Group("/user", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysUser) })
+						group.Group("/user", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUser) })
 						// 角色
-						group.Group("/role", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysRole) })
+						group.Group("/role", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysRole) })
 						// 权限
-						group.Group("/permission", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysPermission) })
+						group.Group("/permission", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysPermission) })
 						// 组织架构
-						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysOrganization) })
+						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysOrganization) })
 						// 我的
-						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sysController.SysMy) })
+						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMy) })
 					})
 				})
 			}

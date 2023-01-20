@@ -22,7 +22,8 @@ type (
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
 		CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error)
 		SetUserPermissions(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
-		GetSysUserByUsername(ctx context.Context, username string) (*sys_entity.SysUser, error)
+		GetSysUserByUsername(ctx context.Context, username string) (response *sys_entity.SysUser, err error)
+		CheckPassword(ctx context.Context, userId int64, password string) (bool, error)
 		HasSysUserByUsername(ctx context.Context, username string) bool
 		GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
 		SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
@@ -30,7 +31,8 @@ type (
 		SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error)
 		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
-		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string, userInfo sys_entity.SysUser) (bool, error)
+		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
+		GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
 	}
 )
 
