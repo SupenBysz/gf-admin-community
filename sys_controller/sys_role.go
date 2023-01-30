@@ -92,7 +92,7 @@ func (c *cSysRole) RemoveRoleMember(ctx context.Context, req *sys_api.RemoveRole
 	return result == true, err
 }
 
-// GetRoleUserIds 获取角色下的所有用户Ids|列表
+// GetRoleMemberIds 获取角色下的所有用户Ids|列表
 func (c *cSysRole) GetRoleMemberIds(ctx context.Context, req *sys_api.GetRoleMemberIdsReq) (api_v1.Int64ArrRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.ViewMember); has != true {
