@@ -183,39 +183,37 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 	return err == nil, err
 }
 
-// SetRoleForUser 设置角色用户
-func (s *sSysRole) SetRoleForUser(ctx context.Context, roleId, userId, makeUserUnionMainId int64) (bool, error) {
+// SetRoleMember 设置角色用户
+func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
 	}
-
-	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	// 判断是否跨商
 	if makeUserUnionMainId != roleInfo.UnionMainId {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
 	}
 
-	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
-	}
+	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		for _, userId := range userIds {
+			userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
-	// 清除缓存
-	sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler)
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+			}
 
-	// keys, err := sys_dao.SysRole.DB().GetCache().Keys(ctx)
-	// size, err := sys_dao.SysRole.DB().GetCache().Size(ctx)
-	// fmt.Println("缓存数量还剩：", size)
-	// fmt.Println("缓存数量还剩：", keys)
-
-	return sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+		}
+		return nil
+	})
+	return err == nil, err
 }
 
-// RemoveRoleForUser 移除角色中的用户
-func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId int64) (bool, error) {
+// RemoveRoleMember 移除角色中的用户
+func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -228,9 +226,6 @@ func (s *sSysRole) RemoveRoleForUser(ctx context.Context, roleId int64, userId i
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
-
-	// 清除缓存
-	sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler)
 
 	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }

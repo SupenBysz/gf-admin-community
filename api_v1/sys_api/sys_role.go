@@ -25,30 +25,30 @@ type DeleteRoleInfoReq struct {
 	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type SetRoleForUserReq struct {
-	g.Meta `path:"/setRoleForUser" method:"post" summary:"设置角色用户" tags:"角色"`
+type SetRoleMemberReq struct {
+	g.Meta  `path:"/setRoleMember" method:"post" summary:"设置角色成员" tags:"角色"`
+	RoleId  int64   `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
+	UserIds []int64 `json:"userIds" v:"required#用户ID校验失败" dc:"用户IDS"`
+}
+
+type RemoveRoleMemberReq struct {
+	g.Meta `path:"/removeRoleMember" method:"post" summary:"移除角色成员所拥有的角色" tags:"角色"`
 	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
-type RemoveRoleForUserReq struct {
-	g.Meta `path:"/removeRoleForUser" method:"post" summary:"移除用户所拥有的角色" tags:"角色"`
-	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
-	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
-}
-
-type GetRoleUsersReq struct {
-	g.Meta `path:"/getRoleUserList" method:"post" summary:"获取角色下的所有用户|列表" tags:"角色"`
+type GetRoleMemberReq struct {
+	g.Meta `path:"/getRoleMemberList" method:"post" summary:"获取角色成员|列表" tags:"角色"`
 	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type GetRoleUserIdsReq struct {
-	g.Meta `path:"/getRoleUserIdsList" method:"post" summary:"获取角色下的所有用户Ids|列表" tags:"角色"`
+type GetRoleMemberIdsReq struct {
+	g.Meta `path:"/getRoleMemberIdsList" method:"post" summary:"获取角色成员Ids|列表" tags:"角色"`
 	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type GetUserRolesReq struct {
-	g.Meta `path:"/getUserRoleList" method:"post" summary:"获取用户拥有的所有角色|列表" tags:"角色"`
+type GetRolesMemberByIdReq struct {
+	g.Meta `path:"/GetRolesMemberById" method:"post" summary:"获取成员拥有的所有角色|列表" tags:"角色"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
