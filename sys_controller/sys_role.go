@@ -75,7 +75,7 @@ func (c *cSysRole) SetRoleMember(ctx context.Context, req *sys_api.SetRoleMember
 
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	result, err := sys_service.SysRole().SetRoleMember(ctx, req.RoleId, req.UserId, unionMainId)
+	result, err := sys_service.SysRole().SetRoleMember(ctx, req.RoleId, req.UserIds, unionMainId)
 
 	return result == true, err
 }

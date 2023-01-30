@@ -20,7 +20,7 @@ type (
 		Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Save(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Delete(ctx context.Context, roleId int64) (bool, error)
-		SetRoleMember(ctx context.Context, roleId, userId, makeUserUnionMainId int64) (bool, error)
+		SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error)
 		RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error)
 		GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
 		GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
