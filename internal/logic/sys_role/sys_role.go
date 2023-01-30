@@ -230,8 +230,8 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 }
 
-// GetRoleUserIds 获取角色下的所有用户ID
-func (s *sSysRole) GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
+// GetRoleMemberIds 获取角色下的所有用户ID
+func (s *sSysRole) GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -260,9 +260,9 @@ func (s *sSysRole) GetRoleUserIds(ctx context.Context, roleId int64, makeUserUni
 	return gconv.Int64s(userIds), nil
 }
 
-// GetRoleUsers 获取角色下的所有用户
-func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
-	userIds, err := s.GetRoleUserIds(ctx, roleId, makeUserUnionMainId)
+// GetRoleMemberList 获取角色下的所有用户
+func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
+	userIds, err := s.GetRoleMemberIds(ctx, roleId, makeUserUnionMainId)
 
 	userInfoArr := make([]*sys_model.SysUser, 0)
 
@@ -288,7 +288,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 		user.Password = ""
 		user.RoleNames = make([]string, 0)
 
-		roles, err := sys_service.SysRole().GetUserRoleList(ctx, user.Id)
+		roles, err := sys_service.SysRole().GetRoleByUserIdList(ctx, user.Id)
 		if err == nil && len(roles) > 0 {
 			for _, role := range roles {
 				user.RoleNames = append(user.RoleNames, role.Name)
@@ -300,8 +300,8 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 	return result, nil
 }
 
-// GetUserRoleList 获取用户拥有的所有角色
-func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
+// GetRoleByUserIdList 获取用户拥有的所有角色
+func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
 	userInfo := &sys_entity.SysUser{}
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
