@@ -22,9 +22,9 @@ type (
 		Delete(ctx context.Context, roleId int64) (bool, error)
 		SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error)
 		RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error)
-		GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
-		GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
-		GetUserRoleList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
+		GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
+		GetRoleMemberList(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
+		GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
 		SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error)
 	}
 )
