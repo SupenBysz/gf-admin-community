@@ -66,8 +66,8 @@ func (c *cSysRole) DeleteRoleInfo(ctx context.Context, req *sys_api.DeleteRoleIn
 	return result == true, err
 }
 
-// SetRoleForUser 设置角色用户
-func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUserReq) (api_v1.BoolRes, error) {
+// SetRoleMember 设置角色用户
+func (c *cSysRole) SetRoleMember(ctx context.Context, req *sys_api.SetRoleMemberReq) (api_v1.BoolRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
 		return false, err
@@ -75,25 +75,25 @@ func (c *cSysRole) SetRoleForUser(ctx context.Context, req *sys_api.SetRoleForUs
 
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	result, err := sys_service.SysRole().SetRoleForUser(ctx, req.RoleId, req.UserId, unionMainId)
+	result, err := sys_service.SysRole().SetRoleMember(ctx, req.RoleId, req.UserId, unionMainId)
 
 	return result == true, err
 }
 
-// RemoveRoleForUser 移除用户所拥有的角色
-func (c *cSysRole) RemoveRoleForUser(ctx context.Context, req *sys_api.RemoveRoleForUserReq) (api_v1.BoolRes, error) {
+// RemoveRoleMember 移除用户所拥有的角色
+func (c *cSysRole) RemoveRoleMember(ctx context.Context, req *sys_api.RemoveRoleMemberReq) (api_v1.BoolRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
 		return false, err
 	}
 
-	result, err := sys_service.SysRole().RemoveRoleForUser(ctx, req.RoleId, req.UserId)
+	result, err := sys_service.SysRole().RemoveRoleMember(ctx, req.RoleId, req.UserId)
 
 	return result == true, err
 }
 
 // GetRoleUserIds 获取角色下的所有用户Ids|列表
-func (c *cSysRole) GetRoleUserIds(ctx context.Context, req *sys_api.GetRoleUserIdsReq) (api_v1.Int64ArrRes, error) {
+func (c *cSysRole) GetRoleMemberIds(ctx context.Context, req *sys_api.GetRoleMemberIdsReq) (api_v1.Int64ArrRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.ViewMember); has != true {
 		return nil, err
@@ -104,8 +104,8 @@ func (c *cSysRole) GetRoleUserIds(ctx context.Context, req *sys_api.GetRoleUserI
 	return sys_service.SysRole().GetRoleUserIds(ctx, req.RoleId, unionMainId)
 }
 
-// GetRoleUserList 获取角色下的所有用户|列表
-func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUsersReq) (*sys_api.UserListRes, error) {
+// GetRoleMemberList 获取角色下的所有用户|列表
+func (c *cSysRole) GetRoleMemberList(ctx context.Context, req *sys_api.GetRoleMemberReq) (*sys_api.UserListRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.ViewMember); has != true {
 		return nil, err
@@ -135,8 +135,8 @@ func (c *cSysRole) GetRoleUserList(ctx context.Context, req *sys_api.GetRoleUser
 	}, err
 }
 
-// GetUserRoleList 获取用户拥有的所有角色列表
-func (c *cSysRole) GetUserRoleList(ctx context.Context, req *sys_api.GetUserRolesReq) (*sys_model.RoleListRes, error) {
+// GetRolesMemberById 获取用户拥有的所有角色列表
+func (c *cSysRole) GetRolesMemberById(ctx context.Context, req *sys_api.GetRolesMemberByIdReq) (*sys_model.RoleListRes, error) {
 	data, err := sys_service.SysRole().GetUserRoleList(ctx, req.UserId)
 
 	if err != nil {
