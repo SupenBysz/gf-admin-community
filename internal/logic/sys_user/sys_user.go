@@ -31,7 +31,7 @@ type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
 
 type sSysUser struct {
 	hookArr       []hookInfo
-	mapInt64Items *kmap.HashMap[int64, *sys_entity.SysUser]
+	mapInt64Items *kmap.HashMap[int64, *sys_model.SysUser]
 }
 
 func init() {
@@ -41,7 +41,7 @@ func init() {
 func New() *sSysUser {
 	return &sSysUser{
 		hookArr:       make([]hookInfo, 0),
-		mapInt64Items: kmap.New[int64, *sys_entity.SysUser](),
+		mapInt64Items: kmap.New[int64, *sys_model.SysUser](),
 	}
 }
 
@@ -74,8 +74,8 @@ func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
 		return
 	}
 
-	items := daoctl.Scan[[]*sys_entity.SysUser](
-		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+	items := daoctl.Scan[[]*sys_model.SysUser](
+		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).With(sys_model.SysUser{}.Detail).
 			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
 	)
 	s.mapInt64Items.Clear()
@@ -129,7 +129,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 			Total:      gconv.Int64(s.mapInt64Items.Size()),
 		}
 		beginRowIndex := info.PageNum*info.PageSize - info.PageSize
-		s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
+		s.mapInt64Items.Iterator(func(k int64, v *sys_model.SysUser) bool {
 			if beginRowIndex > 0 {
 				beginRowIndex--
 			} else if len(response.Records) < info.PageSize {
@@ -156,7 +156,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 						}
 					}
 				}
-				user.SysUser = *s.masker(&user.SysUser)
+				user = s.masker(user)
 				response.Records = append(response.Records, user)
 			}
 
@@ -168,7 +168,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		return
 	}
 
-	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), info, isExport)
+	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).With(sys_model.SysUser{}.Detail), info, isExport)
 
 	newList := make([]*sys_model.SysUser, 0)
 	if result != nil && result.Records != nil && len(result.Records) > 0 {
@@ -196,7 +196,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 					}
 				}
 			}
-			user.SysUser = *s.masker(&user.SysUser)
+			user = s.masker(user)
 			newList = append(newList, user)
 		}
 	}
@@ -236,20 +236,22 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 }
 
 // CreateUser 创建用户
-func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error) {
+func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error) {
 	count, _ := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", sys_dao.SysUser.Table())
 	}
 
-	data := sys_entity.SysUser{
-		Id:        idgen.NextId(),
-		Username:  info.Username,
-		Password:  info.Password,
-		Mobile:    info.Mobile,
-		State:     userState.Code(),
-		Type:      userType.Code(),
-		CreatedAt: gtime.Now(),
+	data := sys_model.SysUser{
+		SysUser: sys_entity.SysUser{
+			Id:        idgen.NextId(),
+			Username:  info.Username,
+			Password:  info.Password,
+			Mobile:    info.Mobile,
+			State:     userState.Code(),
+			Type:      userType.Code(),
+			CreatedAt: gtime.Now(),
+		},
 	}
 
 	if len(customId) > 0 && customId[0] > 0 {
@@ -261,11 +263,6 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	// 密码赋值
 	data.Password = pwdHash
 
-	result := sys_model.SysUserRegisterRes{
-		UserInfo:     data,
-		RoleInfoList: make([]*sys_entity.SysRole, 0),
-	}
-
 	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
@@ -276,7 +273,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		})
 
-		_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).OmitNilData().Data(data).Insert()
+		_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).OmitNilData().Data(data.SysUser).Insert()
 
 		if err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
@@ -287,21 +284,6 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			if ret != true || err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色设置失败！"+err.Error(), sys_dao.SysUser.Table())
 			}
-
-			roleList, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
-				Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
-					Field:       sys_dao.SysRole.Columns().Id,
-					Where:       "in",
-					IsOrWhere:   false,
-					Value:       info.RoleIds,
-					IsNullValue: false,
-				}),
-			}, sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId)
-
-			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败！", sys_dao.SysUser.Table())
-			}
-			result.RoleInfoList = roleList.Records
 		}
 
 		return nil
@@ -321,7 +303,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		}
 	})
-	return &result, nil
+	return &data, nil
 }
 
 // SetUserPermissions 设置用户权限
@@ -336,12 +318,12 @@ func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permiss
 }
 
 // GetSysUserByUsername 根据用户名获取用户
-func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (response *sys_entity.SysUser, err error) {
+func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (response *sys_model.SysUser, err error) {
 	s.initInnerCacheItems(ctx)
 
-	s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysUser) bool {
+	s.mapInt64Items.Iterator(func(k int64, v *sys_model.SysUser) bool {
 		if v.Username == username {
-			response = kconv.Struct(v, &sys_entity.SysUser{})
+			response = kconv.Struct(v, &sys_model.SysUser{})
 			return false
 		}
 		return true
@@ -380,7 +362,7 @@ func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bo
 }
 
 // GetSysUserById 根据用户ID获取用户信息
-func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model.SysUser, error) {
 	s.initInnerCacheItems(ctx)
 
 	data, has := s.mapInt64Items.Search(userId)
@@ -389,7 +371,7 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_entit
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	return s.masker(kconv.Struct(data, &sys_entity.SysUser{})), nil
+	return s.masker(kconv.Struct(data, &sys_model.SysUser{})), nil
 }
 
 // SetUserPermissionIds 设置用户权限
@@ -556,7 +538,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *kconv.Struct(user, &sys_entity.SysUser{}))
+					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *kconv.Struct(user, &sys_model.SysUser{}))
 					if err != nil {
 						break
 					}
@@ -596,6 +578,38 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	return true, nil
 }
 
+// UpdateUserExDetail 更新用户扩展信息
+func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error) {
+	s.initInnerCacheItems(ctx)
+
+	data := sys_entity.SysUserDetail{}
+
+	err := sys_dao.SysUserDetail.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysUserDetail{Id: user.Id}).Scan(&data)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	if err == sql.ErrNoRows {
+		_, err = sys_dao.SysUserDetail.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(user.Detail)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		_, err = sys_dao.SysUserDetail.Ctx(ctx).Hook(daoctl.CacheHookHandler).Data(sys_do.SysUserDetail{
+			Realname:      user.Detail.Realname,
+			UnionMainName: user.Detail.UnionMainName,
+			LastLoginIp:   user.Detail.LastLoginIp,
+			LastLoginArea: user.Detail.LastLoginArea,
+			LastLoginAt:   user.Detail.LastLoginAt,
+		}).Where(sys_do.SysUserDetail{Id: user.Id}).Update()
+		if err != nil {
+			return nil, err
+		}
+	}
+	s.mapInt64Items.Set(user.Id, user)
+	return user, nil
+}
+
 // GetUserDetail 查看用户详情，含完整手机号
 func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
 	s.initInnerCacheItems(ctx)
@@ -608,7 +622,7 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity
 	return result, nil
 }
 
-func (s *sSysUser) masker(user *sys_entity.SysUser) *sys_entity.SysUser {
+func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Password = masker.MaskString(user.Password, masker.Password)
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
 	return user
