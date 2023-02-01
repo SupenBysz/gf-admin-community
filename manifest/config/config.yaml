@@ -17,13 +17,14 @@ service:
   # Token Sign Key
   tokenSignKey: "KysionGfAdminProTokenSignKey"
   # 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营商；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-  userDefaultType: 32
-  # 是否运行注册用户，false时用户注册接口将强制返回失败
-  userAllowRegister: false
   # 新增用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员
   # -1超级管理员，不支持注册为超级管理员
   # 业务层有自定义类型时将忽略这里的设置
-  defaultUserRegisterType: 0
+  userDefaultType: 32
+  # 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
+  userDefaultState: 0
+  # 是否运行注册用户，false时用户注册接口将强制返回失败
+  userAllowRegister: false
   # 不允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
   notAllowLoginUserType: [ 0 ]
   # 需要存储到数据库中的日志，支持：all,error,warn,info
