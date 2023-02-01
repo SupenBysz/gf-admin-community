@@ -21,13 +21,14 @@ type UserInnerRegister struct {
 }
 
 type SysUserRegisterRes struct {
-	UserInfo     sys_entity.SysUser    `json:"userInfo" dc:"用户信息"`
+	UserInfo     SysUser               `json:"userInfo" dc:"用户信息"`
 	RoleInfoList []*sys_entity.SysRole `json:"roleInfoList" dc:"角色信息列表"`
 }
 
 type SysUser struct {
 	sys_entity.SysUser
-	RoleNames []string `json:"roleNames" dc:"所属角色"`
+	Detail    sys_entity.SysUserDetail `orm:"with:id" json:"detail"`
+	RoleNames []string                 `json:"roleNames" dc:"所属角色"`
 }
 
 type UpdateUserPassword struct {
@@ -36,9 +37,9 @@ type UpdateUserPassword struct {
 	ConfirmPassword string `json:"confirmPassword" v:"required#请确认密码" dc:"确认密码"`
 }
 
-type UserInfo sys_entity.SysUser
-type UserInfoList CollectRes[*sys_entity.SysUser]
+type UserInfo SysUser
+type UserInfoList CollectRes[*SysUser]
 type SysUserListRes CollectRes[*SysUser]
 
-type UserHookFunc HookFunc[sys_enum.UserEvent, sys_entity.SysUser]
+type UserHookFunc HookFunc[sys_enum.UserEvent, SysUser]
 type UserHookInfo HookEventType[sys_enum.UserEvent, UserHookFunc]

@@ -5,19 +5,24 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/utility/downloader"
 	"github.com/SupenBysz/gf-admin-community/utility/env"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
 	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 	"github.com/yitter/idgenerator-go/idgen"
+	"log"
 )
 
 func init() {
 	env.LoadEnv()
 
+	Ip2region()
 	InitCustomRules()
 	InitGlobal()
 	InitIdGenerator()
@@ -31,11 +36,43 @@ func InitCustomRules() {
 	validator.RegisterServicePhone()
 }
 
+func Ip2region() {
+	ip2regionPath := g.Cfg().MustGet(
+		context.Background(),
+		"service.ip2region.xdbPath",
+		"./resources/assets/static/ip2resion.xdb",
+	).String()
+
+	if ip2regionPath == "" || gfile.Size(ip2regionPath) <= 0 {
+		log.Println("开始下载IP信息库资源")
+		d := downloader.NewDownloader(
+			"https://ghproxy.com/https://github.com/lionsoul2014/ip2region/raw/master/data/ip2region.xdb",
+			gfile.Basename(ip2regionPath),
+			gfile.Abs(gfile.Dir(ip2regionPath)),
+			10,
+		)
+		if err := d.Download(); err != nil {
+			panic("ip2region 获取失败")
+		}
+	}
+	if gfile.Size(ip2regionPath) <= 0 {
+		panic("ip2region 校验失败")
+	}
+
+	cBuff, err := xdb.LoadContentFromFile(ip2regionPath)
+	if err != nil {
+		panic("ip2region 初始化失败")
+	}
+	sys_consts.Global.Searcher, _ = xdb.NewWithBuffer(cBuff)
+}
+
 // InitGlobal 初始化公共对象
 func InitGlobal() {
-	// 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
+	// 默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
 	// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-	sys_consts.Global.DefaultRegisterType = g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0).Int()
+	sys_consts.Global.UserDefaultType = sys_enum.User.Type.New(g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0).Int(), "")
+	// 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
+	sys_consts.Global.UserDefaultState = sys_enum.User.State.New(g.Cfg().MustGet(context.Background(), "service.userDefaultState", 0).Int(), "")
 	// 加载不允许登录的用户类型，并去重
 	sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(context.Background(), "service.notAllowLoginUserType", "[-1]").Ints()).SetUnique(true)
 	// 加载接口前缀
