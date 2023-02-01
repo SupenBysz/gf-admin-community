@@ -2,6 +2,7 @@ package funs
 
 import (
 	"context"
+	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
@@ -59,4 +60,34 @@ func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), pe
 		return ret, err
 	}
 	return f()
+}
+
+// ByteCountSI 以1000作为基数
+func ByteCountSI[T int64 | uint64](b T) string {
+	const unit = 1000
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB",
+		float64(b)/float64(div), "kMGTPE"[exp])
+}
+
+// ByteCountIEC 以1024作为基数
+func ByteCountIEC[T int64 | uint64](b T) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }
