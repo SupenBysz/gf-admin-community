@@ -302,7 +302,6 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 
 // GetRoleByUserIdList 获取用户拥有的所有角色
 func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
-	userInfo := &sys_entity.SysUser{}
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
