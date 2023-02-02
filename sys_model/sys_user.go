@@ -41,5 +41,5 @@ type UserInfo SysUser
 type UserInfoList CollectRes[*SysUser]
 type SysUserListRes CollectRes[*SysUser]
 
-type UserHookFunc HookFunc[sys_enum.UserEvent, SysUser]
+type UserHookFunc HookFuncRes[sys_enum.UserEvent, SysUser]
 type UserHookInfo HookEventType[sys_enum.UserEvent, UserHookFunc]
