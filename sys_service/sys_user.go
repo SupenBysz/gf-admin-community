@@ -32,6 +32,7 @@ type (
 		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
 		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
+		SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error)
 		UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error)
 		GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
 	}

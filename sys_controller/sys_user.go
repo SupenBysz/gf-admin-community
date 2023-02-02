@@ -74,6 +74,23 @@ func (c *cSysUser) GetUserDetail(ctx context.Context, req *sys_api.GetUserDetail
 	)
 }
 
+// SetUserRoles 设置用户角色
+func (c *cSysUser) SetUserRoles(ctx context.Context, req *sys_api.SetUserRolesReq) (res api_v1.BoolRes, err error) {
+	return funs.CheckPermission(ctx,
+		func() (api_v1.BoolRes, error) {
+			sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+			ret, err := sys_service.SysUser().SetUserRoles(
+				ctx,
+				req.UserId,
+				req.RoleIds,
+				sessionUser.UnionMainId,
+			)
+			return ret == true, err
+		},
+		sys_enum.Role.PermissionType.SetMember,
+	)
+}
+
 // ResetUserPassword 重置用户密码
 func (c *cSysUser) ResetUserPassword(ctx context.Context, req *sys_api.ResetUserPasswordReq) (res api_v1.BoolRes, err error) {
 	return funs.CheckPermission(ctx,
