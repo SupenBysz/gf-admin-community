@@ -47,8 +47,8 @@ type GetRoleMemberIdsReq struct {
 	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
-type GetRolesMemberByIdReq struct {
-	g.Meta `path:"/GetRolesMemberById" method:"post" summary:"获取成员拥有的所有角色|列表" tags:"角色"`
+type GetRoleByUserIdListReq struct {
+	g.Meta `path:"/GetRoleByUserIdList" method:"post" summary:"获取用户ID获取所有关联角色|列表" tags:"角色"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
