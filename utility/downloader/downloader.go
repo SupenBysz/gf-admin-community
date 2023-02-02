@@ -150,7 +150,7 @@ func (d *Downloader) downloadPart(p FilePart) error {
 
 func (d *Downloader) merge() error {
 	path := filepath.Join(d.outputPath, d.fileName)
-	log.Println("开始合并文件", path)
+	log.Println("下载完毕，开始合并文件", path)
 	file, err := os.Create(path)
 	if err != nil {
 		log.Println("文件创建失败")
