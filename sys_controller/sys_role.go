@@ -135,7 +135,7 @@ func (c *cSysRole) GetRoleMemberList(ctx context.Context, req *sys_api.GetRoleMe
 	}, err
 }
 
-// GetRoleByUserIdList 获取用户拥有的所有角色列表
+// GetRoleByUserIdList 获取用户ID获取所有关联角色
 func (c *cSysRole) GetRoleByUserIdList(ctx context.Context, req *sys_api.GetRoleByUserIdListReq) (*sys_model.RoleListRes, error) {
 	data, err := sys_service.SysRole().GetRoleByUserIdList(ctx, req.UserId)
 
