@@ -429,7 +429,7 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 移除员工权限
 		_, err = sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(id), []int64{0})
-		if err != nil {
+		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
 
@@ -439,9 +439,15 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 			return err
 		}
 
+		// 删除用户附加信息
+		_, err = sys_dao.SysUserDetail.Ctx(ctx).Hook(daoctl.CacheHookHandler).Unscoped().Delete(sys_do.SysUserDetail{Id: id})
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+
 		// 删除用户
 		_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Unscoped().Delete(sys_do.SysUser{Id: id})
-		if err != nil {
+		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
 
