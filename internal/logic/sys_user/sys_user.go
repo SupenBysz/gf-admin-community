@@ -268,17 +268,30 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.BeforeCreate.Code() == sys_enum.User.Event.BeforeCreate.Code() {
-					hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
+					res, _ := hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
+					res.Detail.Id = data.Id
+					data.Detail = res.Detail
 				}
 			}
 		})
 
-		_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).OmitNilData().Data(data.SysUser).Insert()
+		{
+			_, err = sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).OmitNilData().Data(data.SysUser).Insert()
 
-		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+			}
 		}
+		{
+			if data.Detail.Id > 0 && (data.Detail.Realname != "" || data.Detail.UnionMainName != "") {
+				_, err = sys_dao.SysUserDetail.Ctx(ctx).Hook(daoctl.CacheHookHandler).OmitNilData().Data(data.Detail).Insert()
 
+				if err != nil {
+					return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+				}
+			}
+
+		}
 		if len(info.RoleIds) > 0 {
 			ret, err := s.SetUserRoleIds(ctx, info.RoleIds, data.Id)
 			if ret != true || err != nil {
@@ -293,16 +306,19 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		return nil, err
 	}
 
-	s.mapInt64Items.Set(data.Id, &data)
-
 	// 建后
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&sys_enum.User.Event.AfterCreate.Code() == sys_enum.User.Event.AfterCreate.Code() {
-				hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
+				res, _ := hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
+				res.Detail.Id = data.Id
+				data.Detail = res.Detail
 			}
 		}
 	})
+
+	s.mapInt64Items.Set(data.Id, &data)
+
 	return &data, nil
 }
 
@@ -498,7 +514,7 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ChangePassword.Code() == sys_enum.User.Event.ChangePassword.Code() {
 					// 调用hook
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ChangePassword, *sysUserInfo)
+					_, err = hook.Value.Value(ctx, sys_enum.User.Event.ChangePassword, *sysUserInfo)
 					if err != nil {
 						break
 					}
@@ -538,7 +554,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.ResetPassword.Code() == sys_enum.User.Event.ResetPassword.Code() {
-					err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *kconv.Struct(user, &sys_model.SysUser{}))
+					_, err = hook.Value.Value(ctx, sys_enum.User.Event.ResetPassword, *kconv.Struct(user, &sys_model.SysUser{}))
 					if err != nil {
 						break
 					}
