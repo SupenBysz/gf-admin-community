@@ -11,6 +11,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -592,6 +593,36 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	}
 
 	return true, nil
+}
+
+// SetUserRoles 设置用户角色
+func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error) {
+	data, err := s.GetSysUserById(ctx, userId)
+	if err != nil {
+		return false, err
+	}
+
+	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		for _, roleId := range roleIds {
+			roleInfo, err := sys_service.SysRole().GetRoleById(ctx, roleId)
+
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+			}
+
+			if roleInfo.UnionMainId != makeUserUnionMainId {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, roleInfo.Name+" 角色信息校验失败", sys_dao.SysRole.Table())
+			}
+
+			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userId), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			if ret == true {
+				// 重置用户角色名称，并自动去重
+				data.RoleNames = garray.NewSortedStrArrayFrom(append(data.RoleNames, roleInfo.Name)).Unique().Slice()
+			}
+		}
+		return nil
+	})
+	return err == nil, err
 }
 
 // UpdateUserExDetail 更新用户扩展信息

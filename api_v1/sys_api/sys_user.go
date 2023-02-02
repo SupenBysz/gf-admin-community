@@ -31,6 +31,12 @@ type GetUserDetailReq struct {
 	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
+type SetUserRolesReq struct {
+	g.Meta  `path:"/setUserRoles" method:"post" summary:"设置用户角色" dc:"设置用户所属角色" tags:"用户"`
+	UserId  int64   `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
+	RoleIds []int64 `json:"roleIds" v:"required#角色IDS校验失败" dc:"角色IDS"`
+}
+
 type UserInfoRes sys_model.UserInfo
 type UserInfoListRes sys_model.UserInfoList
 
