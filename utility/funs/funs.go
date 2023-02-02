@@ -91,3 +91,18 @@ func ByteCountIEC[T int64 | uint64](b T) string {
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
+
+func RemoveSliceAt[T int | int64 | string | uint | uint64](slice []T, elem T) []T {
+	if len(slice) == 0 {
+		return slice
+	}
+
+	for i, v := range slice {
+		if v == elem {
+			slice = append(slice[:i], slice[i+1:]...)
+			return RemoveSliceAt(slice, elem)
+			break
+		}
+	}
+	return slice
+}
