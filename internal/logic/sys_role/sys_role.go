@@ -10,6 +10,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -205,7 +207,11 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 			}
 
-			sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			if ret == true {
+				// 重置用户角色名称，并自动去重
+				userInfo.RoleNames = garray.NewSortedStrArrayFrom(append(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+			}
 		}
 		return nil
 	})
@@ -227,7 +233,13 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+	ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+
+	if ret == true {
+		// 重置用户角色名称，并自动去重
+		userInfo.RoleNames = garray.NewSortedStrArrayFrom(funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+	}
+	return ret, err
 }
 
 // GetRoleMemberIds 获取角色下的所有用户ID
