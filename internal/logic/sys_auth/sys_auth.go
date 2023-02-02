@@ -188,7 +188,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 				ConfirmPassword: info.Password,
 			},
 			sys_consts.Global.UserDefaultState,
-			sys_consts.Global.UserDefaultState,
+			sys_consts.Global.UserDefaultType,
 		)
 
 		if err != nil {
