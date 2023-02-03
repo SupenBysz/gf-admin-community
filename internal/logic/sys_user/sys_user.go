@@ -676,18 +676,31 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity
 }
 
 // SetUserMobile 设置用户手机号
-func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha string, userId int64) (bool, error) {
+func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha string, password string, userId int64) (bool, error) {
 	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha)
 	if err != nil {
 		return false, err
 	}
 
-	_, err = sys_dao.SysUser.Ctx(ctx).
-		Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).
-		Where(sys_do.SysUser{Id: userId}).
-		Update()
-
+	userInfo, err := s.GetUserDetail(ctx, userId)
 	if err != nil {
+		return false, err
+	}
+
+	if newMobile == gconv.Int64(userInfo.Mobile) {
+		return true, nil
+	}
+
+	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
+
+	// 用户id和密码作为查询条件
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).
+		Where(sys_do.SysUser{
+			Id:       userId,
+			Password: pwdHash,
+		}))
+
+	if err != nil || affected == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
 	}
 

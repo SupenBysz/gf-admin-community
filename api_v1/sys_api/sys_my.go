@@ -16,7 +16,8 @@ type UpdateUserPasswordReq struct {
 }
 
 type SetUserMobileReq struct {
-	g.Meta  `path:"/setUserMobile" method:"post" summary:"修改用户手机号" tags:"我的"`
-	Mobile  int64  `json:"mobile" v:"required|phone#请数据手机号|手机号错误" dc:"手机号"`
-	Captcha string `json:"captcha" v:"required#请输入手机验证码"`
+	g.Meta   `path:"/setUserMobile" method:"post" summary:"修改用户手机号" tags:"我的"`
+	Mobile   int64  `json:"mobile" v:"required|phone#请数据手机号|手机号错误" dc:"手机号"`
+	Captcha  string `json:"captcha" v:"required#请输入手机验证码"`
+	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码"`
 }
