@@ -38,3 +38,11 @@ func (c *cSysMy) UpdateUserPassword(ctx context.Context, req *sys_api.UpdateUser
 	}
 	return true, nil
 }
+
+// SetUserMobile 设置用户登录手机号
+func (c *cSysMy) SetUserMobile(ctx context.Context, req *sys_api.SetUserMobileReq) (api_v1.BoolRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result, err := sys_service.SysUser().SetUserMobile(ctx, req.Mobile, req.Captcha, req.Password, user.Id)
+	return result == true, err
+}
