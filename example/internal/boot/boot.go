@@ -110,6 +110,11 @@ var (
 						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysOrganization) })
 						// 我的
 						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMy) })
+						// 资质
+						group.Group("/license", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysLicense) })
+						// 审核
+						group.Group("/audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
+
 					})
 				})
 			}
