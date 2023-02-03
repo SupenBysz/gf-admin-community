@@ -16,7 +16,7 @@ type SysAudit struct {
 	State         interface{} // 审核状态：-1不通过，0待审核，1通过
 	Replay        interface{} // 不通过时回复的审核不通过原因
 	UnionMainId   interface{} // 关联业务主体ID：运营商ID、服务商ID、商户ID、消费者ID
-	Category      interface{} // 分类：0未知业务，1运营商主体资质审核，2服务商主体资质审核、4消费者实名审核、8微商实名审核、16商户实名审核;
+	Category      interface{} // 业务类别
 	AuditData     interface{} // 待审核的业务数据包
 	ExpireAt      *gtime.Time // 服务时限
 	AuditReplayAt *gtime.Time // 审核回复时间

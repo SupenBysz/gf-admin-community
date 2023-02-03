@@ -10,5 +10,5 @@ type AuditHookFunc func(ctx context.Context, state sys_enum.AuditEvent, info sys
 type AuditHookInfo struct {
 	Key      sys_enum.AuditEvent
 	Value    AuditHookFunc
-	Category int `json:"category" dc:"业务类型"`
+	Category int `json:"category" dc:"业务类别"`
 }
