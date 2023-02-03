@@ -675,6 +675,25 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity
 	return result, nil
 }
 
+// SetUserMobile 设置用户手机号
+func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha string, userId int64) (bool, error) {
+	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = sys_dao.SysUser.Ctx(ctx).
+		Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).
+		Where(sys_do.SysUser{Id: userId}).
+		Update()
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
+	}
+
+	return true, nil
+}
+
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Password = masker.MaskString(user.Password, masker.Password)
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
