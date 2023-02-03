@@ -6,14 +6,14 @@
 package sys_service
 
 import (
-	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/casbin/casbin/v2"
 )
 
 type (
 	ICasbin interface {
-		InstallHook(userType sys_enum.UserType, hookFunc sys_model.CasbinHookFunc) int64
+		InstallHook(userType sys_enum.UserType, hookFunc sys_hook.CasbinHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Check() error

@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
@@ -22,7 +23,7 @@ import (
 	"time"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.AuthHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
 
 type sSysAuth struct {
 	hookArr []hookInfo
@@ -45,8 +46,8 @@ func New() *sSysAuth {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_model.AuthHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
+func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_hook.AuthHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }

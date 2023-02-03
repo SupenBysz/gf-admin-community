@@ -11,11 +11,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 )
 
 type (
 	ISysUser interface {
-		InstallHook(event sys_enum.UserEvent, hookFunc sys_model.UserHookFunc) int64
+		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)

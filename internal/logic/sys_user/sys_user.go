@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
@@ -28,7 +29,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.UserHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.UserHookInfo]
 
 type sSysUser struct {
 	hookArr       []hookInfo
@@ -47,8 +48,8 @@ func New() *sSysUser {
 }
 
 // InstallHook 安装Hook
-func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_model.UserHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.UserHookInfo{Key: event, Value: hookFunc}}
+func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.UserHookInfo{Key: event, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
