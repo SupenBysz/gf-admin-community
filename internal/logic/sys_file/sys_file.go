@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
@@ -29,7 +30,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.FileHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.FileHookInfo]
 
 type sFile struct {
 	cachePrefix   string
@@ -50,8 +51,8 @@ func New() *sFile {
 }
 
 // InstallHook 安装Hook
-func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_model.FileHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.FileHookInfo{Key: state, Value: hookFunc}}
+func (s *sFile) InstallHook(state sys_enum.UploadEventState, hookFunc sys_hook.FileHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.FileHookInfo{Key: state, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -132,7 +133,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
 		}
 	}
-	
+
 	if in.Name != "" {
 		in.File.Filename = in.Name
 	}
