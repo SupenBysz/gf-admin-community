@@ -13,7 +13,7 @@ type SysAudit struct {
 	Id            int64       `json:"id"            description:""`
 	State         int         `json:"state"         description:"审核状态：-1不通过，0待审核，1通过"`
 	Replay        string      `json:"replay"        description:"不通过时回复的审核不通过原因"`
-	UnionMainId   int64       `json:"unionMainId"   description:"关联业务主体ID：运营商ID、服务商ID、商户ID、消费者ID"`
+	UnionMainId   int64       `json:"unionMainId"   description:"关联主体ID"`
 	Category      int         `json:"category"      description:"业务类别"`
 	AuditData     string      `json:"auditData"     description:"待审核的业务数据包"`
 	ExpireAt      *gtime.Time `json:"expireAt"      description:"服务时限"`
