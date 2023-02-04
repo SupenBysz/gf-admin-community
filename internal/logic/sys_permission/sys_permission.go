@@ -329,6 +329,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 
 	if data.Id <= 0 {
 		data.Id = idgen.NextId()
+		data.IsShow = 1
 		data.CreatedAt = gtime.Now()
 
 		_, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(data)
@@ -344,7 +345,6 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 			Name:        data.Name,
 			Description: data.Description,
 			Identifier:  data.Identifier,
-			IsShow:      1,
 			Type:        data.Type,
 		})
 
