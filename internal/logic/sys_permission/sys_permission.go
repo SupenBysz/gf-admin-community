@@ -327,10 +327,36 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 		}
 	}
 
+	{
+		// 同一分类下，排除重名问题
+		model := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+			Where(sys_do.SysPermission{
+				ParentId: info.ParentId,
+				Name:     info.Name,
+			})
+
+		if info.Id > 0 {
+			model = model.WhereNot(sys_dao.SysPermission.Columns().Id, info.Id)
+		}
+
+		count, _ := model.Count()
+
+		if count > 0 {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "名称在当前分类下已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
+		}
+	}
+
 	if data.Id <= 0 {
 		data.Id = idgen.NextId()
 		data.IsShow = 1
 		data.CreatedAt = gtime.Now()
+
+		{
+			// 校验标识符是否存在
+			if v, _ := s.GetPermissionByIdentifier(ctx, data.Identifier); v != nil {
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "标识符已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
+			}
+		}
 
 		_, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(data)
 
