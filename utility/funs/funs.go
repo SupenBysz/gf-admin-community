@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -50,6 +51,24 @@ func FilterUnionMain(ctx context.Context, search *sys_model.SearchParams, unionM
 	search.Filter = newFilter
 
 	return search
+}
+
+func SearchFilterEx(search *sys_model.SearchParams, fields ...string) *sys_model.SearchParams {
+	result := &sys_model.SearchParams{}
+	newFilter := make([]sys_model.FilterInfo, 0)
+	for _, info := range search.Filter {
+		count := len(result.Filter)
+		for _, field := range fields {
+			if gstr.ToLower(info.Field) == gstr.ToLower(field) {
+				result.Filter = append(result.Filter, info)
+			}
+		}
+		if count == len(result.Filter) {
+			newFilter = append(newFilter, info)
+		}
+	}
+	search.Filter = newFilter
+	return result
 }
 
 func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.Context, info sys_model.License, data *T) (response *T, err error) {
