@@ -221,6 +221,18 @@ func InitPermission() []*permission.SysPermissionTree {
 				sys_enum.Permissions.PermissionType.Create,
 			},
 		},
+	}
+
+	// 添加资质和审核权限树
+	licensePermission := initAuditAndLicensePermission()
+	sys_consts.Global.PermissionTree = append(sys_consts.Global.PermissionTree, licensePermission...)
+
+	return sys_consts.Global.PermissionTree
+}
+
+func initAuditAndLicensePermission() []*permission.SysPermissionTree {
+	result := []*permission.SysPermissionTree{
+
 		// 资质权限树
 		{
 			SysPermission: &sys_entity.SysPermission{
@@ -262,6 +274,5 @@ func InitPermission() []*permission.SysPermissionTree {
 			},
 		},
 	}
-
-	return sys_consts.Global.PermissionTree
+	return result
 }
