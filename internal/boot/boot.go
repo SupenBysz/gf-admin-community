@@ -221,6 +221,46 @@ func InitPermission() []*permission.SysPermissionTree {
 				sys_enum.Permissions.PermissionType.Create,
 			},
 		},
+		// 主体权限树
+		{
+			SysPermission: &sys_entity.SysPermission{
+				Id:         5953153121845333,
+				Name:       "主体",
+				Identifier: "License",
+				Type:       1,
+				IsShow:     1,
+			},
+			Children: []*permission.SysPermissionTree{
+				// 查看主体信息，查看某条主体信息
+				sys_enum.License.PermissionType.ViewDetail,
+				// 主体列表，查看所有主体信息
+				sys_enum.License.PermissionType.List,
+				// 更新资质审核信息，更新某条资质审核信息
+				sys_enum.License.PermissionType.Update,
+				// 创建主体，创建主体信息
+				sys_enum.License.PermissionType.Create,
+				// 设置主体状态，设置某主体认证状态
+				sys_enum.License.PermissionType.SetState,
+			},
+		},
+		// 审核管理权限树
+		{
+			SysPermission: &sys_entity.SysPermission{
+				Id:         5953151699124300,
+				Name:       "审核管理",
+				Identifier: "Audit",
+				Type:       1,
+				IsShow:     1,
+			},
+			Children: []*permission.SysPermissionTree{
+				// 查看审核信息，查看某条资质审核信息
+				sys_enum.Audit.PermissionType.ViewDetail,
+				// 资质审核列表，查看所有资质审核
+				sys_enum.Audit.PermissionType.List,
+				// 更新资质审核信息，更新某条资质审核信息
+				sys_enum.Audit.PermissionType.Update,
+			},
+		},
 	}
 
 	return sys_consts.Global.PermissionTree
