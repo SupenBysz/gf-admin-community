@@ -1,0 +1,1 @@
+COMMENT ON COLUMN "public"."sys_audit"."category" IS '业务类别';

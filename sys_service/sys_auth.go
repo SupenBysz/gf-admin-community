@@ -9,19 +9,19 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 )
 
 type (
 	ISysAuth interface {
-		InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_model.AuthHookFunc) int64
+		InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_hook.AuthHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.TokenInfo, error)
-		InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUser) (*sys_model.TokenInfo, error)
+		InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error)
 		LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.TokenInfo, error)
-		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_entity.SysUser, error)
+		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error)
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error)
 	}

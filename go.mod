@@ -8,6 +8,7 @@ require (
 	github.com/gogf/gf/v2 v2.3.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/joho/godotenv v1.4.0
+	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230201065125-561cdd83b71d
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/yitter/idgenerator-go v1.3.2
 	golang.org/x/crypto v0.5.0

@@ -11,28 +11,32 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 )
 
 type (
 	ISysUser interface {
-		InstallHook(event sys_enum.UserEvent, hookFunc sys_model.UserHookFunc) int64
+		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
-		CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUserRegisterRes, error)
+		CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error)
 		SetUserPermissions(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
-		GetSysUserByUsername(ctx context.Context, username string) (response *sys_entity.SysUser, err error)
+		GetSysUserByUsername(ctx context.Context, username string) (response *sys_model.SysUser, err error)
 		CheckPassword(ctx context.Context, userId int64, password string) (bool, error)
 		HasSysUserByUsername(ctx context.Context, username string) bool
-		GetSysUserById(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
+		GetSysUserById(ctx context.Context, userId int64) (*sys_model.SysUser, error)
 		SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error)
 		DeleteUser(ctx context.Context, id int64) (bool, error)
 		SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error)
 		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
 		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
+		SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error)
+		UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error)
 		GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
+		SetUserMobile(ctx context.Context, newMobile int64, captcha string, password string, userId int64) (bool, error)
 	}
 )
 

@@ -3,8 +3,8 @@ package sys_jwt
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.JwtHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.JwtHookInfo]
 
 type sJwt struct {
 	SigningKey []byte
@@ -42,8 +42,8 @@ func New() *sJwt {
 }
 
 // InstallHook 安装Hook
-func (s *sJwt) InstallHook(userType sys_enum.UserType, hookFunc sys_model.JwtHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.JwtHookInfo{Key: userType, Value: hookFunc}}
+func (s *sJwt) InstallHook(userType sys_enum.UserType, hookFunc sys_hook.JwtHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.JwtHookInfo{Key: userType, Value: hookFunc}}
 
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
@@ -67,7 +67,7 @@ func (s *sJwt) CleanAllHook() {
 }
 
 // GenerateToken 创建一个token
-func (s *sJwt) GenerateToken(ctx context.Context, user *sys_entity.SysUser) (response *sys_model.TokenInfo, err error) {
+func (s *sJwt) GenerateToken(ctx context.Context, user *sys_model.SysUser) (response *sys_model.TokenInfo, err error) {
 	user.Password = ""
 
 	customClaims := &sys_model.JwtCustomClaims{

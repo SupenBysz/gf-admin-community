@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/casbin/casbin/v2"
 	casbinModel "github.com/casbin/casbin/v2/model"
@@ -18,7 +19,7 @@ import (
 	"time"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.CasbinHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.CasbinHookInfo]
 
 type sCasbin struct {
 	reqCasbin sys_model.ReqCasbin
@@ -46,8 +47,8 @@ func New() *sCasbin {
 }
 
 // InstallHook 安装Hook
-func (s *sCasbin) InstallHook(userType sys_enum.UserType, hookFunc sys_model.CasbinHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.CasbinHookInfo{Key: userType, Value: hookFunc}}
+func (s *sCasbin) InstallHook(userType sys_enum.UserType, hookFunc sys_hook.CasbinHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.CasbinHookInfo{Key: userType, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }

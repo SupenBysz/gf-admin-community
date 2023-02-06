@@ -10,6 +10,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -205,7 +207,11 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 			}
 
-			sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			if ret == true {
+				// 重置用户角色名称，并自动去重
+				userInfo.RoleNames = garray.NewSortedStrArrayFrom(append(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+			}
 		}
 		return nil
 	})
@@ -227,11 +233,17 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
 	}
 
-	return sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+	ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+
+	if ret == true {
+		// 重置用户角色名称，并自动去重
+		userInfo.RoleNames = garray.NewSortedStrArrayFrom(funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+	}
+	return ret, err
 }
 
-// GetRoleUserIds 获取角色下的所有用户ID
-func (s *sSysRole) GetRoleUserIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
+// GetRoleMemberIds 获取角色下的所有用户ID
+func (s *sSysRole) GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -260,9 +272,9 @@ func (s *sSysRole) GetRoleUserIds(ctx context.Context, roleId int64, makeUserUni
 	return gconv.Int64s(userIds), nil
 }
 
-// GetRoleUsers 获取角色下的所有用户
-func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
-	userIds, err := s.GetRoleUserIds(ctx, roleId, makeUserUnionMainId)
+// GetRoleMemberList 获取角色下的所有用户
+func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error) {
+	userIds, err := s.GetRoleMemberIds(ctx, roleId, makeUserUnionMainId)
 
 	userInfoArr := make([]*sys_model.SysUser, 0)
 
@@ -288,7 +300,7 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 		user.Password = ""
 		user.RoleNames = make([]string, 0)
 
-		roles, err := sys_service.SysRole().GetUserRoleList(ctx, user.Id)
+		roles, err := sys_service.SysRole().GetRoleByUserIdList(ctx, user.Id)
 		if err == nil && len(roles) > 0 {
 			for _, role := range roles {
 				user.RoleNames = append(user.RoleNames, role.Name)
@@ -300,9 +312,8 @@ func (s *sSysRole) GetRoleUsers(ctx context.Context, roleId int64, makeUserUnion
 	return result, nil
 }
 
-// GetUserRoleList 获取用户拥有的所有角色
-func (s *sSysRole) GetUserRoleList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
-	userInfo := &sys_entity.SysUser{}
+// GetRoleByUserIdList 获取用户拥有的所有角色
+func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 

@@ -9,17 +9,17 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type (
 	IJwt interface {
-		InstallHook(userType sys_enum.UserType, hookFunc sys_model.JwtHookFunc) int64
+		InstallHook(userType sys_enum.UserType, hookFunc sys_hook.JwtHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		GenerateToken(ctx context.Context, user *sys_entity.SysUser) (response *sys_model.TokenInfo, err error)
+		GenerateToken(ctx context.Context, user *sys_model.SysUser) (response *sys_model.TokenInfo, err error)
 		CreateToken(claims *sys_model.JwtCustomClaims) (string, error)
 		RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) (string, error)
 		Middleware(r *ghttp.Request)

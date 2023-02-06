@@ -6,12 +6,11 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -24,7 +23,7 @@ import (
 	"time"
 )
 
-type hookInfo sys_model.KeyValueT[int64, sys_model.AuthHookInfo]
+type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
 
 type sSysAuth struct {
 	hookArr []hookInfo
@@ -47,8 +46,8 @@ func New() *sSysAuth {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_model.AuthHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_model.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
+func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_hook.AuthHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -93,40 +92,52 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 }
 
 // InnerLogin 内部登录，无需校验验证码和密码
-func (s *sSysAuth) InnerLogin(ctx context.Context, sysUserInfo *sys_entity.SysUser) (*sys_model.TokenInfo, error) {
-	if sysUserInfo.State == 0 {
+func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error) {
+	if user.State == 0 {
 		return nil, gerror.New("账号未激活")
 	}
-	if sysUserInfo.State == -1 {
+	if user.State == -1 {
 		return nil, gerror.New("账号已被封号，您可联系客服进行申诉")
 	}
-	if sysUserInfo.State == -2 {
+	if user.State == -2 {
 		return nil, gerror.New("账号异常，请联系客服处理")
 	}
-	if sysUserInfo.State == -3 {
+	if user.State == -3 {
 		return nil, gerror.New("账号查已注销")
 	}
 
-	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, sysUserInfo)
+	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
 	// 校验登录类型
-	if sys_consts.Global.NotAllowLoginUserTypeArr.Contains(sysUserInfo.Type) {
+	if sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+	}
+
+	{
+		// 更新用户最后登录信息
+		area, _ := sys_consts.Global.Searcher.SearchByStr(g.RequestFromCtx(ctx).GetRemoteIp())
+		user.Detail.Id = user.Id
+		user.Detail.LastLoginIp = g.RequestFromCtx(ctx).GetRemoteIp()
+		user.Detail.LastLoginArea = area
+		user.Detail.LastLoginAt = gtime.Now()
 	}
 
 	for _, hook := range s.hookArr {
 		// 判断注入的Hook用户类型是否一致
-		if hook.Value.UserType.Code()&sysUserInfo.Type == sysUserInfo.Type {
+		if hook.Value.UserType.Code()&user.Type == user.Type {
 			// 用户类型一致则调用注入的Hook函数
-			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, *sysUserInfo)
+			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, user)
 		}
 		if err != nil {
 			return nil, err
 		}
 	}
+
+	sys_service.SysUser().UpdateUserExDetail(ctx, user)
+
 	return tokenInfo, err
 }
 
@@ -155,7 +166,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobil
 }
 
 // Register 注册账号
-func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_entity.SysUser, error) {
+func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error) {
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
@@ -165,20 +176,21 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
 
-	data := sys_entity.SysUser{
-		Id:        idgen.NextId(),
-		Username:  info.Username,
-		Password:  gmd5.MustEncryptString(info.Username + info.Password),
-		State:     1,
-		Type:      1,
-		CreatedAt: gtime.Now(),
-	}
+	data := sys_model.SysUser{}
 	pwd, _ := en_crypto.PwdHash(data.Password, gconv.String(data.Id))
 	data.Password = pwd
 
 	// 开启事务
 	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := tx.Model(data).Hook(daoctl.CacheHookHandler).Insert(data)
+		data, err := sys_service.SysUser().CreateUser(ctx,
+			sys_model.UserInnerRegister{
+				Username:        info.Username,
+				Password:        info.Password,
+				ConfirmPassword: info.Password,
+			},
+			sys_consts.Global.UserDefaultState,
+			sys_consts.Global.UserDefaultType,
+		)
 
 		if err != nil {
 			return err

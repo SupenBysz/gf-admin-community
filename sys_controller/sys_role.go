@@ -101,7 +101,7 @@ func (c *cSysRole) GetRoleMemberIds(ctx context.Context, req *sys_api.GetRoleMem
 	// 获取当前登录用户的UnionMainId
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	return sys_service.SysRole().GetRoleUserIds(ctx, req.RoleId, unionMainId)
+	return sys_service.SysRole().GetRoleMemberIds(ctx, req.RoleId, unionMainId)
 }
 
 // GetRoleMemberList 获取角色下的所有用户|列表
@@ -114,7 +114,7 @@ func (c *cSysRole) GetRoleMemberList(ctx context.Context, req *sys_api.GetRoleMe
 	// 获取当前登录用户的UnionMainId
 	unionMainId := sys_service.SysSession().Get(ctx).JwtClaimsUser.UnionMainId
 
-	data, err := sys_service.SysRole().GetRoleUsers(ctx, req.RoleId, unionMainId)
+	data, err := sys_service.SysRole().GetRoleMemberList(ctx, req.RoleId, unionMainId)
 
 	if err != nil {
 		return nil, err
@@ -135,9 +135,9 @@ func (c *cSysRole) GetRoleMemberList(ctx context.Context, req *sys_api.GetRoleMe
 	}, err
 }
 
-// GetRolesMemberById 获取用户拥有的所有角色列表
-func (c *cSysRole) GetRolesMemberById(ctx context.Context, req *sys_api.GetRolesMemberByIdReq) (*sys_model.RoleListRes, error) {
-	data, err := sys_service.SysRole().GetUserRoleList(ctx, req.UserId)
+// GetRoleByUserIdList 获取用户ID获取所有关联角色
+func (c *cSysRole) GetRoleByUserIdList(ctx context.Context, req *sys_api.GetRoleByUserIdListReq) (*sys_model.RoleListRes, error) {
+	data, err := sys_service.SysRole().GetRoleByUserIdList(ctx, req.UserId)
 
 	if err != nil {
 		return nil, err
