@@ -223,5 +223,56 @@ func InitPermission() []*permission.SysPermissionTree {
 		},
 	}
 
+	// 添加资质和审核权限树
+	licensePermission := initAuditAndLicensePermission()
+	sys_consts.Global.PermissionTree = append(sys_consts.Global.PermissionTree, licensePermission...)
+
 	return sys_consts.Global.PermissionTree
+}
+
+func initAuditAndLicensePermission() []*permission.SysPermissionTree {
+	result := []*permission.SysPermissionTree{
+
+		// 资质权限树
+		{
+			SysPermission: &sys_entity.SysPermission{
+				Id:         5953153121845333,
+				Name:       "资质",
+				Identifier: "License",
+				Type:       1,
+				IsShow:     1,
+			},
+			Children: []*permission.SysPermissionTree{
+				// 查看资质信息，查看某条资质信息
+				sys_enum.License.PermissionType.ViewDetail,
+				// 资质列表，查看所有资质信息
+				sys_enum.License.PermissionType.List,
+				// 更新资质审核信息，更新某条资质审核信息
+				sys_enum.License.PermissionType.Update,
+				// 创建资质，创建资质信息
+				sys_enum.License.PermissionType.Create,
+				// 设置资质状态，设置某资质认证状态
+				sys_enum.License.PermissionType.SetState,
+			},
+		},
+		// 审核管理权限树
+		{
+			SysPermission: &sys_entity.SysPermission{
+				Id:         5953151699124300,
+				Name:       "审核管理",
+				Identifier: "Audit",
+				Type:       1,
+				IsShow:     1,
+			},
+			Children: []*permission.SysPermissionTree{
+				// 查看审核信息，查看某条资质审核信息
+				sys_enum.Audit.PermissionType.ViewDetail,
+				// 资质审核列表，查看所有资质审核
+				sys_enum.Audit.PermissionType.List,
+				// 更新资质审核信息，更新某条资质审核信息
+				sys_enum.Audit.PermissionType.Update,
+			},
+		},
+	}
+	return result
 }
