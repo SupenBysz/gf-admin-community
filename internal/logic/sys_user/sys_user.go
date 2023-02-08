@@ -549,8 +549,10 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 
 // UpdateUserPassword 修改用户登录密码
 func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error) {
-	// 查询到用户信息
-	sysUserInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
+	// 查询到用户信息 不能使用这个操作去查询用户，因为masker操作会把用户密码变空
+	//sysUserInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
+
+	sysUserInfo, err := daoctl.GetByIdWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), userId)
 
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户不存在")
@@ -750,21 +752,27 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 		return false, err
 	}
 
-	userInfo, has := s.mapInt64Items.Search(userId)
-	if !has {
+	result, err := s.redisCache.Get(ctx, userId)
+	userInfo := sys_model.SysUser{}
+	result.Struct(&userInfo)
+
+	//userInfo, has := s.mapInt64Items.Search(userId)
+	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
 	}
 	if newMobile == gconv.Int64(userInfo.Mobile) {
 		return true, nil
 	}
 
+	// 检验密码
+	user, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), userInfo.Id)
+
 	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
-	if pwdHash != userInfo.Password {
+	if pwdHash != user.Password {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登录密码错误")
 	}
 
-	// 用户id和密码作为查询条件
-	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).
 		Where(sys_do.SysUser{
 			Id: userId,
 		}))
