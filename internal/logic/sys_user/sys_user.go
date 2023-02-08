@@ -32,8 +32,11 @@ import (
 type hookInfo sys_model.KeyValueT[int64, sys_hook.UserHookInfo]
 
 type sSysUser struct {
-	hookArr       []hookInfo
-	mapInt64Items *kmap.HashMap[int64, *sys_model.SysUser]
+	hookArr    []hookInfo
+	redisCache *gcache.Cache
+	Duration   time.Duration
+	
+	// mapInt64Items *kmap.HashMap[int64, *sys_model.SysUser]
 }
 
 func init() {
@@ -41,9 +44,30 @@ func init() {
 }
 
 func New() *sSysUser {
+	cache := gcache.New()
+	// 获取配置文件addr对象
+	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
+
+	conf, _ := gredis.GetConfig(sys_dao.SysUser.Table(), "default")
+
+	// 设置服务端口和ip
+	conf.Address = addr.String()
+	// 不同的表分配不同的redis数据库
+	conf.Db = 1
+
+	// 根据配置创建Redis
+	redis, _ := gredis.New(conf)
+
+	// 设置Redis适配器
+	cache.SetAdapter(gcache.NewAdapterRedis(redis))
+
 	return &sSysUser{
-		hookArr:       make([]hookInfo, 0),
-		mapInt64Items: kmap.New[int64, *sys_model.SysUser](),
+		redisCache: cache,
+		hookArr:    make([]hookInfo, 0),
+		Duration:   time.Hour,
+		// mapInt64Items: kmap.New[int64, *sys_model.SysUser](),
+	}
+}
 	}
 }
 
