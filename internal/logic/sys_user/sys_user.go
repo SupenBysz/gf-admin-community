@@ -136,7 +136,9 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 			info.PageSize = 1
 		}
 		// 如果缓存没有数据则直接返回
-		if s.mapInt64Items.Size() <= 0 {
+		size, _ := s.redisCache.Size(ctx)
+
+		if size <= 0 {
 			response.PaginationRes = sys_model.PaginationRes{
 				Pagination: info.Pagination,
 				PageTotal:  0,
@@ -151,19 +153,27 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		// 初始化分页统计信息
 		response.PaginationRes = sys_model.PaginationRes{
 			Pagination: info.Pagination,
-			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(s.mapInt64Items.Size()) / gconv.Float64(info.PageSize))),
-			Total:      gconv.Int64(s.mapInt64Items.Size()),
+			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(size) / gconv.Float64(info.PageSize))),
+			Total:      gconv.Int64(size),
 		}
 		beginRowIndex := info.PageNum*info.PageSize - info.PageSize
-		s.mapInt64Items.Iterator(func(k int64, v *sys_model.SysUser) bool {
+
+		// 获得所有的key，遍历
+		keys, _ := s.redisCache.Keys(ctx)
+
+		for _, k := range keys {
 			if beginRowIndex > 0 {
 				beginRowIndex--
 			} else if len(response.Records) < info.PageSize {
 				// 查询用户所拥有的角色
-				roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(v.Id), sys_consts.CasbinDomain)
+				get := s.redisCache.MustGet(ctx, k)
+				sysUser := &sys_model.SysUser{}
+				get.Struct(&sysUser)
 
-				user := kconv.Struct(v, &sys_model.SysUser{})
-				user.RoleNames = []string{}
+				roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(sysUser.Id), sys_consts.CasbinDomain)
+
+				//user := kconv.Struct(sysUser, &sys_model.SysUser{})
+				sysUser.RoleNames = []string{}
 
 				// 如果有角色信息则加载角色信息
 				if len(roleIds) > 0 {
@@ -178,19 +188,21 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 					}, unionMainId)
 					if err == nil && len(roles.Records) > 0 {
 						for _, role := range roles.Records {
-							user.RoleNames = append(user.RoleNames, role.Name)
+							sysUser.RoleNames = append(sysUser.RoleNames, role.Name)
 						}
 					}
 				}
-				user = s.masker(user)
-				response.Records = append(response.Records, user)
+				// user = s.masker(user)
+				sysUser = s.masker(sysUser)
+
+				response.Records = append(response.Records, sysUser)
 			}
 
 			sort.Slice(response.Records, func(i, j int) bool {
 				return response.Records[i].CreatedAt.After(response.Records[j].CreatedAt)
 			})
-			return true
-		})
+
+		}
 		return
 	}
 
