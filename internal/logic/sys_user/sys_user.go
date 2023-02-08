@@ -68,6 +68,21 @@ func New() *sSysUser {
 		// mapInt64Items: kmap.New[int64, *sys_model.SysUser](),
 	}
 }
+
+// 初始化缓存
+func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
+	size, _ := s.redisCache.Size(ctx)
+	if size > 0 {
+		return
+	}
+
+	items := daoctl.Scan[[]*sys_model.SysUser](
+		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).With(sys_model.SysUser{}.Detail).
+			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
+	)
+	s.redisCache.Clear(ctx)
+	for _, sysPermission := range *items {
+		s.redisCache.Set(ctx, sysPermission.Id, sysPermission, s.Duration)
 	}
 }
 
@@ -93,21 +108,6 @@ func (s *sSysUser) UnInstallHook(savedHookId int64) {
 // CleanAllHook 清除所有Hook
 func (s *sSysUser) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
-}
-
-func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
-	if s.mapInt64Items.Size() > 0 {
-		return
-	}
-
-	items := daoctl.Scan[[]*sys_model.SysUser](
-		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).With(sys_model.SysUser{}.Detail).
-			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
-	)
-	s.mapInt64Items.Clear()
-	for _, sysPermission := range *items {
-		s.mapInt64Items.Set(sysPermission.Id, sysPermission)
-	}
 }
 
 // QueryUserList 获取用户列表
