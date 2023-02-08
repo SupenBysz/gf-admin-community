@@ -5,28 +5,30 @@ import (
 	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
-	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
+	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gcache"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
-
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
-	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"time"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.UserHookInfo]
@@ -35,7 +37,7 @@ type sSysUser struct {
 	hookArr    []hookInfo
 	redisCache *gcache.Cache
 	Duration   time.Duration
-	
+
 	// mapInt64Items *kmap.HashMap[int64, *sys_model.SysUser]
 }
 
@@ -355,7 +357,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 	})
 
-	s.mapInt64Items.Set(data.Id, &data)
+	s.redisCache.Set(ctx, data.Id, &data, s.Duration)
 
 	return &data, nil
 }
@@ -375,13 +377,17 @@ func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permiss
 func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (response *sys_model.SysUser, err error) {
 	s.initInnerCacheItems(ctx)
 
-	s.mapInt64Items.Iterator(func(k int64, v *sys_model.SysUser) bool {
-		if v.Username == username {
-			response = kconv.Struct(v, &sys_model.SysUser{})
-			return false
+	keys, err := s.redisCache.Keys(ctx)
+	for _, k := range keys {
+		get := s.redisCache.MustGet(ctx, k)
+		user := &sys_model.SysUser{}
+		get.Struct(&user)
+
+		if user.Username == username {
+			response = user
+			return
 		}
-		return true
-	})
+	}
 
 	if response == nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
@@ -419,13 +425,15 @@ func (s *sSysUser) HasSysUserByUsername(ctx context.Context, username string) bo
 func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model.SysUser, error) {
 	s.initInnerCacheItems(ctx)
 
-	data, has := s.mapInt64Items.Search(userId)
-
-	if !has {
+	get, err := s.redisCache.Get(ctx, userId)
+	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	return s.masker(kconv.Struct(data, &sys_model.SysUser{})), nil
+	user := sys_model.SysUser{}
+	get.Struct(&user)
+
+	return s.masker(&user), nil
 }
 
 // SetUserPermissionIds 设置用户权限
@@ -495,7 +503,8 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除员工信息失败", sys_dao.SysUser.Table())
 	}
 
-	s.mapInt64Items.Remove(id)
+	s.redisCache.Remove(ctx, id)
+	// s.mapInt64Items.Remove(id)
 	return true, nil
 }
 
@@ -509,8 +518,10 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 	if err != nil || result == nil {
 		return false, err
 	}
-	data := s.mapInt64Items.Get(userId)
-	data.Username = newUsername
+	data, err := s.redisCache.Get(ctx, userId)
+	user := sys_model.SysUser{}
+	data.Struct(&user)
+	user.Username = newUsername
 	return true, nil
 }
 
@@ -525,8 +536,11 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 		return false, err
 	}
 
-	data := s.mapInt64Items.Get(userId)
-	data.State = state.Code()
+	data, err := s.redisCache.Get(ctx, userId)
+	user := sys_model.SysUser{}
+	data.Struct(&user)
+
+	user.State = state.Code()
 	return true, nil
 }
 
@@ -578,8 +592,12 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
 	}
 
-	data := s.mapInt64Items.Get(userId)
-	data.Password = pwdHash
+	// data := s.mapInt64Items.Get(userId)
+	data, err := s.redisCache.Get(ctx, userId)
+	user := sys_model.SysUser{}
+	data.Struct(&user)
+
+	user.Password = pwdHash
 	return true, nil
 }
 
@@ -631,8 +649,11 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")
 		}
 
-		data := s.mapInt64Items.Get(userId)
-		data.Password = pwdHash
+		data, err := s.redisCache.Get(ctx, userId)
+		user := sys_model.SysUser{}
+		data.Struct(&user)
+
+		user.Password = pwdHash
 	}
 
 	return true, nil
@@ -696,20 +717,25 @@ func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUs
 			return nil, err
 		}
 	}
-	s.mapInt64Items.Set(user.Id, user)
+
+	s.redisCache.Set(ctx, user.Id, user, s.Duration)
 	return user, nil
 }
 
 // GetUserDetail 查看用户详情，含完整手机号
 func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
 	s.initInnerCacheItems(ctx)
-	data, has := s.mapInt64Items.Search(userId)
-	if !has {
+
+	get, err := s.redisCache.Get(ctx, userId)
+	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
 	}
-	result := kconv.Struct(data, &sys_entity.SysUser{})
-	result.Password = masker.MaskString(result.Password, masker.Password)
-	return result, nil
+
+	user := sys_entity.SysUser{}
+	get.Struct(&user)
+
+	user.Password = masker.MaskString(user.Password, masker.Password)
+	return &user, nil
 }
 
 // SetUserMobile 设置用户手机号
@@ -744,7 +770,9 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
 	}
 
-	data := s.mapInt64Items.Get(userId)
+	newUserInfo, err := s.redisCache.Get(ctx, userId)
+	data := sys_model.SysUser{}
+	newUserInfo.Struct(&data)
 	data.Mobile = gconv.String(newMobile)
 
 	return true, nil
