@@ -400,9 +400,12 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 // CheckPassword 检查密码是否正确
 func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password string) (bool, error) {
 	s.initInnerCacheItems(ctx)
-	data, has := s.mapInt64Items.Search(userId)
 
-	if !has {
+	// data, has := s.mapInt64Items.Search(userId)
+
+	userInfo, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler), userId)
+
+	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
@@ -412,7 +415,7 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
 	pwdHash, err := en_crypto.PwdHash(password, salt)
 
-	return data.Password == pwdHash, err
+	return userInfo.Password == pwdHash, err
 }
 
 // HasSysUserByUsername 判断用户名是否存在
