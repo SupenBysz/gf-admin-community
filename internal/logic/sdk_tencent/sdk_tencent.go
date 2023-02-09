@@ -8,7 +8,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -159,7 +158,7 @@ func (s *sSdkTencent) GetTencentSdkConfList(ctx context.Context) ([]*sys_model.T
 
 	data := &sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(data)
 
@@ -223,16 +222,16 @@ func (s *sSdkTencent) SaveTencentSdkConf(ctx context.Context, info *sys_model.Te
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -266,7 +265,7 @@ func (s *sSdkTencent) DeleteTencentSdkConf(ctx context.Context, identifier strin
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Hook(daoctl.HookHandler).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "腾讯云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

@@ -7,7 +7,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/kmap"
 	"io"
@@ -232,7 +231,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
 
-	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
+	count, err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
 		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
 	} else {
@@ -410,7 +409,7 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 	}
 	{
 		file := &sys_entity.SysFile{}
-		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.HookHandler).
+		model := sys_dao.SysFile.Ctx(ctx).
 			Where(sys_do.SysFile{Id: id})
 
 		if sessionUser.IsAdmin == false {

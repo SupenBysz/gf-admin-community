@@ -53,7 +53,7 @@ func (s *sSdkAliyun) fetchAliyunSdkConfToken(ctx context.Context, identifier str
 
 	// 请求头
 	// Host 请求的服务器URL
-	// User-Agent: curl/7.49.1 Accept: */*.Hook(daoctl.HookHandler)
+	// User-Agent: curl/7.49.1 Accept: */*
 	// Content-type: application/x-www-form-urlencoded
 
 	//	请求参数
@@ -176,7 +176,7 @@ func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) ([]*sys_model.Ali
 
 	data := sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
@@ -240,16 +240,16 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info *sys_model.Aliy
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -286,7 +286,7 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
