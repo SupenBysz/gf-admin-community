@@ -357,7 +357,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 	})
 
-	s.redisCache.Set(ctx, data.Id, &data, s.Duration)
+	s.redisCache.Set(ctx, data.Id, data, s.Duration)
 
 	return &data, nil
 }
@@ -525,6 +525,9 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 	user := sys_model.SysUser{}
 	data.Struct(&user)
 	user.Username = newUsername
+
+	s.redisCache.Set(ctx, userId, user, s.Duration)
+
 	return true, nil
 }
 
@@ -542,8 +545,10 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 	data, err := s.redisCache.Get(ctx, userId)
 	user := sys_model.SysUser{}
 	data.Struct(&user)
-
 	user.State = state.Code()
+
+	s.redisCache.Set(ctx, userId, user, s.Duration)
+
 	return true, nil
 }
 
@@ -597,12 +602,14 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
 	}
 
-	// data := s.mapInt64Items.Get(userId)
 	data, err := s.redisCache.Get(ctx, userId)
 	user := sys_model.SysUser{}
 	data.Struct(&user)
 
 	user.Password = pwdHash
+
+	s.redisCache.Set(ctx, userId, user, s.Duration)
+
 	return true, nil
 }
 
@@ -659,6 +666,8 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		data.Struct(&user)
 
 		user.Password = pwdHash
+
+		s.redisCache.Set(ctx, userId, user, s.Duration)
 	}
 
 	return true, nil
@@ -756,7 +765,6 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 	userInfo := sys_model.SysUser{}
 	result.Struct(&userInfo)
 
-	//userInfo, has := s.mapInt64Items.Search(userId)
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
 	}
@@ -781,10 +789,9 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
 	}
 
-	newUserInfo, err := s.redisCache.Get(ctx, userId)
-	data := sys_model.SysUser{}
-	newUserInfo.Struct(&data)
-	data.Mobile = gconv.String(newMobile)
+	userInfo.Mobile = gconv.String(newMobile)
+
+	s.redisCache.Set(ctx, userId, userInfo, s.Duration)
 
 	return true, nil
 }
