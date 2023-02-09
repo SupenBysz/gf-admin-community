@@ -46,28 +46,9 @@ func init() {
 }
 
 func New() *sSysUser {
-	cache := gcache.New()
-	// 获取配置文件addr对象
-	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
-
-	conf, _ := gredis.GetConfig(sys_dao.SysUser.Table(), "default")
-
-	// 设置服务端口和ip
-	conf.Address = addr.String()
-	// 不同的表分配不同的redis数据库
-	conf.Db = 1
-
-	// 根据配置创建Redis
-	redis, _ := gredis.New(conf)
-
-	// 设置Redis适配器
-	cache.SetAdapter(gcache.NewAdapterRedis(redis))
-
 	return &sSysUser{
-		redisCache: cache,
+		redisCache: gcache.New(),
 		hookArr:    make([]hookInfo, 0),
-		Duration:   time.Hour,
-		// mapInt64Items: kmap.New[int64, *sys_model.SysUser](),
 	}
 }
 
@@ -79,12 +60,12 @@ func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
 	}
 
 	items := daoctl.Scan[[]*sys_model.SysUser](
-		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.CacheHookHandler).With(sys_model.SysUser{}.Detail).
+		sys_dao.SysUser.Ctx(ctx).Hook(daoctl.HookHandler).With(sys_model.SysUser{}.Detail).
 			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
 	)
 	s.redisCache.Clear(ctx)
-	for _, sysPermission := range *items {
-		s.redisCache.Set(ctx, sysPermission.Id, sysPermission, s.Duration)
+	for _, sysUser := range *items {
+		s.redisCache.Set(ctx, sysUser.Id, sysUser, s.Duration)
 	}
 }
 
