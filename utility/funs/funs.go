@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
+	"reflect"
 )
 
 func If[R any](condition bool, trueVal, falseVal R) R {
@@ -200,4 +201,31 @@ func RemoveSliceAt[T int | int64 | string | uint | uint64](slice []T, elem T) []
 		}
 	}
 	return slice
+}
+
+func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func(data TP)) context.Context {
+	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
+
+	def := func(data TP) {}
+
+	if len(builder) > 0 {
+		def = builder[0]
+	}
+
+	return context.WithValue(ctx, key,
+		sys_model.KeyValueT[string, func(data TP)]{
+			Key:   key,
+			Value: def,
+		},
+	)
+}
+
+func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP) {
+	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
+	v := ctx.Value(key)
+
+	data, has := v.(sys_model.KeyValueT[string, func(data TP)])
+	if v != nil && has {
+		data.Value(builder())
+	}
 }
