@@ -55,7 +55,7 @@ func cleanCache[T gdb.HookInsertInput | gdb.HookUpdateInput | gdb.HookDeleteInpu
 		input.Model.Cache(conf)
 		table = input.Table
 		model = input.Model
-	} else if input, ok := interface{}(in).(*gdb.HookUpdateInput); ok == true {
+	} else if input, ok := interface{}(in).(*gdb.HookDeleteInput); ok == true {
 		input.Model.Cache(conf)
 		table = input.Table
 		model = input.Model
