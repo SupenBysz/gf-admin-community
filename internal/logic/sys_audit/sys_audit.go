@@ -114,7 +114,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		}),
 		Pagination: *pagination,
 	}
-	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler), &filter, false)
+	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), &filter, false)
 
 	auditList := make([]sys_entity.SysAudit, 0)
 	for _, item := range result.Records {
@@ -159,7 +159,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 // GetAuditById 根据ID获取审核信息
 func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit {
 
-	result, err := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), id)
 
 	if err != nil {
 		return nil
@@ -198,7 +198,7 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 // GetAuditByLatestUnionMainId 获取最新的业务主体审核信息
 func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
 	result := sys_entity.SysAudit{}
-	err := sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
+	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
 	}
@@ -225,7 +225,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
 			// 查询当前关联业务ID是否有审核记录
-			err := sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysAudit{
+			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
 				UnionMainId: info.UnionMainId,
 				Category:    info.Category,
 			}).Scan(&audit)
@@ -252,7 +252,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 					data.HistoryItems = gjson.MustEncodeString(historyItems)
 				})
 
-				_, err = sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler).Delete(sys_do.SysAudit{Id: audit.Id})
+				_, err = sys_dao.SysAudit.Ctx(ctx).Delete(sys_do.SysAudit{Id: audit.Id})
 				if err != nil {
 					return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核前置信息失败", sys_dao.SysAudit.Table())
 				}
@@ -262,7 +262,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 		data.Id = idgen.NextId()
 		data.CreatedAt = gtime.Now()
 
-		_, err := sys_dao.SysAudit.Ctx(ctx).Data(data).Hook(daoctl.HookHandler).Insert()
+		_, err := sys_dao.SysAudit.Ctx(ctx).Data(data).Insert()
 
 		if err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", sys_dao.SysAudit.Table())
@@ -318,7 +318,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, replay
 			State:         state,
 			Replay:        replay,
 			AuditReplayAt: gtime.Now(),
-		}).Hook(daoctl.HookHandler).Where(sys_do.SysAudit{
+		}).Where(sys_do.SysAudit{
 			Id:          info.Id,
 			UnionMainId: info.UnionMainId,
 			Category:    info.Category,

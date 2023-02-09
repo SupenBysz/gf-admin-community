@@ -82,7 +82,7 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 		})
 	}
 
-	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler), &info, false)
+	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, false)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())
@@ -126,7 +126,7 @@ func (s *sSysPermission) initInnerCacheItems(ctx context.Context) {
 	}
 
 	items := daoctl.Scan[[]*sys_entity.SysPermission](
-		sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).
+		sys_dao.SysPermission.Ctx(ctx).
 			OrderAsc(sys_dao.SysPermission.Columns().ParentId).
 			OrderAsc(sys_dao.SysPermission.Columns().Sort),
 	)
@@ -292,7 +292,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			if permissionTree.Id == 0 {
 				permissionTree.Id = idgen.NextId()
 			}
-			result, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).Insert(permissionTree.SysPermission)
+			result, err := sys_dao.SysPermission.Ctx(ctx).Insert(permissionTree.SysPermission)
 
 			if err != nil {
 				fmt.Printf("插入权限信息：%+v\t\t失败\n%v\n\n\n", permissionTree.SysPermission, err)
@@ -329,7 +329,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 
 	{
 		// 同一分类下，排除重名问题
-		model := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).
+		model := sys_dao.SysPermission.Ctx(ctx).
 			Where(sys_do.SysPermission{
 				ParentId: info.ParentId,
 				Name:     info.Name,
@@ -358,14 +358,14 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 			}
 		}
 
-		_, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).Insert(data)
+		_, err := sys_dao.SysPermission.Ctx(ctx).Insert(data)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增权限信息失败", sys_dao.SysPermission.Table())
 		}
 	} else {
 		data.UpdatedAt = gtime.Now()
-		_, err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).
+		_, err := sys_dao.SysPermission.Ctx(ctx).
 			Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
 			ParentId:    data.ParentId,
 			Name:        data.Name,
@@ -391,7 +391,7 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 		return false, err
 	}
 
-	_, err = sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).Delete(sys_do.SysPermission{Id: permissionId})
+	_, err = sys_dao.SysPermission.Ctx(ctx).Delete(sys_do.SysPermission{Id: permissionId})
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除权限信息失败", sys_dao.SysPermission.Table())
@@ -419,7 +419,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 	// 在权限树标识中匹标识后缀，|为标识符的分隔符
 	path = "%|" + path
 
-	err := sys_dao.SysPermission.Ctx(ctx).Hook(daoctl.HookHandler).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
+	err := sys_dao.SysPermission.Ctx(ctx).WhereLike(sys_dao.SysPermission.Columns().Identifier, path).Scan(&result)
 
 	if err != nil {
 		return nil, err

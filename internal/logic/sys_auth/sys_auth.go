@@ -9,7 +9,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -171,7 +170,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
-	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Hook(daoctl.HookHandler).Count(sys_dao.SysUser.Columns().Username, info.Username)
+	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
@@ -223,7 +222,7 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
-	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Hook(daoctl.HookHandler).Count(sys_do.SysUser{Username: info.Username})
+	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
 	if count <= 0 || err != nil {
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名错误")
 	}
@@ -261,7 +260,7 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	// 加密
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 
-	result, err := sys_dao.SysUser.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})
+	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})
 
 	// 受影响的行数
 	count, _ := result.RowsAffected()

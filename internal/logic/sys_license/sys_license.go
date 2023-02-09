@@ -41,7 +41,7 @@ func NewSysLicense() *sSysLicense {
 // GetLicenseById 根据ID获取主体认证|信息
 func (s *sSysLicense) GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysLicense, error) {
 	data := sys_entity.SysLicense{}
-	err := sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).Scan(&data, sys_do.SysLicense{Id: id})
+	err := sys_dao.SysLicense.Ctx(ctx).Scan(&data, sys_do.SysLicense{Id: id})
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "主体信息不存在", sys_dao.SysLicense.Table())
@@ -51,7 +51,7 @@ func (s *sSysLicense) GetLicenseById(ctx context.Context, id int64) (*sys_entity
 
 // QueryLicenseList 查询主体认证|列表
 func (s *sSysLicense) QueryLicenseList(ctx context.Context, search sys_model.SearchParams) (*sys_model.LicenseListRes, error) {
-	result, err := daoctl.Query[sys_entity.SysLicense](sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler), &search, false)
+	result, err := daoctl.Query[sys_entity.SysLicense](sys_dao.SysLicense.Ctx(ctx), &search, false)
 
 	return (*sys_model.LicenseListRes)(result), err
 }
@@ -75,7 +75,7 @@ func (s *sSysLicense) CreateLicense(ctx context.Context, info sys_model.License)
 
 	{
 		// 创建主体信息
-		_, err := sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).Insert(result)
+		_, err := sys_dao.SysLicense.Ctx(ctx).Insert(result)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增主体信息失败", sys_dao.SysLicense.Table())
@@ -126,14 +126,14 @@ func (s *sSysLicense) UpdateLicense(ctx context.Context, info sys_model.License,
 			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogId)
 			// 未审核通过的主体资质，直接更改待审核的资质信息
 			if audit != nil && audit.State == 0 {
-				_, err := tx.Ctx(ctx).Model(sys_dao.SysLicense.Table()).Hook(daoctl.HookHandler).Where(sys_do.SysLicense{Id: id}).OmitNil().Save(&newData)
+				_, err := tx.Ctx(ctx).Model(sys_dao.SysLicense.Table()).Where(sys_do.SysLicense{Id: id}).OmitNil().Save(&newData)
 				if err != nil {
 					return sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，更新主体信息失败", sys_dao.SysLicense.Table())
 				}
 
 				// 更新待审核的审核信息
 				newAudit.Id = audit.Id
-				_, err = sys_dao.SysAudit.Ctx(ctx).Hook(daoctl.HookHandler).Data(newAudit).Where(sys_do.SysAudit{Id: audit.Id}).Update()
+				_, err = sys_dao.SysAudit.Ctx(ctx).Data(newAudit).Where(sys_do.SysAudit{Id: audit.Id}).Update()
 				if err != nil {
 					return sys_service.SysLogs().ErrorSimple(ctx, err, "更新审核信息失败", sys_dao.SysLicense.Table())
 				}
@@ -157,7 +157,7 @@ func (s *sSysLicense) SetLicenseState(ctx context.Context, id int64, state int) 
 		return false, err
 	}
 
-	_, err = sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).Data(sys_do.SysLicense{State: state}).OmitNilData().Where(sys_do.SysLicense{Id: id}).Update()
+	_, err = sys_dao.SysLicense.Ctx(ctx).Data(sys_do.SysLicense{State: state}).OmitNilData().Where(sys_do.SysLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新主体状态信息失败", sys_dao.SysLicense.Table())
@@ -173,7 +173,7 @@ func (s *sSysLicense) SetLicenseAuditNumber(ctx context.Context, id int64, audit
 		return false, err
 	}
 
-	_, err = sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).Data(sys_do.SysLicense{LatestAuditLogId: auditNumber}).OmitNilData().Where(sys_do.SysLicense{Id: id}).Update()
+	_, err = sys_dao.SysLicense.Ctx(ctx).Data(sys_do.SysLicense{LatestAuditLogId: auditNumber}).OmitNilData().Where(sys_do.SysLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新主体证照审核编号失败", sys_dao.SysLicense.Table())
@@ -204,7 +204,7 @@ func (s *sSysLicense) UpdateLicenseAuditLogId(ctx context.Context, id int64, lat
 	// 构建资质对象
 	license := sys_entity.SysLicense{}
 	// 加载资质信息
-	err = sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).Scan(&license, sys_do.SysLicense{Id: id})
+	err = sys_dao.SysLicense.Ctx(ctx).Scan(&license, sys_do.SysLicense{Id: id})
 	// 如果资质不存在则无需更新，直接返回
 	if err == sql.ErrNoRows {
 		return true, nil
@@ -218,7 +218,7 @@ func (s *sSysLicense) UpdateLicenseAuditLogId(ctx context.Context, id int64, lat
 	}
 
 	// 将新创建的主体认证信息关联至主体
-	_, err = sys_dao.SysLicense.Ctx(ctx).Hook(daoctl.HookHandler).
+	_, err = sys_dao.SysLicense.Ctx(ctx).
 		Data(sys_do.SysLicense{LatestAuditLogId: latestAuditLogId}).
 		Where(sys_do.SysLicense{Id: id}).
 		Update()
