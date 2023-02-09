@@ -68,3 +68,8 @@ database:
   default:
     link: "pgsql:user=dbUsername password=dbPassword host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
     debug: true
+
+redis:
+  # 单实例配置示例1
+  default:
+    address: 127.0.0.1:6379

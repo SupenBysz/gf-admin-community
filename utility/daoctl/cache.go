@@ -3,31 +3,16 @@ package daoctl
 import (
 	"context"
 	"database/sql"
-	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/text/gstr"
-	"time"
 	"unsafe"
 )
 
-var CacheHookHandler = gdb.HookHandler{
+var HookHandler = gdb.HookHandler{
 	Update: cleanCache[gdb.HookUpdateInput],
 	Insert: cleanCache[gdb.HookInsertInput],
 	Delete: cleanCache[gdb.HookDeleteInput],
 	Select: func(ctx context.Context, in *gdb.HookSelectInput) (result gdb.Result, err error) {
-		conf := gdb.CacheOption{
-			Duration: time.Hour * 24,
-			Name:     in.Table,
-			Force:    false,
-		}
-		table := gstr.Replace(in.Table, "\"", "")
-		for _, cacheConf := range sys_consts.Global.OrmCacheConf {
-			if cacheConf.TableName == table {
-				conf.Duration = time.Second * (time.Duration)(cacheConf.ExpireSeconds)
-				conf.Force = cacheConf.Force
-			}
-		}
-		in.Model.Cache(conf)
 		result, err = in.Next(ctx)
 		return
 	},
