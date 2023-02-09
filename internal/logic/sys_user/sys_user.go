@@ -494,10 +494,7 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除员工信息失败", sys_dao.SysUser.Table())
 	}
-
-	// s.redisCache.Remove(ctx, id)
-
-	// g.DB().GetCache().Remove(ctx, sys_dao.SysUser.Table())
+	
 	// daoctl.RemoveQueryCache(sys_dao.SysUser.DB(), sys_dao.SysUser.Table())
 
 	return true, nil
