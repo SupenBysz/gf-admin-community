@@ -9,8 +9,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/env"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/SupenBysz/gf-admin-community/utility/validator"
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
+	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gcache"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
 	"github.com/gogf/gf/v2/text/gstr"
@@ -25,6 +29,7 @@ func init() {
 	Ip2region()
 	InitCustomRules()
 	InitGlobal()
+	InitRedisCache()
 	InitIdGenerator()
 	InitLogLevelToDatabase()
 	InitPermission()
@@ -275,4 +280,22 @@ func initAuditAndLicensePermission() []*permission.SysPermissionTree {
 		},
 	}
 	return result
+}
+
+func InitRedisCache() {
+	// 获取配置文件addr对象
+	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
+
+	conf, _ := gredis.GetConfig("default")
+
+	// 设置服务端口和ip
+	conf.Address = addr.String()
+	// 不同的表分配不同的redis数据库
+	conf.Db = 1
+
+	// 根据配置创建Redis
+	redis, _ := gredis.New(conf)
+
+	// 全局设置Redis适配器
+	g.DB().GetCache().SetAdapter(gcache.NewAdapterRedis(redis))
 }
