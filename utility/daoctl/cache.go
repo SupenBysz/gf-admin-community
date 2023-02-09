@@ -84,7 +84,9 @@ func cleanCache[T gdb.HookInsertInput | gdb.HookUpdateInput | gdb.HookDeleteInpu
 func RemoveQueryCache(db gdb.DB, prefix string) {
 	cacheKeys, _ := db.GetCache().KeyStrings(db.GetCtx())
 	for _, key := range cacheKeys {
-		if gstr.HasPrefix(key, prefix) || gstr.HasPrefix(key, "SelectCache:"+prefix) {
+
+		// if判断结果：sys_user || SelectCache:sys_user || SelectCache:default@#sys_user
+		if gstr.HasPrefix(key, prefix) || gstr.HasPrefix(key, "SelectCache:"+prefix) || gstr.HasPrefix(key, "SelectCache:default@#"+prefix) {
 			db.GetCache().Remove(db.GetCtx(), key)
 		}
 	}
