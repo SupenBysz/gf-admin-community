@@ -7,6 +7,9 @@ package internal
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -49,7 +52,17 @@ var sysPermissionColumns = SysPermissionColumns{
 }
 
 // NewSysPermissionDao creates and returns a new DAO object for table data access.
-func NewSysPermissionDao() *SysPermissionDao {
+func NewSysPermissionDao(proxy ...dao_interface.IDao) *SysPermissionDao {
+	var dao *SysPermissionDao
+	if proxy != nil {
+		dao = &SysPermissionDao{
+			group:   proxy[0].Group(),
+			table:   proxy[0].Table(),
+			columns: sysPermissionColumns,
+		}
+		return dao
+	}
+
 	return &SysPermissionDao{
 		group:   "default",
 		table:   "sys_permission",
@@ -67,19 +80,36 @@ func (dao *SysPermissionDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
-func (dao *SysPermissionDao) Columns() SysPermissionColumns {
-	return dao.columns
-}
-
 // Group returns the configuration group name of database of current dao.
 func (dao *SysPermissionDao) Group() string {
 	return dao.group
 }
 
+// Columns returns all column names of current dao.
+func (dao *SysPermissionDao) Columns() SysPermissionColumns {
+	return dao.columns
+}
+
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysPermissionDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+func (dao *SysPermissionDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	model := dao.DB().Model(dao.Table()).Safe().Ctx(ctx)
+
+	daoConfig := dao_interface.DaoConfig{
+		Dao:   dao,
+		Model: model,
+	}
+
+	if len(cacheOption) == 0 {
+		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+	} else {
+		if cacheOption[0] != nil {
+			daoConfig.CacheOption = cacheOption[0]
+		}
+	}
+
+	model = daoctl.RegisterDaoHook(model)
+
+	return model
 }
 
 // Transaction wraps the transaction logic using function f.

@@ -7,6 +7,9 @@ package internal
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -41,7 +44,17 @@ var sysAreaColumns = SysAreaColumns{
 }
 
 // NewSysAreaDao creates and returns a new DAO object for table data access.
-func NewSysAreaDao() *SysAreaDao {
+func NewSysAreaDao(proxy ...dao_interface.IDao) *SysAreaDao {
+	var dao *SysAreaDao
+	if proxy != nil {
+		dao = &SysAreaDao{
+			group:   proxy[0].Group(),
+			table:   proxy[0].Table(),
+			columns: sysAreaColumns,
+		}
+		return dao
+	}
+
 	return &SysAreaDao{
 		group:   "default",
 		table:   "sys_area",
@@ -59,19 +72,36 @@ func (dao *SysAreaDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
-func (dao *SysAreaDao) Columns() SysAreaColumns {
-	return dao.columns
-}
-
 // Group returns the configuration group name of database of current dao.
 func (dao *SysAreaDao) Group() string {
 	return dao.group
 }
 
+// Columns returns all column names of current dao.
+func (dao *SysAreaDao) Columns() SysAreaColumns {
+	return dao.columns
+}
+
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysAreaDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+func (dao *SysAreaDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	model := dao.DB().Model(dao.Table()).Safe().Ctx(ctx)
+
+	daoConfig := dao_interface.DaoConfig{
+		Dao:   dao,
+		Model: model,
+	}
+
+	if len(cacheOption) == 0 {
+		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+	} else {
+		if cacheOption[0] != nil {
+			daoConfig.CacheOption = cacheOption[0]
+		}
+	}
+
+	model = daoctl.RegisterDaoHook(model)
+
+	return model
 }
 
 // Transaction wraps the transaction logic using function f.
