@@ -69,7 +69,7 @@ func (s *sSdkCtyun) GetCtyunSdkConfList(ctx context.Context) ([]*sys_model.Ctyun
 
 	data := sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
@@ -133,16 +133,16 @@ func (s *sSdkCtyun) SaveCtyunSdkConf(ctx context.Context, info *sys_model.CtyunS
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -179,7 +179,7 @@ func (s *sSdkCtyun) DeleteCtyunSdkConf(ctx context.Context, identifier string) (
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "天翼云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

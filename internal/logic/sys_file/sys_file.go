@@ -232,7 +232,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
 
-	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
+	count, err := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.HookHandler).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
 		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
 	} else {
@@ -410,7 +410,7 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 	}
 	{
 		file := &sys_entity.SysFile{}
-		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.CacheHookHandler).
+		model := sys_dao.SysFile.Ctx(ctx).Hook(daoctl.HookHandler).
 			Where(sys_do.SysFile{Id: id})
 
 		if sessionUser.IsAdmin == false {
