@@ -293,9 +293,13 @@ func InitRedisCache() {
 	// 不同的表分配不同的redis数据库
 	conf.Db = 1
 
-	// 根据配置创建Redis
+	// 没配置redis ip+端口,配置信息也为空，那么使用内存缓存
+	if addr.String() == "" || conf.Address == "" {
+		g.DB().GetCache().SetAdapter(gcache.New())
+		return
+	}
+	// 根据redis配置创建Redis
 	redis, _ := gredis.New(conf)
-
 	// 全局设置Redis适配器
 	g.DB().GetCache().SetAdapter(gcache.NewAdapterRedis(redis))
 }
