@@ -19,3 +19,8 @@ type IDao interface {
 	Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model
 	Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error)
 }
+
+type TIDao[T any] interface {
+	IDao
+	Columns() T
+}
