@@ -3,8 +3,10 @@ package daoctl
 import (
 	"context"
 	"database/sql"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/text/gstr"
+	"time"
 	"unsafe"
 )
 
@@ -75,4 +77,22 @@ func RemoveQueryCache(db gdb.DB, prefix string) {
 			db.GetCache().Remove(db.GetCtx(), key)
 		}
 	}
+}
+
+func MakeDaoCache(table string) *gdb.CacheOption {
+	conf := &gdb.CacheOption{
+		Duration: time.Hour * 24,
+		Force:    false,
+	}
+	for _, cacheConf := range sys_consts.Global.OrmCacheConf {
+		if cacheConf.TableName == table {
+			conf.Duration = time.Second * (time.Duration)(cacheConf.ExpireSeconds)
+			conf.Force = cacheConf.Force
+		}
+	}
+	return conf
+}
+
+func RegisterDaoHook(model *gdb.Model) *gdb.Model {
+	return model.Hook(HookHandler)
 }
