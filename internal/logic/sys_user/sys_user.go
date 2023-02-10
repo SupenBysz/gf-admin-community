@@ -684,11 +684,11 @@ func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUs
 }
 
 // GetUserDetail 查看用户详情，含完整手机号
-func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.SysUser, error) {
 	s.initInnerCacheItems(ctx)
 
 	// Ctx()里面包含对所有Cache操作的赋值，查询不需要写Cache
-	user := sys_entity.SysUser{}
+	user := sys_model.SysUser{}
 	err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 		Id: userId,
 	}).Scan(&user)
@@ -698,7 +698,8 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity
 	}
 
 	user.Password = masker.MaskString(user.Password, masker.Password)
-	return &user, nil
+
+	return s.makeMore(ctx, &user), nil
 }
 
 // SetUserMobile 设置用户手机号
