@@ -5,6 +5,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
@@ -22,7 +24,7 @@ func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserList
 		func() (*sys_model.SysUserListRes, error) {
 			sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 			return sys_service.SysUser().QueryUserList(
-				ctx,
+				c.makeMore(ctx),
 				&req.SearchParams,
 				sessionUser.UnionMainId,
 				false,
@@ -64,10 +66,7 @@ func (c *cSysUser) GetUserPermissionIds(ctx context.Context, req *sys_api.GetUse
 func (c *cSysUser) GetUserDetail(ctx context.Context, req *sys_api.GetUserDetailReq) (*sys_api.UserInfoRes, error) {
 	return funs.CheckPermission(ctx,
 		func() (*sys_api.UserInfoRes, error) {
-			ret, err := sys_service.SysUser().GetUserDetail(
-				ctx,
-				req.Id,
-			)
+			ret, err := sys_service.SysUser().GetUserDetail(c.makeMore(ctx), req.Id)
 			return kconv.Struct(ret, &sys_api.UserInfoRes{}), err
 		},
 		sys_enum.User.PermissionType.ViewMoreDetail,
