@@ -88,27 +88,25 @@ func (dao *SysAreaDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption)
 }
 
 func (dao *SysAreaDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
-	model := dao.DB().Model(dao.Table()).Safe().Ctx(ctx)
-
 	daoConfig := dao_interface.DaoConfig{
 		Dao:   dao,
 		DB:    dao.DB(),
 		Table: dao.table,
 		Group: dao.group,
-		Model: model,
+		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
 	}
 
 	if len(cacheOption) == 0 {
 		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
-		daoConfig.Model = model.Cache(*daoConfig.CacheOption)
+		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
 	} else {
 		if cacheOption[0] != nil {
 			daoConfig.CacheOption = cacheOption[0]
-			daoConfig.Model = model.Cache(*daoConfig.CacheOption)
+			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
 		}
 	}
 
-	daoConfig.Model = daoctl.RegisterDaoHook(model)
+	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
 
 	return daoConfig
 }
