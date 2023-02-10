@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 )
@@ -35,7 +34,7 @@ type (
 		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
 		SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error)
 		UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error)
-		GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error)
+		GetUserDetail(ctx context.Context, userId int64) (*sys_model.SysUser, error)
 		SetUserMobile(ctx context.Context, newMobile int64, captcha string, password string, userId int64) (bool, error)
 	}
 )

@@ -13,6 +13,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
+	"github.com/SupenBysz/gf-admin-community/utility/funs"
 	"github.com/SupenBysz/gf-admin-community/utility/kconv"
 	"github.com/SupenBysz/gf-admin-community/utility/masker"
 	"github.com/gogf/gf/v2/container/garray"
@@ -56,9 +57,10 @@ func (s *sSysUser) initInnerCacheItems(ctx context.Context) {
 	}
 
 	items := daoctl.Scan[[]*sys_model.SysUser](
-		sys_dao.SysUser.Ctx(ctx).With(sys_model.SysUser{}.Detail).
+		sys_dao.SysUser.Ctx(ctx).
 			OrderDesc(sys_dao.SysUser.Columns().CreatedAt),
 	)
+
 	s.redisCache.Clear(ctx)
 	for _, sysUser := range *items {
 		s.redisCache.Set(ctx, sysUser.Id, sysUser, s.Duration)
@@ -170,7 +172,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 						}
 					}
 				}
-				sysUser = s.masker(sysUser)
+				sysUser = s.masker(s.makeMore(ctx, sysUser))
 
 				response.Records = append(response.Records, sysUser)
 			}
@@ -183,7 +185,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		return
 	}
 
-	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).With(sys_model.SysUser{}.Detail), info, isExport)
+	result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), info, isExport)
 
 	newList := make([]*sys_model.SysUser, 0)
 	if result != nil && result.Records != nil && len(result.Records) > 0 {
@@ -211,7 +213,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 					}
 				}
 			}
-			user = s.masker(user)
+			user = s.masker(s.makeMore(ctx, user))
 			newList = append(newList, user)
 		}
 	}
@@ -362,7 +364,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 	for _, k := range keys {
 		sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k)}).Scan(&user)
 		if user.Username == username {
-			response = s.masker(user)
+			response = s.masker(s.makeMore(ctx, user))
 			return
 		}
 	}
@@ -371,7 +373,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	response = s.masker(response)
+	response = s.masker(s.makeMore(ctx, response))
 	return
 }
 
@@ -413,7 +415,7 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
 
-	return s.masker(&user), nil
+	return s.masker(s.makeMore(ctx, &user)), nil
 }
 
 // SetUserPermissionIds 设置用户权限
@@ -682,11 +684,11 @@ func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUs
 }
 
 // GetUserDetail 查看用户详情，含完整手机号
-func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity.SysUser, error) {
+func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.SysUser, error) {
 	s.initInnerCacheItems(ctx)
 
 	// Ctx()里面包含对所有Cache操作的赋值，查询不需要写Cache
-	user := sys_entity.SysUser{}
+	user := sys_model.SysUser{}
 	err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 		Id: userId,
 	}).Scan(&user)
@@ -696,7 +698,8 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_entity
 	}
 
 	user.Password = masker.MaskString(user.Password, masker.Password)
-	return &user, nil
+
+	return s.makeMore(ctx, &user), nil
 }
 
 // SetUserMobile 设置用户手机号
@@ -743,4 +746,21 @@ func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Password = masker.MaskString(user.Password, masker.Password)
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
 	return user
+}
+
+// makeMore 处理订阅请求，获取订阅数据回调返回
+func (s *sSysUser) makeMore(ctx context.Context, data *sys_model.SysUser) *sys_model.SysUser {
+	funs.AttrMake[sys_model.SysUser](ctx,
+		sys_dao.SysUser.Columns().Id,
+		func() *sys_entity.SysUserDetail {
+			result, _ := daoctl.GetByIdWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
+			if result == nil {
+				return nil
+			}
+			res := kconv.Struct[sys_entity.SysUserDetail](ctx, *result)
+			data.Detail = res
+			return &data.Detail
+		},
+	)
+	return data
 }
