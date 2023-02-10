@@ -84,24 +84,33 @@ func (dao *SysRoleDao) Columns() SysRoleColumns {
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
 func (dao *SysRoleDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	return dao.DaoConfig(ctx, cacheOption...).Model
+}
+
+func (dao *SysRoleDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
 	model := dao.DB().Model(dao.Table()).Safe().Ctx(ctx)
 
 	daoConfig := dao_interface.DaoConfig{
 		Dao:   dao,
+		DB:    dao.DB(),
+		Table: dao.table,
+		Group: dao.group,
 		Model: model,
 	}
 
 	if len(cacheOption) == 0 {
 		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+		daoConfig.Model = model.Cache(*daoConfig.CacheOption)
 	} else {
 		if cacheOption[0] != nil {
 			daoConfig.CacheOption = cacheOption[0]
+			daoConfig.Model = model.Cache(*daoConfig.CacheOption)
 		}
 	}
 
-	model = daoctl.RegisterDaoHook(model)
+	daoConfig.Model = daoctl.RegisterDaoHook(model)
 
-	return model
+	return daoConfig
 }
 
 // Transaction wraps the transaction logic using function f.
