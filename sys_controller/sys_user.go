@@ -119,3 +119,8 @@ func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateRe
 		sys_enum.User.PermissionType.SetState,
 	)
 }
+
+// makeMore 是否订阅附加数据
+func (c *cSysUser) makeMore(ctx context.Context) context.Context {
+	return funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+}

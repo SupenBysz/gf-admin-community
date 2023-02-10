@@ -744,3 +744,20 @@ func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
 	return user
 }
+
+// makeMore 处理订阅请求，获取订阅数据回调返回
+func (s *sSysUser) makeMore(ctx context.Context, data *sys_model.SysUser) *sys_model.SysUser {
+	funs.AttrMake[sys_model.SysUser](ctx,
+		sys_dao.SysUser.Columns().Id,
+		func() *sys_entity.SysUserDetail {
+			result, _ := daoctl.GetByIdWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
+			if result == nil {
+				return nil
+			}
+			res := kconv.Struct[sys_entity.SysUserDetail](ctx, *result)
+			data.Detail = res
+			return &data.Detail
+		},
+	)
+	return data
+}
