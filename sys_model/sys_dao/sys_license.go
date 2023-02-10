@@ -23,3 +23,5 @@ var (
 		internal.NewSysLicenseDao(),
 	}
 )
+
+// Fill with you ideas below.

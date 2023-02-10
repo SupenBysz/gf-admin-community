@@ -7,6 +7,9 @@ package internal
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -45,7 +48,17 @@ var sysUserColumns = SysUserColumns{
 }
 
 // NewSysUserDao creates and returns a new DAO object for table data access.
-func NewSysUserDao() *SysUserDao {
+func NewSysUserDao(proxy ...dao_interface.IDao) *SysUserDao {
+	var dao *SysUserDao
+	if proxy != nil {
+		dao = &SysUserDao{
+			group:   proxy[0].Group(),
+			table:   proxy[0].Table(),
+			columns: sysUserColumns,
+		}
+		return dao
+	}
+
 	return &SysUserDao{
 		group:   "default",
 		table:   "sys_user",
@@ -63,19 +76,43 @@ func (dao *SysUserDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
-func (dao *SysUserDao) Columns() SysUserColumns {
-	return dao.columns
-}
-
 // Group returns the configuration group name of database of current dao.
 func (dao *SysUserDao) Group() string {
 	return dao.group
 }
 
+// Columns returns all column names of current dao.
+func (dao *SysUserDao) Columns() SysUserColumns {
+	return dao.columns
+}
+
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysUserDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+func (dao *SysUserDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	return dao.DaoConfig(ctx, cacheOption...).Model
+}
+
+func (dao *SysUserDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
+	daoConfig := dao_interface.DaoConfig{
+		Dao:   dao,
+		DB:    dao.DB(),
+		Table: dao.table,
+		Group: dao.group,
+		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
+	}
+
+	if len(cacheOption) == 0 {
+		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+	} else {
+		if cacheOption[0] != nil {
+			daoConfig.CacheOption = cacheOption[0]
+			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+		}
+	}
+
+	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
+
+	return daoConfig
 }
 
 // Transaction wraps the transaction logic using function f.

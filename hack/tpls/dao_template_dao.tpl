@@ -23,3 +23,5 @@ var (
 		internal.New{TplTableNameCamelCase}Dao(),
 	}
 )
+
+// Fill with you ideas below.

@@ -23,3 +23,5 @@ var (
 		internal.NewSysUserDetailDao(),
 	}
 )
+
+// Fill with you ideas below.

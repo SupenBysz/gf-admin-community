@@ -153,7 +153,7 @@ func (s *sSdkHuawei) GetHuaweiSdkConfList(ctx context.Context) ([]*sys_model.Hua
 
 	data := sys_entity.SysConfig{}
 
-	err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysConfig{
+	err := sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	}).Scan(&data)
 
@@ -217,16 +217,16 @@ func (s *sSdkHuawei) SaveHuaweiSdkConf(ctx context.Context, info *sys_model.Huaw
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
 
-	count, err := sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Count(sys_do.SysConfig{
+	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
 		Name: s.sysConfigName,
 	})
 
 	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
 			Name: s.sysConfigName,
 		}).Update()
 	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(sys_do.SysConfig{
+		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
 			Name:  s.sysConfigName,
 			Value: jsonString,
 		})
@@ -260,7 +260,7 @@ func (s *sSdkHuawei) DeleteHuaweiSdkConf(ctx context.Context, identifier string)
 
 	jsonString := gjson.MustEncodeString(newItems)
 
-	if sys_dao.SysConfig.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "华为云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 

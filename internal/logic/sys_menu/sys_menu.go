@@ -7,7 +7,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -35,7 +34,7 @@ func New() *sSysMenu {
 // GetMenuById 根据ID获取菜单信息
 func (s *sSysMenu) GetMenuById(ctx context.Context, menuId int64) (*sys_entity.SysMenu, error) {
 	result := sys_entity.SysMenu{}
-	err := sys_dao.SysMenu.Ctx(ctx).Hook(daoctl.CacheHookHandler).Scan(&result, sys_do.SysMenu{Id: menuId})
+	err := sys_dao.SysMenu.Ctx(ctx).Scan(&result, sys_do.SysMenu{Id: menuId})
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "菜单信息查询失败", sys_dao.SysMenu.Table())
 	}
@@ -73,7 +72,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info sys_model.SysMenu) (*sys_e
 			data.CreatedAt = gtime.Now()
 			data.UpdatedAt = gtime.Now()
 
-			_, err = tx.Model(sys_dao.SysMenu).Hook(daoctl.CacheHookHandler).OmitEmptyWhere().Insert(data)
+			_, err = tx.Model(sys_dao.SysMenu).OmitEmptyWhere().Insert(data)
 
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "新增菜单信息失", sys_dao.SysMenu.Table())
