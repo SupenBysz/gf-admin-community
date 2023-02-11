@@ -156,6 +156,18 @@ func MakePaginationArr(db *gdb.Model, pagination sys_model.Pagination, searchFie
 	// 如果每页大小为 -1 则不进行分页
 	if pagination.PageSize == -1 {
 		pagination.PageSize = gconv.Int(total)
+
+		if pagination.PageSize == 0 {
+			pagination.PageSize = 20
+		}
+	}
+
+	if total == 0 {
+		return sys_model.PaginationRes{
+			Pagination: pagination,
+			PageTotal:  0,
+			Total:      gconv.Int64(total),
+		}
 	}
 
 	return sys_model.PaginationRes{
