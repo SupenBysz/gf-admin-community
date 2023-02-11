@@ -79,7 +79,7 @@ func MaskString(in string, maskType MaskType) string {
 	if maskType.MaskType() == MaskEmail.MaskType() {
 		if gstr.ContainsI(in, "@") {
 			targetArr := strings.Split(in, "@")
-			return targetArr[0][0:1] + "******" + targetArr[0][len(targetArr[0])-1:1] + "@" + targetArr[1]
+			return targetArr[0][0:1] + "******" + targetArr[0][len(targetArr[0])-1:len(targetArr[0])] + "@" + targetArr[1]
 		}
 		return "------@***.***"
 	}
