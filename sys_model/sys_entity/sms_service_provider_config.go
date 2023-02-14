@@ -19,7 +19,7 @@ type SmsServiceProviderConfig struct {
 	SdkAppId        string      `json:"sdkAppId"        description:"应用id"`
 	Region          string      `json:"region"          description:"地域"`
 	Remark          string      `json:"remark"          description:"备注"`
-	Status          int         `json:"status"          description:"状态"`
+	Status          int         `json:"status"          description:"状态: 0禁用 1正常"`
 	CreatedAt       *gtime.Time `json:"createdAt"       description:""`
 	UpdatedAt       *gtime.Time `json:"updatedAt"       description:""`
 	DeletedAt       *gtime.Time `json:"deletedAt"       description:""`

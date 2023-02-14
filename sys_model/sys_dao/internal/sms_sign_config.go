@@ -23,28 +23,34 @@ type SmsSignConfigDao struct {
 
 // SmsSignConfigColumns defines and stores column names for table sms_sign_config.
 type SmsSignConfigColumns struct {
-	Id           string // ID
-	SignName     string // 短信签名名称
-	ProviderNo   string // 渠道商编号
-	ProviderName string // 渠道商名字
-	Remark       string // 备注
-	Status       string // 状态
-	CreatedAt    string //
-	UpdatedAt    string //
-	DeletedAt    string //
+	Id            string // ID
+	SignName      string // 短信签名名称
+	ProviderNo    string // 渠道商编号
+	ProviderName  string // 渠道商名字
+	Remark        string // 备注
+	Status        string // 状态: -1不通过 0待审核 1正常
+	AuditUserId   string // 审核者UserID
+	AuditReplyMsg string // 审核回复，仅审核不通过时才有值
+	AuditAt       string // 审核时间
+	CreatedAt     string //
+	UpdatedAt     string //
+	DeletedAt     string //
 }
 
 // smsSignConfigColumns holds the columns for table sms_sign_config.
 var smsSignConfigColumns = SmsSignConfigColumns{
-	Id:           "id",
-	SignName:     "sign_name",
-	ProviderNo:   "provider_no",
-	ProviderName: "provider_name",
-	Remark:       "remark",
-	Status:       "status",
-	CreatedAt:    "created_at",
-	UpdatedAt:    "updated_at",
-	DeletedAt:    "deleted_at",
+	Id:            "id",
+	SignName:      "sign_name",
+	ProviderNo:    "provider_no",
+	ProviderName:  "provider_name",
+	Remark:        "remark",
+	Status:        "status",
+	AuditUserId:   "audit_user_id",
+	AuditReplyMsg: "audit_reply_msg",
+	AuditAt:       "audit_at",
+	CreatedAt:     "created_at",
+	UpdatedAt:     "updated_at",
+	DeletedAt:     "deleted_at",
 }
 
 // NewSmsSignConfigDao creates and returns a new DAO object for table data access.

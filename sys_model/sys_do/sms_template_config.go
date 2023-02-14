@@ -20,7 +20,10 @@ type SmsTemplateConfig struct {
 	ThirdPartyTemplateNo interface{} // 第三方模版编号
 	ProviderNo           interface{} // 渠道商编号
 	Remark               interface{} // 备注
-	Status               interface{} // 状态
+	Status               interface{} // 状态: 0禁用 1正常
+	AuditUserId          interface{} // 审核者UserID 审核者UserID
+	AuditReplyMsg        interface{} // 审核回复，仅审核不通过时才有值
+	AuditAt              interface{} // 审核时间
 	CreatedAt            *gtime.Time //
 	UpdatedAt            *gtime.Time //
 	DeletedAt            *gtime.Time //

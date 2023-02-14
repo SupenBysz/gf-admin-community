@@ -19,7 +19,7 @@ type SmsAppConfig struct {
 	CurrentLimiting interface{} // 限流数量
 	UseNumber       interface{} // 已用数量
 	Remark          interface{} // 备注
-	Status          interface{} // 状态
+	Status          interface{} // 状态: 0禁用 1正常
 	CreatedAt       *gtime.Time //
 	UpdatedAt       *gtime.Time //
 	DeletedAt       *gtime.Time //

@@ -17,7 +17,7 @@ type SmsBusinessConfig struct {
 	TemplateNo   string      `json:"templateNo"   description:"模版编号"`
 	BusinessDesc string      `json:"businessDesc" description:"业务说明"`
 	Remark       string      `json:"remark"       description:"备注"`
-	Status       int         `json:"status"       description:"状态"`
+	Status       int         `json:"status"       description:"状态: 0禁用 1正常"`
 	CreatedAt    *gtime.Time `json:"createdAt"    description:""`
 	UpdatedAt    *gtime.Time `json:"updatedAt"    description:""`
 	DeletedAt    *gtime.Time `json:"deletedAt"    description:""`

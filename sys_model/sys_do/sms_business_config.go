@@ -19,7 +19,7 @@ type SmsBusinessConfig struct {
 	TemplateNo   interface{} // 模版编号
 	BusinessDesc interface{} // 业务说明
 	Remark       interface{} // 备注
-	Status       interface{} // 状态
+	Status       interface{} // 状态: 0禁用 1正常
 	CreatedAt    *gtime.Time //
 	UpdatedAt    *gtime.Time //
 	DeletedAt    *gtime.Time //

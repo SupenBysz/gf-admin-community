@@ -18,7 +18,10 @@ type SmsTemplateConfig struct {
 	ThirdPartyTemplateNo string      `json:"thirdPartyTemplateNo" description:"第三方模版编号"`
 	ProviderNo           string      `json:"providerNo"           description:"渠道商编号"`
 	Remark               string      `json:"remark"               description:"备注"`
-	Status               int         `json:"status"               description:"状态"`
+	Status               int         `json:"status"               description:"状态: 0禁用 1正常"`
+	AuditUserId          int64       `json:"auditUserId"          description:"审核者UserID 审核者UserID"`
+	AuditReplyMsg        string      `json:"auditReplyMsg"        description:"审核回复，仅审核不通过时才有值"`
+	AuditAt              string      `json:"auditAt"              description:"审核时间"`
 	CreatedAt            *gtime.Time `json:"createdAt"            description:""`
 	UpdatedAt            *gtime.Time `json:"updatedAt"            description:""`
 	DeletedAt            *gtime.Time `json:"deletedAt"            description:""`

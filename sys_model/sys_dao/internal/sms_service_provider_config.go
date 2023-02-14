@@ -32,7 +32,7 @@ type SmsServiceProviderConfigColumns struct {
 	SdkAppId        string // 应用id
 	Region          string // 地域
 	Remark          string // 备注
-	Status          string // 状态
+	Status          string // 状态: 0禁用 1正常
 	CreatedAt       string //
 	UpdatedAt       string //
 	DeletedAt       string //

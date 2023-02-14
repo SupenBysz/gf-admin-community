@@ -11,14 +11,17 @@ import (
 
 // SmsSignConfig is the golang structure of table sms_sign_config for DAO operations like Where/Data.
 type SmsSignConfig struct {
-	g.Meta       `orm:"table:sms_sign_config, do:true"`
-	Id           interface{} // ID
-	SignName     interface{} // 短信签名名称
-	ProviderNo   interface{} // 渠道商编号
-	ProviderName interface{} // 渠道商名字
-	Remark       interface{} // 备注
-	Status       interface{} // 状态
-	CreatedAt    *gtime.Time //
-	UpdatedAt    *gtime.Time //
-	DeletedAt    *gtime.Time //
+	g.Meta        `orm:"table:sms_sign_config, do:true"`
+	Id            interface{} // ID
+	SignName      interface{} // 短信签名名称
+	ProviderNo    interface{} // 渠道商编号
+	ProviderName  interface{} // 渠道商名字
+	Remark        interface{} // 备注
+	Status        interface{} // 状态: -1不通过 0待审核 1正常
+	AuditUserId   interface{} // 审核者UserID
+	AuditReplyMsg interface{} // 审核回复，仅审核不通过时才有值
+	AuditAt       *gtime.Time // 审核时间
+	CreatedAt     *gtime.Time //
+	UpdatedAt     *gtime.Time //
+	DeletedAt     *gtime.Time //
 }

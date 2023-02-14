@@ -10,6 +10,7 @@ import (
 	sys_enum_oss "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
 	sys_enum_permissions "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/permissions"
 	sys_enum_role "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/role"
+	sys_enum_sms "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/sms"
 	sys_enum_upload "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/upload"
 	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/user"
 )
@@ -31,6 +32,8 @@ type (
 
 	AuditAction = sys_enum_audit.ActionEnum
 	AuditEvent  sys_enum_audit.EventEnum
+
+	SmsAction = sys_enum_sms.ActionEnum
 )
 
 var (
@@ -47,4 +50,6 @@ var (
 
 	Audit   = sys_enum_audit.Audit
 	License = sys_enum_license.License
+
+	Sms = sys_enum_sms.Sms
 )

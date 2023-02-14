@@ -17,7 +17,7 @@ type SmsAppConfig struct {
 	CurrentLimiting int         `json:"currentLimiting" description:"限流数量"`
 	UseNumber       int         `json:"useNumber"       description:"已用数量"`
 	Remark          string      `json:"remark"          description:"备注"`
-	Status          int         `json:"status"          description:"状态"`
+	Status          int         `json:"status"          description:"状态: 0禁用 1正常"`
 	CreatedAt       *gtime.Time `json:"createdAt"       description:""`
 	UpdatedAt       *gtime.Time `json:"updatedAt"       description:""`
 	DeletedAt       *gtime.Time `json:"deletedAt"       description:""`

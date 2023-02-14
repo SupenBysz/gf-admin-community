@@ -30,7 +30,7 @@ type SmsAppConfigColumns struct {
 	CurrentLimiting string // 限流数量
 	UseNumber       string // 已用数量
 	Remark          string // 备注
-	Status          string // 状态
+	Status          string // 状态: 0禁用 1正常
 	CreatedAt       string //
 	UpdatedAt       string //
 	DeletedAt       string //

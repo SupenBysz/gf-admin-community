@@ -10,13 +10,16 @@ import (
 
 // SmsSignConfig is the golang structure for table sms_sign_config.
 type SmsSignConfig struct {
-	Id           int64       `json:"id"           description:"ID"`
-	SignName     string      `json:"signName"     description:"短信签名名称"`
-	ProviderNo   string      `json:"providerNo"   description:"渠道商编号"`
-	ProviderName string      `json:"providerName" description:"渠道商名字"`
-	Remark       string      `json:"remark"       description:"备注"`
-	Status       int         `json:"status"       description:"状态"`
-	CreatedAt    *gtime.Time `json:"createdAt"    description:""`
-	UpdatedAt    *gtime.Time `json:"updatedAt"    description:""`
-	DeletedAt    *gtime.Time `json:"deletedAt"    description:""`
+	Id            int64       `json:"id"            description:"ID"`
+	SignName      string      `json:"signName"      description:"短信签名名称"`
+	ProviderNo    string      `json:"providerNo"    description:"渠道商编号"`
+	ProviderName  string      `json:"providerName"  description:"渠道商名字"`
+	Remark        string      `json:"remark"        description:"备注"`
+	Status        int         `json:"status"        description:"状态: -1不通过 0待审核 1正常"`
+	AuditUserId   int64       `json:"auditUserId"   description:"审核者UserID"`
+	AuditReplyMsg string      `json:"auditReplyMsg" description:"审核回复，仅审核不通过时才有值"`
+	AuditAt       *gtime.Time `json:"auditAt"       description:"审核时间"`
+	CreatedAt     *gtime.Time `json:"createdAt"     description:""`
+	UpdatedAt     *gtime.Time `json:"updatedAt"     description:""`
+	DeletedAt     *gtime.Time `json:"deletedAt"     description:""`
 }

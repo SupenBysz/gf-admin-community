@@ -31,7 +31,10 @@ type SmsTemplateConfigColumns struct {
 	ThirdPartyTemplateNo string // 第三方模版编号
 	ProviderNo           string // 渠道商编号
 	Remark               string // 备注
-	Status               string // 状态
+	Status               string // 状态: 0禁用 1正常
+	AuditUserId          string // 审核者UserID 审核者UserID
+	AuditReplyMsg        string // 审核回复，仅审核不通过时才有值
+	AuditAt              string // 审核时间
 	CreatedAt            string //
 	UpdatedAt            string //
 	DeletedAt            string //
@@ -48,6 +51,9 @@ var smsTemplateConfigColumns = SmsTemplateConfigColumns{
 	ProviderNo:           "provider_no",
 	Remark:               "remark",
 	Status:               "status",
+	AuditUserId:          "audit_user_id",
+	AuditReplyMsg:        "audit_reply_msg",
+	AuditAt:              "audit_at",
 	CreatedAt:            "created_at",
 	UpdatedAt:            "updated_at",
 	DeletedAt:            "deleted_at",

@@ -30,7 +30,7 @@ type SmsBusinessConfigColumns struct {
 	TemplateNo   string // 模版编号
 	BusinessDesc string // 业务说明
 	Remark       string // 备注
-	Status       string // 状态
+	Status       string // 状态: 0禁用 1正常
 	CreatedAt    string //
 	UpdatedAt    string //
 	DeletedAt    string //

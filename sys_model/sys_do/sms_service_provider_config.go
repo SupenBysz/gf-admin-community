@@ -21,7 +21,7 @@ type SmsServiceProviderConfig struct {
 	SdkAppId        interface{} // 应用id
 	Region          interface{} // 地域
 	Remark          interface{} // 备注
-	Status          interface{} // 状态
+	Status          interface{} // 状态: 0禁用 1正常
 	CreatedAt       *gtime.Time //
 	UpdatedAt       *gtime.Time //
 	DeletedAt       *gtime.Time //
