@@ -6,6 +6,8 @@ package internal
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -77,7 +79,17 @@ var sysLicenseColumns = SysLicenseColumns{
 }
 
 // NewSysLicenseDao creates and returns a new DAO object for table data access.
-func NewSysLicenseDao() *SysLicenseDao {
+func NewSysLicenseDao(proxy ...dao_interface.IDao) *SysLicenseDao {
+	var dao *SysLicenseDao
+	if proxy != nil {
+		dao = &SysLicenseDao{
+			group:   proxy[0].Group(),
+			table:   proxy[0].Table(),
+			columns: sysLicenseColumns,
+		}
+		return dao
+	}
+
 	return &SysLicenseDao{
 		group:   "default",
 		table:   "sys_license",
@@ -106,9 +118,34 @@ func (dao *SysLicenseDao) Group() string {
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysLicenseDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+func (dao *SysLicenseDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	return dao.DaoConfig(ctx, cacheOption...).Model
 }
+
+func (dao *SysLicenseDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
+	daoConfig := dao_interface.DaoConfig{
+		Dao:   dao,
+		DB:    dao.DB(),
+		Table: dao.table,
+		Group: dao.group,
+		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
+	}
+
+	if len(cacheOption) == 0 {
+		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+	} else {
+		if cacheOption[0] != nil {
+			daoConfig.CacheOption = cacheOption[0]
+			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+		}
+	}
+
+	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
+
+	return daoConfig
+}
+
 
 // Transaction wraps the transaction logic using function f.
 // It rollbacks the transaction and returns the error from function f if it returns non-nil error.

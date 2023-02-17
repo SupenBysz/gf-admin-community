@@ -6,6 +6,8 @@ package internal
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -13,9 +15,10 @@ import (
 
 // SysAuditDao is the data access object for table sys_audit.
 type SysAuditDao struct {
-	table   string          // table is the underlying table name of the DAO.
-	group   string          // group is the database configuration group name of current DAO.
-	columns SysAuditColumns // columns contains all the column names of Table for convenient usage.
+	table   	string          // table is the underlying table name of the DAO.
+	group   	string          // group is the database configuration group name of current DAO.
+	columns 	SysAuditColumns // columns contains all the column names of Table for convenient usage.
+	daoConfig	*dao_interface.DaoConfig
 }
 
 // SysAuditColumns defines and stores column names for table sys_audit.
@@ -47,7 +50,17 @@ var sysAuditColumns = SysAuditColumns{
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.
-func NewSysAuditDao() *SysAuditDao {
+func NewSysAuditDao(proxy ...dao_interface.IDao) *SysAuditDao {
+	var dao *SysAuditDao
+	if proxy != nil {
+		dao = &SysAuditDao{
+			group:   proxy[0].Group(),
+			table:   proxy[0].Table(),
+			columns: sysAuditColumns,
+		}
+		return dao
+	}
+
 	return &SysAuditDao{
 		group:   "default",
 		table:   "sys_audit",
@@ -76,9 +89,34 @@ func (dao *SysAuditDao) Group() string {
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysAuditDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+func (dao *SysAuditDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+	return dao.DaoConfig(ctx, cacheOption...).Model
 }
+
+func (dao *SysAuditDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
+	daoConfig := dao_interface.DaoConfig{
+		Dao:   dao,
+		DB:    dao.DB(),
+		Table: dao.table,
+		Group: dao.group,
+		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
+	}
+
+	if len(cacheOption) == 0 {
+		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
+		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+	} else {
+		if cacheOption[0] != nil {
+			daoConfig.CacheOption = cacheOption[0]
+			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
+		}
+	}
+
+	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
+
+	return daoConfig
+}
+
 
 // Transaction wraps the transaction logic using function f.
 // It rollbacks the transaction and returns the error from function f if it returns non-nil error.

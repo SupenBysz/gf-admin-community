@@ -23,3 +23,5 @@ var (
 		internal.NewSysAuditDao(),
 	}
 )
+
+// Fill with you ideas below.

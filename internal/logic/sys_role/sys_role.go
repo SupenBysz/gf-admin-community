@@ -55,14 +55,14 @@ func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParam
 		cacheName += item.Field + item.Where + gconv.String(item.Value)
 	}
 
-	result, err := daoctl.Query[*sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler), &info, false)
+	result, err := daoctl.Query[*sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx), &info, false)
 
 	return (*sys_model.RoleListRes)(result), err
 }
 
 // GetRoleById 根据id获取角色
 func (s *sSysRole) GetRoleById(ctx context.Context, id int64) (*sys_entity.SysRole, error) {
-	result, err := daoctl.GetByIdWithError[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysRole](sys_dao.SysRole.Ctx(ctx), id)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id获取角色失败", sys_dao.SysRole.Table())
@@ -100,7 +100,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		if roleInfo.Id == 0 {
 			roleInfo.Id = idgen.NextId()
 
-			count, err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Name: info.Name, UnionMainId: info.UnionMainId}).Count()
+			count, err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Name: info.Name, UnionMainId: info.UnionMainId}).Count()
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "创建角色失败", sys_dao.SysRole.Table())
 			}
@@ -113,7 +113,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 			roleInfo.CreatedAt = gtime.Now()
 
 			// 清除缓存
-			_, err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Insert(roleInfo)
+			_, err = sys_dao.SysRole.Ctx(ctx).Insert(roleInfo)
 
 			if err != nil {
 				return err
@@ -141,7 +141,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 		return nil, err
 	}
 
-	err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleInfo.Id}).Scan(&roleInfo)
+	err = sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleInfo.Id}).Scan(&roleInfo)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败", sys_dao.SysRole.Table())
@@ -153,7 +153,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 // Delete 删除角色信息
 func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 	info := &sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&info)
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&info)
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
@@ -170,7 +170,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 	}
 
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Delete(sys_do.SysRole{Id: roleId})
+		_, err = sys_dao.SysRole.Ctx(ctx).Delete(sys_do.SysRole{Id: roleId})
 
 		result, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(info.Id), sys_consts.CasbinSuperRole, sys_consts.CasbinDomain)
 
@@ -188,7 +188,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 // SetRoleMember 设置角色用户
 func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
@@ -221,7 +221,7 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 // RemoveRoleMember 移除角色中的用户
 func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
@@ -245,7 +245,7 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 // GetRoleMemberIds 获取角色下的所有用户ID
 func (s *sSysRole) GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error) {
 	roleInfo := sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if roleInfo.UnionMainId != makeUserUnionMainId {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
@@ -333,7 +333,7 @@ func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sy
 
 	roleInfoArr := make([]*sys_entity.SysRole, 0)
 
-	err = sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).WhereIn(sys_dao.SysRole.Columns().Id, roleIds).Scan(&roleInfoArr)
+	err = sys_dao.SysRole.Ctx(ctx).WhereIn(sys_dao.SysRole.Columns().Id, roleIds).Scan(&roleInfoArr)
 
 	return roleInfoArr, nil
 }
@@ -341,7 +341,7 @@ func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sy
 // SetRolePermissions 设置角色权限
 func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
-	err := sys_dao.SysRole.Ctx(ctx).Hook(daoctl.CacheHookHandler).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
+	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	// 判断是否跨商设置角色权限
 	if roleInfo.UnionMainId != makeUserUnionMainId {

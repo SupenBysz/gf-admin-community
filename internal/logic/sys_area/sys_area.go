@@ -49,7 +49,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		// }
 	}
 
-	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), &sys_model.SearchParams{
+	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), &sys_model.SearchParams{
 		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().ParentId,
 			Where:       "=",
@@ -106,7 +106,7 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 
 // GetAreaById 根据ID获取区域信息
 func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
-	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), id)
 
 	if err != nil {
 		return nil
@@ -118,7 +118,7 @@ func (s *sArea) GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea {
 // GetAreaByCode 根据区域编号获取区域信息
 func (s *sArea) GetAreaByCode(ctx context.Context, areaCode string) *sys_entity.SysArea {
 	result := sys_entity.SysArea{}
-	if sys_dao.SysArea.Ctx(ctx).Hook(daoctl.CacheHookHandler).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
+	if sys_dao.SysArea.Ctx(ctx).Scan(&result, sys_do.SysArea{AreaCode: areaCode}) != nil {
 		return nil
 	}
 	return &result
