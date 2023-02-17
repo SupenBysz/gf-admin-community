@@ -12,7 +12,7 @@
 
 #### 语言/框架/类库
 <img src="https://img.shields.io/badge/golang-1.19+-green" alt="" />
-<img src="https://img.shields.io/badge/goframe-2.3.0+-green" alt="" />
+<img src="https://img.shields.io/badge/goframe-2.3.2+-green" alt="" />
 <img src="https://img.shields.io/badge/casbin-2.60.0+-green" alt="" />
 <img src="https://img.shields.io/badge/golang jwt-4.4.3+-green" alt="" />
 <img src="https://img.shields.io/badge/idgenerator go-1.3.2+-green" alt="" />
@@ -21,7 +21,7 @@
 <img src="https://img.shields.io/badge/PostgreSQL-14.5+-red" alt="" />
 
 #### 脚本工具
-<img src="https://img.shields.io/badge/goframe cli-2.3.0+-red" alt="" />
+<img src="https://img.shields.io/badge/goframe cli-2.3.2+-red" alt="" />
 
 # 二、项目结构
 ```
@@ -36,6 +36,7 @@
 │   ├── cmd           入口指令：一般配合main入口使用，当前作为业务项目引用应用的参考。
 │   ├── logic         模块封装：组件逻辑封装管理。
 ├── manifest          交付清单：包含程序编译、部署、运行、配置的文件。
+│   ├── assets        资源文件：项目资源
 │   ├── tps           模板文件：包含dao，do，entity生成的模板，一般配合Makefile使用
 │   └── config        配置管理：配置文件存放目录。
 ├── resources         静态资源：静态资源文件。这些文件往往可以通过 资源打包/镜像编译 的形式注入到发布文件中。
@@ -52,14 +53,14 @@
 └── component.go      组件入口
 ```
 
-### 以组件方式向业务项目服务，作为通用基础模块来独立维护
+### 以组件方式向业务项目服务，作为通用项目基础骨架模块来独立维护
 > 接口包含两部分：接口定义（api）+ 接口实现（sys_controller）<br>
 > 负责提供标准接口服务，其它项目直接引用即可
 
 > 服务包含两部分：模型结构（model）+ 服务接口（sys_service）<br>
 > 负责接收并响应调用的输入与输出，包括对输入参数的过滤、转换、校验，对输出数据结构的维护，并调用 service 实现业务逻辑处理。
 
-### 主要功能
+### 项目基础骨架主要功能
 - [x] 权限管理：基于jwt和casbin实现的权限管理。
 - [x] 分页封装
 - [x] 用户管理
