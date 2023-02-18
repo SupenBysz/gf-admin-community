@@ -6,6 +6,7 @@ package internal
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
 
@@ -15,10 +16,9 @@ import (
 
 // SysAuditDao is the data access object for table sys_audit.
 type SysAuditDao struct {
-	table   	string          // table is the underlying table name of the DAO.
-	group   	string          // group is the database configuration group name of current DAO.
-	columns 	SysAuditColumns // columns contains all the column names of Table for convenient usage.
-	daoConfig	*dao_interface.DaoConfig
+	table   string          // table is the underlying table name of the DAO.
+	group   string          // group is the database configuration group name of current DAO.
+	columns SysAuditColumns // columns contains all the column names of Table for convenient usage.
 }
 
 // SysAuditColumns defines and stores column names for table sys_audit.
@@ -78,14 +78,14 @@ func (dao *SysAuditDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
-func (dao *SysAuditDao) Columns() SysAuditColumns {
-	return dao.columns
-}
-
 // Group returns the configuration group name of database of current dao.
 func (dao *SysAuditDao) Group() string {
 	return dao.group
+}
+
+// Columns returns all column names of current dao.
+func (dao *SysAuditDao) Columns() SysAuditColumns {
+	return dao.columns
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
@@ -116,7 +116,6 @@ func (dao *SysAuditDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.Cache
 
 	return daoConfig
 }
-
 
 // Transaction wraps the transaction logic using function f.
 // It rollbacks the transaction and returns the error from function f if it returns non-nil error.

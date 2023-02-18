@@ -6,6 +6,7 @@ package internal
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
 
@@ -107,14 +108,14 @@ func (dao *SysLicenseDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
-func (dao *SysLicenseDao) Columns() SysLicenseColumns {
-	return dao.columns
-}
-
 // Group returns the configuration group name of database of current dao.
 func (dao *SysLicenseDao) Group() string {
 	return dao.group
+}
+
+// Columns returns all column names of current dao.
+func (dao *SysLicenseDao) Columns() SysLicenseColumns {
+	return dao.columns
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
@@ -145,7 +146,6 @@ func (dao *SysLicenseDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.Cac
 
 	return daoConfig
 }
-
 
 // Transaction wraps the transaction logic using function f.
 // It rollbacks the transaction and returns the error from function f if it returns non-nil error.
