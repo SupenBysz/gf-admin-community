@@ -3,6 +3,7 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 type GetLicenseByIdReq struct {
@@ -12,7 +13,7 @@ type GetLicenseByIdReq struct {
 
 type QueryLicenseListReq struct {
 	g.Meta `path:"/queryLicenseList" method:"post" summary:"查询主体认证|列表" tags:"主体资质"`
-	sys_model.SearchParams
+	base_model.SearchParams
 }
 
 // type CreateLicenseReq struct {

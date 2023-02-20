@@ -1,5 +1,7 @@
 package sys_model
 
+import "github.com/kysion/base-library/base_model"
+
 type BaiduSdkConf struct {
 	Identifier  string `json:"identifier" v:"required#业务标识符参数错误" dc:"业务标识符，唯一，且不可修改"`
 	Description string `json:"description" dc:"描述"`
@@ -76,4 +78,4 @@ type BaiduSdkConfToken struct {
 	BaiduSdkConfAccessToken
 }
 
-type BaiduSdkConfList CollectRes[*BaiduSdkConf]
+type BaiduSdkConfList base_model.CollectRes[*BaiduSdkConf]

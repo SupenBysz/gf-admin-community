@@ -1,5 +1,7 @@
 package sys_model
 
+import "github.com/kysion/base-library/base_model"
+
 type Area struct {
 	Id            int64  `json:"id"            description:"ID"`
 	AreaCode      int    `json:"areaCode"      description:"地区编码"`
@@ -9,4 +11,4 @@ type Area struct {
 	ParentId      int64  `json:"parentId"      description:"地区父节点"`
 }
 
-type AreaListRes CollectRes[*Area]
+type AreaListRes base_model.CollectRes[*Area]

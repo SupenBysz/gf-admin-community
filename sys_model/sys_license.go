@@ -3,6 +3,7 @@ package sys_model
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/kysion/base-library/base_model"
 )
 
 type License struct {
@@ -27,7 +28,7 @@ type License struct {
 }
 
 type LicenseRes sys_entity.SysLicense
-type LicenseListRes CollectRes[sys_entity.SysLicense]
+type LicenseListRes base_model.CollectRes[sys_entity.SysLicense]
 
 type AuditLicense struct {
 	UnionMainId int64 `json:"unionMainId"             description:"资质审核关联的业务主体ID"`

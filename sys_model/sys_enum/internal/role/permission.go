@@ -1,10 +1,11 @@
 package organization
 
 import (
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 )
 
-type PermissionTypeEnum = *permission.SysPermissionTree
+type PermissionTypeEnum = *sys_model.SysPermissionTree
 
 type permissionType struct {
 	ViewDetail    PermissionTypeEnum

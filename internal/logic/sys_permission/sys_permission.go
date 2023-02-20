@@ -9,9 +9,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/kmap"
-	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -20,6 +17,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/kmap"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
 )
@@ -54,7 +54,7 @@ func (s *sSysPermission) GetPermissionByIdentifier(ctx context.Context, identifi
 }
 
 // QueryPermissionList 查询权限列表
-func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error) {
+func (s *sSysPermission) QueryPermissionList(ctx context.Context, info base_model.SearchParams) (*sys_model.SysPermissionInfoListRes, error) {
 	if len(info.OrderBy) != 0 {
 		hasSort := false
 		for _, item := range info.OrderBy {
@@ -65,7 +65,7 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 		}
 
 		if hasSort == false {
-			orderByData := append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+			orderByData := append(make([]base_model.OrderBy, 0), base_model.OrderBy{
 				Field: sys_dao.SysPermission.Columns().Sort,
 				Sort:  "ASC",
 			})
@@ -76,7 +76,7 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info sys_model
 
 		}
 	} else {
-		info.OrderBy = append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+		info.OrderBy = append(make([]base_model.OrderBy, 0), base_model.OrderBy{
 			Field: sys_dao.SysPermission.Columns().Sort,
 			Sort:  "ASC",
 		})
@@ -179,19 +179,19 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 }
 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
-func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*permission.SysPermissionTree, error) {
+func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
 	result, err := s.GetPermissionList(ctx, parentId, false)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
 	}
 
-	response := make([]*permission.SysPermissionTree, 0)
+	response := make([]*sys_model.SysPermissionTree, 0)
 
 	// 有数据，则递归加载
 	if len(result) > 0 {
 		for _, sysPermissionItem := range result {
-			item := &permission.SysPermissionTree{}
+			item := &sys_model.SysPermissionTree{}
 			gconv.Struct(sysPermissionItem, &item)
 
 			item.Children, err = s.GetPermissionTree(ctx, sysPermissionItem.Id)
@@ -263,7 +263,7 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 }
 
 // ImportPermissionTree 导入权限，如果存在则忽略，递归导入权限
-func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*permission.SysPermissionTree, parent *sys_entity.SysPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
+func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*sys_model.SysPermissionTree, parent *sys_entity.SysPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
 	if len(permissionTreeArr) <= 0 {
 		return nil
 	}
@@ -429,7 +429,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 }
 
 // CheckPermission 校验权限，如果多个则需要同时满足
-func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
@@ -450,7 +450,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*permissio
 }
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
-func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*permission.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
+func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	// 如果是超级管理员或者某商管理员则直接放行
 	if session.Type == -1 || session.IsAdmin == true {

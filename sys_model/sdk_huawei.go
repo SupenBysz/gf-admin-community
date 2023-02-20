@@ -1,6 +1,9 @@
 package sys_model
 
-import "time"
+import (
+	"github.com/kysion/base-library/base_model"
+	"time"
+)
 
 // 华为云服务配置信息
 
@@ -54,7 +57,7 @@ type HuaweiSdkConfToken struct {
 	HuaweiAccessToken
 }
 
-type HuaweiSdkConfList CollectRes[*HuaweiSdkConf]
+type HuaweiSdkConfList base_model.CollectRes[*HuaweiSdkConf]
 
 type HuaweiOSS struct {
 	Path      string `json:"path"`

@@ -7,8 +7,8 @@ package internal
 import (
 	"context"
 
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl/dao_interface"
+	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

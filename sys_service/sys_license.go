@@ -10,12 +10,13 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/kysion/base-library/base_model"
 )
 
 type (
 	ISysLicense interface {
 		GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysLicense, error)
-		QueryLicenseList(ctx context.Context, search sys_model.SearchParams) (*sys_model.LicenseListRes, error)
+		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.LicenseListRes, error)
 		CreateLicense(ctx context.Context, info sys_model.License) (*sys_entity.SysLicense, error)
 		UpdateLicense(ctx context.Context, info sys_model.License, id int64) (*sys_entity.SysLicense, error)
 		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)

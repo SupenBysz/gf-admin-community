@@ -12,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/kysion/base-library/base_model"
 )
 
 type (
@@ -19,7 +20,7 @@ type (
 		InstallHook(state sys_enum.AuditEvent, category int, hookFunc sys_hook.AuditHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		GetAuditList(ctx context.Context, category int, state int, pagination *sys_model.Pagination) (*sys_model.AuditListRes, error)
+		GetAuditList(ctx context.Context, category int, state int, pagination *base_model.Pagination) (*sys_model.AuditListRes, error)
 		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
 		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
 		CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error)

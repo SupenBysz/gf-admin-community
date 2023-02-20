@@ -9,7 +9,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -18,6 +17,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )

@@ -7,6 +7,7 @@ package sys_service
 
 import (
 	"context"
+	"github.com/kysion/base-library/base_model"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
@@ -14,7 +15,7 @@ import (
 
 type (
 	ISysRole interface {
-		QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
+		QueryRoleList(ctx context.Context, info base_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
 		GetRoleById(ctx context.Context, id int64) (*sys_entity.SysRole, error)
 		Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
