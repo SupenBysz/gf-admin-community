@@ -12,7 +12,7 @@
  Target Server Version : 140005 (140005)
  File Encoding         : 65001
 
- Date: 18/02/2023 10:01:30
+ Date: 20/02/2023 10:40:50
 */
 
 
@@ -174,6 +174,7 @@ CREATE TABLE "public"."co_company_team" (
 )
 ;
 ALTER TABLE "public"."co_company_team" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_company_team"."id" IS 'ID';
 COMMENT ON COLUMN "public"."co_company_team"."name" IS '团队名称，公司维度下唯一';
 COMMENT ON COLUMN "public"."co_company_team"."owner_employee_id" IS '团队所有者/业务总监/业务经理/团队队长';
 COMMENT ON COLUMN "public"."co_company_team"."captain_employee_id" IS '团队队长编号/小组组长';
@@ -227,6 +228,333 @@ INSERT INTO "public"."co_company_team_member" ("id", "team_id", "employee_id", "
 INSERT INTO "public"."co_company_team_member" ("id", "team_id", "employee_id", "invite_user_id", "union_main_id", "join_at") VALUES (5987413717876805, 5987413533196357, 5987229831856197, NULL, 5977706236739653, '2023-01-12 12:18:05.894468');
 INSERT INTO "public"."co_company_team_member" ("id", "team_id", "employee_id", "invite_user_id", "union_main_id", "join_at") VALUES (5987416869175365, 5987413533196357, 5987317698330693, NULL, 5977706236739653, '2023-01-12 12:18:53.170126');
 INSERT INTO "public"."co_company_team_member" ("id", "team_id", "employee_id", "invite_user_id", "union_main_id", "join_at") VALUES (5989544611676230, 5989544611676229, 5981495520723013, NULL, 5977706236739653, '2023-01-12 21:19:59.810376');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_account
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_account";
+CREATE TABLE "public"."co_fd_account" (
+                                          "id" int8 NOT NULL,
+                                          "name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                          "union_license_id" int8 DEFAULT 0,
+                                          "union_user_id" int8 NOT NULL,
+                                          "currency_code" varchar(8) COLLATE "pg_catalog"."default" NOT NULL,
+                                          "is_enabled" int2 DEFAULT 1,
+                                          "limit_state" int4 DEFAULT 0,
+                                          "precision_of_balance" int4 NOT NULL DEFAULT 100,
+                                          "balance" int8 DEFAULT 0,
+                                          "version" int4,
+                                          "created_at" timestamp(6),
+                                          "created_by" int8,
+                                          "updated_at" timestamp(6),
+                                          "updated_by" int8,
+                                          "deleted_at" timestamp(6),
+                                          "deleted_by" int8
+)
+;
+ALTER TABLE "public"."co_fd_account" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_account"."id" IS 'ID';
+COMMENT ON COLUMN "public"."co_fd_account"."name" IS '账户名称';
+COMMENT ON COLUMN "public"."co_fd_account"."union_license_id" IS '关联资质ID，大于0时必须保值与 union_user_id 关联得上';
+COMMENT ON COLUMN "public"."co_fd_account"."union_user_id" IS '关联用户ID';
+COMMENT ON COLUMN "public"."co_fd_account"."currency_code" IS '货币代码';
+COMMENT ON COLUMN "public"."co_fd_account"."is_enabled" IS '是否启用：1启用，0禁用';
+COMMENT ON COLUMN "public"."co_fd_account"."limit_state" IS '限制状态：0不限制，1限制支出、2限制收入';
+COMMENT ON COLUMN "public"."co_fd_account"."precision_of_balance" IS '货币单位精度：1:元，10:角，100:分，1000:厘，10000:毫，……';
+COMMENT ON COLUMN "public"."co_fd_account"."balance" IS '当前余额，必须要与账单最后一笔交易余额对应得上';
+COMMENT ON COLUMN "public"."co_fd_account"."version" IS '乐观锁所需数据版本字段';
+
+-- ----------------------------
+-- Records of co_fd_account
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5817379701653573, '服小四', 0, 5817379660365893, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5817296989651013, '嘿嘿嘿', 0, 5817294867660869, 'CNY', 1, 0, 100, 2, 2, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5814302284972101, '呀呀呀', 0, 5814302247551045, 'CNY', 1, 0, 100, 996, 3, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5812972035178565, '圆角面', 0, 5812971991924805, 'CNY', 1, 0, 100, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5835450104152133, '光音', 0, 5835450060832837, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5835530432872517, '光使', 0, 5835530390208581, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5943544179130437, '大头', 0, 5943544165498949, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5943617139507269, '小头', 0, 5943617125023813, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5944460543983685, '高高', 0, 5944460525830213, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5944602292125765, '依依', 0, 5944602278953029, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5944821413838917, '番茄', 0, 5944821399158853, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5948473265291333, '踏踏', 0, 5948473249038405, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5950203865727045, '究也', 0, 5950202009223237, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5958475082629189, '测试运营商', 0, 5958475063885893, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5959768939233349, '让让让', 0, 5959768040603717, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5943795849363525, '周周', 0, 5943795150028869, 'CNY', 1, 0, 100, 996, 1, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5948482554298437, '西西', 0, 5948482540994629, 'CNY', 1, 0, 100, 4, 1, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5976629968764997, '啊啊啊', 0, 5976629954478149, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5977356576817221, '服服服', 0, 5977356500074565, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5981562210222149, '香蕉联盟', 0, 5981562167623749, 'CNY', 1, 0, 100, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5977706248408976, '快乐星球', 0, 5977706248405061, 'CNY', 1, 0, 100, 980, 2, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account" ("id", "name", "union_license_id", "union_user_id", "currency_code", "is_enabled", "limit_state", "precision_of_balance", "balance", "version", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5977719809867091, '魔法城堡', 0, 5977719818551365, 'CNY', 1, 0, 100, 20, 2, NULL, NULL, NULL, NULL, NULL, NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_account_bill
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_account_bill";
+CREATE TABLE "public"."co_fd_account_bill" (
+                                               "id" int8 NOT NULL,
+                                               "from_user_id" int8 NOT NULL,
+                                               "to_user_id" int8 NOT NULL,
+                                               "fd_account_id" int8 NOT NULL,
+                                               "before_balance" int8 NOT NULL,
+                                               "amount" int8 NOT NULL,
+                                               "after_balance" int8 NOT NULL,
+                                               "union_order_id" int8,
+                                               "in_out_type" int4 NOT NULL,
+                                               "trade_type" int4 NOT NULL,
+                                               "trade_at" timestamp(6) NOT NULL,
+                                               "remark" varchar(255) COLLATE "pg_catalog"."default",
+                                               "trade_state" int4 NOT NULL,
+                                               "deleted_at" timestamp(6),
+                                               "created_at" timestamp(6),
+                                               "created_by" int8
+)
+;
+ALTER TABLE "public"."co_fd_account_bill" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_account_bill"."id" IS 'ID';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."from_user_id" IS '交易发起方UserID，如果是系统则固定为-1';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."to_user_id" IS '交易对象UserID';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."fd_account_id" IS '财务账户ID';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."before_balance" IS '交易前账户余额';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."amount" IS '交易金额';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."after_balance" IS '交易后账户余额';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."union_order_id" IS '关联业务订单ID';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."in_out_type" IS '收支类型：1收入，2支出';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."trade_type" IS '交易类型，1转账、2消费、4退款、8佣金、16保证金、32诚意金、64手续费/服务费、128提现、256充值、512营收，8192其它';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."trade_at" IS '交易时间';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."remark" IS '备注信息';
+COMMENT ON COLUMN "public"."co_fd_account_bill"."trade_state" IS '交易状态：1待支付、2支付中、4已支付、8支付失败、16交易完成、';
+
+-- ----------------------------
+-- Records of co_fd_account_bill
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5818974706139205, 5814302247551045, 5817294867660869, 5814302284972101, 1000, 1, 999, 0, 2, 1, '2022-12-13 15:33:34', '呀呀呀转账了1元给嘿嘿嘿', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5819019078074437, 5814302247551045, 5817294867660869, 5817296989651013, 0, 1, 1, 0, 1, 1, '2022-12-13 15:33:35', '嘿嘿嘿收到了1元来自呀呀呀的转账', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5819021910409285, 5814302247551045, 5817294867660869, 5814302284972101, 999, 1, 998, 0, 2, 1, '2022-12-13 15:33:34', '呀呀呀转账了1元给嘿嘿嘿', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5819025038049349, 5814302247551045, 5817294867660869, 5817296989651013, 1, 1, 2, 0, 1, 1, '2022-12-13 15:33:35', '嘿嘿嘿收到了1元来自呀呀呀的转账', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5819033627394117, 5814302247551045, 5812971991924805, 5814302284972101, 998, 2, 996, 0, 2, 1, '2022-12-13 15:43:34', '呀呀呀转账了2元给圆角面', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5819039925076037, 5814302247551045, 5812971991924805, 5812972035178565, 0, 2, 2, 0, 1, 1, '2022-12-13 15:43:35', '圆角面收到了2元来自呀呀呀的转账', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5971915461427269, 5943795150028869, 5948482540994629, 5943795849363525, 1000, 4, 996, 0, 2, 1, '2022-12-07 21:10:23', '周周(运营商) 转账4元给西西(服务商)', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (5971924033011781, 5943795150028869, 5948482540994629, 5948482554298437, 0, 4, 4, 0, 1, 1, '2022-12-07 21:10:23', '西西(服务商)收到来自周周(运营商)的转账4元', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (6173890011725893, 5977706248405061, 5977719818551365, 5977706248408976, 1000, 10, 990, 0, 2, 1, '2023-01-09 12:30:45', '快乐星球转账10元给魔法城堡', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (6173890926411845, 5977706248405061, 5977719818551365, 5977706248408976, 990, 10, 980, 0, 2, 1, '2023-01-09 12:30:45', '快乐星球转账10元给魔法城堡', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (6173897937780805, 5977706248405061, 5977719818551365, 5977719809867091, 0, 10, 10, 0, 1, 1, '2023-01-09 12:30:55', '魔法城堡收到快乐星球转账的10元', 4, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_account_bill" ("id", "from_user_id", "to_user_id", "fd_account_id", "before_balance", "amount", "after_balance", "union_order_id", "in_out_type", "trade_type", "trade_at", "remark", "trade_state", "deleted_at", "created_at", "created_by") VALUES (6173898908696645, 5977706248405061, 5977719818551365, 5977719809867091, 10, 10, 20, 0, 1, 1, '2023-01-09 12:30:55', '魔法城堡收到快乐星球转账的10元', 4, NULL, NULL, NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_bank_card
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_bank_card";
+CREATE TABLE "public"."co_fd_bank_card" (
+                                            "id" int8 NOT NULL,
+                                            "bank_name" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+                                            "card_type" int2 NOT NULL DEFAULT 1,
+                                            "card_number" varchar(32) COLLATE "pg_catalog"."default" NOT NULL,
+                                            "expired_at" timestamp(6),
+                                            "holder_name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                            "bank_of_account" varchar(255) COLLATE "pg_catalog"."default",
+                                            "state" int4 DEFAULT 1,
+                                            "remark" varchar(255) COLLATE "pg_catalog"."default" DEFAULT ''::character varying,
+                                            "user_id" int8 NOT NULL,
+                                            "created_at" timestamp(6),
+                                            "created_by" int8,
+                                            "updated_at" timestamp(6),
+                                            "updated_by" int8,
+                                            "deleted_at" timestamp(6),
+                                            "deleted_by" int8
+)
+;
+ALTER TABLE "public"."co_fd_bank_card" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_bank_card"."id" IS 'ID';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."bank_name" IS '银行名称';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."card_type" IS '银行卡类型：1借记卡，2储蓄卡';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."card_number" IS '银行卡号';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."expired_at" IS '有效期';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."holder_name" IS '银行卡开户名';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."bank_of_account" IS '开户行';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."state" IS '状态：0禁用，1正常';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."remark" IS '备注信息';
+COMMENT ON COLUMN "public"."co_fd_bank_card"."user_id" IS '用户id，表示属于谁';
+
+-- ----------------------------
+-- Records of co_fd_bank_card
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_bank_card" ("id", "bank_name", "card_type", "card_number", "expired_at", "holder_name", "bank_of_account", "state", "remark", "user_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818467349102661, '建设银行', 2, '6217002020080932049', NULL, '克传', '中国建设银行股份有限公司南昌天佑路支行', 1, '这是圆角面公司的银行卡号，可用于提现', 5812971991924805, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_bank_card" ("id", "bank_name", "card_type", "card_number", "expired_at", "holder_name", "bank_of_account", "state", "remark", "user_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6100575652085829, '中国银行', 1, '6235756500002612985_085829', NULL, '小小怪', '南昌天佑支行', 0, 'elit deserunt sunt consectetur', 5977706248405061, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_bank_card" ("id", "bank_name", "card_type", "card_number", "expired_at", "holder_name", "bank_of_account", "state", "remark", "user_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5977706242404060, '中国银行', 1, '6235756500002612988_404060', NULL, '林菲菲', '南昌', 0, '12', 5977706248405061, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_bank_card" ("id", "bank_name", "card_type", "card_number", "expired_at", "holder_name", "bank_of_account", "state", "remark", "user_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6100584184414277, '中国银行', 1, '6235756500002612985_414277', NULL, '小小怪', '南昌天佑支行', 0, 'elit deserunt sunt consectetur', 5977706248405061, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_bank_card" ("id", "bank_name", "card_type", "card_number", "expired_at", "holder_name", "bank_of_account", "state", "remark", "user_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6173941742764101, '中国银行', 1, '6235756500002612985', NULL, '小小怪', '南昌天佑支行', 1, 'elit deserunt sunt consectetur', 5977706248405061, NULL, NULL, NULL, NULL, NULL, NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_currency
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_currency";
+CREATE TABLE "public"."co_fd_currency" (
+                                           "code" varchar(16) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "en_name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "cn_name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "currency_code" varchar(16) COLLATE "pg_catalog"."default" NOT NULL,
+                                           "currency_cn" varchar(32) COLLATE "pg_catalog"."default",
+                                           "currency_en" varchar(32) COLLATE "pg_catalog"."default",
+                                           "symbol" varchar(16) COLLATE "pg_catalog"."default",
+                                           "symbol_native" varchar(16) COLLATE "pg_catalog"."default",
+                                           "is_legal_tender" int2 NOT NULL
+)
+;
+ALTER TABLE "public"."co_fd_currency" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_currency"."code" IS '国家编码';
+COMMENT ON COLUMN "public"."co_fd_currency"."en_name" IS '国家英文名称';
+COMMENT ON COLUMN "public"."co_fd_currency"."cn_name" IS '国家中文名称';
+COMMENT ON COLUMN "public"."co_fd_currency"."currency_code" IS '货币编码';
+COMMENT ON COLUMN "public"."co_fd_currency"."currency_cn" IS '货币中文名称';
+COMMENT ON COLUMN "public"."co_fd_currency"."currency_en" IS '货币英文名称';
+COMMENT ON COLUMN "public"."co_fd_currency"."symbol" IS '货币符号';
+COMMENT ON COLUMN "public"."co_fd_currency"."symbol_native" IS '货币原生符号';
+COMMENT ON COLUMN "public"."co_fd_currency"."is_legal_tender" IS '是否法定货币：1是，0否';
+
+-- ----------------------------
+-- Records of co_fd_currency
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('US', 'United States of America (USA)', '美国', 'USD', '美元', 'US Dollar', '$', '$', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('HK', 'Hong Kong', '香港', 'HKD', '港元', 'Hong Kong Dollar', 'HK$', '$', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('TW', 'Taiwan', '台湾', 'TWD', '新台币', 'New Taiwan Dollar', 'NT$', '$', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('JP', 'Japan', '日本', 'JPY', '日元', 'Japanese Yen', 'JP¥', '¥', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('CN', 'China', '中国', 'CNY', '人民币元', 'Chinese Yuan', '¥', '¥', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('EU', 'European Union', '欧盟', 'EUR', '欧元', 'Euro', '€', '€', 1);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('BTC', 'Bitcoin', 'BTC', 'BTC', '比特币', 'BTC', '฿', '฿', 0);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('USDT', 'TetherUSD', 'USDT', 'USDT', '泰达币', 'USDT', 'USDT$', '$', 0);
+INSERT INTO "public"."co_fd_currency" ("code", "en_name", "cn_name", "currency_code", "currency_cn", "currency_en", "symbol", "symbol_native", "is_legal_tender") VALUES ('ETH', 'Ethereum', 'ETH', 'ETH', '以太币', 'ETH', 'ETH$', '$', 0);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_invoice
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_invoice";
+CREATE TABLE "public"."co_fd_invoice" (
+                                          "id" int8 NOT NULL,
+                                          "name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                          "tax_id" varchar(64) COLLATE "pg_catalog"."default" NOT NULL,
+                                          "addr" varchar(255) COLLATE "pg_catalog"."default",
+                                          "email" varchar(128) COLLATE "pg_catalog"."default",
+                                          "user_id" int8 NOT NULL,
+                                          "audit_user_id" int8 NOT NULL,
+                                          "audit_replay_msg" varchar(255) COLLATE "pg_catalog"."default",
+                                          "audit_at" timestamp(6),
+                                          "state" int4 NOT NULL DEFAULT 1,
+                                          "union_main_id" int8,
+                                          "created_at" timestamp(6),
+                                          "created_by" int8,
+                                          "updated_at" timestamp(6),
+                                          "updated_by" int8,
+                                          "deleted_at" timestamp(6),
+                                          "deleted_by" int8
+)
+;
+ALTER TABLE "public"."co_fd_invoice" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_invoice"."name" IS '发票抬头名称';
+COMMENT ON COLUMN "public"."co_fd_invoice"."tax_id" IS '纳税识别号';
+COMMENT ON COLUMN "public"."co_fd_invoice"."addr" IS '发票收件地址，限纸质';
+COMMENT ON COLUMN "public"."co_fd_invoice"."email" IS '发票收件邮箱，限电子发票';
+COMMENT ON COLUMN "public"."co_fd_invoice"."user_id" IS '申请人UserID';
+COMMENT ON COLUMN "public"."co_fd_invoice"."audit_user_id" IS '审核人UserID';
+COMMENT ON COLUMN "public"."co_fd_invoice"."audit_replay_msg" IS '审核回复，仅审核不通过时才有值';
+COMMENT ON COLUMN "public"."co_fd_invoice"."audit_at" IS '审核时间';
+COMMENT ON COLUMN "public"."co_fd_invoice"."state" IS '状态：0待审核、1已通过、-1不通过';
+COMMENT ON COLUMN "public"."co_fd_invoice"."union_main_id" IS '主体ID：运营商ID、服务商ID、商户ID、消费者ID';
+
+-- ----------------------------
+-- Records of co_fd_invoice
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818478261436485, '圆角面', '914403000838748535', '', '2778368047@qq.com', 5812971991924805, 0, '', NULL, 0, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818515029557317, '圆角面', '914403000838748535', '', '2778368047@qq.com', 5812971991924805, 0, '', NULL, 0, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818515269550149, '圆角面', '914403000838748535', '', '2778368047@qq.com', 5812971991924805, 0, '', NULL, 0, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818615238623301, '圆角面', '914403000838748535', '', '2778368047@qq.com', 5812971991924805, 0, '', NULL, 0, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5976033035681861, '测试运营商', '914403000838748535', '', '2778368047@qq.com', 5958475063885893, 0, '', '2022-12-08 16:37:10.652149', 0, 5958475063164997, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6173913673498693, '小小怪', '914403000838748535', '', '2778368047@qq.com', 5977706248405061, 0, '', '2022-12-08 16:37:10.652149', 0, 5977706236739653, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice" ("id", "name", "tax_id", "addr", "email", "user_id", "audit_user_id", "audit_replay_msg", "audit_at", "state", "union_main_id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6173927630045253, '小小怪', '012123203243', '', '2778368047@qq.com', 5977706248405061, 0, '', '2022-12-08 16:37:10.652149', 0, 5977706236739653, NULL, NULL, NULL, NULL, NULL, NULL);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for co_fd_invoice_detail
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."co_fd_invoice_detail";
+CREATE TABLE "public"."co_fd_invoice_detail" (
+                                                 "id" int8 NOT NULL,
+                                                 "tax_number" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                                 "tax_name" varchar(128) COLLATE "pg_catalog"."default" NOT NULL,
+                                                 "bill_ids" text COLLATE "pg_catalog"."default" NOT NULL,
+                                                 "amount" int8 NOT NULL,
+                                                 "rate" int4 NOT NULL,
+                                                 "rate_mount" int8 NOT NULL,
+                                                 "remark" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+                                                 "type" int2 NOT NULL,
+                                                 "state" int4 NOT NULL,
+                                                 "audit_user_ids" int8,
+                                                 "make_type" int4,
+                                                 "make_user_id" int8,
+                                                 "make_at" timestamp(6),
+                                                 "courier_name" varchar(32) COLLATE "pg_catalog"."default",
+                                                 "courier_number" varchar(64) COLLATE "pg_catalog"."default",
+                                                 "fd_invoice_id" int8,
+                                                 "audit_user_id" int8,
+                                                 "audit_reply_msg" varchar(255) COLLATE "pg_catalog"."default",
+                                                 "audit_at" timestamp(6),
+                                                 "user_id" int8,
+                                                 "union_main_id" int8,
+                                                 "email" varchar(128) COLLATE "pg_catalog"."default",
+                                                 "created_at" timestamp(6),
+                                                 "created_by" int8,
+                                                 "updated_at" timestamp(6),
+                                                 "updated_by" int8,
+                                                 "deleted_at" timestamp(6),
+                                                 "deleted_by" int8
+)
+;
+ALTER TABLE "public"."co_fd_invoice_detail" OWNER TO "kysion";
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."id" IS 'ID';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."tax_number" IS '纳税识别号';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."tax_name" IS '纳税人名称';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."bill_ids" IS '账单ID组';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."amount" IS '开票金额，单位精度：分';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."rate" IS '税率，如3% 则填入3';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."rate_mount" IS '税额，单位精度：分';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."remark" IS '发布内容描述';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."type" IS '发票类型：1电子发票，2纸质发票';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."state" IS '状态：1待审核、2待开票、4开票失败、8已开票、16已撤销';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."audit_user_ids" IS '审核者UserID，多个用逗号隔开';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."make_type" IS '出票类型：1普通发票、2增值税专用发票、3专业发票';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."make_user_id" IS '出票人UserID，如果是系统出票则默认-1';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."make_at" IS '出票时间';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."courier_name" IS '快递名称，限纸质发票';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."courier_number" IS '快递编号，限纸质发票';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."fd_invoice_id" IS '发票抬头ID';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."audit_user_id" IS '审核者UserID';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."audit_reply_msg" IS '审核回复，仅审核不通过时才有值';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."audit_at" IS '审核时间';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."user_id" IS '申请者用户ID';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."union_main_id" IS '主体ID：运营商ID、服务商ID、商户ID、消费者ID';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."email" IS '发票收件邮箱，限电子发票';
+
+-- ----------------------------
+-- Records of co_fd_invoice_detail
+-- ----------------------------
+BEGIN;
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818501666242629, '914403000838748535', '克传', '11111111111111', 200, 3, 46, '克传开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5812971991924805, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5870136367841349, '914403000838748535', '林菲菲', '2222222', 100, 0, 0, '林菲菲测试商户端申请开发票', 1, 0, 0, 0, 0, NULL, '', '', 5818615238623301, 0, '', NULL, 5774257544888389, 5774257544888389, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5976004851269701, '914403000838748535', '林菲菲', '5788909498728517,5786160515514437', 200, 3, 46, '林菲菲开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5958475063885893, 5958475063164997, '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6173921526480965, '914403000838748535', '小小怪', '6173890011725893,6173890926411845', 20000, 3, 46, '林菲菲开票，开票金额200元，20000分', 1, 2, 0, 0, 0, NULL, '', '', 6173913673498693, 5302581852373061, '', '2023-02-14 11:10:26.708576', 5977706248405061, 5977706236739653, '', NULL, NULL, NULL, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -4076,6 +4404,7 @@ BEGIN;
 INSERT INTO "public"."sys_user_detail" ("id", "realname", "union_main_name", "last_login_ip", "last_login_area", "last_login_at") VALUES (5987167558369349, '蓝精灵', '快乐星球', '127.0.0.1', '0|0|0|内网IP|内网IP', '2023-02-13 10:17:33.858676');
 INSERT INTO "public"."sys_user_detail" ("id", "realname", "union_main_name", "last_login_ip", "last_login_area", "last_login_at") VALUES (5977706248405061, '小小怪', '快乐星球', '127.0.0.1', '0|0|0|内网IP|内网IP', '2023-02-13 10:22:54.737823');
 INSERT INTO "public"."sys_user_detail" ("id", "realname", "union_main_name", "last_login_ip", "last_login_area", "last_login_at") VALUES (5977719818551365, '游乐王子', '魔法城堡', '127.0.0.1', '0|0|0|内网IP|内网IP', '2023-02-13 10:24:43.80244');
+INSERT INTO "public"."sys_user_detail" ("id", "realname", "union_main_name", "last_login_ip", "last_login_area", "last_login_at") VALUES (5302581852373061, '', '', '127.0.0.1', '0|0|0|内网IP|内网IP', '2023-02-18 16:45:01.008759');
 COMMIT;
 
 -- ----------------------------
@@ -4181,9 +4510,133 @@ ALTER TABLE "public"."co_company_team_member" ADD CONSTRAINT "pro_company_team_m
 ALTER TABLE "public"."co_company_team_member" ADD CONSTRAINT "pro_company_team_member_pkey" PRIMARY KEY ("id");
 
 -- ----------------------------
+-- Indexes structure for table co_fd_account
+-- ----------------------------
+CREATE INDEX "fd_account_currency_code_idx" ON "public"."co_fd_account" USING btree (
+    "currency_code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_id_idx" ON "public"."co_fd_account" USING btree (
+    "id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_name_idx" ON "public"."co_fd_account" USING btree (
+    "name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_account
+-- ----------------------------
+ALTER TABLE "public"."co_fd_account" ADD CONSTRAINT "fd_account_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Indexes structure for table co_fd_account_bill
+-- ----------------------------
+CREATE INDEX "fd_account_bill_fd_account_id_idx" ON "public"."co_fd_account_bill" USING btree (
+    "fd_account_id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_from_user_id_idx" ON "public"."co_fd_account_bill" USING btree (
+    "from_user_id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+CREATE UNIQUE INDEX "fd_account_bill_id_idx" ON "public"."co_fd_account_bill" USING btree (
+    "id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_in_out_type_idx" ON "public"."co_fd_account_bill" USING btree (
+    "in_out_type" "pg_catalog"."int4_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_to_user_id_idx" ON "public"."co_fd_account_bill" USING btree (
+    "to_user_id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_trade_at_idx" ON "public"."co_fd_account_bill" USING btree (
+    "trade_at" "pg_catalog"."timestamp_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_trade_type_idx" ON "public"."co_fd_account_bill" USING btree (
+    "trade_type" "pg_catalog"."int4_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_account_bill_union_order_id_idx" ON "public"."co_fd_account_bill" USING btree (
+    "union_order_id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_account_bill
+-- ----------------------------
+ALTER TABLE "public"."co_fd_account_bill" ADD CONSTRAINT "fd_account_bill_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Indexes structure for table co_fd_bank_card
+-- ----------------------------
+CREATE INDEX "fd_bank_card_bank_name_idx" ON "public"."co_fd_bank_card" USING btree (
+    "bank_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_bank_card_card_number_idx" ON "public"."co_fd_bank_card" USING btree (
+    "card_number" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_bank_card_holder_name_idx" ON "public"."co_fd_bank_card" USING btree (
+    "holder_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_bank_card_id_idx" ON "public"."co_fd_bank_card" USING btree (
+    "id" "pg_catalog"."int8_ops" ASC NULLS LAST
+    );
+
+-- ----------------------------
+-- Uniques structure for table co_fd_bank_card
+-- ----------------------------
+ALTER TABLE "public"."co_fd_bank_card" ADD CONSTRAINT "fd_bank_card_card_number_key" UNIQUE ("card_number");
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_bank_card
+-- ----------------------------
+ALTER TABLE "public"."co_fd_bank_card" ADD CONSTRAINT "fd_bank_card_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Indexes structure for table co_fd_currency
+-- ----------------------------
+CREATE INDEX "fd_currency_cn_name_idx" ON "public"."co_fd_currency" USING btree (
+    "cn_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_currency_code_idx" ON "public"."co_fd_currency" USING btree (
+    "code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_currency_currency_code_idx" ON "public"."co_fd_currency" USING btree (
+    "currency_code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+CREATE INDEX "fd_currency_en_name_idx" ON "public"."co_fd_currency" USING btree (
+    "en_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+    );
+
+-- ----------------------------
+-- Uniques structure for table co_fd_currency
+-- ----------------------------
+ALTER TABLE "public"."co_fd_currency" ADD CONSTRAINT "fd_currency_code_key" UNIQUE ("code");
+ALTER TABLE "public"."co_fd_currency" ADD CONSTRAINT "fd_currency_currency_codc_key" UNIQUE ("currency_code");
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_currency
+-- ----------------------------
+ALTER TABLE "public"."co_fd_currency" ADD CONSTRAINT "fd_currenty_pkey" PRIMARY KEY ("currency_code");
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_invoice
+-- ----------------------------
+ALTER TABLE "public"."co_fd_invoice" ADD CONSTRAINT "fd_invoice_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Primary Key structure for table co_fd_invoice_detail
+-- ----------------------------
+ALTER TABLE "public"."co_fd_invoice_detail" ADD CONSTRAINT "fd_invoice_detail_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
 -- Auto increment value for sys_area
 -- ----------------------------
 SELECT setval('"public"."sys_area_id_seq2"', 1, false);
+
+-- ----------------------------
+-- Primary Key structure for table sys_area
+-- ----------------------------
+ALTER TABLE "public"."sys_area" ADD CONSTRAINT "sys_area_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Primary Key structure for table sys_audit
+-- ----------------------------
+ALTER TABLE "public"."sys_audit" ADD CONSTRAINT "sys_audit_pkey" PRIMARY KEY ("id");
 
 -- ----------------------------
 -- Primary Key structure for table sys_file
@@ -4194,6 +4647,11 @@ ALTER TABLE "public"."sys_file" ADD CONSTRAINT "sys_file_pkey" PRIMARY KEY ("id"
 -- Primary Key structure for table sys_license
 -- ----------------------------
 ALTER TABLE "public"."sys_license" ADD CONSTRAINT "pro_partner_license_pkey" PRIMARY KEY ("id");
+
+-- ----------------------------
+-- Primary Key structure for table sys_logs
+-- ----------------------------
+ALTER TABLE "public"."sys_logs" ADD CONSTRAINT "sys_logs_pkey" PRIMARY KEY ("id");
 
 -- ----------------------------
 -- Primary Key structure for table sys_menu
