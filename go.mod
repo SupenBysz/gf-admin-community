@@ -1,6 +1,6 @@
 module github.com/SupenBysz/gf-admin-community
 
-go 1.20
+go 1.19
 
 require (
 	github.com/casbin/casbin/v2 v2.60.0
@@ -8,7 +8,7 @@ require (
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.3.2
 	github.com/gogf/gf/v2 v2.3.2
 	github.com/golang-jwt/jwt/v4 v4.4.3
-	github.com/kysion/base-library v0.0.3
+	github.com/kysion/base-library v0.0.4
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230201065125-561cdd83b71d
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/yitter/idgenerator-go v1.3.2
