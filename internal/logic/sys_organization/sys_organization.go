@@ -7,11 +7,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
@@ -35,7 +36,7 @@ func New() *sSysOrganization {
 }
 
 // QueryOrganizationList 获取组织架构信息列表
-func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info sys_model.SearchParams) (*sys_model.OrganizationInfoListRes, error) {
+func (s *sSysOrganization) QueryOrganizationList(ctx context.Context, info base_model.SearchParams) (*sys_model.OrganizationInfoListRes, error) {
 	result, err := daoctl.Query[*sys_entity.SysOrganization](sys_dao.SysOrganization.Ctx(ctx), &info, false)
 
 	return (*sys_model.OrganizationInfoListRes)(result), err

@@ -8,6 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
 )
 
 // SysOrganization 组织架
@@ -39,8 +40,8 @@ func (c *cSysOrganization) GetOrganizationList(ctx context.Context, req *sys_api
 
 	return &sys_model.OrganizationInfoListRes{
 		Records: data,
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: count,
 			},

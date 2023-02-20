@@ -10,7 +10,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -71,16 +72,16 @@ func (s *sSysAudit) CleanAllHook() {
 }
 
 // GetAuditList 獲取审核信息列表
-func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, pagination *sys_model.Pagination) (*sys_model.AuditListRes, error) {
+func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, pagination *base_model.Pagination) (*sys_model.AuditListRes, error) {
 	if pagination == nil {
-		pagination = &sys_model.Pagination{
+		pagination = &base_model.Pagination{
 			PageNum:  1,
 			PageSize: 20,
 		}
 	}
 
-	fields := append(make([]sys_model.FilterInfo, 0),
-		sys_model.FilterInfo{
+	fields := append(make([]base_model.FilterInfo, 0),
+		base_model.FilterInfo{
 			Field:       sys_dao.SysAudit.Columns().State,
 			Where:       "in",
 			IsOrWhere:   false,
@@ -89,7 +90,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		},
 	)
 	if category > 0 {
-		fields = append(fields, sys_model.FilterInfo{
+		fields = append(fields, base_model.FilterInfo{
 			Field:       sys_dao.SysAudit.Columns().Category,
 			Where:       "=",
 			IsOrWhere:   false,
@@ -98,7 +99,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		})
 	}
 
-	fields = append(fields, sys_model.FilterInfo{
+	fields = append(fields, base_model.FilterInfo{
 		Field:       sys_dao.SysAudit.Columns().Id,
 		Where:       ">",
 		IsOrWhere:   false,
@@ -106,9 +107,9 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		IsNullValue: false,
 	})
 
-	filter := sys_model.SearchParams{
+	filter := base_model.SearchParams{
 		Filter: fields,
-		OrderBy: append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+		OrderBy: append(make([]base_model.OrderBy, 0), base_model.OrderBy{
 			Field: sys_dao.SysAudit.Columns().Id,
 			Sort:  "desc",
 		}),

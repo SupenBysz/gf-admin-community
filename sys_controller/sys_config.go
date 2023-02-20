@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	sys_api "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
-	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
 )
 
 // SysConfig 鉴权
@@ -17,8 +17,8 @@ type cSysConfig struct{}
 // GetBaiduSdkConfList 获取百度SDK应用配置|列表
 func (s *cSysConfig) GetBaiduSdkConfList(ctx context.Context, _ *sys_api.GetBaiduSdkConfListReq) (*sys_api.BaiduSdkConfListRes, error) {
 	result := &sys_api.BaiduSdkConfListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 20,
 			},
@@ -64,8 +64,8 @@ func (s *cSysConfig) DeleteBaiduSdkConf(ctx context.Context, req *sys_api.Delete
 // GetAliyunSdkConfList 获取阿里云SDK应用配置|列表
 func (s *cSysConfig) GetAliyunSdkConfList(ctx context.Context, _ *sys_api.GetAliyunSdkConfListReq) (*sys_api.AliyunSdkConfListRes, error) {
 	result := &sys_api.AliyunSdkConfListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 20,
 			},
@@ -112,8 +112,8 @@ func (s *cSysConfig) DeleteAliyunSdkConf(ctx context.Context, req *sys_api.Delet
 // GetHuaweiSdkConfList 获取华为云SDK应用配置|列表
 func (s *cSysConfig) GetHuaweiSdkConfList(ctx context.Context, _ *sys_api.GetHuaweiSdkConfListReq) (*sys_api.HuaweiSdkConfListRes, error) {
 	result := &sys_api.HuaweiSdkConfListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 20,
 			},
@@ -160,8 +160,8 @@ func (s *cSysConfig) DeleteHuaweiSdkConf(ctx context.Context, req *sys_api.Delet
 // GetTencentSdkConfList 获取腾讯云SDK应用配置|列表
 func (s *cSysConfig) GetTencentSdkConfList(ctx context.Context, _ *sys_api.GetTencentSdkConfListReq) (*sys_api.TencentSdkConfListRes, error) {
 	result := &sys_api.TencentSdkConfListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 20,
 			},
@@ -208,8 +208,8 @@ func (s *cSysConfig) DeleteTengxunSdkConf(ctx context.Context, req *sys_api.Dele
 // GetCtyunSdkConfList 获取天翼云SDK应用配置|列表
 func (s *cSysConfig) GetCtyunSdkConfList(ctx context.Context, _ *sys_api.GetCtyunSdkConfListReq) (*sys_api.CtyunSdkConfListRes, error) {
 	result := &sys_api.CtyunSdkConfListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 20,
 			},

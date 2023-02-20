@@ -3,6 +3,7 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 type GetPermissionByIdReq struct {
@@ -17,7 +18,7 @@ type GetPermissionByIdentifierReq struct {
 
 type QueryPermissionListReq struct {
 	g.Meta `path:"/queryPermissionList" method:"post" summary:"根据ID获取下级权限|列表，返回列表" tags:"权限"`
-	sys_model.SearchParams
+	base_model.SearchParams
 }
 
 type GetPermissionListReq struct {

@@ -3,6 +3,7 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 type CreateUserReq struct {
@@ -12,7 +13,7 @@ type CreateUserReq struct {
 
 type QueryUserListReq struct {
 	g.Meta `path:"/queryUserList" method:"post" summary:"获取用户|列表" tags:"用户"`
-	sys_model.SearchParams
+	base_model.SearchParams
 }
 
 type SetUserPermissionIdsReq struct {

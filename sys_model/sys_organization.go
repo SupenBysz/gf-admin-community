@@ -1,6 +1,9 @@
 package sys_model
 
-import "github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+import (
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/kysion/base-library/base_model"
+)
 
 type SysOrganizationInfo struct {
 	Id          int64  `json:"id"          description:""`
@@ -15,6 +18,6 @@ type SysOrganizationTree struct {
 	Children    []*SysOrganizationTree `json:"children" orm:"-" dc:"下级组织架构"`
 }
 
-type OrganizationInfoListRes CollectRes[*sys_entity.SysOrganization]
+type OrganizationInfoListRes base_model.CollectRes[*sys_entity.SysOrganization]
 
 type OrganizationInfo sys_entity.SysOrganization

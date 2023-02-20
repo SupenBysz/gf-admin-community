@@ -11,6 +11,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/kysion/base-library/base_model"
 )
 
 type (
@@ -18,7 +19,7 @@ type (
 		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)
+		QueryUserList(ctx context.Context, info *base_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)
 		SetUserRoleIds(ctx context.Context, roleIds []int64, userId int64) (bool, error)
 		CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error)
 		SetUserPermissions(ctx context.Context, userId int64, permissionIds []int64) (bool, error)

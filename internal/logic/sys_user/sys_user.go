@@ -11,11 +11,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/en_crypto"
-	"github.com/SupenBysz/gf-admin-community/utility/funs"
-	"github.com/SupenBysz/gf-admin-community/utility/kconv"
-	"github.com/SupenBysz/gf-admin-community/utility/masker"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -24,6 +19,12 @@ import (
 	"github.com/gogf/gf/v2/os/gcache"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/en_crypto"
+	"github.com/kysion/base-library/utility/funs"
+	"github.com/kysion/base-library/utility/kconv"
+	"github.com/kysion/base-library/utility/masker"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
@@ -92,9 +93,9 @@ func (s *sSysUser) CleanAllHook() {
 }
 
 // QueryUserList 获取用户列表
-func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
+func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
 	if info != nil {
-		newFields := make([]sys_model.FilterInfo, 0)
+		newFields := make([]base_model.FilterInfo, 0)
 
 		// 移除类型筛选条件
 		for _, field := range info.Filter {
@@ -121,7 +122,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		size, _ := s.redisCache.Size(ctx)
 
 		if size <= 0 {
-			response.PaginationRes = sys_model.PaginationRes{
+			response.PaginationRes = base_model.PaginationRes{
 				Pagination: info.Pagination,
 				PageTotal:  0,
 				Total:      0,
@@ -133,7 +134,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 		// 设置分页信息
 		response.Pagination = info.Pagination
 		// 初始化分页统计信息
-		response.PaginationRes = sys_model.PaginationRes{
+		response.PaginationRes = base_model.PaginationRes{
 			Pagination: info.Pagination,
 			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(size) / gconv.Float64(info.PageSize))),
 			Total:      gconv.Int64(size),
@@ -157,14 +158,14 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 
 				// 如果有角色信息则加载角色信息
 				if len(roleIds) > 0 {
-					roles, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
-						Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+					roles, err := sys_service.SysRole().QueryRoleList(ctx, base_model.SearchParams{
+						Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
 							Field:     sys_dao.SysRole.Columns().Id,
 							Where:     "in",
 							IsOrWhere: false,
 							Value:     roleIds,
 						}),
-						Pagination: sys_model.Pagination{},
+						Pagination: base_model.Pagination{},
 					}, unionMainId)
 					if err == nil && len(roles.Records) > 0 {
 						for _, role := range roles.Records {
@@ -198,14 +199,14 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *sys_model.SearchPara
 			}
 
 			if len(roleIds) > 0 {
-				roles, err := sys_service.SysRole().QueryRoleList(ctx, sys_model.SearchParams{
-					Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+				roles, err := sys_service.SysRole().QueryRoleList(ctx, base_model.SearchParams{
+					Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
 						Field:     sys_dao.SysRole.Columns().Id,
 						Where:     "in",
 						IsOrWhere: false,
 						Value:     roleIds,
 					}),
-					Pagination: sys_model.Pagination{},
+					Pagination: base_model.Pagination{},
 				}, unionMainId)
 				if err == nil && len(roles.Records) > 0 {
 					for _, role := range roles.Records {

@@ -2,6 +2,7 @@ package sys_model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/kysion/base-library/base_model"
 )
 
 type SysUserRegister struct {
@@ -37,5 +38,5 @@ type UpdateUserPassword struct {
 }
 
 type UserInfo SysUser
-type UserInfoList CollectRes[*SysUser]
-type SysUserListRes CollectRes[*SysUser]
+type UserInfoList base_model.CollectRes[*SysUser]
+type SysUserListRes base_model.CollectRes[*SysUser]

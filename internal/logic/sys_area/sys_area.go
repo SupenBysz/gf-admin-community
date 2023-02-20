@@ -7,9 +7,10 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
 	"time"
 )
 
@@ -49,33 +50,33 @@ func (s *sArea) GetAreaListByParentId(ctx context.Context, parentId int64) (*sys
 		// }
 	}
 
-	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), &sys_model.SearchParams{
-		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+	result, _ := daoctl.Query[*sys_entity.SysArea](sys_dao.SysArea.Ctx(ctx), &base_model.SearchParams{
+		Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().ParentId,
 			Where:       "=",
 			IsOrWhere:   false,
 			Value:       parentId,
 			IsNullValue: false,
-		}, sys_model.FilterInfo{
+		}, base_model.FilterInfo{
 			Field:       sys_dao.SysArea.Columns().Id,
 			Where:       ">",
 			IsOrWhere:   false,
 			Value:       0,
 			IsNullValue: false,
 		}),
-		Pagination: sys_model.Pagination{
+		Pagination: base_model.Pagination{
 			PageNum:  1,
 			PageSize: 100,
 		},
-		OrderBy: append(make([]sys_model.OrderBy, 0), sys_model.OrderBy{
+		OrderBy: append(make([]base_model.OrderBy, 0), base_model.OrderBy{
 			Field: sys_dao.SysArea.Columns().Id,
 		}),
 	}, false)
 
 	items := make([]*sys_model.Area, 0)
 	ret := &sys_model.AreaListRes{
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: 0,
 			},

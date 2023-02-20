@@ -3,6 +3,7 @@ package sys_model
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/kysion/base-library/base_model"
 )
 
 type CreateSysAudit struct {
@@ -32,4 +33,4 @@ type AuditRes struct {
 }
 
 type Audit sys_entity.SysAudit
-type AuditListRes CollectRes[sys_entity.SysAudit]
+type AuditListRes base_model.CollectRes[sys_entity.SysAudit]

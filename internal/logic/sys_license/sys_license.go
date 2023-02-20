@@ -8,15 +8,16 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
-	"github.com/SupenBysz/gf-admin-community/utility/masker"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/masker"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
@@ -50,7 +51,7 @@ func (s *sSysLicense) GetLicenseById(ctx context.Context, id int64) (*sys_entity
 }
 
 // QueryLicenseList 查询主体认证|列表
-func (s *sSysLicense) QueryLicenseList(ctx context.Context, search sys_model.SearchParams) (*sys_model.LicenseListRes, error) {
+func (s *sSysLicense) QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.LicenseListRes, error) {
 	result, err := daoctl.Query[sys_entity.SysLicense](sys_dao.SysLicense.Ctx(ctx), &search, false)
 
 	return (*sys_model.LicenseListRes)(result), err

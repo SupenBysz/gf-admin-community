@@ -3,6 +3,7 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 // 百度云SDk
@@ -32,7 +33,7 @@ type DeleteBaiduSdkConfReq struct {
 }
 
 type BaiduSdkConfRes sys_model.BaiduSdkConf
-type BaiduSdkConfListRes sys_model.CollectRes[*sys_model.BaiduSdkConf]
+type BaiduSdkConfListRes base_model.CollectRes[*sys_model.BaiduSdkConf]
 
 // 阿里云SDk
 
@@ -61,7 +62,7 @@ type DeleteAliyunSdkConfReq struct {
 }
 
 type AliyunSdkConfRes sys_model.AliyunSdkConf
-type AliyunSdkConfListRes sys_model.CollectRes[*sys_model.AliyunSdkConf]
+type AliyunSdkConfListRes base_model.CollectRes[*sys_model.AliyunSdkConf]
 
 // 华为云SDk
 
@@ -90,7 +91,7 @@ type DeleteHuaweiSdkConfReq struct {
 }
 
 type HuaweiSdkConfRes sys_model.HuaweiSdkConf
-type HuaweiSdkConfListRes sys_model.CollectRes[*sys_model.HuaweiSdkConf]
+type HuaweiSdkConfListRes base_model.CollectRes[*sys_model.HuaweiSdkConf]
 
 // 腾讯云 SDK
 
@@ -119,7 +120,7 @@ type DeleteTencentSdkConfReq struct {
 }
 
 type TencentSdkConfRes sys_model.TencentSdkConf
-type TencentSdkConfListRes sys_model.CollectRes[*sys_model.TencentSdkConf]
+type TencentSdkConfListRes base_model.CollectRes[*sys_model.TencentSdkConf]
 
 // 天翼云 SDK
 
@@ -148,4 +149,4 @@ type DeleteCtyunSdkConfReq struct {
 }
 
 type CtyunSdkConfRes sys_model.CtyunSdkConf
-type CtyunSdkConfListRes sys_model.CollectRes[*sys_model.CtyunSdkConf]
+type CtyunSdkConfListRes base_model.CollectRes[*sys_model.CtyunSdkConf]

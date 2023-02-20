@@ -1,5 +1,7 @@
 package sys_model
 
+import "github.com/kysion/base-library/base_model"
+
 // 阿里云服务配置信息
 
 type TencentSdkConf struct {
@@ -32,7 +34,7 @@ type TencentSdkConfToken struct {
 	TencentAccessToken
 }
 
-type TencentSdkConfList CollectRes[*TencentSdkConf]
+type TencentSdkConfList base_model.CollectRes[*TencentSdkConf]
 
 // 腾讯云服务应用列表
 
