@@ -1,12 +1,13 @@
 package sys_enum_audit
 
 import (
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
-type PermissionTypeEnum = *permission.SysPermissionTree
+type PermissionTypeEnum = *sys_model.SysPermissionTree
 
 type permissionType struct {
 	ViewDetail PermissionTypeEnum

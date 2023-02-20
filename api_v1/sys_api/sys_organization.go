@@ -3,11 +3,12 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 type QueryOrganizationListReq struct {
 	g.Meta `path:"/queryOrganizationList" method:"post" summary:"获取组织架构|列表" tags:"组织架构"`
-	sys_model.SearchParams
+	base_model.SearchParams
 }
 
 type GetOrganizationListReq struct {

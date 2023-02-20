@@ -1,5 +1,7 @@
 package sys_model
 
+import "github.com/kysion/base-library/base_model"
+
 // 阿里云服务配置信息
 
 type AliyunSdkConf struct {
@@ -29,7 +31,7 @@ type AliyunSdkConfToken struct {
 	AliyunAccessToken
 }
 
-type AliyunSdkConfList CollectRes[*AliyunSdkConf]
+type AliyunSdkConfList base_model.CollectRes[*AliyunSdkConf]
 
 // 阿里云服务应用列表
 

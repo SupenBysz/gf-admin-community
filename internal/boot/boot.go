@@ -3,12 +3,9 @@ package boot
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
-	"github.com/SupenBysz/gf-admin-community/utility/downloader"
-	"github.com/SupenBysz/gf-admin-community/utility/env"
-	"github.com/SupenBysz/gf-admin-community/utility/permission"
-	"github.com/SupenBysz/gf-admin-community/utility/validator"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/container/garray"
@@ -18,6 +15,9 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
 	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/kysion/base-library/utility/downloader"
+	"github.com/kysion/base-library/utility/env"
+	"github.com/kysion/base-library/utility/validator"
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 	"github.com/yitter/idgenerator-go/idgen"
 	"log"
@@ -122,8 +122,8 @@ func InitLogLevelToDatabase() {
 	})
 }
 
-func InitPermission() []*permission.SysPermissionTree {
-	sys_consts.Global.PermissionTree = []*permission.SysPermissionTree{
+func InitPermission() []*sys_model.SysPermissionTree {
+	sys_consts.Global.PermissionTree = []*sys_model.SysPermissionTree{
 		// 用户管理权限树
 		{
 			SysPermission: &sys_entity.SysPermission{
@@ -133,7 +133,7 @@ func InitPermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     1,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看用户，查看某个用户登录账户
 				sys_enum.User.PermissionType.ViewDetail,
 				// 查看更多详情，含完整手机号
@@ -165,7 +165,7 @@ func InitPermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     0,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看，查看某个组织架构
 				sys_enum.Organization.PermissionType.ViewDetail,
 				// 查看列表，查看所有组织架构列表
@@ -187,7 +187,7 @@ func InitPermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     1,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看角色，查看某个角色
 				sys_enum.Role.PermissionType.ViewDetail,
 				// 角色列表，查看所有角色
@@ -213,7 +213,7 @@ func InitPermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     1,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看权限，查看某个权限
 				sys_enum.Permissions.PermissionType.ViewDetail,
 				// 权限列表，查看所有权限
@@ -235,8 +235,8 @@ func InitPermission() []*permission.SysPermissionTree {
 	return sys_consts.Global.PermissionTree
 }
 
-func initAuditAndLicensePermission() []*permission.SysPermissionTree {
-	result := []*permission.SysPermissionTree{
+func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
+	result := []*sys_model.SysPermissionTree{
 
 		// 资质权限树
 		{
@@ -247,7 +247,7 @@ func initAuditAndLicensePermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     1,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看资质信息，查看某条资质信息
 				sys_enum.License.PermissionType.ViewDetail,
 				// 资质列表，查看所有资质信息
@@ -269,7 +269,7 @@ func initAuditAndLicensePermission() []*permission.SysPermissionTree {
 				Type:       1,
 				IsShow:     1,
 			},
-			Children: []*permission.SysPermissionTree{
+			Children: []*sys_model.SysPermissionTree{
 				// 查看审核信息，查看某条资质审核信息
 				sys_enum.Audit.PermissionType.ViewDetail,
 				// 资质审核列表，查看所有资质审核

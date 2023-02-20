@@ -9,14 +9,15 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/daoctl"
-	"github.com/SupenBysz/gf-admin-community/utility/funs"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/funs"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
@@ -39,9 +40,9 @@ func New() *sSysRole {
 }
 
 // QueryRoleList 获取角色列表
-func (s *sSysRole) QueryRoleList(ctx context.Context, info sys_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
+func (s *sSysRole) QueryRoleList(ctx context.Context, info base_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error) {
 	// 自己商角色列表
-	info.Filter = append(info.Filter, sys_model.FilterInfo{
+	info.Filter = append(info.Filter, base_model.FilterInfo{
 		Field:       sys_dao.SysRole.Columns().UnionMainId,
 		Where:       "=",
 		IsOrWhere:   false,
@@ -278,8 +279,8 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 
 	userInfoArr := make([]*sys_model.SysUser, 0)
 
-	userList, err := sys_service.SysUser().QueryUserList(ctx, &sys_model.SearchParams{
-		Filter: append(make([]sys_model.FilterInfo, 0), sys_model.FilterInfo{
+	userList, err := sys_service.SysUser().QueryUserList(ctx, &base_model.SearchParams{
+		Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
 			Field:       sys_dao.SysUser.Columns().Id,
 			Where:       "in",
 			IsOrWhere:   false,

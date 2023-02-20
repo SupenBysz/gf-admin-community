@@ -3,11 +3,12 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model"
 )
 
 type QueryRoleListReq struct {
 	g.Meta `path:"/queryRoleList" method:"post" summary:"获取所有角色|列表" tags:"角色"`
-	sys_model.SearchParams
+	base_model.SearchParams
 }
 
 type CreateRoleInfoReq struct {
@@ -64,4 +65,4 @@ type GetRolePermissionsIdsReq struct {
 }
 
 type RoleInfoRes sys_model.RoleInfo
-type UserListRes sys_model.CollectRes[*sys_model.SysUser]
+type UserListRes base_model.CollectRes[*sys_model.SysUser]

@@ -16,7 +16,7 @@ type SysRole struct {
 	Name        interface{} // 名称
 	Description interface{} // 描述
 	IsSystem    interface{} // 是否默认角色，true仅能修改名称，不允许删除和修改
-	UpdatedAt   *gtime.Time //
-	CreatedAt   *gtime.Time //
 	UnionMainId interface{} // 主体id
+	CreatedAt   *gtime.Time //
+	UpdatedAt   *gtime.Time //
 }

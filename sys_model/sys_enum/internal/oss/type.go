@@ -1,6 +1,6 @@
 package sys_enum_oss
 
-import "github.com/SupenBysz/gf-admin-community/utility/enum"
+import "github.com/kysion/base-library/utility/enum"
 
 type OssTypeEnum enum.IEnumCode[string]
 

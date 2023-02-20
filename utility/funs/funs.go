@@ -2,44 +2,15 @@ package funs
 
 import (
 	"context"
-	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/permission"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"reflect"
 )
-
-func If[R any](condition bool, trueVal, falseVal R) R {
-	if condition {
-		return trueVal
-	} else {
-		return falseVal
-	}
-}
-
-func SearchFilterEx(search sys_model.SearchParams, fields ...string) *sys_model.SearchParams {
-	result := &sys_model.SearchParams{}
-	newFilter := make([]sys_model.FilterInfo, 0)
-	for _, info := range search.Filter {
-		count := len(result.Filter)
-		for _, field := range fields {
-			if gstr.ToLower(info.Field) == gstr.ToLower(field) {
-				newFilter = append(result.Filter, info)
-			}
-		}
-		if count == len(result.Filter) {
-			newFilter = append(newFilter, info)
-		}
-	}
-	search.Filter = newFilter
-	return result
-}
 
 func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.Context, info sys_model.License, data *T) (response *T, err error) {
 	newData := &sys_entity.SysLicense{}
@@ -112,64 +83,19 @@ func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.
 	return data, err
 }
 
-func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*permission.SysPermissionTree) (TRes, error) {
+func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, permissions...); has != true {
 		var ret TRes
 		return ret, err
 	}
 	return f()
 }
-func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*permission.SysPermissionTree) (TRes, error) {
+func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
 	if has, err := sys_service.SysPermission().CheckPermissionOr(ctx, permissions...); has != true {
 		var ret TRes
 		return ret, err
 	}
 	return f()
-}
-
-// ByteCountSI 以1000作为基数
-func ByteCountSI[T int64 | uint64](b T) string {
-	const unit = 1000
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB",
-		float64(b)/float64(div), "kMGTPE"[exp])
-}
-
-// ByteCountIEC 以1024作为基数
-func ByteCountIEC[T int64 | uint64](b T) string {
-	const unit = 1024
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %ciB",
-		float64(b)/float64(div), "KMGTPE"[exp])
-}
-
-func RemoveSliceAt[T int | int64 | string | uint | uint64](slice []T, elem T) []T {
-	if len(slice) == 0 {
-		return slice
-	}
-
-	for i, v := range slice {
-		if v == elem {
-			slice = append(slice[:i], slice[i+1:]...)
-			return RemoveSliceAt(slice, elem)
-			break
-		}
-	}
-	return slice
 }
 
 func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func(data TP)) context.Context {

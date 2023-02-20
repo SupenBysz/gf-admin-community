@@ -1,8 +1,6 @@
 package sys_enum_casbin
 
-import (
-	"github.com/SupenBysz/gf-admin-community/utility/enum"
-)
+import "github.com/kysion/base-library/utility/enum"
 
 type EventEnum enum.IEnumCode[int]
 

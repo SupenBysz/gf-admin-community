@@ -8,6 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_model"
 )
 
 // SysRole 角色
@@ -124,8 +125,8 @@ func (c *cSysRole) GetRoleMemberList(ctx context.Context, req *sys_api.GetRoleMe
 
 	return &sys_api.UserListRes{
 		Records: data,
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: count,
 			},
@@ -147,8 +148,8 @@ func (c *cSysRole) GetRoleByUserIdList(ctx context.Context, req *sys_api.GetRole
 
 	return &sys_model.RoleListRes{
 		Records: data,
-		PaginationRes: sys_model.PaginationRes{
-			Pagination: sys_model.Pagination{
+		PaginationRes: base_model.PaginationRes{
+			Pagination: base_model.Pagination{
 				PageNum:  1,
 				PageSize: count,
 			},
