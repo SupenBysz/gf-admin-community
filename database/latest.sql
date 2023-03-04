@@ -12,7 +12,7 @@
  Target Server Version : 140005 (140005)
  File Encoding         : 65001
 
- Date: 21/02/2023 09:36:44
+ Date: 27/02/2023 10:25:04
 */
 
 
@@ -522,7 +522,8 @@ CREATE TABLE "public"."co_fd_invoice_detail" (
                                                  "updated_at" timestamp(6),
                                                  "updated_by" int8,
                                                  "deleted_at" timestamp(6),
-                                                 "deleted_by" int8
+                                                 "deleted_by" int8,
+                                                 "belong_to" int2
 )
 ;
 ALTER TABLE "public"."co_fd_invoice_detail" OWNER TO "kysion";
@@ -549,15 +550,16 @@ COMMENT ON COLUMN "public"."co_fd_invoice_detail"."audit_at" IS '审核时间';
 COMMENT ON COLUMN "public"."co_fd_invoice_detail"."user_id" IS '申请者用户ID';
 COMMENT ON COLUMN "public"."co_fd_invoice_detail"."union_main_id" IS '主体ID：运营商ID、服务商ID、商户ID、消费者ID';
 COMMENT ON COLUMN "public"."co_fd_invoice_detail"."email" IS '发票收件邮箱，限电子发票';
+COMMENT ON COLUMN "public"."co_fd_invoice_detail"."belong_to" IS '发票拥有者类型：1个人  2主体';
 
 -- ----------------------------
 -- Records of co_fd_invoice_detail
 -- ----------------------------
 BEGIN;
-INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5818501666242629, '914403000838748535', '克传', '11111111111111', 200, 3, 46, '克传开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5812971991924805, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5870136367841349, '914403000838748535', '林菲菲', '2222222', 100, 0, 0, '林菲菲测试商户端申请开发票', 1, 0, 0, 0, 0, NULL, '', '', 5818615238623301, 0, '', NULL, 5774257544888389, 5774257544888389, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (5976004851269701, '914403000838748535', '林菲菲', '5788909498728517,5786160515514437', 200, 3, 46, '林菲菲开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5958475063885893, 5958475063164997, '', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by") VALUES (6173921526480965, '914403000838748535', '小小怪', '6173890011725893,6173890926411845', 20000, 3, 46, '林菲菲开票，开票金额200元，20000分', 1, 2, 0, 0, 0, NULL, '', '', 6173913673498693, 5302581852373061, '', '2023-02-14 11:10:26.708576', 5977706248405061, 5977706236739653, '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by", "belong_to") VALUES (5818501666242629, '914403000838748535', '克传', '11111111111111', 200, 3, 46, '克传开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5812971991924805, 5812971980324933, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by", "belong_to") VALUES (5870136367841349, '914403000838748535', '林菲菲', '2222222', 100, 0, 0, '林菲菲测试商户端申请开发票', 1, 0, 0, 0, 0, NULL, '', '', 5818615238623301, 0, '', NULL, 5774257544888389, 5774257544888389, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by", "belong_to") VALUES (5976004851269701, '914403000838748535', '林菲菲', '5788909498728517,5786160515514437', 200, 3, 46, '林菲菲开票，开票金额2元，200分', 1, 0, 0, 0, 0, NULL, '', '', 0, 0, '', NULL, 5958475063885893, 5958475063164997, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO "public"."co_fd_invoice_detail" ("id", "tax_number", "tax_name", "bill_ids", "amount", "rate", "rate_mount", "remark", "type", "state", "audit_user_ids", "make_type", "make_user_id", "make_at", "courier_name", "courier_number", "fd_invoice_id", "audit_user_id", "audit_reply_msg", "audit_at", "user_id", "union_main_id", "email", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by", "belong_to") VALUES (6173921526480965, '914403000838748535', '小小怪', '6173890011725893,6173890926411845', 20000, 3, 46, '林菲菲开票，开票金额200元，20000分', 1, 2, 0, 0, 0, NULL, '', '', 6173913673498693, 5302581852373061, '', '2023-02-14 11:10:26.708576', 5977706248405061, 5977706236739653, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -4229,6 +4231,18 @@ INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description",
 INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845343, 6211883938021487, '添加银行卡', '添加银行卡信息', 'Financial::BankCard::CreateBankCard', 1, 0, 1, 2, '2023-02-21 03:45:03', '2023-02-21 03:45:03');
 INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845345, 6211883938021487, '删除银行卡', '删除银行卡信息', 'Financial::BankCard::DeleteBankCard', 1, 0, 1, 3, '2023-02-21 03:45:03', '2023-02-21 03:45:03');
 INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845346, 5953153121845349, '查看余额', '查看账号余额', 'Financial::GetAccountBalance', 1, 0, 1, 2, '2023-02-21 03:45:03', '2023-02-21 03:45:03');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845334, 5953153121845349, '查看发票详情', '查看发票详情信息', 'Financial::ViewDetail', 1, 0, 1, 0, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845335, 5953153121845349, '查看发票抬头信息', '查看发票抬头信息', 'Financial::ViewInvoice', 1, 0, 1, 1, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845336, 5953153121845349, '查看提现账号', '查看提现账号信息', 'Financial::ViewBankCardDetail', 1, 0, 1, 2, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845337, 5953153121845349, '提现账号列表', '查看所有提现账号', 'Financial::BankCardList', 1, 0, 1, 3, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845338, 5953153121845349, '发票抬头列表', '查看所有发票抬头', 'Financial::InvoiceList', 1, 0, 1, 4, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845339, 5953153121845349, '发票详情列表', '查看所有发票详情', 'Financial::InvoiceDetailList', 1, 0, 1, 5, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845340, 5953153121845349, '审核发票', '审核发票申请', 'Financial::AuditInvoiceDetail', 1, 0, 1, 6, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845341, 5953153121845349, '开发票', '添加发票详情记录', 'Financial::MakeInvoiceDetail', 1, 0, 1, 7, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845342, 5953153121845349, '添加发票抬头', '添加发票抬头信息', 'Financial::CreateInvoice', 1, 0, 1, 8, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845343, 5953153121845349, '申请提现账号', '添加提现账号信息', 'Financial::CreateBankCard', 1, 0, 1, 9, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845344, 5953153121845349, '删除发票抬头', '删除发票抬头信息', 'Financial::DeleteInvoice', 1, 0, 1, 10, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
+INSERT INTO "public"."sys_permission" ("id", "parent_id", "name", "description", "identifier", "type", "match_mode", "is_show", "sort", "created_at", "updated_at") VALUES (5953153121845345, 5953153121845349, '删除提现账号', '删除提现账号信息', 'Financial::DeleteBankCard', 1, 0, 1, 11, '2023-02-23 00:42:37', '2023-02-23 00:42:37');
 COMMIT;
 
 -- ----------------------------
