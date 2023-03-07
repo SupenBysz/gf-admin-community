@@ -11,6 +11,7 @@ type global struct {
 	UserDefaultType          sys_enum.UserType
 	UserDefaultState         sys_enum.UserState
 	NotAllowLoginUserTypeArr *garray.SortedIntArray
+	AllowLoginUserTypeArr    *garray.SortedIntArray
 	LogLevelToDatabaseArr    *garray.SortedIntArray
 	ApiPreFix                string
 	OrmCacheConf             []*sys_model.TableCacheConf
@@ -23,6 +24,7 @@ var (
 		UserDefaultType:          sys_enum.User.Type.SuperAdmin,
 		UserDefaultState:         sys_enum.User.State.Normal,
 		NotAllowLoginUserTypeArr: garray.NewSortedIntArray(),
+		AllowLoginUserTypeArr:    garray.NewSortedIntArray(),
 		LogLevelToDatabaseArr:    garray.NewSortedIntArray(),
 		ApiPreFix:                "",
 		OrmCacheConf:             []*sys_model.TableCacheConf{},
