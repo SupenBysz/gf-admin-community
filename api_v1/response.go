@@ -3,12 +3,11 @@ package api_v1
 type BoolRes bool
 type IntRes int
 type Int64Res int64
+type StringRes string
 type Int64ArrRes []int64
 type MapRes map[string]interface{}
 type ListRes []map[string]interface{}
 type ArrayRes []interface{}
-
-type DataRes interface{}
 
 // JsonRes 数据返回通用JSON数据结构
 type JsonRes struct {
