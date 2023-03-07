@@ -111,7 +111,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	}
 
 	// 校验登录类型
-	if sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
+	if !sys_consts.Global.AllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
