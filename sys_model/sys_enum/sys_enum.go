@@ -3,6 +3,7 @@ package sys_enum
 import (
 	sys_enum_audit "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/audit"
 	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
+	pro_enum_business "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_file "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_license "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
@@ -15,6 +16,8 @@ import (
 )
 
 type (
+	BusinessType pro_enum_business.TypeEnum
+
 	OssType sys_enum_oss.OssTypeEnum
 
 	AuthActionType sys_enum_auth.ActionTypeEnum
@@ -34,6 +37,8 @@ type (
 )
 
 var (
+	Business = pro_enum_business.Business
+
 	Oss    = sys_enum_oss.Oss
 	Auth   = sys_enum_auth.Auth
 	Upload = sys_enum_upload.Upload
