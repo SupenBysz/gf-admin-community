@@ -151,6 +151,16 @@ func (s *sSysLicense) UpdateLicense(ctx context.Context, info sys_model.License,
 	return s.GetLicenseById(ctx, id)
 }
 
+// GetLicenseByLatestAuditId 获取最新的审核记录Id获取资质信息
+func (s *sSysLicense) GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysLicense {
+	result := sys_entity.SysLicense{}
+	err := sys_dao.SysLicense.Ctx(ctx).Where(sys_do.SysLicense{LatestAuditLogId: auditId}).OrderDesc(sys_dao.SysLicense.Columns().CreatedAt).Limit(1).Scan(&result)
+	if err != nil {
+		return nil
+	}
+	return &result
+}
+
 // SetLicenseState 设置主体信息状态
 func (s *sSysLicense) SetLicenseState(ctx context.Context, id int64, state int) (bool, error) {
 	_, err := s.GetLicenseById(ctx, id)
