@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/utility/rules"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/container/garray"
@@ -33,12 +34,15 @@ func init() {
 	InitIdGenerator()
 	InitLogLevelToDatabase()
 	InitPermission()
+
 }
 
 // InitCustomRules 注册自定义参数校验规则
 func InitCustomRules() {
 	// 注册电话验证规则
 	validator.RegisterServicePhone()
+	// 注册资质自定义规则
+	rules.RequiredLicense()
 }
 
 func Ip2region() {
