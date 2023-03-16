@@ -74,7 +74,7 @@ var (
 					// 匿名路由绑定
 					group.Group("/", func(group *ghttp.RouterGroup) {
 						// 鉴权：登录，注册，找回密码等
-						group.Group("/sys_auth", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.Auth) })
+						group.Group("/auth", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.Auth) })
 						// 图型验证码、短信验证码、地区
 						group.Group("/common", func(group *ghttp.RouterGroup) {
 							group.Bind(
@@ -97,7 +97,7 @@ var (
 						)
 
 						// 文件上传
-						group.Group("/common/sys_file", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFile) })
+						group.Group("/common/file", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFile) })
 						// 系统配置
 						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysConfig) })
 						// 用户
