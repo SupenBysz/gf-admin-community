@@ -36,8 +36,8 @@ func init() {
 // New sSysPermission 权限控制逻辑实现
 func New() *sSysPermission {
 	return &sSysPermission{
-		mapStrItems:   kmap.New[string, *sys_entity.SysPermission](),
-		mapInt64Items: kmap.New[int64, *sys_entity.SysPermission](),
+		mapStrItems:   kmap.New[string, *sys_entity.SysPermission](true),
+		mapInt64Items: kmap.New[int64, *sys_entity.SysPermission](true),
 	}
 }
 
