@@ -16,7 +16,7 @@ type SysUser struct {
 	Username  interface{} // 账号
 	Password  interface{} // 密码
 	State     interface{} // 状态：0未激活、1正常、-1封号、-2异常、-3已注销
-	Type      interface{} // 用户类型，0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心
+	Type      interface{} // 用户类型，0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心，64后台
 	Mobile    interface{} // 手机号
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
