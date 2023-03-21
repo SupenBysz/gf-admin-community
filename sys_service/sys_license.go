@@ -19,7 +19,7 @@ type (
 		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.LicenseListRes, error)
 		CreateLicense(ctx context.Context, info sys_model.License) (*sys_entity.SysLicense, error)
 		UpdateLicense(ctx context.Context, info sys_model.License, id int64) (*sys_entity.SysLicense, error)
-		GetLicenseByLatestAuditId(ctx context.Context, unionMainId int64) *sys_entity.SysLicense
+		GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysLicense
 		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)
 		SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error)
 		DeleteLicense(ctx context.Context, id int64, flag bool) (bool, error)
