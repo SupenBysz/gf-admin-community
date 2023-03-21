@@ -26,7 +26,7 @@ type SetAuditApproveReq struct {
 type SetAuditRejectReq struct {
 	g.Meta `path:"/setAuditReject" method:"post" summary:"审批不通过" tags:"审核管理"`
 	Id     int64  `json:"id" v:"required|min:1#ID参数错误|ID必须大于0" dc:"审核ID"`
-	Replay string `json:"replay" v:"required#请输入不通过原因" dc:"不通过原因"`
+	Reply  string `json:"reply" v:"required#请输入不通过原因" dc:"不通过原因"`
 }
 
 type AuditRes sys_model.Audit
