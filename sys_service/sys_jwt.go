@@ -23,6 +23,7 @@ type (
 		CreateToken(claims *sys_model.JwtCustomClaims) (string, error)
 		RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) (string, error)
 		Middleware(r *ghttp.Request)
+		MakeSession(ctx context.Context, tokenString string)
 	}
 )
 
