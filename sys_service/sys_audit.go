@@ -24,7 +24,7 @@ type (
 		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
 		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
 		CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error)
-		UpdateAudit(ctx context.Context, id int64, state int, replay string) (bool, error)
+		UpdateAudit(ctx context.Context, id int64, state int, reply string) (bool, error)
 	}
 )
 
