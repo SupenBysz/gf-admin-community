@@ -419,6 +419,18 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model
 	return s.masker(s.makeMore(ctx, &user)), nil
 }
 
+func (s *sSysUser) MakeSession(ctx context.Context, userId int64) {
+	user, err := s.GetSysUserById(ctx, userId)
+
+	if err != nil {
+		return
+	}
+
+	token, err := sys_service.Jwt().GenerateToken(ctx, user)
+
+	sys_service.Jwt().MakeSession(ctx, token.Token)
+}
+
 // SetUserPermissionIds 设置用户权限
 func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permissionIds []int64) (bool, error) {
 	err := sys_dao.SysCasbin.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {

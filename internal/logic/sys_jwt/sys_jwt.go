@@ -125,7 +125,13 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	if gstr.ToUpper(r.Method) == "GET" && tokenString == "" {
 		tokenString = r.GetParam("token", "").String()
 	}
+	s.MakeSession(r.Context(), tokenString)
 
+	response.JsonExit(r, 401, "解析TOKEN失败")
+	return
+}
+
+func (s *sJwt) MakeSession(ctx context.Context, tokenString string) {
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
 	}
@@ -149,18 +155,16 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 				err = gerror.New("解析TOKEN失败")
 			}
 		}
-		response.JsonExit(r, 401, err.Error())
+		response.JsonExit(g.RequestFromCtx(ctx), 401, err.Error())
 		return
 	}
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
-			sys_service.SysSession().SetUser(r.Context(), claims)
-			r.Middleware.Next()
+			sys_service.SysSession().SetUser(ctx, claims)
+			g.RequestFromCtx(ctx).Middleware.Next()
 			return
 		}
 	}
 
-	response.JsonExit(r, 401, "解析TOKEN失败")
-	return
 }
