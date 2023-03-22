@@ -125,9 +125,8 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	if gstr.ToUpper(r.Method) == "GET" && tokenString == "" {
 		tokenString = r.GetParam("token", "").String()
 	}
-	s.MakeSession(r.Context(), tokenString)
 
-	response.JsonExit(r, 401, "解析TOKEN失败")
+	s.MakeSession(r.Context(), tokenString)
 	return
 }
 
@@ -167,4 +166,6 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) {
 		}
 	}
 
+	response.JsonExit(g.RequestFromCtx(ctx), 401, "解析TOKEN失败")
+	return
 }
