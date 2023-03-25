@@ -292,13 +292,22 @@ func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
 func InitRedisCache() {
 	// 获取配置文件addr对象
 	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
+	pass, _ := g.Cfg().Get(context.Background(), "redis.default.pass")
+	db, _ := g.Cfg().Get(context.Background(), "redis.default.db")
 
 	conf, _ := gredis.GetConfig("default")
 
-	// 设置服务端口和ip
-	conf.Address = addr.String()
 	// 不同的表分配不同的redis数据库
 	conf.Db = 1
+
+	// 设置服务端口和ip
+	conf.Address = addr.String()
+	if pass != nil {
+		conf.Pass = pass.String()
+	}
+	if db != nil {
+		conf.Db = db.Int()
+	}
 
 	// 没配置redis ip+端口,配置信息也为空，那么使用内存缓存
 	if addr.String() == "" || conf.Address == "" {
