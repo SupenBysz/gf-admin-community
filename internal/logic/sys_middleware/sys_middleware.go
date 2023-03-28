@@ -36,7 +36,7 @@ func (s *sMiddleware) CTX(r *ghttp.Request) {
 		Ipv4:              r.RemoteAddr,
 	}
 
-	sys_service.SysSession().Init(r, customSessionCtx)
+	sys_service.SysSession().Init(customSessionCtx, r)
 
 	// 将自定义的上下文对象传递到模板变量中使用
 	r.Assigns(g.Map{

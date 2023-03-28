@@ -130,7 +130,7 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	return
 }
 
-func (s *sJwt) MakeSession(ctx context.Context, tokenString string) {
+func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.JwtCustomClaims {
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
 	}
@@ -138,6 +138,8 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) {
 	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return s.SigningKey, nil
 	})
+
+	isCustomSession := sys_service.SysSession().HasCustom(ctx)
 
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
@@ -154,18 +156,24 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) {
 				err = gerror.New("解析TOKEN失败")
 			}
 		}
-		response.JsonExit(g.RequestFromCtx(ctx), 401, err.Error())
-		return
+		if !isCustomSession {
+			response.JsonExit(g.RequestFromCtx(ctx), 401, err.Error())
+		}
+		return nil
 	}
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
-			sys_service.SysSession().SetUser(ctx, claims)
-			g.RequestFromCtx(ctx).Middleware.Next()
-			return
+			if !isCustomSession {
+				sys_service.SysSession().SetUser(ctx, claims)
+				g.RequestFromCtx(ctx).Middleware.Next()
+			}
+			return claims
 		}
 	}
 
-	response.JsonExit(g.RequestFromCtx(ctx), 401, "解析TOKEN失败")
-	return
+	if !isCustomSession {
+		response.JsonExit(g.RequestFromCtx(ctx), 401, "解析TOKEN失败")
+	}
+	return nil
 }
