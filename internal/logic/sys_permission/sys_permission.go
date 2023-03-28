@@ -447,7 +447,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
-	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true || sessionUser.IsSuperAdmin == true {
 		return true, nil
 	}
 
@@ -467,7 +467,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model
 func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	// 如果是超级管理员或者某商管理员则直接放行
-	if session.Type == -1 || session.IsAdmin == true {
+	if session.Type == -1 || session.IsAdmin == true || session.IsSuperAdmin == true {
 		return true, nil
 	}
 
@@ -488,7 +488,7 @@ func (s *sSysPermission) CheckPermissionByIdentifier(ctx context.Context, identi
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
-	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true || sessionUser.IsSuperAdmin == true {
 		return true, nil
 	}
 
