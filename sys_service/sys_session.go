@@ -19,15 +19,18 @@ type (
 		Iterator(ctx context.Context, f func(k int, err error) bool)
 	}
 	ISysSession interface {
-		Init(r *ghttp.Request, customCtx *sys_model.SessionContext)
+		Init(sessionContext *sys_model.SessionContext, r *ghttp.Request, ctx ...*context.Context)
+		NewSessionCtx(ctx context.Context) context.Context
+		HasCustom(ctx context.Context) bool
 		Get(ctx context.Context) *sys_model.SessionContext
+		SetUserById(ctx *context.Context, userId int64) *sys_model.SessionContext
 		SetUser(ctx context.Context, claimsUser *sys_model.JwtCustomClaims)
 	}
 )
 
 var (
 	localSessionError ISessionError
-	localSession      ISysSession
+	localSysSession   ISysSession
 )
 
 func SessionError() ISessionError {
@@ -42,12 +45,12 @@ func RegisterSessionError(i ISessionError) {
 }
 
 func SysSession() ISysSession {
-	if localSession == nil {
-		panic("implement not found for interface ISession, forgot register?")
+	if localSysSession == nil {
+		panic("implement not found for interface ISysSession, forgot register?")
 	}
-	return localSession
+	return localSysSession
 }
 
 func RegisterSysSession(i ISysSession) {
-	localSession = i
+	localSysSession = i
 }
