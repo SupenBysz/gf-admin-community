@@ -72,7 +72,7 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_model.SysUser) (resp
 
 	customClaims := &sys_model.JwtCustomClaims{
 		SysUser: *user,
-		IsAdmin: user.Type == sys_enum.User.Type.SuperAdmin.Code(),
+		IsSuperAdmin: user.Type == sys_enum.User.Type.SuperAdmin.Code(),
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
@@ -126,6 +126,11 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 		tokenString = r.GetParam("token", "").String()
 	}
 
+	s.MakeSession(r.Context(), tokenString)
+	return
+}
+
+func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.JwtCustomClaims {
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
 	}
@@ -133,6 +138,8 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return s.SigningKey, nil
 	})
+
+	isCustomSession := sys_service.SysSession().HasCustom(ctx)
 
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
@@ -149,18 +156,24 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 				err = gerror.New("解析TOKEN失败")
 			}
 		}
-		response.JsonExit(r, 401, err.Error())
-		return
+		if !isCustomSession {
+			response.JsonExit(g.RequestFromCtx(ctx), 401, err.Error())
+		}
+		return nil
 	}
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
-			sys_service.SysSession().SetUser(r.Context(), claims)
-			r.Middleware.Next()
-			return
+			if !isCustomSession {
+				sys_service.SysSession().SetUser(ctx, claims)
+				g.RequestFromCtx(ctx).Middleware.Next()
+			}
+			return claims
 		}
 	}
 
-	response.JsonExit(r, 401, "解析TOKEN失败")
-	return
+	if !isCustomSession {
+		response.JsonExit(g.RequestFromCtx(ctx), 401, "解析TOKEN失败")
+	}
+	return nil
 }

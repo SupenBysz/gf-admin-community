@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/utility/rules"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/container/garray"
@@ -33,12 +34,15 @@ func init() {
 	InitIdGenerator()
 	InitLogLevelToDatabase()
 	InitPermission()
+
 }
 
 // InitCustomRules 注册自定义参数校验规则
 func InitCustomRules() {
 	// 注册电话验证规则
 	validator.RegisterServicePhone()
+	// 注册资质自定义规则
+	rules.RequiredLicense()
 }
 
 func Ip2region() {
@@ -75,11 +79,14 @@ func Ip2region() {
 func InitGlobal() {
 	// 默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员；
 	// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
-	sys_consts.Global.UserDefaultType = sys_enum.User.Type.New(g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0).Int(), "")
+	userDefaultType := g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0)
+	sys_consts.Global.UserDefaultType = sys_enum.User.Type.New(userDefaultType.Int(), "")
 	// 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
 	sys_consts.Global.UserDefaultState = sys_enum.User.State.New(g.Cfg().MustGet(context.Background(), "service.userDefaultState", 0).Int(), "")
 	// 加载不允许登录的用户类型，并去重
 	sys_consts.Global.NotAllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(context.Background(), "service.notAllowLoginUserType", "[-1]").Ints()).SetUnique(true)
+	// 加载允许登录的用户类型，并去重 (如果NotAllowLoginUserTypeArr包含allowLoginUserType中的用户类型，那么前者优先级高于后者, 默认值为UserDefaultType)
+	sys_consts.Global.AllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(context.Background(), "service.allowLoginUserType", "["+userDefaultType.String()+"]").Ints()).SetUnique(true)
 	// 加载接口前缀
 	sys_consts.Global.ApiPreFix = g.Cfg().MustGet(context.Background(), "service.apiPrefix").String()
 	// 加载ORM表缓存参数
@@ -285,13 +292,22 @@ func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
 func InitRedisCache() {
 	// 获取配置文件addr对象
 	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
+	pass, _ := g.Cfg().Get(context.Background(), "redis.default.pass")
+	db, _ := g.Cfg().Get(context.Background(), "redis.default.db")
 
 	conf, _ := gredis.GetConfig("default")
 
-	// 设置服务端口和ip
-	conf.Address = addr.String()
 	// 不同的表分配不同的redis数据库
 	conf.Db = 1
+
+	// 设置服务端口和ip
+	conf.Address = addr.String()
+	if pass != nil {
+		conf.Pass = pass.String()
+	}
+	if db != nil {
+		conf.Db = db.Int()
+	}
 
 	// 没配置redis ip+端口,配置信息也为空，那么使用内存缓存
 	if addr.String() == "" || conf.Address == "" {

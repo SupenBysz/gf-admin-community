@@ -23,30 +23,30 @@ type SysAuditDao struct {
 
 // SysAuditColumns defines and stores column names for table sys_audit.
 type SysAuditColumns struct {
-	Id            string //
-	State         string // 审核状态：-1不通过，0待审核，1通过
-	Replay        string // 不通过时回复的审核不通过原因
-	UnionMainId   string // 关联主体ID
-	Category      string // 业务类别
-	AuditData     string // 待审核的业务数据包
-	ExpireAt      string // 服务时限
-	AuditReplayAt string // 审核回复时间
-	HistoryItems  string // 历史申请记录
-	CreatedAt     string //
+	Id           string //
+	State        string // 审核状态：-1不通过，0待审核，1通过
+	Reply        string // 不通过时回复的审核不通过原因
+	UnionMainId  string // 关联主体ID
+	Category     string // 业务类别
+	AuditData    string // 待审核的业务数据包
+	ExpireAt     string // 服务时限
+	AuditReplyAt string // 审核回复时间
+	HistoryItems string // 历史申请记录
+	CreatedAt    string //
 }
 
 // sysAuditColumns holds the columns for table sys_audit.
 var sysAuditColumns = SysAuditColumns{
-	Id:            "id",
-	State:         "state",
-	Replay:        "replay",
-	UnionMainId:   "union_main_id",
-	Category:      "category",
-	AuditData:     "audit_data",
-	ExpireAt:      "expire_at",
-	AuditReplayAt: "audit_replay_at",
-	HistoryItems:  "history_Items",
-	CreatedAt:     "created_at",
+	Id:           "id",
+	State:        "state",
+	Reply:        "reply",
+	UnionMainId:  "union_main_id",
+	Category:     "category",
+	AuditData:    "audit_data",
+	ExpireAt:     "expire_at",
+	AuditReplyAt: "audit_reply_at",
+	HistoryItems: "history_Items",
+	CreatedAt:    "created_at",
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.

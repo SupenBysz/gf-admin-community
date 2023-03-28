@@ -296,12 +296,12 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 }
 
 // UpdateAudit 处理审核信息
-func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, replay string) (bool, error) {
+func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string) (bool, error) {
 	if state == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", sys_dao.SysAudit.Table())
 	}
 
-	if state == -1 && replay == "" {
+	if state == -1 && reply == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", sys_dao.SysAudit.Table())
 	}
 
@@ -316,9 +316,9 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, replay
 
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err := sys_dao.SysAudit.Ctx(ctx).OmitNilData().Data(sys_do.SysAudit{
-			State:         state,
-			Replay:        replay,
-			AuditReplayAt: gtime.Now(),
+			State:        state,
+			Reply:        reply,
+			AuditReplyAt: gtime.Now(),
 		}).Where(sys_do.SysAudit{
 			Id:          info.Id,
 			UnionMainId: info.UnionMainId,

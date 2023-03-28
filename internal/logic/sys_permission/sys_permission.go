@@ -14,6 +14,7 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -22,6 +23,7 @@ import (
 	"github.com/kysion/base-library/utility/kmap"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
+	"time"
 )
 
 type sSysPermission struct {
@@ -36,8 +38,8 @@ func init() {
 // New sSysPermission 权限控制逻辑实现
 func New() *sSysPermission {
 	return &sSysPermission{
-		mapStrItems:   kmap.New[string, *sys_entity.SysPermission](),
-		mapInt64Items: kmap.New[int64, *sys_entity.SysPermission](),
+		mapStrItems:   kmap.New[string, *sys_entity.SysPermission](true),
+		mapInt64Items: kmap.New[int64, *sys_entity.SysPermission](true),
 	}
 }
 
@@ -180,6 +182,15 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
 func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
+	// 先判断缓存中是否存在权限树，存在直接返回
+	res, err := g.DB().GetCache().Get(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId))
+	if res != nil {
+		data := make([]*sys_model.SysPermissionTree, 0)
+
+		gconv.Struct(res, &data)
+		return data, nil
+	}
+
 	result, err := s.GetPermissionList(ctx, parentId, false)
 
 	if err != nil {
@@ -203,6 +214,9 @@ func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) 
 			response = append(response, item)
 		}
 	}
+
+	// 将权限树缓存起来
+	g.DB().GetCache().Set(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId), response, time.Hour*24)
 
 	return response, nil
 }
@@ -433,7 +447,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
-	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true || sessionUser.IsSuperAdmin == true {
 		return true, nil
 	}
 
@@ -453,7 +467,7 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model
 func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	// 如果是超级管理员或者某商管理员则直接放行
-	if session.Type == -1 || session.IsAdmin == true {
+	if session.Type == -1 || session.IsAdmin == true || session.IsSuperAdmin == true {
 		return true, nil
 	}
 
@@ -474,7 +488,7 @@ func (s *sSysPermission) CheckPermissionByIdentifier(ctx context.Context, identi
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
-	if sessionUser.Type == -1 || sessionUser.IsAdmin == true {
+	if sessionUser.Type == -1 || sessionUser.IsAdmin == true || sessionUser.IsSuperAdmin == true {
 		return true, nil
 	}
 

@@ -44,7 +44,7 @@ func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sys_api.SetAuditRej
 		return false, err
 	}
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Replay)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply)
 	return result == true, err
 }
 
