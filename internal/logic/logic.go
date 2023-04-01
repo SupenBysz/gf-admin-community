@@ -25,6 +25,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_permission"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_role"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_session"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_settings"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_sms"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_user"
 )

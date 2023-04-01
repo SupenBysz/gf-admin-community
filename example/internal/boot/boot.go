@@ -98,8 +98,10 @@ var (
 
 						// 文件上传
 						group.Group("/common/file", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFile) })
-						// 系统配置
+						// 应用配置
 						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysConfig) })
+						// 系统配置
+						group.Group("/system/settings", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysSettings) })
 						// 用户
 						group.Group("/user", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUser) })
 						// 角色
