@@ -45,6 +45,10 @@ service:
     - name: sys_user
       seconds: 3600
       force: false
+    - name: sys_menu
+      seconds: 3600
+      force: false
+
 # 日志配置
 logger:
   path: "temp/logs/default"
