@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/kconv"
 )
 
@@ -121,5 +122,5 @@ func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateRe
 
 // makeMore 是否订阅附加数据
 func (c *cSysUser) makeMore(ctx context.Context) context.Context {
-	return funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+	return base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
 }

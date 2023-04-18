@@ -27,7 +27,7 @@ type SysUserColumns struct {
 	Username  string // 账号
 	Password  string // 密码
 	State     string // 状态：0未激活、1正常、-1封号、-2异常、-3已注销
-	Type      string // 用户类型，0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心，64后台
+	Type      string // 用户类型：0匿名、1用户、2微商、4商户、8广告主、16服务商、32运营中心、64后台
 	Mobile    string // 手机号
 	CreatedAt string //
 	UpdatedAt string //

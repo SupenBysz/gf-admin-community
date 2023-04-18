@@ -21,3 +21,11 @@ type SetUserMobileReq struct {
 	Captcha  string `json:"captcha" v:"required#请输入手机验证码"`
 	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码"`
 }
+
+type MyPermissionsReq struct {
+	g.Meta `path:"/getPermissions" method:"post" summary:"我的权限|列表" tags:"我的"`
+}
+
+type MyMenusReq struct {
+	g.Meta `path:"/getMenus" method:"post" summary:"我的菜单|树" tags:"我的"`
+}
