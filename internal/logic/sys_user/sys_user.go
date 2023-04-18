@@ -715,11 +715,33 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 	return s.makeMore(ctx, &user), nil
 }
 
-// SetUserMobile 设置用户手机号
-func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha string, password string, userId int64) (bool, error) {
-	s.initInnerCacheItems(ctx)
+// GetUserListByMobile 根据手机号查询用户列表
+func (s *sSysUser) GetUserListByMobile(ctx context.Context, mobile string) (*sys_model.SysUserListRes, error) {
+	userList, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Mobile: mobile}), nil, false)
 
-	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+	}
+
+	newList := make([]*sys_model.SysUser, 0)
+	for _, user := range userList.Records {
+		uData := kconv.Struct(user, &sys_model.SysUser{})
+		uInfo := s.masker(s.makeMore(ctx, uData))
+		newList = append(newList, uInfo)
+	}
+
+	if newList != nil {
+		userList.Records = newList
+	}
+
+	return (*sys_model.SysUserListRes)(userList), nil
+}
+
+// SetUserMobile 设置用户手机号
+func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, password string, userId int64) (bool, error) {
+	//s.initInnerCacheItems(ctx)
+
+	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha, sys_enum.Sms.CaptchaType.SetMobile)
 	if err != nil {
 		return false, err
 	}
@@ -732,7 +754,7 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
 	}
-	if newMobile == gconv.Int64(userInfo.Mobile) {
+	if newMobile == userInfo.Mobile {
 		return true, nil
 	}
 
@@ -751,6 +773,10 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile int64, captcha s
 	if err != nil || affected == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
 	}
+
+	// 清除redis验证码缓存
+	//key := sys_enum.Sms.CaptchaType.SetMobile.Description() + "_" + newMobile
+	//g.DB().GetCache().Remove(ctx, key)
 
 	return true, nil
 }

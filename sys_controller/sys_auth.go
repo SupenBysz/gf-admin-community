@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	sys_api "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
@@ -23,14 +24,14 @@ func (a *cAuth) Login(ctx context.Context, req *sys_api.LoginReq) (res *sys_api.
 }
 
 // LoginByMobile 通过手机号码+验证码登陆
-func (c *cAuth) LoginByMobile(ctx context.Context, req *sys_api.LoginByMobileReq) (res *sys_api.LoginByMobileRes, err error) {
+func (c *cAuth) LoginByMobile(ctx context.Context, req *sys_api.LoginByMobileReq) (res *sys_model.LoginByMobileRes, err error) {
 	// 获取
 	result, err := sys_service.SysAuth().LoginByMobile(ctx, req.LoginByMobileInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	return (*sys_api.LoginByMobileRes)(result), nil
+	return result, nil
 }
 
 // Register 注册

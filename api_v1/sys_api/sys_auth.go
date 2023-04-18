@@ -15,7 +15,7 @@ type LoginByMobileReq struct {
 	sys_model.LoginByMobileInfo
 }
 
-type LoginByMobileRes sys_model.TokenInfo
+//type LoginByMobileRes sys_model.TokenInfo
 
 type LoginRes sys_model.TokenInfo
 

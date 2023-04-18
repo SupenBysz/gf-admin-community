@@ -141,18 +141,37 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 }
 
 // LoginByMobile 手机号 + 验证码登陆
-func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.TokenInfo, error) {
+func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error) {
 	// 在此之前，用户除了提供验证码，还需要补全自己的用户名信息  林 * 菲
 
+	// 判断该手机号码是否具备多用户，是的话返回userList，下一次前端再次调用该接口，需要传递userName
+	userList, err := sys_service.SysUser().GetUserListByMobile(ctx, req.Mobile)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号错误，请重试")
+	}
+
+	if req.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
+		return &sys_model.LoginByMobileRes{
+			SysUserListRes: *userList,
+		}, nil
+	}
+
 	// 短信验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
-	if req.Captcha == "" || !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), req.Username) {
+	ver, err := sys_service.SysSms().Verify(ctx, req.Mobile, req.Captcha, sys_enum.Sms.CaptchaType.Login)
+	if req.Captcha == "" || !ver || err != nil {
 		return nil, gerror.New("请输入正确的验证码")
 	}
 
-	//  先判断输入的用户名是否正确
-	userInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
-	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名错误，安全校验不通过")
+	var userInfo *sys_model.SysUser
+	if req.Username == "" && len(userList.Records) == 1 { // 只有一个账号,不检验用户名，直接去拿用户信息
+		userInfo, err = sys_service.SysUser().GetSysUserById(ctx, userList.Records[0].Id)
+
+	} else if req.Username != "" {
+		//  先判断输入的用户名是否正确
+		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
+	}
+	if err != nil || userInfo == nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
 	}
 
 	// 返回token
@@ -160,8 +179,17 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobil
 	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
 	}
+
+	// 清除该缓存
+	key := sys_enum.Sms.CaptchaType.Login.Description() + "_" + req.Mobile
+
+	g.DB().GetCache().Remove(ctx, key)
+
 	// 返回token数据
-	return tokenInfo, nil
+	return &sys_model.LoginByMobileRes{
+		TokenInfo: *tokenInfo,
+	}, nil
+
 }
 
 // Register 注册账号
@@ -218,9 +246,15 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 
 // ForgotPassword 忘记密码
 func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error) {
-	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
-		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
+	ver, err := sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
+	if info.Captcha == "" || !ver || err != nil {
+		return 0, gerror.New("请输入正确的验证码")
 	}
+
+	// 图形验证码
+	//if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
+	//	return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
+	//}
 
 	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
 	if count <= 0 || err != nil {
@@ -233,6 +267,10 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 	if err != nil {
 		return 0, err
 	}
+
+	// 清除redis验证码缓存
+	//key := sys_enum.Sms.CaptchaType.SetPassword.Description() + "_" + info.Mobile
+	//g.DB().GetCache().Remove(ctx, key)
 
 	return IdKey, nil
 }

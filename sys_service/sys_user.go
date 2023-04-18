@@ -37,7 +37,8 @@ type (
 		SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error)
 		UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error)
 		GetUserDetail(ctx context.Context, userId int64) (*sys_model.SysUser, error)
-		SetUserMobile(ctx context.Context, newMobile int64, captcha string, password string, userId int64) (bool, error)
+		GetUserListByMobile(ctx context.Context, mobile string) (*sys_model.SysUserListRes, error)
+		SetUserMobile(ctx context.Context, newMobile, captcha, password string, userId int64) (bool, error)
 	}
 )
 
