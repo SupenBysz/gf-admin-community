@@ -82,16 +82,16 @@ func (c *cSysRole) SetRoleMember(ctx context.Context, req *sys_api.SetRoleMember
 }
 
 // RemoveRoleMember 移除用户所拥有的角色
-func (c *cSysRole) RemoveRoleMember(ctx context.Context, req *sys_api.RemoveRoleMemberReq) (api_v1.BoolRes, error) {
-	// 权限判断
-	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
-		return false, err
-	}
-
-	result, err := sys_service.SysRole().RemoveRoleMember(ctx, req.RoleId, req.UserId)
-
-	return result == true, err
-}
+//func (c *cSysRole) RemoveRoleMember(ctx context.Context, req *sys_api.RemoveRoleMemberReq) (api_v1.BoolRes, error) {
+//	// 权限判断
+//	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Role.PermissionType.SetMember); has != true {
+//		return false, err
+//	}
+//
+//	result, err := sys_service.SysRole().RemoveRoleMember(ctx, req.RoleId, req.UserId)
+//
+//	return result == true, err
+//}
 
 // GetRoleMemberIds 获取角色下的所有用户Ids|列表
 func (c *cSysRole) GetRoleMemberIds(ctx context.Context, req *sys_api.GetRoleMemberIdsReq) (api_v1.Int64ArrRes, error) {

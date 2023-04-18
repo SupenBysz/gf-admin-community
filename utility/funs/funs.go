@@ -9,7 +9,6 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
-	"reflect"
 )
 
 func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.Context, info sys_model.License, data *T) (response *T, err error) {
@@ -96,31 +95,4 @@ func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), pe
 		return ret, err
 	}
 	return f()
-}
-
-func AttrBuilder[T any, TP any](ctx context.Context, key string, builder ...func(data TP)) context.Context {
-	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
-
-	def := func(data TP) {}
-
-	if len(builder) > 0 {
-		def = builder[0]
-	}
-
-	return context.WithValue(ctx, key,
-		sys_model.KeyValueT[string, func(data TP)]{
-			Key:   key,
-			Value: def,
-		},
-	)
-}
-
-func AttrMake[T any, TP any](ctx context.Context, key string, builder func() TP) {
-	key = key + "::" + reflect.ValueOf(new(T)).Type().String() + "::" + reflect.ValueOf(new(TP)).Type().String()
-	v := ctx.Value(key)
-
-	data, has := v.(sys_model.KeyValueT[string, func(data TP)])
-	if v != nil && has {
-		data.Value(builder())
-	}
 }

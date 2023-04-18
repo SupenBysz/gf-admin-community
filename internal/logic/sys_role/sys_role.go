@@ -16,8 +16,8 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/kysion/base-library/utility/funs"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
@@ -238,7 +238,7 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 
 	if ret == true {
 		// 重置用户角色名称，并自动去重
-		userInfo.RoleNames = garray.NewSortedStrArrayFrom(funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+		userInfo.RoleNames = garray.NewSortedStrArrayFrom(base_funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
 	}
 	return ret, err
 }

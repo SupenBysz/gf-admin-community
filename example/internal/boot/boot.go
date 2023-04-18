@@ -84,8 +84,11 @@ var (
 								sys_controller.SysSms,
 								// 地区
 								sys_controller.SysArea,
+								// 公共：获取图片...
+								sys_controller.Common,
 							)
 						})
+
 					})
 
 					// 权限路由绑定

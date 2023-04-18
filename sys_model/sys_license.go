@@ -33,5 +33,6 @@ type LicenseListRes base_model.CollectRes[sys_entity.SysLicense]
 type AuditLicense struct {
 	UnionMainId int64 `json:"unionMainId"             description:"资质审核关联的业务主体ID"`
 	LicenseId   int64 `json:"licenseId"             description:"资质ID"`
+	UserId      int64 `json:"userId" dc:"上传资质的userId"`
 	License
 }
