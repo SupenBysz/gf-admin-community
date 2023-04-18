@@ -20,4 +20,5 @@ type SysAudit struct {
 	AuditReplyAt *gtime.Time `json:"auditReplyAt" description:"审核回复时间"`
 	HistoryItems string      `json:"historyItems" description:"历史申请记录"`
 	CreatedAt    *gtime.Time `json:"createdAt"    description:""`
+	AuditUserId  int64       `json:"auditUserId"  description:"审核操作者id"`
 }

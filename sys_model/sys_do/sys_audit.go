@@ -22,4 +22,5 @@ type SysAudit struct {
 	AuditReplyAt *gtime.Time // 审核回复时间
 	HistoryItems interface{} // 历史申请记录
 	CreatedAt    *gtime.Time //
+	AuditUserId  interface{} // 审核操作者id
 }
