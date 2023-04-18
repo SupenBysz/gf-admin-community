@@ -21,4 +21,5 @@ type SysFile struct {
 	UnionMainId int64       `json:"unionMainId" description:"关联主体ID"`
 	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
+	LocalPath   string      `json:"localPath"   description:"本地路径"`
 }

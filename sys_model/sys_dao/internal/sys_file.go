@@ -34,6 +34,7 @@ type SysFileColumns struct {
 	UnionMainId string // 关联主体ID
 	CreatedAt   string //
 	UpdatedAt   string //
+	LocalPath   string // 本地路径
 }
 
 // sysFileColumns holds the columns for table sys_file.
@@ -49,6 +50,7 @@ var sysFileColumns = SysFileColumns{
 	UnionMainId: "union_main_id",
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",
+	LocalPath:   "local_path",
 }
 
 // NewSysFileDao creates and returns a new DAO object for table data access.

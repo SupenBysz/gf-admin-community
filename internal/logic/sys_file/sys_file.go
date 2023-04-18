@@ -7,6 +7,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/kysion/base-library/utility/crypto"
+	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/kmap"
 	"io"
@@ -45,7 +47,7 @@ func New() *sFile {
 	return &sFile{
 		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
-		CacheDuration: time.Hour * 2,
+		CacheDuration: time.Minute * 0,
 	}
 }
 
@@ -73,7 +75,7 @@ func (s *sFile) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
-// Upload 同一上传文件
+// Upload 统一上传文件
 func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error) {
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	uploadPath := g.Cfg().MustGet(ctx, "upload.tmpPath").String()
@@ -139,7 +141,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 
 	id := idgen.NextId()
 	idStr := gconv.String(id)
-	dateDirName := gfile.Join(uploadPath, gtime.Now().Format("Ymd"))
+	dateDirName := uploadPath
 	gfile.Chmod(dateDirName, gfile.DefaultPermCopy)
 	savePath := gfile.Join(dateDirName, idStr)
 	fileName, err := in.File.Save(savePath, in.RandomName)
@@ -179,7 +181,8 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		}
 	})
 
-	data.Url = s.GetUrlById(data.Id)
+	//data.Url = s.MakeFileUrl(ctx,data.Id)
+	// data.Url = 远程接口地址
 	return &data.SysFile, nil
 }
 
@@ -403,7 +406,8 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 		cacheFile, _ := s.GetUploadFile(ctx, id, sessionUser.Id, errorMessage)
 
 		if cacheFile != nil {
-			cacheFile.Url = s.GetUrlById(cacheFile.Id)
+			//cacheFile.Url = s.MakeFileUrl(ctx, cacheFile.Id)
+			cacheFile.LocalPath = s.MakeFileUrl(ctx, cacheFile.Id)
 			return cacheFile, nil
 		}
 	}
@@ -425,10 +429,165 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 			return nil, sys_service.SysLogs().WarnSimple(ctx, err, errorMessage, sys_dao.SysFile.Table())
 		}
 
-		file.Url = s.GetUrlById(file.Id)
+		//file.Url = s.GetUrlById(file.Id)
+		file.LocalPath = s.MakeFileUrl(ctx, file.Id)
+
 		return &sys_model.FileInfo{
 			SysFile:   *file,
 			ExpiresAt: nil,
 		}, nil
 	}
+}
+
+// MakeFileUrl 图像id换取url: 拼接三个参数,缓存fileInfo、然后返回url + 三参
+func (s *sFile) MakeFileUrl(ctx context.Context, id int64) string {
+	file := &sys_entity.SysFile{}
+	err := sys_dao.SysFile.Ctx(ctx).
+		Where(sys_do.SysFile{Id: id}).Scan(file)
+
+	if err != nil {
+		return ""
+	}
+
+	sign := makeSign(file.Src, file.Id)
+	srcBase64 := string(gbase64.Encode([]byte(file.Src)))
+	fileId := gconv.String(file.Id)
+
+	// 获取到api接口前缀
+	apiPrefix := sys_consts.Global.ApiPreFix
+
+	// 拼接请求url
+	return apiPrefix + "/common/getFile?sign=" + sign + "&path=" + srcBase64 + "&id=" + fileId
+}
+
+// MakeFileUrlByPath 文件path换取url: 拼接三个参数,缓存签名数据、然后返回url + 三参
+func (s *sFile) MakeFileUrlByPath(ctx context.Context, path string) string {
+	cId := idgen.NextId()
+	sign := makeSign(path, cId)
+
+	srcBase64 := string(gbase64.Encode([]byte(path)))
+	fileId := gconv.String(cId)
+
+	// 获取到api接口前缀
+	apiPrefix := sys_consts.Global.ApiPreFix
+
+	// 拼接请求url
+	return apiPrefix + "/common/getFile?sign=" + sign + "&path=" + srcBase64 + "&cid=" + fileId
+}
+
+// GetFile 获取图片 公开  (srcBase64 + srcMd5 + fileId) ==> md5加密
+func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64) (*sys_model.FileInfo, error) {
+	if cId != 0 {
+		// 验签
+		srcDecode, _ := gbase64.DecodeToString(srcBase64)
+		checkSign := makeSign(srcDecode, cId)
+		// 校验签名
+		if sign != checkSign {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, nil, "签名校验失败", sys_dao.SysFile.Table())
+		}
+
+		// 签名通过，直接根据src返回
+		if !gfile.IsFile(srcDecode) {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, nil, "文件不存在", sys_dao.SysFile.Table())
+		}
+
+		return &sys_model.FileInfo{
+			SysFile: sys_entity.SysFile{
+				Src: srcDecode,
+			},
+		}, nil
+	}
+
+	// 优先从缓存获取，缓存要是获取不到，那么从数据库加载文件信息，从而加载文件
+
+	// 先获取图片，进行签名、验签，验签通过查找图片，如果不在缓存中的图片从数据库查询后进行缓存起来  缓存key == sign
+	fileInfo := daoctl.GetById[sys_entity.SysFile](sys_dao.SysFile.Ctx(ctx), id)
+	if fileInfo == nil {
+		return nil, sys_service.SysLogs().WarnSimple(ctx, nil, "文件不存在，请检查id", sys_dao.SysFile.Table())
+	}
+
+	{
+		srcDecode, _ := gbase64.DecodeToString(srcBase64)
+		checkSign := makeSign(srcDecode, id)
+		// 校验签名
+		if sign != checkSign {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, nil, "签名校验失败", sys_dao.SysFile.Table())
+		}
+	}
+
+	{
+		// 优先尝试从缓存获取图片 (缓存查找,sign为key)
+		cacheFile, _ := g.DB().GetCache().Get(ctx, sign)
+		if cacheFile.Val() != nil {
+			data := sys_model.FileInfo{}
+
+			gconv.Struct(cacheFile, &data)
+			return &data, nil
+		}
+	}
+
+	{
+		// 从数据库找，找到后缓存起来
+
+		/*
+			拉取图片方案，根据src判断是本地还是远端的图片：
+				如果是存在于本地的图片，直接拉出来，然后进行缓存，将Src赋值到cachePath上面
+				如果是存在于远端的图片，根据src从远端获取至本地的temp目录下面，然后将cachePath缓存本地的临时路径
+		*/
+
+		// 判断是否是本地图片
+		file := gfile.GetContents(fileInfo.Src) // 后期这里应该是cachePath
+
+		if file != "" { // 本地
+			data := sys_model.FileInfo{
+				SysFile:   *fileInfo,
+				ExpiresAt: gtime.New(time.Hour * 24),
+			}
+
+			g.DB().GetCache().Set(ctx, sign, data, time.Hour*24)
+
+			return &data, nil
+		} else { // 远端
+			// 获取远端图片，进行拉取到本地temp目录，然后将cachePath赋值
+
+			//fileInfo.LocalPath = fileInfo.Src
+
+			//daoctl.UpdateWithError(sys_dao.SysFile.Ctx(ctx).Where(sys_dao.SysFile.Columns().Id, fileInfo.Id).Data(sys_do.SysFile{CachePath: fileInfo.CachePath}))
+
+		}
+	}
+
+	return nil, nil
+}
+
+// UseFile 用图片
+func (s *sFile) UseFile(ctx context.Context, src string) {
+	/*
+		拉取图片方案，根据src判断是本地还是远端的图片：
+			如果是存在于本地的图片，直接拉出来，然后进行缓存，将Src赋值到cachePath上面
+			如果是存在于远端的图片，根据src从远端获取至本地的temp目录下面，然后将cachePath缓存本地的临时路径
+	*/
+
+	// 判断是否是本地图片
+	file := gfile.GetContents(src) // 后期这里应该是cachePath
+
+	if file != "" { // 本地，直接渲染
+		g.RequestFromCtx(ctx).Response.ServeFile(src)
+	} else { // 远端
+		// 获取远端图片，进行拉取到本地temp目录，然后将渲染
+
+	}
+
+}
+
+// 签名数据，组成部分：(srcBase64 + srcMd5 + fileId) ==> md5加密
+func makeSign(fileSrc string, id int64) string {
+	srcBase64 := string(gbase64.Encode([]byte(fileSrc)))
+	srcMd5 := crypto.Md5Hash(fileSrc)
+	fileId := string(id)
+
+	cryptoData := srcBase64 + srcMd5 + fileId
+	checkSign := crypto.Md5Hash(cryptoData)
+
+	return checkSign
 }
