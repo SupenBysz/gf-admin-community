@@ -14,13 +14,13 @@ var SysAudit = cSysAudit{}
 type cSysAudit struct{}
 
 // GetAuditLogList 获取审核信息|列表
-func (c *cSysAudit) GetAuditLogList(ctx context.Context, req *sys_api.GetAuditListReq) (*sys_api.AuditListRes, error) {
+func (c *cSysAudit) GetAuditLogList(ctx context.Context, req *sys_api.QueryAuditListReq) (*sys_api.AuditListRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Audit.PermissionType.List); has != true {
 		return nil, err
 	}
 
-	result, err := sys_service.SysAudit().GetAuditList(ctx, req.Category, req.State, &req.Pagination)
+	result, err := sys_service.SysAudit().QueryAuditList(ctx, &req.SearchParams)
 
 	return (*sys_api.AuditListRes)(result), err
 }
@@ -32,7 +32,9 @@ func (c *cSysAudit) SetAuditApprove(ctx context.Context, req *sys_api.SetAuditAp
 		return false, err
 	}
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "")
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "", user.Id)
 
 	return result == true, err
 }
@@ -44,7 +46,9 @@ func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sys_api.SetAuditRej
 		return false, err
 	}
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply)
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply, user.Id)
 	return result == true, err
 }
 

@@ -15,7 +15,13 @@ import (
 type (
 	ISysMenu interface {
 		GetMenuById(ctx context.Context, menuId int64) (*sys_entity.SysMenu, error)
-		SaveMenu(ctx context.Context, info sys_model.SysMenu) (*sys_entity.SysMenu, error)
+		CreateMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
+		UpdateMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
+		SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
+		DeleteMenu(ctx context.Context, id int64) (bool, error)
+		MakeMenuTree(ctx context.Context, parentId int64, isMakeNodeFun func(ctx context.Context, cruuentMenu *sys_entity.SysMenu) bool) ([]*sys_model.SysMenuTreeRes, error)
+		GetMenuTree(ctx context.Context, parentId int64) ([]*sys_model.SysMenuTreeRes, error)
+		GetMenuList(ctx context.Context, parentId int64, IsRecursive bool, limitChildrenIds ...int64) ([]*sys_entity.SysMenu, error)
 	}
 )
 
