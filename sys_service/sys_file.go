@@ -28,6 +28,10 @@ type (
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
 		GetUrlById(id int64) string
 		GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
+		MakeFileUrl(ctx context.Context, id int64) string
+		MakeFileUrlByPath(ctx context.Context, path string) string
+		GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64) (*sys_model.FileInfo, error)
+		UseFile(ctx context.Context, src string)
 	}
 )
 
