@@ -57,8 +57,6 @@ func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs
 		info.Error = info.Context
 	}
 
-	sys_service.SessionError().Append(ctx, gerror.New(info.Error))
-
 	if info.Context != "" {
 		err = gerror.New(info.Context)
 	}
