@@ -1,0 +1,19 @@
+## SMS权限
+permission_Sms_SendSms: "发送短信"
+permission_Sms_SendCaptchaBySms: "发送验证码短信"
+permission_Sms_ReceiveSms: "接收短信"
+permission_Sms_ViewAppConfig: "查看应用配置信息"
+permission_Sms_CreateAppConfig: "创建应用配置"
+permission_Sms_CreateTemplate: "创建模板"
+permission_Sms_AuditTemplate: "审核模板"
+permission_Sms_ViewTemplate: "查看模板信息"
+permission_Sms_CreateSign: "创建签名"
+permission_Sms_AuditSign: "审核签名"
+permission_Sms_ViewSign: "查看签名"
+permission_Sms_CreateProvider: "创建业务配置"
+permission_Sms_ViewProvider: "查看业务配置信息"
+permission_Sms_ViewProviderList: "查看业务配置列表"
+permission_Sms_ViewSendLog: "查看短信发送日志"
+
+# SMS称呼
+SmsName: "Sms短信"
