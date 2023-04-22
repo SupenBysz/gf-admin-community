@@ -224,7 +224,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 		}
 	}
 
-	if newList != nil {
+	if newList != nil && len(newList) > 0 {
 		result.Records = newList
 	}
 

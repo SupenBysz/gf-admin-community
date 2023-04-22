@@ -86,7 +86,7 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_model.SysUser) (resp
 
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&user.Type == user.Type {
+			if hook.Value.Key.Code()&user.Type == user.Type || (user.Type == 64 && hook.Value.Key.Code() == 32) {
 				customClaims, err = hook.Value.Value(ctx, customClaims)
 				if err != nil {
 					break

@@ -193,6 +193,32 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 	if err != nil {
 		return nil
 	}
+
+	// 将路径src换成可访问图片的url
+	auditData := sys_model.AuditLicense{}
+	gjson.DecodeTo(result.AuditData, &auditData)
+
+	{
+		if gfile.IsFile(auditData.IdcardFrontPath) {
+			//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+			fmt.Println("身份证：", auditData.IdcardFrontPath)
+
+		}
+		if gfile.IsFile(auditData.IdcardBackPath) {
+			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
+			fmt.Println("身份证：", auditData.IdcardBackPath)
+		}
+		if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
+			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
+		}
+		if gfile.IsFile(auditData.BusinessLicensePath) {
+			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
+		}
+	}
+
+	result.AuditData = gjson.MustEncodeString(auditData)
+
 	return &result
 }
 
@@ -323,6 +349,18 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 		data := s.GetAuditById(ctx, info.Id)
 		if data == nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
+		}
+
+		// 审核通过
+		if (data.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
+			// 创建主体资质
+			license := sys_model.AuditLicense{}
+			gjson.DecodeTo(data.AuditData, &license)
+
+			_, err = sys_service.SysLicense().CreateLicense(ctx, license.License)
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后主体资质创建失败", sys_dao.SysLicense.Table())
+			}
 		}
 
 		for _, hook := range s.hookArr {

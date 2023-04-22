@@ -126,7 +126,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 
 	for _, hook := range s.hookArr {
 		// 判断注入的Hook用户类型是否一致
-		if hook.Value.UserType.Code()&user.Type == user.Type {
+		if hook.Value.UserType.Code()&user.Type == user.Type || (user.Type == 64 && hook.Value.UserType.Code() == 32) {
 			// 用户类型一致则调用注入的Hook函数
 			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, user)
 		}
