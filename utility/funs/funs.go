@@ -63,19 +63,19 @@ func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.
 			newData.BusinessLicensePath = fileInfo.Src
 		}
 
-		if info.BusinessLicenseLegalPath != "" && !gfile.Exists(info.BusinessLicenseLegalPath) {
-			// 检测缓存文件
-			fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.BusinessLicenseLegalPath), userId, "请上传营业执照图片")
-			if err != nil {
-				return nil, err
-			}
-			// 保存法人单位营业执照图片
-			fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/businessLicense/"+fileAt+fileInfoCache.Ext, fileInfoCache)
-			if err != nil {
-				return nil, err
-			}
-			newData.BusinessLicenseLegalPath = fileInfo.Src
-		}
+		//if info.BusinessLicenseLegalPath != "" && !gfile.Exists(info.BusinessLicenseLegalPath) {
+		//	// 检测缓存文件
+		//	fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.BusinessLicenseLegalPath), userId, "请上传法人证件照图片")
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	// 保存法人证件照图片
+		//	fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/businessLicense/"+fileAt+fileInfoCache.Ext, fileInfoCache)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	newData.BusinessLicenseLegalPath = fileInfo.Src
+		//}
 	}
 
 	gconv.Struct(newData, data)

@@ -202,12 +202,10 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 		if gfile.IsFile(auditData.IdcardFrontPath) {
 			//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
 			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
-			fmt.Println("身份证：", auditData.IdcardFrontPath)
 
 		}
 		if gfile.IsFile(auditData.IdcardBackPath) {
 			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
-			fmt.Println("身份证：", auditData.IdcardBackPath)
 		}
 		if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
 			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
