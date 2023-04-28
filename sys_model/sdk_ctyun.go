@@ -2,7 +2,7 @@ package sys_model
 
 import "github.com/kysion/base-library/base_model"
 
-// CtyunSdkConf天翼云服务配置信息
+// CtyunSdkConf 天翼云服务配置信息
 type CtyunSdkConf struct {
 	Identifier  string `json:"identifier" v:"required#业务标识符参数错误" dc:"业务标识符，唯一，且不可修改"`
 	Description string `json:"description" dc:"描述"`
@@ -18,7 +18,7 @@ type CtyunSdkConfInfo struct {
 	CtyunSdkConf
 }
 
-// CtyunSdkConfList天翼云应用配置列表
+// CtyunSdkConfList 天翼云应用配置列表
 type CtyunSdkConfList base_model.CollectRes[*CtyunSdkConf]
 
 // 因为我看平台的认证方式好像不是token认证，是通过AK/SK进行认证的，所以我暂时没写token信息

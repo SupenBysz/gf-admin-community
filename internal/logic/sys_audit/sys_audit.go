@@ -355,9 +355,15 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 			license := sys_model.AuditLicense{}
 			gjson.DecodeTo(data.AuditData, &license)
 
-			_, err = sys_service.SysLicense().CreateLicense(ctx, license.License)
+			licenseRes, err := sys_service.SysLicense().CreateLicense(ctx, license.License)
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后主体资质创建失败", sys_dao.SysLicense.Table())
+			}
+
+			// 设置主体资质的审核编号
+			ret, err := sys_service.SysLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(data.Id))
+			if err != nil || ret == false {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysLicense.Table())
 			}
 		}
 
