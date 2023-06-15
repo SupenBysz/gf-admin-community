@@ -55,10 +55,10 @@ func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_mo
 // Save 保存系统配置信息
 func (s *sSysSettings) Save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysSettings{})
-
+  
 	count, err := sys_dao.SysSettings.Ctx(ctx).Count(sys_do.SysSettings{Name: info.Name})
 	if count > 0 {
-		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values})
+		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values, Desc: data.Desc})
 	} else {
 		_, err = sys_dao.SysSettings.Ctx(ctx).Insert(data)
 	}
