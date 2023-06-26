@@ -14,7 +14,7 @@ type SysArea struct {
 	Id            interface{} // ID
 	AreaCode      interface{} // 地区编码
 	AreaName      interface{} // 地区名称
-	Level         interface{} // 1:省份province,2:市city,3:区县district,4:街道street
+	Level         interface{} // 1区县district、2市city、4省份province、8大区region、16全国nation
 	CityCode      interface{} // 城市编码
 	LatLongCenter interface{} // 城市中心点（即经纬度）
 	ParentId      interface{} // 地区父节点
