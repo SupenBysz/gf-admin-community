@@ -7,11 +7,13 @@ package sys_service
 
 import (
 	"context"
+
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
 type (
 	ISysSms interface {
-		Verify(ctx context.Context, mobile int64, captcha string, typeIdentifier ...string) (bool, error)
+		Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...sys_enum.SmsCaptchaType) (bool, error)
 	}
 )
 

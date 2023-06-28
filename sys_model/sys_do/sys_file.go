@@ -23,4 +23,5 @@ type SysFile struct {
 	UnionMainId interface{} // 关联主体ID
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
+	LocalPath   interface{} // 本地路径
 }

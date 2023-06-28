@@ -20,11 +20,11 @@ type (
 		InstallHook(state sys_enum.AuditEvent, category int, hookFunc sys_hook.AuditHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
-		GetAuditList(ctx context.Context, category int, state int, pagination *base_model.Pagination) (*sys_model.AuditListRes, error)
+		QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error)
 		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
 		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
 		CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error)
-		UpdateAudit(ctx context.Context, id int64, state int, reply string) (bool, error)
+		UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error)
 	}
 )
 

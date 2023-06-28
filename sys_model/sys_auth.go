@@ -9,10 +9,16 @@ type LoginInfo struct {
 	Password string `json:"password" v:"required#请输入密码" dc:"登录密码"`
 	Captcha  string `json:"captcha" v:"required#请输入验证吗" dc:"验证码"`
 }
+
 type LoginByMobileInfo struct {
-	Username string `json:"username" v:"required#请输入用户名" dc:"登录账号"`
+	Username string `json:"username"  dc:"登录账号,会检验该手机号有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
 	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
 	Captcha  string `json:"captcha" v:"required#请输入验证吗" dc:"验证码"`
+}
+
+type LoginByMobileRes struct {
+	SysUserListRes
+	TokenInfo
 }
 
 type TokenInfo struct {

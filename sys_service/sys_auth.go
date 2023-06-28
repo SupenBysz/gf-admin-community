@@ -20,7 +20,7 @@ type (
 		CleanAllHook()
 		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.TokenInfo, error)
 		InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error)
-		LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.TokenInfo, error)
+		LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error)
 		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error)
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error)

@@ -26,7 +26,7 @@ type SysAreaColumns struct {
 	Id            string // ID
 	AreaCode      string // 地区编码
 	AreaName      string // 地区名称
-	Level         string // 1:省份province,2:市city,3:区县district,4:街道street
+	Level         string // 1区县district、2市city、4省份province、8大区region、16全国nation
 	CityCode      string // 城市编码
 	LatLongCenter string // 城市中心点（即经纬度）
 	ParentId      string // 地区父节点

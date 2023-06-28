@@ -33,6 +33,7 @@ type SysAuditColumns struct {
 	AuditReplyAt string // 审核回复时间
 	HistoryItems string // 历史申请记录
 	CreatedAt    string //
+	AuditUserId  string // 审核操作者id
 }
 
 // sysAuditColumns holds the columns for table sys_audit.
@@ -47,6 +48,7 @@ var sysAuditColumns = SysAuditColumns{
 	AuditReplyAt: "audit_reply_at",
 	HistoryItems: "history_Items",
 	CreatedAt:    "created_at",
+	AuditUserId:  "audit_user_id",
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.

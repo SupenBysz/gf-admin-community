@@ -3,6 +3,7 @@ package sys_audit
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -10,6 +11,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 
@@ -19,7 +22,6 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 
 	"github.com/yitter/idgenerator-go/idgen"
@@ -71,35 +73,16 @@ func (s *sSysAudit) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
-// GetAuditList 獲取审核信息列表
-func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, pagination *base_model.Pagination) (*sys_model.AuditListRes, error) {
-	if pagination == nil {
-		pagination = &base_model.Pagination{
+// QueryAuditList 获取审核信息列表
+func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error) {
+	if &filter.Pagination == nil {
+		filter.Pagination = base_model.Pagination{
 			PageNum:  1,
 			PageSize: 20,
 		}
 	}
 
-	fields := append(make([]base_model.FilterInfo, 0),
-		base_model.FilterInfo{
-			Field:       sys_dao.SysAudit.Columns().State,
-			Where:       "in",
-			IsOrWhere:   false,
-			Value:       state,
-			IsNullValue: false,
-		},
-	)
-	if category > 0 {
-		fields = append(fields, base_model.FilterInfo{
-			Field:       sys_dao.SysAudit.Columns().Category,
-			Where:       "=",
-			IsOrWhere:   false,
-			Value:       category,
-			IsNullValue: false,
-		})
-	}
-
-	fields = append(fields, base_model.FilterInfo{
+	filter.Filter = append(filter.Filter, base_model.FilterInfo{
 		Field:       sys_dao.SysAudit.Columns().Id,
 		Where:       ">",
 		IsOrWhere:   false,
@@ -107,15 +90,7 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		IsNullValue: false,
 	})
 
-	filter := base_model.SearchParams{
-		Filter: fields,
-		OrderBy: append(make([]base_model.OrderBy, 0), base_model.OrderBy{
-			Field: sys_dao.SysAudit.Columns().Id,
-			Sort:  "desc",
-		}),
-		Pagination: *pagination,
-	}
-	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), &filter, false)
+	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), filter, true)
 
 	auditList := make([]sys_entity.SysAudit, 0)
 	for _, item := range result.Records {
@@ -127,18 +102,29 @@ func (s *sSysAudit) GetAuditList(ctx context.Context, category int, state int, p
 		// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
 
 		// 将路径id换成可访问图片的url
+		//if gstr.IsNumeric(auditData.IdcardFrontPath) {
+		//	//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+		//	auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+		//	fmt.Println("身份证：", auditData.IdcardFrontPath)
+		//}
+
+		// 将路径src换成可访问图片的url
 		{
-			if gstr.IsNumeric(auditData.IdcardFrontPath) {
-				auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+			if gfile.IsFile(auditData.IdcardFrontPath) {
+				//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+				auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+				fmt.Println("身份证：", auditData.IdcardFrontPath)
+
 			}
-			if gstr.IsNumeric(auditData.IdcardBackPath) {
-				auditData.IdcardBackPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardBackPath))
+			if gfile.IsFile(auditData.IdcardBackPath) {
+				auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
+				fmt.Println("身份证：", auditData.IdcardBackPath)
 			}
-			if gstr.IsNumeric(auditData.BusinessLicenseLegalPath) {
-				auditData.BusinessLicenseLegalPath = sys_service.File().GetUrlById(gconv.Int64(auditData.BusinessLicenseLegalPath))
+			if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
+				auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
 			}
-			if gstr.IsNumeric(auditData.BusinessLicensePath) {
-				auditData.BusinessLicensePath = sys_service.File().GetUrlById(gconv.Int64(auditData.BusinessLicensePath))
+			if gfile.IsFile(auditData.BusinessLicensePath) {
+				auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
 			}
 		}
 		if err != nil {
@@ -175,26 +161,30 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 	// 将路径id换成可访问图片的url
 	{
 		if gstr.IsNumeric(auditData.IdcardFrontPath) {
-			auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
 		}
 		if gstr.IsNumeric(auditData.IdcardBackPath) {
-			auditData.IdcardBackPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardBackPath))
+			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
 		}
 		if gstr.IsNumeric(auditData.BusinessLicenseLegalPath) {
-			auditData.BusinessLicenseLegalPath = sys_service.File().GetUrlById(gconv.Int64(auditData.BusinessLicenseLegalPath))
+			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
 		}
 		if gstr.IsNumeric(auditData.BusinessLicensePath) {
-			auditData.BusinessLicensePath = sys_service.File().GetUrlById(gconv.Int64(auditData.BusinessLicensePath))
+			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
 		}
 	}
 	// fmt.Println(auditData.IdcardFrontPath + " --- " + auditData.IdcardBackPath + " --- " + auditData.BusinessLicensePath + " --- " + auditData.BusinessLicenseLegalPath)
 
-	// 重新赋值
+	// 重新赋值  将id转为可访问路径
 	result.AuditData = gjson.MustEncodeString(auditData)
 
 	return result
 
 }
+
+// Audit存，将userId 和 上传id从缓存中读取出，然后将file.Src作为身份证、营业执照字段的值，  idCardPath：文件id  idCardPath：/tmp/upload/20230413/20230413/6504378708918341/crvld008yix5scyuio.jpeg
+
+// Audit取，拿出路劲转成带签名的url，
 
 // GetAuditByLatestUnionMainId 获取最新的业务主体审核信息
 func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
@@ -203,6 +193,30 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 	if err != nil {
 		return nil
 	}
+
+	// 将路径src换成可访问图片的url
+	auditData := sys_model.AuditLicense{}
+	gjson.DecodeTo(result.AuditData, &auditData)
+
+	{
+		if gfile.IsFile(auditData.IdcardFrontPath) {
+			//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+
+		}
+		if gfile.IsFile(auditData.IdcardBackPath) {
+			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
+		}
+		if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
+			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
+		}
+		if gfile.IsFile(auditData.BusinessLicensePath) {
+			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
+		}
+	}
+
+	result.AuditData = gjson.MustEncodeString(auditData)
+
 	return &result
 }
 
@@ -296,7 +310,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 }
 
 // UpdateAudit 处理审核信息
-func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string) (bool, error) {
+func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error) {
 	if state == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", sys_dao.SysAudit.Table())
 	}
@@ -319,6 +333,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 			State:        state,
 			Reply:        reply,
 			AuditReplyAt: gtime.Now(),
+			AuditUserId:  auditUserId,
 		}).Where(sys_do.SysAudit{
 			Id:          info.Id,
 			UnionMainId: info.UnionMainId,
@@ -332,6 +347,24 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 		data := s.GetAuditById(ctx, info.Id)
 		if data == nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
+		}
+
+		// 审核通过
+		if (data.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
+			// 创建主体资质
+			license := sys_model.AuditLicense{}
+			gjson.DecodeTo(data.AuditData, &license)
+
+			licenseRes, err := sys_service.SysLicense().CreateLicense(ctx, license.License)
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后主体资质创建失败", sys_dao.SysLicense.Table())
+			}
+
+			// 设置主体资质的审核编号
+			ret, err := sys_service.SysLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(data.Id))
+			if err != nil || ret == false {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysLicense.Table())
+			}
 		}
 
 		for _, hook := range s.hookArr {

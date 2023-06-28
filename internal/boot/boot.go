@@ -29,9 +29,9 @@ func init() {
 
 	Ip2region()
 	InitCustomRules()
+	InitIdGenerator()
 	InitGlobal()
 	InitRedisCache()
-	InitIdGenerator()
 	InitLogLevelToDatabase()
 	InitPermission()
 
@@ -233,6 +233,31 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.Permissions.PermissionType.Create,
 			},
 		},
+		// 菜单管理权限树
+		{
+			SysPermission: &sys_entity.SysPermission{
+				Id:         5950408166676321,
+				Name:       "菜单管理",
+				Identifier: "Menu",
+				Type:       1,
+				IsShow:     0, // 默认隐藏
+			},
+			Children: []*sys_model.SysPermissionTree{
+				// 查看菜单，查看某个菜单
+				sys_enum.Menu.PermissionType.ViewDetail,
+				// 菜单树，查看菜单树
+				sys_enum.Menu.PermissionType.Tree,
+				// 更新菜单，更新某个菜单
+				sys_enum.Menu.PermissionType.Update,
+				// 删除菜单，删除某个菜单
+				sys_enum.Menu.PermissionType.Delete,
+				// 创建菜单，创建菜单
+				sys_enum.Menu.PermissionType.Create,
+			},
+		},
+		// sms
+
+		// oss
 	}
 
 	// 添加资质和审核权限树

@@ -14,21 +14,18 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
-	"github.com/kysion/base-library/utility/kmap"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
-	"time"
 )
 
 type sSysPermission struct {
-	mapStrItems   *kmap.HashMap[string, *sys_entity.SysPermission]
-	mapInt64Items *kmap.HashMap[int64, *sys_entity.SysPermission]
+	//mapStrItems   *kmap.HashMap[string, *sys_entity.SysPermission]
+	//mapInt64Items *kmap.HashMap[int64, *sys_entity.SysPermission]
 }
 
 func init() {
@@ -37,22 +34,20 @@ func init() {
 
 // New sSysPermission 权限控制逻辑实现
 func New() *sSysPermission {
-	return &sSysPermission{
-		mapStrItems:   kmap.New[string, *sys_entity.SysPermission](true),
-		mapInt64Items: kmap.New[int64, *sys_entity.SysPermission](true),
-	}
+	return &sSysPermission{}
 }
 
 // GetPermissionById 根据权限ID获取权限信息
 func (s *sSysPermission) GetPermissionById(ctx context.Context, permissionId int64) (*sys_entity.SysPermission, error) {
-	s.initInnerCacheItems(ctx)
-	return s.mapInt64Items.Get(permissionId), nil
+	//s.initInnerCacheItems(ctx)
+	//return s.mapInt64Items.Get(permissionId), nil
+
+	return daoctl.GetByIdWithError[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), permissionId)
 }
 
-// GetPermissionByIdentifier 根据权限Name获取权限信息
+// GetPermissionByIdentifier 根据权限标识符Identifier获取权限信息
 func (s *sSysPermission) GetPermissionByIdentifier(ctx context.Context, identifier string) (*sys_entity.SysPermission, error) {
-	s.initInnerCacheItems(ctx)
-	return s.mapStrItems.Get(identifier), nil
+	return daoctl.ScanWithError[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Where(sys_do.SysPermission{Identifier: identifier}))
 }
 
 // QueryPermissionList 查询权限列表
@@ -84,7 +79,8 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info base_mode
 		})
 	}
 
-	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, false)
+	// IsExport为true，数据都放在一页，不分页返回
+	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, true)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())
@@ -95,16 +91,18 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info base_mode
 
 // GetPermissionsByResource 根据资源获取权限Ids, 资源一般为用户ID、角色ID，员工ID等
 func (s *sSysPermission) GetPermissionsByResource(ctx context.Context, resource string) ([]int64, error) {
-	s.initInnerCacheItems(ctx)
-
 	permissionItems, err := sys_service.Casbin().Enforcer().GetImplicitPermissionsForUser(resource, sys_consts.CasbinDomain)
 	if err != nil {
 		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "权限查询失败", sys_dao.SysPermission.Table())
 	}
 
-	permissionIds := garray.New()
+	permissionList, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), nil, true)
+	if err != nil {
+		return make([]int64, 0), sys_service.SysLogs().ErrorSimple(ctx, err, "权限查询失败", sys_dao.SysPermission.Table())
+	}
 
-	s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysPermission) bool {
+	permissionIds := garray.New()
+	for _, v := range permissionList.Records {
 		for _, items := range permissionItems {
 			if len(items) >= 3 {
 				if gstr.IsNumeric(items[2]) {
@@ -116,42 +114,46 @@ func (s *sSysPermission) GetPermissionsByResource(ctx context.Context, resource 
 				}
 			}
 		}
-		return true
-	})
+	}
 
 	return gconv.Int64s(permissionIds.Unique().Slice()), nil
 }
 
-func (s *sSysPermission) initInnerCacheItems(ctx context.Context) {
-	if s.mapInt64Items.Size() == s.mapStrItems.Size() && s.mapStrItems.Size() > 0 {
-		return
-	}
-
-	items := daoctl.Scan[[]*sys_entity.SysPermission](
-		sys_dao.SysPermission.Ctx(ctx).
-			OrderAsc(sys_dao.SysPermission.Columns().ParentId).
-			OrderAsc(sys_dao.SysPermission.Columns().Sort),
-	)
-	s.mapStrItems.Clear()
-	s.mapInt64Items.Clear()
-	for _, sysPermission := range *items {
-		s.mapStrItems.Set(sysPermission.Identifier, sysPermission)
-		s.mapInt64Items.Set(sysPermission.Id, sysPermission)
-	}
-}
+//func (s *sSysPermission) initInnerCacheItems(ctx context.Context) {
+//	if s.mapInt64Items.Size() == s.mapStrItems.Size() && s.mapStrItems.Size() > 0 {
+//		return
+//	}
+//
+//	items := daoctl.Scan[[]*sys_entity.SysPermission](
+//		sys_dao.SysPermission.Ctx(ctx).
+//			OrderAsc(sys_dao.SysPermission.Columns().ParentId).
+//			OrderAsc(sys_dao.SysPermission.Columns().Sort),
+//	)
+//	s.mapStrItems.Clear()
+//	s.mapInt64Items.Clear()
+//	for _, sysPermission := range *items {
+//		s.mapStrItems.Set(sysPermission.Identifier, sysPermission)
+//		s.mapInt64Items.Set(sysPermission.Id, sysPermission)
+//	}
+//}
 
 // GetPermissionList 根据ID获取下级权限信息，返回列表
 func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) ([]*sys_entity.SysPermission, error) {
-	s.initInnerCacheItems(ctx)
-
 	dataArr := make([]*sys_entity.SysPermission, 0)
+	permissionList, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx).Where(sys_do.SysPermission{ParentId: parentId}), nil, true)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限查询失败", sys_dao.SysPermission.Table())
+	}
 
-	s.mapInt64Items.Iterator(func(id int64, v *sys_entity.SysPermission) bool {
-		if v.IsShow == 1 && v.ParentId == parentId {
-			dataArr = append(dataArr, v)
-		}
-		return true
-	})
+	gconv.Struct(permissionList.Records, &dataArr)
+
+	//
+	//for _, v := range permissionList.Records {
+	//	if v.IsShow == 1 && v.ParentId == parentId {
+	//		dataArr = append(dataArr, &v)
+	//	}
+	//
+	//}
 
 	// 如果需要返回下级，则递归加载
 	if IsRecursive == true && len(dataArr) > 0 {
@@ -183,13 +185,13 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
 func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
 	// 先判断缓存中是否存在权限树，存在直接返回
-	res, err := g.DB().GetCache().Get(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId))
-	if res != nil {
-		data := make([]*sys_model.SysPermissionTree, 0)
-
-		gconv.Struct(res, &data)
-		return data, nil
-	}
+	//res, err := g.DB().GetCache().Get(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId))
+	//if res.Val() != nil {
+	//	data := make([]*sys_model.SysPermissionTree, 0)
+	//
+	//	gconv.Struct(res, &data)
+	//	return data, nil
+	//}
 
 	result, err := s.GetPermissionList(ctx, parentId, false)
 
@@ -201,22 +203,34 @@ func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) 
 
 	// 有数据，则递归加载
 	if len(result) > 0 {
+		//wg := sync.WaitGroup{}
+
 		for _, sysPermissionItem := range result {
+			//wg.Add(1)
+
 			item := &sys_model.SysPermissionTree{}
 			gconv.Struct(sysPermissionItem, &item)
 
+			//go func(id int64) {
 			item.Children, err = s.GetPermissionTree(ctx, sysPermissionItem.Id)
-
 			if err != nil {
+				//wg.Done()
 				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
+				//return
 			}
+			response = append(append(make([]*sys_model.SysPermissionTree, 0), item), response...)
+			//	wg.Done()
+			//}(sysPermissionItem.Id)
 
-			response = append(response, item)
+			//response = append(response, item)
+
 		}
+
+		//wg.Wait()
 	}
 
 	// 将权限树缓存起来
-	g.DB().GetCache().Set(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId), response, time.Hour*24)
+	//g.DB().GetCache().Set(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId), response, time.Hour*24)
 
 	return response, nil
 }
@@ -235,15 +249,16 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.Sy
 // SetPermissionsByResource 设置资源权限
 func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceIdentifier string, permissionIds []int64) (response bool, err error) {
 	var items []*sys_entity.SysPermission
+	permissionList, err := daoctl.Query[sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), nil, true)
+
 	if len(permissionIds) > 0 {
 		for _, id := range permissionIds {
-			s.mapInt64Items.Iterator(func(k int64, v *sys_entity.SysPermission) bool {
-				if id == k {
-					items = append(items, v)
-					return false
+			for _, v := range permissionList.Records {
+				if id == v.Id {
+					items = append(items, &v)
+					break
 				}
-				return true
-			})
+			}
 		}
 	}
 
@@ -282,8 +297,6 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 		return nil
 	}
 
-	s.initInnerCacheItems(ctx)
-
 	for i, permissionTree := range permissionTreeArr {
 		if parent != nil {
 			// 设置父级ID
@@ -299,7 +312,9 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 		permissionTree.Sort = i
 
 		// 查询权限数据是否存在
-		_, has := s.mapStrItems.Search(permissionTree.SysPermission.Identifier)
+
+		identifier, _ := s.GetPermissionByIdentifier(ctx, permissionTree.SysPermission.Identifier)
+		has := identifier != nil
 
 		// 判断权限数据是否存在，不存在则插入数据
 		if !has {
@@ -313,8 +328,6 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			} else {
 				rowsAffected, _ := result.RowsAffected()
 				if rowsAffected > 0 {
-					s.mapStrItems.Set(permissionTree.SysPermission.Identifier, permissionTree.SysPermission)
-					s.mapInt64Items.Set(permissionTree.SysPermission.Id, permissionTree.SysPermission)
 					fmt.Printf("插入权限信息：%+v\t\t已成功\n\n\n", permissionTree.SysPermission)
 				}
 			}
@@ -392,8 +405,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息保存失败", sys_dao.SysPermission.Table())
 		}
 	}
-	s.mapInt64Items.Set(info.Id, &data)
-	s.mapStrItems.Set(info.Identifier, &data)
+
 	return &data, nil
 }
 
@@ -414,11 +426,6 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 	// 删除权限定义
 	sys_dao.SysCasbin.Ctx(ctx).Delete(sys_do.SysCasbin{Ptype: "p", V2: permissionId})
 
-	v := s.mapInt64Items.Get(permissionId)
-	if v != nil {
-		s.mapStrItems.Remove(v.Identifier)
-	}
-	s.mapInt64Items.Remove(permissionId)
 	return true, nil
 }
 

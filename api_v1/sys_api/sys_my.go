@@ -17,7 +17,15 @@ type UpdateUserPasswordReq struct {
 
 type SetUserMobileReq struct {
 	g.Meta   `path:"/setUserMobile" method:"post" summary:"修改用户手机号" tags:"我的"`
-	Mobile   int64  `json:"mobile" v:"required|phone#请数据手机号|手机号错误" dc:"手机号"`
+	Mobile   string `json:"mobile" v:"required|phone#请数据手机号|手机号错误" dc:"手机号"`
 	Captcha  string `json:"captcha" v:"required#请输入手机验证码"`
 	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码"`
+}
+
+type MyPermissionsReq struct {
+	g.Meta `path:"/getPermissions" method:"post" summary:"我的权限|列表" tags:"我的"`
+}
+
+type MyMenusReq struct {
+	g.Meta `path:"/getMenus" method:"post" summary:"我的菜单|树" tags:"我的"`
 }
