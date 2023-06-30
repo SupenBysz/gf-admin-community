@@ -26,10 +26,23 @@ type (
 		UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error)
 		Masker(license *sys_entity.SysLicense) *sys_entity.SysLicense
 	}
+	ISysPersonLicense interface {
+		GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysPersonLicense, error)
+		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.PersonLicenseListRes, error)
+		CreateLicense(ctx context.Context, info sys_model.PersonLicense) (*sys_entity.SysPersonLicense, error)
+		UpdateLicense(ctx context.Context, info sys_model.PersonLicense, id int64) (*sys_entity.SysPersonLicense, error)
+		GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysPersonLicense
+		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)
+		SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error)
+		DeleteLicense(ctx context.Context, id int64, flag bool) (bool, error)
+		UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error)
+		Masker(license *sys_entity.SysPersonLicense) *sys_entity.SysPersonLicense
+	}
 )
 
 var (
-	localSysLicense ISysLicense
+	localSysLicense       ISysLicense
+	localSysPersonLicense ISysPersonLicense
 )
 
 func SysLicense() ISysLicense {
@@ -41,4 +54,15 @@ func SysLicense() ISysLicense {
 
 func RegisterSysLicense(i ISysLicense) {
 	localSysLicense = i
+}
+
+func SysPersonLicense() ISysPersonLicense {
+	if localSysPersonLicense == nil {
+		panic("implement not found for interface ISysPersonLicense, forgot register?")
+	}
+	return localSysPersonLicense
+}
+
+func RegisterSysPersonLicense(i ISysPersonLicense) {
+	localSysPersonLicense = i
 }
