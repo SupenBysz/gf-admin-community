@@ -96,3 +96,47 @@ func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), pe
 	}
 	return f()
 }
+
+func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.PersonLicense, data *T) (response *T, err error) {
+	newData := &sys_entity.SysPersonLicense{}
+	gconv.Struct(data, newData)
+
+	{
+		userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
+
+		// 用户资源文件夹
+		userFolder := "./resources/license/" + gconv.String(newData.Id)
+		fileAt := gtime.Now().Format("YmdHis")
+		if !gfile.Exists(info.IdcardFrontPath) {
+			// 检测缓存文件
+			fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.IdcardFrontPath), userId, "请上传身份证头像面")
+			if err != nil {
+				return nil, err
+			}
+			// 保存员工身份证头像面
+			fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/idCard/front_"+fileAt+fileInfoCache.Ext, fileInfoCache)
+			if err != nil {
+				return nil, err
+			}
+			newData.IdcardFrontPath = fileInfo.Src
+		}
+
+		if !gfile.Exists(info.IdcardBackPath) {
+			// 检测缓存文件
+			fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.IdcardBackPath), userId, "请上传身份证国徽面")
+			if err != nil {
+				return nil, err
+			}
+			// 保存员工身份证国徽面
+			fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/idCard/back_"+fileAt+fileInfoCache.Ext, fileInfoCache)
+			if err != nil {
+				return nil, err
+			}
+			newData.IdcardBackPath = fileInfo.Src
+		}
+
+	}
+
+	gconv.Struct(newData, data)
+	return data, err
+}
