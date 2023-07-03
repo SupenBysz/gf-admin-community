@@ -7,7 +7,7 @@ import (
 )
 
 type QueryAuditListReq struct {
-	g.Meta `path:"/queryAuditList" method:"post" summary:"获取审核信息|列表" tags:"审核管理"`
+	g.Meta `path:"/queryAuditList" method:"post" summary:"获取审核信息|列表" tags:"个人资质审核管理"`
 	base_model.SearchParams
 
 	//base_model.Pagination
@@ -16,17 +16,17 @@ type QueryAuditListReq struct {
 }
 
 type GetAuditByIdReq struct {
-	g.Meta `path:"/getAuditById" method:"post" summary:"根据资质ID获取资质审核|信息" tags:"审核管理"`
+	g.Meta `path:"/getAuditById" method:"post" summary:"根据资质ID获取资质审核|信息" tags:"个人资质审核管理"`
 	Id     int64 `json:"id" dc:"资质审核ID"`
 }
 
 type SetAuditApproveReq struct {
-	g.Meta `path:"/setAuditApprove" method:"post" summary:"审批通过" tags:"审核管理"`
+	g.Meta `path:"/setAuditApprove" method:"post" summary:"审批通过" tags:"个人资质审核管理"`
 	Id     int64 `json:"id" v:"required|min:1#ID参数错误|ID必须大于0" dc:"审核ID"`
 }
 
 type SetAuditRejectReq struct {
-	g.Meta `path:"/setAuditReject" method:"post" summary:"审批不通过" tags:"审核管理"`
+	g.Meta `path:"/setAuditReject" method:"post" summary:"审批不通过" tags:"个人资质审核管理"`
 	Id     int64  `json:"id" v:"required|min:1#ID参数错误|ID必须大于0" dc:"审核ID"`
 	Reply  string `json:"reply" v:"required#请输入不通过原因" dc:"不通过原因"`
 }
