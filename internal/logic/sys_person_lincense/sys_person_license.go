@@ -1,4 +1,4 @@
-package sys_license
+package sys_person_lincense
 
 import (
 	"context"
@@ -121,7 +121,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Pe
 
 	err = sys_dao.SysPersonLicense.Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 
-		newAudit := sys_do.SysAudit{
+		newAudit := sys_do.SysPersonAudit{
 			Id:          idgen.NextId(),
 			State:       0,
 			UnionMainId: data.Id,
@@ -131,7 +131,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Pe
 		}
 
 		{
-			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogId)
+			audit := sys_service.SysPersonAudit().GetAuditById(ctx, data.LatestAuditLogId)
 			// 未审核通过的资质资质，直接更改待审核的资质信息
 			if audit != nil && audit.State == 0 {
 				_, err := tx.Ctx(ctx).Model(sys_dao.SysPersonLicense.Table()).Where(sys_do.SysPersonLicense{Id: id}).OmitNil().Save(&newData)
@@ -141,7 +141,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Pe
 
 				// 更新待审核的审核信息
 				newAudit.Id = audit.Id
-				_, err = sys_dao.SysAudit.Ctx(ctx).Data(newAudit).Where(sys_do.SysAudit{Id: audit.Id}).Update()
+				_, err = sys_dao.SysPersonAudit.Ctx(ctx).Data(newAudit).Where(sys_do.SysPersonAudit{Id: audit.Id}).Update()
 				if err != nil {
 					return sys_service.SysLogs().ErrorSimple(ctx, err, "更新审核信息失败", sys_dao.SysPersonLicense.Table())
 				}
@@ -206,12 +206,12 @@ func (s *sSysPersonLicense) DeleteLicense(ctx context.Context, id int64, flag bo
 
 // UpdateLicenseAuditLogId  设置个人资质资质关联的审核ID
 func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error) {
-	auditLog := sys_service.SysAudit().GetAuditById(ctx, latestAuditLogId)
+	auditLog := sys_service.SysPersonAudit().GetAuditById(ctx, latestAuditLogId)
 	if nil == auditLog {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "资质信息校验失败", sys_dao.SysPersonLicense.Table())
 	}
 
-	audit := sys_model.AuditLicense{}
+	audit := sys_model.AuditPersonLicense{}
 
 	err := gjson.DecodeTo(auditLog.AuditData, &audit)
 

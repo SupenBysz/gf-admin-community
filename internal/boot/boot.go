@@ -260,7 +260,7 @@ func InitPermission() []*sys_model.SysPermissionTree {
 		// oss
 	}
 
-	// 添加资质和审核权限树
+	// 添加个人资质和审核权限树
 	licensePermission := initAuditAndLicensePermission()
 	sys_consts.Global.PermissionTree = append(sys_consts.Global.PermissionTree, licensePermission...)
 
@@ -274,8 +274,8 @@ func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
 		{
 			SysPermission: &sys_entity.SysPermission{
 				Id:         5953153121845333,
-				Name:       "资质",
-				Identifier: "License",
+				Name:       "个人资质",
+				Identifier: "PersonLicense",
 				Type:       1,
 				IsShow:     1,
 			},
@@ -296,8 +296,8 @@ func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
 		{
 			SysPermission: &sys_entity.SysPermission{
 				Id:         5953151699124300,
-				Name:       "审核管理",
-				Identifier: "Audit",
+				Name:       "个人资质审核管理",
+				Identifier: "PersonAudit",
 				Type:       1,
 				IsShow:     1,
 			},

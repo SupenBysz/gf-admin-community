@@ -14,18 +14,6 @@ import (
 )
 
 type (
-	ISysLicense interface {
-		GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysLicense, error)
-		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.LicenseListRes, error)
-		CreateLicense(ctx context.Context, info sys_model.License) (*sys_entity.SysLicense, error)
-		UpdateLicense(ctx context.Context, info sys_model.License, id int64) (*sys_entity.SysLicense, error)
-		GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysLicense
-		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)
-		SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error)
-		DeleteLicense(ctx context.Context, id int64, flag bool) (bool, error)
-		UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error)
-		Masker(license *sys_entity.SysLicense) *sys_entity.SysLicense
-	}
 	ISysPersonLicense interface {
 		GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysPersonLicense, error)
 		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.PersonLicenseListRes, error)
@@ -41,20 +29,8 @@ type (
 )
 
 var (
-	localSysLicense       ISysLicense
 	localSysPersonLicense ISysPersonLicense
 )
-
-func SysLicense() ISysLicense {
-	if localSysLicense == nil {
-		panic("implement not found for interface ISysLicense, forgot register?")
-	}
-	return localSysLicense
-}
-
-func RegisterSysLicense(i ISysLicense) {
-	localSysLicense = i
-}
 
 func SysPersonLicense() ISysPersonLicense {
 	if localSysPersonLicense == nil {

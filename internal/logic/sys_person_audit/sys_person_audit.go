@@ -1,4 +1,4 @@
-package sys_audit
+package sys_person_audit
 
 import (
 	"context"
@@ -30,17 +30,17 @@ import (
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.AuditHookInfo]
 
-type sSysAudit struct {
+type sSysPersonAudit struct {
 	conf    gdb.CacheOption
 	hookArr []hookInfo
 }
 
 func init() {
-	sys_service.RegisterSysAudit(NewSysAudit())
+	sys_service.RegisterSysPersonAudit(NewSysPersonAudit())
 }
 
-func NewSysAudit() *sSysAudit {
-	return &sSysAudit{
+func NewSysPersonAudit() *sSysPersonAudit {
+	return &sSysPersonAudit{
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
 			Force:    false,
@@ -50,14 +50,14 @@ func NewSysAudit() *sSysAudit {
 }
 
 // InstallHook 安装Hook
-func (s *sSysAudit) InstallHook(state sys_enum.AuditEvent, category int, hookFunc sys_hook.AuditHookFunc) int64 {
+func (s *sSysPersonAudit) InstallHook(state sys_enum.AuditEvent, category int, hookFunc sys_hook.AuditHookFunc) int64 {
 	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.AuditHookInfo{Key: state, Value: hookFunc, Category: category}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
 
 // UnInstallHook 卸载Hook
-func (s *sSysAudit) UnInstallHook(savedHookId int64) {
+func (s *sSysPersonAudit) UnInstallHook(savedHookId int64) {
 	newFuncArr := make([]hookInfo, 0)
 	for _, item := range s.hookArr {
 		if item.Key != savedHookId {
@@ -69,12 +69,12 @@ func (s *sSysAudit) UnInstallHook(savedHookId int64) {
 }
 
 // CleanAllHook 清除所有Hook
-func (s *sSysAudit) CleanAllHook() {
+func (s *sSysPersonAudit) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
 // QueryAuditList 获取审核信息列表
-func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error) {
+func (s *sSysPersonAudit) QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error) {
 	if &filter.Pagination == nil {
 		filter.Pagination = base_model.Pagination{
 			PageNum:  1,
@@ -83,20 +83,20 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 	}
 
 	filter.Filter = append(filter.Filter, base_model.FilterInfo{
-		Field:       sys_dao.SysAudit.Columns().Id,
+		Field:       sys_dao.SysPersonAudit.Columns().Id,
 		Where:       ">",
 		IsOrWhere:   false,
 		Value:       0,
 		IsNullValue: false,
 	})
 
-	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), filter, true)
+	result, err := daoctl.Query[sys_entity.SysPersonAudit](sys_dao.SysPersonAudit.Ctx(ctx), filter, true)
 
-	auditList := make([]sys_entity.SysAudit, 0)
+	auditList := make([]sys_entity.SysPersonAudit, 0)
 	for _, item := range result.Records {
 		// 解析json字符串
 		auditJsonData := item.AuditData
-		auditData := sys_model.AuditLicense{}
+		auditData := sys_model.AuditPersonLicense{}
 		gjson.DecodeTo(auditJsonData, &auditData)
 
 		// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
@@ -120,19 +120,14 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 				auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
 				fmt.Println("身份证：", auditData.IdcardBackPath)
 			}
-			if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
-				auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-			}
-			if gfile.IsFile(auditData.BusinessLicensePath) {
-				auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
-			}
+
 		}
 		if err != nil {
 			return nil, err
 		}
 
 		// 重新赋值
-		rest := sys_entity.SysAudit{}
+		rest := sys_entity.SysPersonAudit{}
 		gconv.Struct(item, &rest)
 		rest.AuditData = gjson.MustEncodeString(auditData)
 
@@ -144,16 +139,16 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 }
 
 // GetAuditById 根据ID获取审核信息
-func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit {
+func (s *sSysPersonAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysPersonAudit {
 
-	result, err := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), id)
+	result, err := daoctl.GetByIdWithError[sys_entity.SysPersonAudit](sys_dao.SysPersonAudit.Ctx(ctx), id)
 
 	if err != nil {
 		return nil
 	}
 
 	// 解析json字符串
-	auditData := sys_model.AuditLicense{}
+	auditData := sys_model.AuditPersonLicense{}
 	gjson.DecodeTo(result.AuditData, &auditData)
 
 	// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
@@ -166,12 +161,7 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 		if gstr.IsNumeric(auditData.IdcardBackPath) {
 			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
 		}
-		if gstr.IsNumeric(auditData.BusinessLicenseLegalPath) {
-			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-		}
-		if gstr.IsNumeric(auditData.BusinessLicensePath) {
-			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
-		}
+
 	}
 	// fmt.Println(auditData.IdcardFrontPath + " --- " + auditData.IdcardBackPath + " --- " + auditData.BusinessLicensePath + " --- " + auditData.BusinessLicenseLegalPath)
 
@@ -186,16 +176,16 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 
 // Audit取，拿出路劲转成带签名的url，
 
-// GetAuditByLatestUnionMainId 获取最新的业务主体审核信息
-func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
-	result := sys_entity.SysAudit{}
-	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
+// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息
+func (s *sSysPersonAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysPersonAudit {
+	result := sys_entity.SysPersonAudit{}
+	err := sys_dao.SysPersonAudit.Ctx(ctx).Where(sys_do.SysPersonAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysPersonAudit.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
 	}
 
 	// 将路径src换成可访问图片的url
-	auditData := sys_model.AuditLicense{}
+	auditData := sys_model.AuditPersonLicense{}
 	gjson.DecodeTo(result.AuditData, &auditData)
 
 	{
@@ -207,12 +197,7 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 		if gfile.IsFile(auditData.IdcardBackPath) {
 			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
 		}
-		if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
-			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-		}
-		if gfile.IsFile(auditData.BusinessLicensePath) {
-			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
-		}
+
 	}
 
 	result.AuditData = gjson.MustEncodeString(auditData)
@@ -221,7 +206,7 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 }
 
 // CreateAudit 创建审核信息
-func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error) {
+func (s *sSysPersonAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysPersonAudit, error) {
 	// 校验参数
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
 		return nil, err
@@ -233,23 +218,23 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 		info.ExpireAt = gtime.Now().Add(time.Duration(time.Hour.Seconds() * 24 * day))
 	}
 
-	data := sys_entity.SysAudit{}
-	audit := sys_entity.SysAudit{}
+	data := sys_entity.SysPersonAudit{}
+	audit := sys_entity.SysPersonAudit{}
 	gconv.Struct(info, &data)
 
-	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+	err := sys_dao.SysPersonAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
 			// 查询当前关联业务ID是否有审核记录
-			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
+			err := sys_dao.SysPersonAudit.Ctx(ctx).Where(sys_do.SysPersonAudit{
 				UnionMainId: info.UnionMainId,
 				Category:    info.Category,
 			}).Scan(&audit)
 			if err != nil && err != sql.ErrNoRows {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询校验信息失败", sys_dao.SysAudit.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询校验信息失败", sys_dao.SysPersonAudit.Table())
 			}
 			// 如果当前有审核记录，则转存入历史记录中，并删除当前申请记录，避免后续步骤创建记录时重复导致的失败
 			if audit.Id > 0 {
-				historyItems := make([]sys_entity.SysAudit, 0)
+				historyItems := make([]sys_entity.SysPersonAudit, 0)
 				g.Try(ctx, func(ctx context.Context) {
 					// 判断历史记录是否为空
 					if audit.HistoryItems != "" {
@@ -267,9 +252,9 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 					data.HistoryItems = gjson.MustEncodeString(historyItems)
 				})
 
-				_, err = sys_dao.SysAudit.Ctx(ctx).Delete(sys_do.SysAudit{Id: audit.Id})
+				_, err = sys_dao.SysPersonAudit.Ctx(ctx).Delete(sys_do.SysPersonAudit{Id: audit.Id})
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核前置信息失败", sys_dao.SysAudit.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核前置信息失败", sys_dao.SysPersonAudit.Table())
 				}
 			}
 		}
@@ -277,10 +262,10 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 		data.Id = idgen.NextId()
 		data.CreatedAt = gtime.Now()
 
-		_, err := sys_dao.SysAudit.Ctx(ctx).Data(data).Insert()
+		_, err := sys_dao.SysPersonAudit.Ctx(ctx).Data(data).Insert()
 
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", sys_dao.SysPersonAudit.Table())
 		}
 
 		stateType := sys_enum.Audit.Event.Created
@@ -304,66 +289,66 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 	})
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "创建审核信息失败", sys_dao.SysAudit.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "创建审核信息失败", sys_dao.SysPersonAudit.Table())
 	}
 	return s.GetAuditById(ctx, data.Id), nil
 }
 
 // UpdateAudit 处理审核信息
-func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error) {
+func (s *sSysPersonAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error) {
 	if state == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", sys_dao.SysPersonAudit.Table())
 	}
 
 	if state == -1 && reply == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", sys_dao.SysPersonAudit.Table())
 	}
 
 	info := s.GetAuditById(ctx, id)
 	if info == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "ID参数错误", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "ID参数错误", sys_dao.SysPersonAudit.Table())
 	}
 
 	if info.State != 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "禁止单次申请重复审核业务", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "禁止单次申请重复审核业务", sys_dao.SysPersonAudit.Table())
 	}
 
-	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := sys_dao.SysAudit.Ctx(ctx).OmitNilData().Data(sys_do.SysAudit{
+	err := sys_dao.SysPersonAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		_, err := sys_dao.SysPersonAudit.Ctx(ctx).OmitNilData().Data(sys_do.SysPersonAudit{
 			State:        state,
 			Reply:        reply,
 			AuditReplyAt: gtime.Now(),
 			AuditUserId:  auditUserId,
-		}).Where(sys_do.SysAudit{
+		}).Where(sys_do.SysPersonAudit{
 			Id:          info.Id,
 			UnionMainId: info.UnionMainId,
 			Category:    info.Category,
 		}).Update()
 
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核信息保存失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核信息保存失败", sys_dao.SysPersonAudit.Table())
 		}
 
 		data := s.GetAuditById(ctx, info.Id)
 		if data == nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysPersonAudit.Table())
 		}
 
 		// 审核通过
 		if (data.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
-			// 创建主体资质
-			license := sys_model.AuditLicense{}
+			// 创建个人资质
+			license := sys_model.AuditPersonLicense{}
 			gjson.DecodeTo(data.AuditData, &license)
 
-			licenseRes, err := sys_service.SysLicense().CreateLicense(ctx, license.License)
+			licenseRes, err := sys_service.SysPersonLicense().CreateLicense(ctx, license.PersonLicense)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后主体资质创建失败", sys_dao.SysLicense.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后个人资质创建失败", sys_dao.SysPersonLicense.Table())
 			}
 
-			// 设置主体资质的审核编号
-			ret, err := sys_service.SysLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(data.Id))
+			// 设置个人资质的审核编号
+			ret, err := sys_service.SysPersonLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(data.Id))
 			if err != nil || ret == false {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysLicense.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysPersonLicense.Table())
 			}
 		}
 
