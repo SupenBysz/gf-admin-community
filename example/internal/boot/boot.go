@@ -115,10 +115,10 @@ var (
 						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysOrganization) })
 						// 我的
 						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMy) })
-						// 资质
-						group.Group("/license", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysLicense) })
-						// 审核
-						group.Group("/audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
+						// 个人资质
+						group.Group("/person_license", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysLicense) })
+						// 个人资质审核
+						group.Group("/person_audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
 						// 菜单
 						group.Group("/menu", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMenu) })
 

@@ -16,29 +16,29 @@ import (
 )
 
 type (
-	ISysAudit interface {
+	ISysPersonAudit interface {
 		InstallHook(state sys_enum.AuditEvent, category int, hookFunc sys_hook.AuditHookFunc) int64
 		UnInstallHook(savedHookId int64)
 		CleanAllHook()
 		QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error)
-		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
-		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
-		CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error)
+		GetAuditById(ctx context.Context, id int64) *sys_entity.SysPersonAudit
+		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysPersonAudit
+		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysPersonAudit, error)
 		UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error)
 	}
 )
 
 var (
-	localSysAudit ISysAudit
+	localSysPersonAudit ISysPersonAudit
 )
 
-func SysAudit() ISysAudit {
-	if localSysAudit == nil {
-		panic("implement not found for interface ISysAudit, forgot register?")
+func SysPersonAudit() ISysPersonAudit {
+	if localSysPersonAudit == nil {
+		panic("implement not found for interface ISysPersonAudit, forgot register?")
 	}
-	return localSysAudit
+	return localSysPersonAudit
 }
 
-func RegisterSysAudit(i ISysAudit) {
-	localSysAudit = i
+func RegisterSysPersonAudit(i ISysPersonAudit) {
+	localSysPersonAudit = i
 }

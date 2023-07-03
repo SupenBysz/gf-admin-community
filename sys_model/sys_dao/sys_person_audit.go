@@ -8,19 +8,19 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
 )
 
-// internalSysLicenseDao is internal type for wrapping internal DAO implements.
-type internalSysLicenseDao = *internal.SysLicenseDao
+// internalSysPersonAuditDao is internal type for wrapping internal DAO implements.
+type internalSysPersonAuditDao = *internal.SysPersonAuditDao
 
-// sysLicenseDao is the data access object for table sys_license.
+// sysPersonAuditDao is the data access object for table sys_person_audit.
 // You can define custom methods on it to extend its functionality as you wish.
-type sysLicenseDao struct {
-	internalSysLicenseDao
+type sysPersonAuditDao struct {
+	internalSysPersonAuditDao
 }
 
 var (
-	// SysLicense is globally public accessible object for table sys_license operations.
-	SysLicense = sysLicenseDao{
-		internal.NewSysLicenseDao(),
+	// SysPersonAudit is globally public accessible object for table sys_person_audit operations.
+	SysPersonAudit = sysPersonAuditDao{
+		internal.NewSysPersonAuditDao(),
 	}
 )
 

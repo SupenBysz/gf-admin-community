@@ -14,15 +14,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SysAuditDao is the data access object for table sys_audit.
-type SysAuditDao struct {
-	table   string          // table is the underlying table name of the DAO.
-	group   string          // group is the database configuration group name of current DAO.
-	columns SysAuditColumns // columns contains all the column names of Table for convenient usage.
+// SysPersonAuditDao is the data access object for table sys_person_audit.
+type SysPersonAuditDao struct {
+	table   string                // table is the underlying table name of the DAO.
+	group   string                // group is the database configuration group name of current DAO.
+	columns SysPersonAuditColumns // columns contains all the column names of Table for convenient usage.
 }
 
-// SysAuditColumns defines and stores column names for table sys_audit.
-type SysAuditColumns struct {
+// SysPersonAuditColumns defines and stores column names for table sys_person_audit.
+type SysPersonAuditColumns struct {
 	Id           string //
 	State        string // 审核状态：-1不通过，0待审核，1通过
 	Reply        string // 不通过时回复的审核不通过原因
@@ -36,8 +36,8 @@ type SysAuditColumns struct {
 	AuditUserId  string // 审核操作者id
 }
 
-// sysAuditColumns holds the columns for table sys_audit.
-var sysAuditColumns = SysAuditColumns{
+// sysPersonAuditColumns holds the columns for table sys_person_audit.
+var sysPersonAuditColumns = SysPersonAuditColumns{
 	Id:           "id",
 	State:        "state",
 	Reply:        "reply",
@@ -51,51 +51,51 @@ var sysAuditColumns = SysAuditColumns{
 	AuditUserId:  "audit_user_id",
 }
 
-// NewSysAuditDao creates and returns a new DAO object for table data access.
-func NewSysAuditDao(proxy ...dao_interface.IDao) *SysAuditDao {
-	var dao *SysAuditDao
+// NewSysPersonAuditDao creates and returns a new DAO object for table data access.
+func NewSysPersonAuditDao(proxy ...dao_interface.IDao) *SysPersonAuditDao {
+	var dao *SysPersonAuditDao
 	if proxy != nil {
-		dao = &SysAuditDao{
+		dao = &SysPersonAuditDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),
-			columns: sysAuditColumns,
+			columns: sysPersonAuditColumns,
 		}
 		return dao
 	}
 
-	return &SysAuditDao{
+	return &SysPersonAuditDao{
 		group:   "default",
-		table:   "sys_audit",
-		columns: sysAuditColumns,
+		table:   "sys_person_audit",
+		columns: sysPersonAuditColumns,
 	}
 }
 
 // DB retrieves and returns the underlying raw database management object of current DAO.
-func (dao *SysAuditDao) DB() gdb.DB {
+func (dao *SysPersonAuditDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
 // Table returns the table name of current dao.
-func (dao *SysAuditDao) Table() string {
+func (dao *SysPersonAuditDao) Table() string {
 	return dao.table
 }
 
 // Group returns the configuration group name of database of current dao.
-func (dao *SysAuditDao) Group() string {
+func (dao *SysPersonAuditDao) Group() string {
 	return dao.group
 }
 
 // Columns returns all column names of current dao.
-func (dao *SysAuditDao) Columns() SysAuditColumns {
+func (dao *SysPersonAuditDao) Columns() SysPersonAuditColumns {
 	return dao.columns
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysAuditDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+func (dao *SysPersonAuditDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
 	return dao.DaoConfig(ctx, cacheOption...).Model
 }
 
-func (dao *SysAuditDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
+func (dao *SysPersonAuditDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
 	daoConfig := dao_interface.DaoConfig{
 		Dao:   dao,
 		DB:    dao.DB(),
@@ -125,6 +125,6 @@ func (dao *SysAuditDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.Cache
 //
 // Note that, you should not Commit or Rollback the transaction in function f
 // as it is automatically handled by this function.
-func (dao *SysAuditDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
+func (dao *SysPersonAuditDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
 }

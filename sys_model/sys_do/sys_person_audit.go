@@ -9,9 +9,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// SysAudit is the golang structure of table sys_audit for DAO operations like Where/Data.
-type SysAudit struct {
-	g.Meta       `orm:"table:sys_audit, do:true"`
+// SysPersonAudit is the golang structure of table sys_person_audit for DAO operations like Where/Data.
+type SysPersonAudit struct {
+	g.Meta       `orm:"table:sys_person_audit, do:true"`
 	Id           interface{} //
 	State        interface{} // 审核状态：-1不通过，0待审核，1通过
 	Reply        interface{} // 不通过时回复的审核不通过原因

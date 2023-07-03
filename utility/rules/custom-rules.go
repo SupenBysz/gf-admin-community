@@ -21,7 +21,7 @@ func RequiredLicense() {
 		}
 
 		licenseFields, _ := gstructs.Fields(gstructs.FieldsInput{
-			Pointer:         &sys_model.License{},
+			Pointer:         &sys_model.PersonLicense{},
 			RecursiveOption: 0,
 		})
 

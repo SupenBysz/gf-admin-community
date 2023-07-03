@@ -8,8 +8,8 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// SysAudit is the golang structure for table sys_audit.
-type SysAudit struct {
+// SysPersonAudit is the golang structure for table sys_person_audit.
+type SysPersonAudit struct {
 	Id           int64       `json:"id"           description:""`
 	State        int         `json:"state"        description:"审核状态：-1不通过，0待审核，1通过"`
 	Reply        string      `json:"reply"        description:"不通过时回复的审核不通过原因"`

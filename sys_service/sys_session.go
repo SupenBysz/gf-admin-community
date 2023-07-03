@@ -13,11 +13,6 @@ import (
 )
 
 type (
-	ISessionError interface {
-		Append(ctx context.Context, error error) error
-		HasError(ctx context.Context, err error) (response bool)
-		Iterator(ctx context.Context, f func(k int, err error) bool)
-	}
 	ISysSession interface {
 		Init(sessionContext *sys_model.SessionContext, r *ghttp.Request, ctx ...*context.Context)
 		NewSessionCtx(ctx context.Context) context.Context
@@ -25,6 +20,11 @@ type (
 		Get(ctx context.Context) *sys_model.SessionContext
 		SetUserById(ctx *context.Context, userId int64) *sys_model.SessionContext
 		SetUser(ctx context.Context, claimsUser *sys_model.JwtCustomClaims)
+	}
+	ISessionError interface {
+		Append(ctx context.Context, error error) error
+		HasError(ctx context.Context, err error) (response bool)
+		Iterator(ctx context.Context, f func(k int, err error) bool)
 	}
 )
 
