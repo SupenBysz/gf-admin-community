@@ -7,6 +7,7 @@ import (
 	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_file "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_license "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
+	sys_enum_mail "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/mail"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
 	sys_enum_oss "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
@@ -23,6 +24,8 @@ type (
 	OssType sys_enum_oss.OssTypeEnum
 
 	SmsCaptchaType sys_enum_sms.CaptchaTypeEnum
+
+	MailType = sys_enum_mail.MailTypeEnum
 
 	AuthActionType sys_enum_auth.ActionTypeEnum
 
@@ -43,8 +46,10 @@ type (
 var (
 	Business = sys_enum_business.Business
 
-	Oss    = sys_enum_oss.Oss
-	Sms    = sys_enum_sms.Sms
+	Oss  = sys_enum_oss.Oss
+	Sms  = sys_enum_sms.Sms
+	Mail = sys_enum_mail.Mail
+	
 	Auth   = sys_enum_auth.Auth
 	Upload = sys_enum_upload.Upload
 	User   = sys_enum_user.User

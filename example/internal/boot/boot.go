@@ -78,10 +78,8 @@ var (
 						// 图型验证码、短信验证码、地区
 						group.Group("/common", func(group *ghttp.RouterGroup) {
 							group.Bind(
-								// 图型验证码
+								// 验证码（图形、短信、邮箱）
 								sys_controller.Captcha,
-								// 短信验证码
-								sys_controller.SysSms,
 								// 地区
 								sys_controller.SysArea,
 								// 公共：获取图片...
