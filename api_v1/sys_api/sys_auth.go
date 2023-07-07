@@ -15,13 +15,21 @@ type LoginByMobileReq struct {
 	sys_model.LoginByMobileInfo
 }
 
-//type LoginByMobileRes sys_model.TokenInfo
+type LoginByMailReq struct {
+	g.Meta `path:"/loginByMail" method:"post" summary:"邮箱登录" tags:"鉴权"`
+	sys_model.LoginByMailInfo
+}
 
 type LoginRes sys_model.TokenInfo
 
 type RegisterReq struct {
 	g.Meta `path:"/register" method:"post" summary:"注册" tags:"鉴权"`
 	sys_model.SysUserRegister
+}
+
+type RegisterByMobileOrMailReq struct {
+	g.Meta `path:"/registerByMobileOrMail" method:"post" summary:"根据手机号或邮箱注册" tags:"鉴权"`
+	sys_model.SysUserRegisterByMobileOrMail
 }
 
 type ForgotPasswordReq struct {

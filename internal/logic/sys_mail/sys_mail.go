@@ -56,7 +56,10 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 
 	// 存储缓存：key = 业务场景 + 邮箱号   register_18170618733@163.com  login_18170618733@163.com
 	captchaType := sys_enum.Sms.CaptchaType.New(typeIdentifier, "")
-	g.DB().GetCache().Set(ctx, captchaType.Description()+"_"+mailTo, code, time.Minute*5)
+	err = g.DB().GetCache().Set(ctx, captchaType.Description()+"_"+mailTo, code, time.Minute*5)
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "验证码缓存失败", "Mail-Captcha")
+	}
 
 	fmt.Println(captchaType.Description() + "_" + mailTo)
 
