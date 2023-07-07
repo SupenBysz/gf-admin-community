@@ -29,8 +29,10 @@ type (
 		LoginByMobile(ctx context.Context, info sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error)
 		// LoginByMail 邮箱 + 密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
 		LoginByMail(ctx context.Context, info sys_model.LoginByMailInfo) (*sys_model.LoginByMailRes, error)
-		// Register 注册账号
+		// Register 注册账号 (用户名+密码+图形验证码)
 		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error)
+		// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码)
+		RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail) (res *sys_model.SysUser, err error)
 		// ForgotPassword 忘记密码
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		// ResetPassword 重置密码

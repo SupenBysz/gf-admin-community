@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+// 登陆支持方式： [1用户名 2手机号 4邮箱]  用户名+密码+图形验证码  手机号+密码或验证码  邮箱+密码 （OK）
+
+// 注册支持格式： [1用户名 2手机号 4邮箱]  用户名+密码+图形验证码   用户名+手机号+验证码  用户名+邮箱+验证码
+
+// 找回密码方式： [1手机号 2邮箱]  +用户名+验证码 （OK）
+
 type LoginInfo struct {
 	Username string `json:"username" v:"required#请输入用户名" dc:"登录账号"`
 	Password string `json:"password" v:"required#请输入密码" dc:"登录密码"`
@@ -12,16 +18,12 @@ type LoginInfo struct {
 
 type LoginByMobileInfo struct {
 	Username string `json:"username"  dc:"登录账号,会检验该手机号有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
-	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
-	Captcha  string `json:"captcha" v:"required#请输入验证吗" dc:"验证码"`
+	Mobile   string `json:"mobile" v:"required|phone#手机号不能为空" dc:"手机号"`
+	Captcha  string `json:"captcha" v:"请输入验证吗" dc:"验证码"`
+	PassWord string `json:"passWord"  dc:"密码和验证码二选一"` // TODO 还没完善哈，没加上支持密码
 }
 
 type LoginByMobileRes struct {
-	SysUserListRes
-	TokenInfo
-}
-
-type LoginByMailRes struct {
 	SysUserListRes
 	TokenInfo
 }
@@ -32,6 +34,11 @@ type LoginByMailInfo struct {
 	PassWord string `json:"passWord" v:"required#请输入密码" dc:"密码"`
 }
 
+type LoginByMailRes struct {
+	SysUserListRes
+	TokenInfo
+}
+
 type TokenInfo struct {
 	Token    string    `json:"token" dc:"Token"`
 	ExpireAt time.Time `json:"expireAt" dc:"Expire"`
@@ -40,5 +47,5 @@ type TokenInfo struct {
 type ForgotPassword struct {
 	Username string `json:"username" v:"required#用户名不能为空" dc:"用户名"`
 	Captcha  string `json:"captcha" v:"required#验证吗不能为空" dc:"验证码"`
-	Mobile   string `json:"mobile" v:"phone|required-without:email#邮箱或手机号至少写一个" dc:"手机号"`
+	Mobile   string `json:"mobile" v:"required-with:phone|required-with:email#邮箱或手机号至少写一个" dc:"邮箱或手机号"`
 }

@@ -314,6 +314,44 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 	return &data, nil
 }
 
+// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码)
+func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail) (res *sys_model.SysUser, err error) {
+	// 判断是否支持方式注册
+	registerRule := rules.CheckRegisterRule(ctx, info.MobileOrMail)
+	if !registerRule {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此方式注册！")
+	}
+
+	innerRegisterUser := sys_model.UserInnerRegister{
+		Username:        info.Username,
+		Password:        info.Password,
+		ConfirmPassword: info.ConfirmPassword,
+		Mobile:          "",
+		Email:           "",
+	}
+
+	ver := false
+	if rule.IsPhone(info.MobileOrMail) {
+		// 短信验证码校验
+		ver, err = sys_service.SysSms().Verify(ctx, info.MobileOrMail, info.Captcha, sys_enum.Sms.CaptchaType.Register)
+		innerRegisterUser.Mobile = info.MobileOrMail
+
+	} else if rule.IsEmail(info.MobileOrMail) {
+		// 邮箱验证码校验
+		ver, err = sys_service.SysMails().Verify(ctx, info.MobileOrMail, info.Captcha, sys_enum.Sms.CaptchaType.Register)
+		innerRegisterUser.Email = info.MobileOrMail
+
+	} else {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+	}
+
+	if info.Captcha == "" || !ver || err != nil {
+		return nil, gerror.New("请输入正确的验证码")
+	}
+
+	return s.registerUser(ctx, &innerRegisterUser)
+}
+
 // ForgotPassword 忘记密码
 func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error) {
 	ver := false

@@ -55,6 +55,16 @@ func (c *cAuth) Register(ctx context.Context, req *sys_api.RegisterReq) (res api
 	return true, nil
 }
 
+// RegisterByMobileOrMail 根据手机号或者邮箱注册
+func (c *cAuth) RegisterByMobileOrMail(ctx context.Context, req *sys_api.RegisterByMobileOrMailReq) (res api_v1.BoolRes, err error) {
+	_, err = sys_service.SysAuth().RegisterByMobileOrMail(ctx, req.SysUserRegisterByMobileOrMail)
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // ForgotPassword 忘记密码
 func (c *cAuth) ForgotPassword(ctx context.Context, req *sys_api.ForgotPasswordReq) (res *sys_api.ForgotPasswordRes, err error) {
 	result, err := sys_service.SysAuth().ForgotPassword(ctx, req.ForgotPassword)
