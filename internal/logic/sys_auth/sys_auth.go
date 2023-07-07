@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/utility/en_crypto"
+	"github.com/kysion/base-library/utility/rule"
 	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
@@ -246,15 +247,26 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 
 // ForgotPassword 忘记密码
 func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error) {
-	ver, err := sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
-	if info.Captcha == "" || !ver || err != nil {
-		return 0, gerror.New("请输入正确的验证码")
-	}
-
-	// 图形验证码
+	// 图形验证码  安全性太低
 	//if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 	//	return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	//}
+
+	if rule.IsPhone(info.Mobile) {
+		// 短信验证码
+		ver, err := sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
+		if info.Captcha == "" || !ver || err != nil {
+			return 0, gerror.New("请输入正确的验证码")
+		}
+	}
+
+	if rule.IsEmail(info.Mobile) {
+		// 邮箱验证码
+		ver, err := sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
+		if info.Captcha == "" || !ver || err != nil {
+			return 0, gerror.New("请输入正确的验证码")
+		}
+	}
 
 	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
 	if count <= 0 || err != nil {
