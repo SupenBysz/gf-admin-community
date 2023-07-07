@@ -272,6 +272,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			Username:  info.Username,
 			Password:  info.Password,
 			Mobile:    info.Mobile,
+			Email:     info.Email,
 			State:     userState.Code(),
 			Type:      userType.Code(),
 			CreatedAt: gtime.Now(),

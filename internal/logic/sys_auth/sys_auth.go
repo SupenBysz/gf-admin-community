@@ -146,6 +146,12 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error) {
 	// 在此之前，用户除了提供验证码，还需要补全自己的用户名信息  林 * 菲
 
+	// 根据配置判断用户是够可以通过此方式登陆
+	loginRule := rules.CheckLoginRule(ctx, info.Mobile)
+	if !loginRule {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此登陆方式！")
+	}
+
 	// 判断该手机号码是否具备多用户，是的话返回userList，下一次前端再次调用该接口，需要传递userName
 	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, info.Mobile)
 	if err != nil {
@@ -245,36 +251,40 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 
 }
 
-// Register 注册账号
+// Register 注册账号 (用户名+密码+图形验证码)
 func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error) {
 	// 判断是否支持方式注册
+	registerRule := rules.CheckRegisterRule(ctx, info.Username)
+	if !registerRule {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此方式注册！")
+	}
 
 	// 图形验证码校验
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
-	// 短信验证码校验
+	userInnerRegister := sys_model.UserInnerRegister{
+		Username:        info.Username,
+		Password:        info.Password,
+		ConfirmPassword: info.ConfirmPassword,
+	}
 
-	// 邮件验证码校验
+	return s.registerUser(ctx, &userInnerRegister)
+}
 
-	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
+func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister) (*sys_model.SysUser, error) {
+	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, innerRegister.Username)
 	if count > 0 {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
 
 	data := sys_model.SysUser{}
-	pwd, _ := en_crypto.PwdHash(data.Password, gconv.String(data.Id))
-	data.Password = pwd
 
 	// 开启事务
 	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data, err := sys_service.SysUser().CreateUser(ctx,
-			sys_model.UserInnerRegister{
-				Username:        info.Username,
-				Password:        info.Password,
-				ConfirmPassword: info.Password,
-			},
+			*innerRegister,
 			sys_consts.Global.UserDefaultState,
 			sys_consts.Global.UserDefaultType,
 		)

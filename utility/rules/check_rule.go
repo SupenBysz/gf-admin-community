@@ -35,4 +35,30 @@ func CheckLoginRule(ctx context.Context, loginIdentifier string) bool {
 	return false
 }
 
-// 校验用户是否可以通过此方式注册
+// CheckRegisterRule 校验用户是否可以通过此方式注册
+func CheckRegisterRule(ctx context.Context, registerIdentifier string) bool {
+	arr := g.Cfg().MustGet(ctx, "service.registerRule").Array()
+
+	if rule.IsPhone(registerIdentifier) {
+		for _, v := range arr {
+			if gconv.Int(v) == 2 {
+				return true
+			}
+		}
+
+	} else if rule.IsEmail(registerIdentifier) {
+		for _, v := range arr {
+			if gconv.Int(v) == 4 {
+				return true
+			}
+		}
+	} else {
+		for _, v := range arr {
+			if gconv.Int(v) == 1 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
