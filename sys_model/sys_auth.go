@@ -19,8 +19,8 @@ type LoginInfo struct {
 type LoginByMobileInfo struct {
 	Username string `json:"username"  dc:"登录账号,会检验该手机号有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
 	Mobile   string `json:"mobile" v:"required|phone#手机号不能为空" dc:"手机号"`
-	Captcha  string `json:"captcha" v:"请输入验证吗" dc:"验证码"`
-	PassWord string `json:"passWord"  dc:"密码和验证码二选一"` // TODO 还没完善哈，没加上支持密码
+	Captcha  string `json:"captcha" dc:"验证码，和密码二选一"`
+	PassWord string `json:"passWord"  dc:"密码，和验证码二选一"`
 }
 
 type LoginByMobileRes struct {

@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/rule"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -167,14 +168,18 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	// 短信验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
 	ver := false
 	if rule.IsPhone(info.Mobile) {
-		// 短信验证码校验
-		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.Login)
+		if info.Captcha != "" {
+			// 短信验证码校验
+			ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.Login)
+		}
 	} else {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号格式填写错误！")
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		return nil, gerror.New("请输入正确的验证码")
+		if info.PassWord == "" {
+			return nil, gerror.New("请输入正确的验证码")
+		}
 	}
 
 	var userInfo *sys_model.SysUser
@@ -187,6 +192,18 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	}
 	if err != nil || userInfo == nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
+	}
+
+	if info.PassWord != "" {
+		// 含密码的userInfo
+		userInfo, err = daoctl.ScanWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
+			Id: userInfo.Id,
+		}))
+
+		pwdHash, _ := en_crypto.PwdHash(info.PassWord, gconv.String(userInfo.Id))
+		if pwdHash != userInfo.Password {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码校验不通过, 请检查")
+		}
 	}
 
 	// 返回token
