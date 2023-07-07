@@ -24,6 +24,7 @@ import (
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
+	"github.com/kysion/base-library/utility/rule"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
@@ -722,9 +723,16 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 	return s.makeMore(ctx, &user), nil
 }
 
-// GetUserListByMobile 根据手机号查询用户列表
-func (s *sSysUser) GetUserListByMobile(ctx context.Context, mobile string) (*sys_model.SysUserListRes, error) {
-	userList, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Mobile: mobile}), nil, false)
+// GetUserListByMobileOrMail 根据手机号或者邮箱查询用户列表
+func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error) {
+	userModel := sys_dao.SysUser.Ctx(ctx)
+	if rule.IsPhone(info) {
+		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
+	} else if rule.IsEmail(info) {
+		userModel = userModel.Where(sys_do.SysUser{Email: info})
+	}
+
+	userList, err := daoctl.Query[*sys_model.SysUser](userModel, nil, false)
 
 	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")

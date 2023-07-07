@@ -9,6 +9,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/rules"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -142,34 +143,41 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 }
 
 // LoginByMobile 手机号 + 验证码登陆
-func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error) {
+func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error) {
 	// 在此之前，用户除了提供验证码，还需要补全自己的用户名信息  林 * 菲
 
 	// 判断该手机号码是否具备多用户，是的话返回userList，下一次前端再次调用该接口，需要传递userName
-	userList, err := sys_service.SysUser().GetUserListByMobile(ctx, req.Mobile)
+	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, info.Mobile)
 	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号错误，请重试")
 	}
 
-	if req.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
+	if info.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
 		return &sys_model.LoginByMobileRes{
 			SysUserListRes: *userList,
 		}, nil
 	}
 
 	// 短信验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
-	ver, err := sys_service.SysSms().Verify(ctx, req.Mobile, req.Captcha, sys_enum.Sms.CaptchaType.Login)
-	if req.Captcha == "" || !ver || err != nil {
+	ver := false
+	if rule.IsPhone(info.Mobile) {
+		// 短信验证码校验
+		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.Login)
+	} else {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号格式填写错误！")
+	}
+
+	if info.Captcha == "" || !ver || err != nil {
 		return nil, gerror.New("请输入正确的验证码")
 	}
 
 	var userInfo *sys_model.SysUser
-	if req.Username == "" && len(userList.Records) == 1 { // 只有一个账号,不检验用户名，直接去拿用户信息
+	if info.Username == "" && len(userList.Records) == 1 { // 只有一个账号,不检验用户名，直接去拿用户信息
 		userInfo, err = sys_service.SysUser().GetSysUserById(ctx, userList.Records[0].Id)
 
-	} else if req.Username != "" {
+	} else if info.Username != "" {
 		//  先判断输入的用户名是否正确
-		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
+		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
 	}
 	if err != nil || userInfo == nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
@@ -182,7 +190,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobil
 	}
 
 	// 清除该缓存
-	key := sys_enum.Sms.CaptchaType.Login.Description() + "_" + req.Mobile
+	key := sys_enum.Sms.CaptchaType.Login.Description() + "_" + info.Mobile
 
 	g.DB().GetCache().Remove(ctx, key)
 
@@ -246,6 +254,10 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
 
+	// 短信验证码校验
+
+	// 邮件验证码校验
+
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
@@ -294,25 +306,35 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 
 // ForgotPassword 忘记密码
 func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error) {
-	// 图形验证码  安全性太低
-	//if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
-	//	return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
-	//}
+	ver := false
 
-	if rule.IsPhone(info.Mobile) {
-		// 短信验证码
-		ver, err := sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
-		if info.Captcha == "" || !ver || err != nil {
-			return 0, gerror.New("请输入正确的验证码")
-		}
+	user, err := sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
+	if err != nil {
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名填写错误！")
 	}
 
-	if rule.IsEmail(info.Mobile) {
-		// 邮箱验证码
-		ver, err := sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
-		if info.Captcha == "" || !ver || err != nil {
-			return 0, gerror.New("请输入正确的验证码")
+	if rule.IsPhone(info.Mobile) {
+		// 判断绑定的是否是此手机号
+		if user.Mobile != info.Mobile {
+			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的手机号填写错误！")
 		}
+
+		// 短信验证码校验
+		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
+	} else if rule.IsEmail(info.Mobile) {
+		// 判断绑定的是否是此邮箱
+		if user.Email != info.Mobile {
+			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的邮箱填写错误！")
+		}
+
+		// 邮箱验证码校验
+		ver, err = sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Sms.CaptchaType.SetPassword)
+	} else {
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+	}
+
+	if info.Captcha == "" || !ver || err != nil {
+		return 0, gerror.New("请输入正确的验证码")
 	}
 
 	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
