@@ -15,6 +15,11 @@ type LoginByMobileReq struct {
 	sys_model.LoginByMobileInfo
 }
 
+type LoginByMailReq struct {
+	g.Meta `path:"/loginByMail" method:"post" summary:"邮箱登录" tags:"鉴权"`
+	sys_model.LoginByMailInfo
+}
+
 //type LoginByMobileRes sys_model.TokenInfo
 
 type LoginRes sys_model.TokenInfo

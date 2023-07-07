@@ -21,6 +21,17 @@ type LoginByMobileRes struct {
 	TokenInfo
 }
 
+type LoginByMailRes struct {
+	SysUserListRes
+	TokenInfo
+}
+
+type LoginByMailInfo struct {
+	Username string `json:"username"  dc:"登录账号,会检验该邮箱有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
+	Mail     string `json:"mail" v:"required|email#邮箱不能为空" dc:"邮箱"`
+	PassWord string `json:"passWord" v:"required#请输入密码" dc:"密码"`
+}
+
 type TokenInfo struct {
 	Token    string    `json:"token" dc:"Token"`
 	ExpireAt time.Time `json:"expireAt" dc:"Expire"`

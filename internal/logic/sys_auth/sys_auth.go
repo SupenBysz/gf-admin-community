@@ -193,8 +193,55 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, req sys_model.LoginByMobil
 
 }
 
+// LoginByMail 邮箱 + 密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
+func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailInfo) (*sys_model.LoginByMailRes, error) {
+	loginRule := rules.CheckLoginRule(ctx, info.Mail)
+	if !loginRule {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此登陆方式！")
+	}
+
+	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, info.Mail)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱错误，请重试")
+	}
+	if info.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
+		return &sys_model.LoginByMailRes{
+			SysUserListRes: *userList,
+		}, nil
+	}
+
+	// 邮箱+密码验证,如果存在多个账号，返回账号列表，不存在直接校验，直接返回用户信息即可
+
+	var userInfo *sys_model.SysUser
+	if info.Username == "" && len(userList.Records) == 1 { // 只有一个账号,不检验用户名，直接去拿用户信息
+		userInfo, err = sys_service.SysUser().GetSysUserById(ctx, userList.Records[0].Id)
+
+	} else if info.Username != "" {
+		//  先判断输入的用户名是否正确
+		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
+	}
+	if err != nil || userInfo == nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
+	}
+
+	// 返回token
+	tokenInfo, err := sys_service.SysAuth().InnerLogin(ctx, userInfo)
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
+	}
+
+	// 返回token数据
+	return &sys_model.LoginByMailRes{
+		TokenInfo: *tokenInfo,
+	}, nil
+
+}
+
 // Register 注册账号
 func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error) {
+	// 判断是否支持方式注册
+
+	// 图形验证码校验
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
