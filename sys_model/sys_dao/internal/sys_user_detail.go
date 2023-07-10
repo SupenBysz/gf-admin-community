@@ -44,7 +44,7 @@ var sysUserDetailColumns = SysUserDetailColumns{
 // NewSysUserDetailDao creates and returns a new DAO object for table data access.
 func NewSysUserDetailDao(proxy ...dao_interface.IDao) *SysUserDetailDao {
 	var dao *SysUserDetailDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysUserDetailDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysOrganizationDao is internal type for wrapping internal DAO implements.
-type internalSysOrganizationDao = *internal.SysOrganizationDao
+type SysOrganizationDao = dao_interface.TIDao[internal.SysOrganizationColumns]
 
-// sysOrganizationDao is the data access object for table sys_organization.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysOrganizationDao struct {
-	internalSysOrganizationDao
+func NewSysOrganization(dao ...dao_interface.IDao) SysOrganizationDao {
+	return (SysOrganizationDao)(internal.NewSysOrganizationDao(dao...))
 }
 
 var (
-	// SysOrganization is globally public accessible object for table sys_organization operations.
-	SysOrganization = sysOrganizationDao{
-		internal.NewSysOrganizationDao(),
-	}
+	SysOrganization = NewSysOrganization()
 )
-
-// Fill with you ideas below.

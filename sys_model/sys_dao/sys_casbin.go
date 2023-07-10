@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysCasbinDao is internal type for wrapping internal DAO implements.
-type internalSysCasbinDao = *internal.SysCasbinDao
+type SysCasbinDao = dao_interface.TIDao[internal.SysCasbinColumns]
 
-// sysCasbinDao is the data access object for table sys_casbin.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysCasbinDao struct {
-	internalSysCasbinDao
+func NewSysCasbin(dao ...dao_interface.IDao) SysCasbinDao {
+	return (SysCasbinDao)(internal.NewSysCasbinDao(dao...))
 }
 
 var (
-	// SysCasbin is globally public accessible object for table sys_casbin operations.
-	SysCasbin = sysCasbinDao{
-		internal.NewSysCasbinDao(),
-	}
+	SysCasbin = NewSysCasbin()
 )
-
-// Fill with you ideas below.

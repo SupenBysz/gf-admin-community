@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysPersonLicenseDao is internal type for wrapping internal DAO implements.
-type internalSysPersonLicenseDao = *internal.SysPersonLicenseDao
+type SysPersonLicenseDao = dao_interface.TIDao[internal.SysPersonLicenseColumns]
 
-// sysPersonLicenseDao is the data access object for table sys_person_license.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysPersonLicenseDao struct {
-	internalSysPersonLicenseDao
+func NewSysPersonLicense(dao ...dao_interface.IDao) SysPersonLicenseDao {
+	return (SysPersonLicenseDao)(internal.NewSysPersonLicenseDao(dao...))
 }
 
 var (
-	// SysPersonLicense is globally public accessible object for table sys_person_license operations.
-	SysPersonLicense = sysPersonLicenseDao{
-		internal.NewSysPersonLicenseDao(),
-	}
+	SysPersonLicense = NewSysPersonLicense()
 )
-
-// Fill with you ideas below.

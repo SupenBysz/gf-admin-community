@@ -46,7 +46,7 @@ var sysCasbinColumns = SysCasbinColumns{
 // NewSysCasbinDao creates and returns a new DAO object for table data access.
 func NewSysCasbinDao(proxy ...dao_interface.IDao) *SysCasbinDao {
 	var dao *SysCasbinDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysCasbinDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

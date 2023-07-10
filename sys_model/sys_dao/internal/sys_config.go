@@ -40,7 +40,7 @@ var sysConfigColumns = SysConfigColumns{
 // NewSysConfigDao creates and returns a new DAO object for table data access.
 func NewSysConfigDao(proxy ...dao_interface.IDao) *SysConfigDao {
 	var dao *SysConfigDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysConfigDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

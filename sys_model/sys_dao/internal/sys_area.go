@@ -46,7 +46,7 @@ var sysAreaColumns = SysAreaColumns{
 // NewSysAreaDao creates and returns a new DAO object for table data access.
 func NewSysAreaDao(proxy ...dao_interface.IDao) *SysAreaDao {
 	var dao *SysAreaDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysAreaDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

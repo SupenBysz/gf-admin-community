@@ -70,7 +70,7 @@ var sysPersonLicenseColumns = SysPersonLicenseColumns{
 // NewSysPersonLicenseDao creates and returns a new DAO object for table data access.
 func NewSysPersonLicenseDao(proxy ...dao_interface.IDao) *SysPersonLicenseDao {
 	var dao *SysPersonLicenseDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysPersonLicenseDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

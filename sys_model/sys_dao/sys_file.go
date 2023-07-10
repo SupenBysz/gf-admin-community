@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysFileDao is internal type for wrapping internal DAO implements.
-type internalSysFileDao = *internal.SysFileDao
+type SysFileDao = dao_interface.TIDao[internal.SysFileColumns]
 
-// sysFileDao is the data access object for table sys_file.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysFileDao struct {
-	internalSysFileDao
+func NewSysFile(dao ...dao_interface.IDao) SysFileDao {
+	return (SysFileDao)(internal.NewSysFileDao(dao...))
 }
 
 var (
-	// SysFile is globally public accessible object for table sys_file operations.
-	SysFile = sysFileDao{
-		internal.NewSysFileDao(),
-	}
+	SysFile = NewSysFile()
 )
-
-// Fill with you ideas below.

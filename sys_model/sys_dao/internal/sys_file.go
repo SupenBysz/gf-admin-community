@@ -56,7 +56,7 @@ var sysFileColumns = SysFileColumns{
 // NewSysFileDao creates and returns a new DAO object for table data access.
 func NewSysFileDao(proxy ...dao_interface.IDao) *SysFileDao {
 	var dao *SysFileDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysFileDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),
