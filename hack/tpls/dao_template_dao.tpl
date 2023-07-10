@@ -5,23 +5,16 @@
 package sys_dao
 
 import (
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 	"{TplImportPrefix}/internal"
 )
 
-// internal{TplTableNameCamelCase}Dao is internal type for wrapping internal DAO implements.
-type internal{TplTableNameCamelCase}Dao = *internal.{TplTableNameCamelCase}Dao
+type {TplTableNameCamelCase}Dao = dao_interface.TIDao[internal.{TplTableNameCamelCase}Columns]
 
-// {TplTableNameCamelLowerCase}Dao is the data access object for table {TplTableName}.
-// You can define custom methods on it to extend its functionality as you wish.
-type {TplTableNameCamelLowerCase}Dao struct {
-	internal{TplTableNameCamelCase}Dao
+func New{TplTableNameCamelCase}(dao ...dao_interface.IDao) {TplTableNameCamelCase}Dao {
+	return ({TplTableNameCamelCase}Dao)(internal.New{TplTableNameCamelCase}Dao(dao...))
 }
 
 var (
-	// {TplTableNameCamelCase} is globally public accessible object for table {TplTableName} operations.
-	{TplTableNameCamelCase} = {TplTableNameCamelLowerCase}Dao{
-		internal.New{TplTableNameCamelCase}Dao(),
-	}
+    {TplTableNameCamelCase} = New{TplTableNameCamelCase}()
 )
-
-// Fill with you ideas below.

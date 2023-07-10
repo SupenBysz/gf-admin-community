@@ -58,7 +58,7 @@ var sysMenuColumns = SysMenuColumns{
 // NewSysMenuDao creates and returns a new DAO object for table data access.
 func NewSysMenuDao(proxy ...dao_interface.IDao) *SysMenuDao {
 	var dao *SysMenuDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysMenuDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

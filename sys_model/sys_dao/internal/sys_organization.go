@@ -42,7 +42,7 @@ var sysOrganizationColumns = SysOrganizationColumns{
 // NewSysOrganizationDao creates and returns a new DAO object for table data access.
 func NewSysOrganizationDao(proxy ...dao_interface.IDao) *SysOrganizationDao {
 	var dao *SysOrganizationDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysOrganizationDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

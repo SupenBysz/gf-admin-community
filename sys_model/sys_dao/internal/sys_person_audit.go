@@ -54,7 +54,7 @@ var sysPersonAuditColumns = SysPersonAuditColumns{
 // NewSysPersonAuditDao creates and returns a new DAO object for table data access.
 func NewSysPersonAuditDao(proxy ...dao_interface.IDao) *SysPersonAuditDao {
 	var dao *SysPersonAuditDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysPersonAuditDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

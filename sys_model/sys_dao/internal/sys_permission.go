@@ -54,7 +54,7 @@ var sysPermissionColumns = SysPermissionColumns{
 // NewSysPermissionDao creates and returns a new DAO object for table data access.
 func NewSysPermissionDao(proxy ...dao_interface.IDao) *SysPermissionDao {
 	var dao *SysPermissionDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysPermissionDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

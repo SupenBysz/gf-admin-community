@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysLogsDao is internal type for wrapping internal DAO implements.
-type internalSysLogsDao = *internal.SysLogsDao
+type SysLogsDao = dao_interface.TIDao[internal.SysLogsColumns]
 
-// sysLogsDao is the data access object for table sys_logs.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysLogsDao struct {
-	internalSysLogsDao
+func NewSysLogs(dao ...dao_interface.IDao) SysLogsDao {
+	return (SysLogsDao)(internal.NewSysLogsDao(dao...))
 }
 
 var (
-	// SysLogs is globally public accessible object for table sys_logs operations.
-	SysLogs = sysLogsDao{
-		internal.NewSysLogsDao(),
-	}
+	SysLogs = NewSysLogs()
 )
-
-// Fill with you ideas below.

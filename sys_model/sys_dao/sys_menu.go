@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysMenuDao is internal type for wrapping internal DAO implements.
-type internalSysMenuDao = *internal.SysMenuDao
+type SysMenuDao = dao_interface.TIDao[internal.SysMenuColumns]
 
-// sysMenuDao is the data access object for table sys_menu.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysMenuDao struct {
-	internalSysMenuDao
+func NewSysMenu(dao ...dao_interface.IDao) SysMenuDao {
+	return (SysMenuDao)(internal.NewSysMenuDao(dao...))
 }
 
 var (
-	// SysMenu is globally public accessible object for table sys_menu operations.
-	SysMenu = sysMenuDao{
-		internal.NewSysMenuDao(),
-	}
+	SysMenu = NewSysMenu()
 )
-
-// Fill with you ideas below.
