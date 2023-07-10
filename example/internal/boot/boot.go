@@ -10,7 +10,9 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/utility/en_crypto"
 )
 
 var (
@@ -58,6 +60,21 @@ var (
 				sys_service.Casbin().Enforcer()
 				// Permission 初始化
 				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
+			}
+
+			// 业务端密码加密规则重写示例
+			{
+				sys_consts.Global.CryptoPasswordFunc = func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
+					// TODO 以下加密规则可替换
+					slat := "kysion.com"
+					if len(user) > 0 {
+						slat = gconv.String(user[0].Id)
+					}
+
+					pwdHash, _ := en_crypto.PwdHash(passwordStr, slat)
+
+					return pwdHash
+				}
 			}
 
 			{
