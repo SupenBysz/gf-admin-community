@@ -20,7 +20,7 @@ func (c *cSysAudit) GetAuditLogList(ctx context.Context, req *sys_api.QueryAudit
 		return nil, err
 	}
 
-	result, err := sys_service.SysPersonAudit().QueryAuditList(ctx, &req.SearchParams)
+	result, err := sys_service.SysAudit().QueryAuditList(ctx, &req.SearchParams)
 
 	return (*sys_api.AuditListRes)(result), err
 }
@@ -34,7 +34,7 @@ func (c *cSysAudit) SetAuditApprove(ctx context.Context, req *sys_api.SetAuditAp
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysPersonAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "", user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "", user.Id)
 
 	return result == true, err
 }
@@ -48,7 +48,7 @@ func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sys_api.SetAuditRej
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysPersonAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply, user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply, user.Id)
 	return result == true, err
 }
 
@@ -59,6 +59,6 @@ func (c *cSysAudit) GetAuditById(ctx context.Context, req *sys_api.GetAuditByIdR
 		return nil, err
 	}
 
-	result := sys_service.SysPersonAudit().GetAuditById(ctx, req.Id)
+	result := sys_service.SysAudit().GetAuditById(ctx, req.Id)
 	return (*sys_api.AuditRes)(result), nil
 }
