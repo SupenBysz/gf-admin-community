@@ -9,12 +9,12 @@ import (
 	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-type SysPersonAuditDao = dao_interface.TIDao[internal.SysPersonAuditColumns]
+type SysAuditDao = dao_interface.TIDao[internal.SysAuditColumns]
 
-func NewSysPersonAudit(dao ...dao_interface.IDao) SysPersonAuditDao {
-	return (SysPersonAuditDao)(internal.NewSysPersonAuditDao(dao...))
+func NewSysAudit(dao ...dao_interface.IDao) SysAuditDao {
+	return (SysAuditDao)(internal.NewSysAuditDao(dao...))
 }
 
 var (
-	SysPersonAudit = NewSysPersonAudit()
+	SysAudit = NewSysAudit()
 )
