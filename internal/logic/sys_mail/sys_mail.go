@@ -23,33 +23,33 @@ func init() {
 }
 
 // New SysMails 业务日志逻辑实现
-func New() *sSysMails {
+func New() sys_service.ISysMails {
 	return &sSysMails{}
 }
 
 // SendCaptcha 发送邮件验证码
 func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifier int) (res bool, err error) {
-	mailData := sys_model.SendMailReq{}
+	mailConfig := sys_model.EmailConfig{}
 
 	split := gstr.Split(mailTo, "@")
 	domain := split[len(split)-1]
 
 	switch domain {
 	case sys_enum.Mail.Type.EmailQQ.Code():
-		kconv.Struct(g.Cfg().MustGet(ctx, "mailQQ"), &mailData)
+		kconv.Struct(g.Cfg().MustGet(ctx, "mailQQ"), &mailConfig)
 
 	case sys_enum.Mail.Type.Email163.Code():
-		kconv.Struct(g.Cfg().MustGet(ctx, "mail163"), &mailData)
+		kconv.Struct(g.Cfg().MustGet(ctx, "mail163"), &mailConfig)
 	}
 
 	// 随机的六位数验证码
 	code := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
 
-	mailData.MailTo = mailTo
-	mailData.Subject = "【企迅科技有限公司】验证码邮件"
-	mailData.Body = "您的验证码为：" + code + "，请在5分钟内验证，系统邮件请勿回复！"
+	mailConfig.MailTo = mailTo
+	mailConfig.Subject = mailConfig.TitlePrefix + "验证码邮件"
+	mailConfig.Body = "您的验证码为：" + code + "，请在5分钟内验证，系统邮件请勿回复！"
 
-	err = sendMail(&mailData)
+	err = sendMail(&mailConfig)
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "邮件发送失败", "Mail-Captcha")
 	}
@@ -66,13 +66,13 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	return true, nil
 }
 
-func sendMail(info *sys_model.SendMailReq) error {
+func sendMail(info *sys_model.EmailConfig) error {
 	//port, _ := strconv.Atoi(info.HttpPort)
-	port, _ := strconv.Atoi(info.SSLPort)
+	port, _ := strconv.Atoi(info.Stmp.Port)
 	m := gomail.NewMessage()
 
 	// 发件人
-	m.SetHeader("From", m.FormatAddress(info.SendUser, info.SendName))
+	m.SetHeader("From", m.FormatAddress(info.Username, info.SendAuthor))
 	// 收件人，可多个
 	//m.SetHeader("To", m.FormatAddress(mailTo, sendName))
 	m.SetHeader("To", info.MailTo)
@@ -83,7 +83,7 @@ func sendMail(info *sys_model.SendMailReq) error {
 	m.SetBody("text/html", info.Body)
 
 	// 发送邮件服务器、端口、发件人账号、发件人授权码
-	d := gomail.NewDialer(info.Host, port, info.SendUser, info.AuthCode)
+	d := gomail.NewDialer(info.Stmp.Host, port, info.SendAuthor, info.AuthCode)
 	err := d.DialAndSend(m)
 	return err
 }

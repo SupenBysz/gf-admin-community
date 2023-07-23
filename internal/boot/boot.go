@@ -34,7 +34,7 @@ func init() {
 	InitRedisCache()
 	InitLogLevelToDatabase()
 	InitPermission()
-
+	InitEmail()
 }
 
 // InitCustomRules 注册自定义参数校验规则
@@ -343,4 +343,23 @@ func InitRedisCache() {
 	redis, _ := gredis.New(conf)
 	// 全局设置Redis适配器
 	g.DB().GetCache().SetAdapter(gcache.NewAdapterRedis(redis))
+}
+
+func InitEmail() {
+	emailVar, err := g.Cfg().Get(context.Background(), "email")
+
+	if err != nil {
+		glog.Error(context.Background(), "加载邮件配置信息失败")
+	}
+
+	if emailVar == nil && err == nil {
+		glog.Warning(context.Background(), "邮件配置信息未设置")
+		return
+	}
+
+	err = emailVar.Struct(&sys_consts.Global.EmailConfig)
+
+	if err != nil {
+		glog.Error(context.Background(), "初始化邮件配置信息失败")
+	}
 }

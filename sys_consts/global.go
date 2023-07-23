@@ -19,6 +19,7 @@ type global struct {
 	OrmCacheConf             []*sys_model.TableCacheConf
 	PermissionTree           []*sys_model.SysPermissionTree // PermissionTree 权限信息定义
 	Searcher                 *xdb.Searcher
+	EmailConfig              sys_model.EmailConfig
 
 	// 密码加密
 	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
@@ -35,5 +36,6 @@ var (
 		OrmCacheConf:             []*sys_model.TableCacheConf{},
 		PermissionTree:           []*sys_model.SysPermissionTree{},
 		CryptoPasswordFunc:       nil,
+		EmailConfig:              sys_model.EmailConfig{},
 	}
 )
