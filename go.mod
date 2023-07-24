@@ -3,16 +3,16 @@ module github.com/SupenBysz/gf-admin-community
 go 1.19
 
 require (
-	github.com/casbin/casbin/v2 v2.60.0
-	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.3.2
-	github.com/gogf/gf/contrib/nosql/redis/v2 v2.3.2
+	github.com/casbin/casbin/v2 v2.72.1
+	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.5.0
+	github.com/gogf/gf/contrib/nosql/redis/v2 v2.5.0
 	github.com/gogf/gf/v2 v2.5.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/kysion/base-library v0.0.16
 	github.com/kysion/sms-library v0.0.4
-	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230201065125-561cdd83b71d
+	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230717040633-c8446edaab76
 	github.com/mojocn/base64Captcha v1.3.5
-	github.com/yitter/idgenerator-go v1.3.2
+	github.com/yitter/idgenerator-go v1.3.3
 	golang.org/x/sync v0.1.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
@@ -54,6 +54,9 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.595 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.593 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
 	go.opentelemetry.io/otel v1.11.2 // indirect
 	go.opentelemetry.io/otel/sdk v1.11.2 // indirect
