@@ -27,7 +27,7 @@ type SysPermissionInfoListRes base_model.CollectRes[*sys_entity.SysPermission]
 type SysPermissionInfoTreeRes []*SysPermissionTree
 type MyPermissionListRes []*sys_entity.SysPermission
 
-func (d *SysPermissionTree) GeteIsQual(father *SysPermissionTree, childId *SysPermissionTree) bool {
+func (d *SysPermissionTree) GetIsEqual(father *SysPermissionTree, childId *SysPermissionTree) bool {
 	return father.Id == childId.ParentId
 }
 func (d *SysPermissionTree) SetChild(father *SysPermissionTree, branchArr []*SysPermissionTree) {

@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/base_tree"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
@@ -182,35 +183,6 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 	return dataArr, nil
 }
 
-func Filter[T any](arr []*T, f func(item *T) bool) (list []*T) {
-	for _, el := range arr {
-		if f(el) {
-			list = append(list, el)
-		}
-	}
-	return list
-}
-
-type Tree[T any] interface {
-	GeteIsQual(father *T, childId *T) bool
-	SetChild(father *T, branchArr []*T)
-	RetFather(father *T) bool
-}
-
-func ToTree[T any](list []*T, fun Tree[T]) []*T {
-
-	return Filter(list, func(father *T) bool {
-		branchArr := Filter(list, func(childId *T) bool {
-			return fun.GeteIsQual(father, childId)
-		})
-
-		if len(branchArr) > 0 {
-			fun.SetChild(father, branchArr)
-		}
-		return fun.RetFather(father)
-	})
-}
-
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
 func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
 
@@ -219,8 +191,8 @@ func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
 	}
-
-	response := ToTree[sys_model.SysPermissionTree](items.Records, &sys_model.SysPermissionTree{})
+	// items.Records 代表每一项的权限List， &sys_model.SysPermissionTree{}实现了Tree接口，
+	response := base_tree.ToTree[sys_model.SysPermissionTree](items.Records, &sys_model.SysPermissionTree{})
 
 	//result, err := s.GetPermissionList(ctx, parentId, false)
 	//
