@@ -16,7 +16,7 @@ type (
 		// SendCaptcha 发送邮件验证码
 		SendCaptcha(ctx context.Context, mailTo string, typeIdentifier int) (res bool, err error)
 		// Verify 校验验证码
-		Verify(ctx context.Context, email string, captcha string, typeIdentifier ...sys_enum.SmsCaptchaType) (bool, error)
+		Verify(ctx context.Context, email string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error)
 	}
 )
 

@@ -4,16 +4,15 @@ import (
 	sys_enum_audit "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/audit"
 	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
 	sys_enum_business "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
+	sys_enum_captcha "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/captcha"
 	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_file "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_license "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
-	sys_enum_mail "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/mail"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
 	sys_enum_oss "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
 	sys_enum_permissions "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/permissions"
 	sys_enum_role "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/role"
-	sys_enum_sms "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/sms"
 	sys_enum_upload "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/upload"
 	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/user"
 )
@@ -23,11 +22,9 @@ type (
 
 	OssType sys_enum_oss.OssTypeEnum
 
-	SmsCaptchaType sys_enum_sms.CaptchaTypeEnum
-
-	MailType = sys_enum_mail.MailTypeEnum
-
 	AuthActionType sys_enum_auth.ActionTypeEnum
+
+	CaptchaType sys_enum_captcha.CaptchaTypeEnum
 
 	UploadEventState sys_enum_upload.EventStateEnum
 
@@ -46,10 +43,10 @@ type (
 var (
 	Business = sys_enum_business.Business
 
-	Oss  = sys_enum_oss.Oss
-	Sms  = sys_enum_sms.Sms
-	Mail = sys_enum_mail.Mail
-	
+	Oss = sys_enum_oss.Oss
+
+	Captcha = sys_enum_captcha.Captcha
+
 	Auth   = sys_enum_auth.Auth
 	Upload = sys_enum_upload.Upload
 	User   = sys_enum_user.User

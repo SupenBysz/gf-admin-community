@@ -837,7 +837,7 @@ func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (
 func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, password string, userId int64) (bool, error) {
 	//s.initInnerCacheItems(ctx)
 
-	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha, sys_enum.Sms.CaptchaType.SetMobile)
+	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha, sys_enum.Captcha.Type.SetMobile)
 	if err != nil {
 		return false, err
 	}
