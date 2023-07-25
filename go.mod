@@ -8,7 +8,7 @@ require (
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.5.0
 	github.com/gogf/gf/v2 v2.5.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
-	github.com/kysion/base-library v0.0.16
+	github.com/kysion/base-library v0.0.17
 	github.com/kysion/sms-library v0.0.4
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230717040633-c8446edaab76
 	github.com/mojocn/base64Captcha v1.3.5
