@@ -109,8 +109,8 @@ github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfV
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/kysion/base-library v0.0.16 h1:79I259sbNla0VEjKsFDlJwM+vHr4G0NpcuEeM6nAw5E=
-github.com/kysion/base-library v0.0.16/go.mod h1:vHbHW49AkJRrnjBuFkVzrm3b1t5XkWtG+r6WfN+DvA0=
+github.com/kysion/base-library v0.0.17 h1:bxmBzI39zkf/AkttgmXVaE8/ZJGuKrtlaP4H17QExSQ=
+github.com/kysion/base-library v0.0.17/go.mod h1:vHbHW49AkJRrnjBuFkVzrm3b1t5XkWtG+r6WfN+DvA0=
 github.com/kysion/sms-library v0.0.4 h1:MovV6MfKMKf92OHdGzzr/ap/m2qY3toSg3LP0B3xJpI=
 github.com/kysion/sms-library v0.0.4/go.mod h1:2TeM1Kiw+VuAbTHub2TbNhbPdpTy6AAvKviS3fXl09U=
 github.com/lib/pq v1.10.4 h1:SO9z7FRPzA03QhHKJrH5BXA6HU1rS4V2nIVrrNC1iYk=
