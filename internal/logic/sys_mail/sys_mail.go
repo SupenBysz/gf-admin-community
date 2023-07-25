@@ -2,16 +2,19 @@ package sys_mail
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/utility/kconv"
 	"gopkg.in/gomail.v2"
 	"math/rand"
+	"net/smtp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -31,16 +34,7 @@ func New() sys_service.ISysMails {
 func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifier int) (res bool, err error) {
 	mailConfig := sys_model.EmailConfig{}
 
-	split := gstr.Split(mailTo, "@")
-	domain := split[len(split)-1]
-
-	switch domain {
-	case sys_enum.Mail.Type.EmailQQ.Code():
-		kconv.Struct(g.Cfg().MustGet(ctx, "mailQQ"), &mailConfig)
-
-	case sys_enum.Mail.Type.Email163.Code():
-		kconv.Struct(g.Cfg().MustGet(ctx, "mail163"), &mailConfig)
-	}
+	kconv.Struct(sys_consts.Global.EmailConfig, &mailConfig)
 
 	// 随机的六位数验证码
 	code := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
@@ -48,6 +42,7 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	mailConfig.MailTo = mailTo
 	mailConfig.Subject = mailConfig.TitlePrefix + "验证码邮件"
 	mailConfig.Body = "您的验证码为：" + code + "，请在5分钟内验证，系统邮件请勿回复！"
+	mailConfig.SendAuthor = strings.Split(mailConfig.Username, "@")[0]
 
 	err = sendMail(&mailConfig)
 	if err != nil {
@@ -55,20 +50,20 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	}
 
 	// 存储缓存：key = 业务场景 + 邮箱号   register_18170618733@163.com  login_18170618733@163.com
-	captchaType := sys_enum.Sms.CaptchaType.New(typeIdentifier, "")
-	err = g.DB().GetCache().Set(ctx, captchaType.Description()+"_"+mailTo, code, time.Minute*5)
-	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "验证码缓存失败", "Mail-Captcha")
-	}
+	captchaType := sys_enum.Captcha.Type.New(typeIdentifier, "")
+	cacheKey := captchaType.Description() + "_" + mailTo
 
-	fmt.Println(captchaType.Description() + "_" + mailTo)
+	// 保持验证码到缓存
+	_, _ = g.Redis().Set(ctx, cacheKey, code)
+	// 设置验证码缓存时间
+	_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
 
 	return true, nil
 }
 
 func sendMail(info *sys_model.EmailConfig) error {
 	//port, _ := strconv.Atoi(info.HttpPort)
-	port, _ := strconv.Atoi(info.Stmp.Port)
+	port, _ := strconv.Atoi(info.Smtp.Port)
 	m := gomail.NewMessage()
 
 	// 发件人
@@ -83,13 +78,19 @@ func sendMail(info *sys_model.EmailConfig) error {
 	m.SetBody("text/html", info.Body)
 
 	// 发送邮件服务器、端口、发件人账号、发件人授权码
-	d := gomail.NewDialer(info.Stmp.Host, port, info.SendAuthor, info.AuthCode)
-	err := d.DialAndSend(m)
-	return err
+	d := gomail.NewDialer(info.Smtp.Host, port, info.SendAuthor, info.AuthCode)
+
+	// 是否使用 SSL 加密发送
+	if info.Smtp.SSL {
+		d.SSL = info.Smtp.SSL
+		d.Auth = smtp.PlainAuth("", d.Username, d.Password, info.Smtp.Host)
+		d.TLSConfig = &tls.Config{InsecureSkipVerify: true, ServerName: d.Host}
+	}
+	return d.DialAndSend(m)
 }
 
 // Verify 校验验证码
-func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, typeIdentifier ...sys_enum.SmsCaptchaType) (bool, error) {
+func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error) {
 	if email == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "邮箱不能为空", "Mail")
 	}
@@ -104,11 +105,9 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 		key = email
 	}
 
-	code, _ := g.DB().GetCache().Get(ctx, key)
+	code, err := g.Redis().Get(ctx, key)
 
-	fmt.Println("验证码：", code.String())
-
-	if code.String() != captcha {
+	if err != nil || code.String() != captcha {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码错误", "Mail")
 	}
 

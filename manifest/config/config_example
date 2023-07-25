@@ -85,32 +85,20 @@ redis:
   default:
     address: 127.0.0.1:6379
 
-# QQ邮箱配置
-mailQQ:
-  #邮件服务器
-  host: "smtp.qq.com"
-  #非SSL协议服务端口
-  httpPort: 25
-  #SSL协议服务端口
-  SSLPort: 587
-  #发件人昵称 - 需要替换成系统的
-  sendName: "企迅科技"
-  #发件人邮箱 - 需要替换成系统的
-  sendUser: "xxx@qq.com"
-  #发件人授权码 - 需要替换成系统的
-  authCode: "xxx"
-
-# 网易邮箱配置
-mail163:
-  #邮件服务器
-  host: "smtp.163.com"
-  #非SSL协议服务端口
-  httpPort: 25
-  #SSL协议服务端口
-  SSLPort: 994
-  #发件人昵称 - 需要替换成系统的
-  sendName: "企迅科技"
-  #发件人邮箱 - 需要替换成系统的
-  sendUser: "xxx@163.com"
-  #发件人授权码 - 需要替换成系统的
-  authCode: "xxx"
+#email:
+#  # 帐号
+#  username: ""
+#  # 密码
+#  password: ""
+#  # 标题前缀
+#  titlePrefix: ""
+#  # 授权码
+#  authCode: ""
+#  pop3:
+#    host: "pop.qq.com"
+#    port: 995
+#    ssl: true
+#  smtp:
+#    host: "smtp.qq.com"
+#    port: 465
+#    ssl: true

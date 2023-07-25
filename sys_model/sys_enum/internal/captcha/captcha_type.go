@@ -1,4 +1,4 @@
-package sms
+package sys_enum_captcha
 
 import "github.com/kysion/base-library/utility/enum"
 
