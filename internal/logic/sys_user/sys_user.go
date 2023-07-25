@@ -674,6 +674,54 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	return true, nil
 }
 
+// HasSysUserEmail 邮箱是否存在
+func (s *sSysUser) HasSysUserEmail(ctx context.Context, email string) bool {
+	response, _ := s.GetSysUserByEmail(ctx, email)
+
+	return response != nil
+}
+
+// GetSysUserByEmail 根据邮箱获取用户信息
+func (s *sSysUser) GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error) {
+
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Email: email}).Scan(response)
+
+	return
+}
+
+// ResetUserEmail 重置用户邮箱
+func (s *sSysUser) ResetUserEmail(ctx context.Context, userId int64, email string) (bool, error) {
+	// hook判断当前登录身份是否可以重置密码
+	user, err := s.GetSysUserById(ctx, userId)
+	{
+		//s.initInnerCacheItems(ctx)
+
+		if err != nil {
+			return false, err
+		}
+
+		// 发布广播
+		err = g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if hook.Value.Key.Code()&sys_enum.User.Event.ResetEmail.Code() == sys_enum.User.Event.ResetEmail.Code() {
+					_, err = hook.Value.Value(ctx, sys_enum.User.Event.ResetEmail, *kconv.Struct(user, &sys_model.SysUser{}))
+					if err != nil {
+						break
+					}
+				}
+			}
+		})
+
+		if err != nil {
+			return false, err
+		}
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}), sys_do.SysUser{Email: email})
+
+	return affected > 0, err
+}
+
 // SetUserRoles 设置用户角色
 func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error) {
 	data, err := s.GetSysUserById(ctx, userId)

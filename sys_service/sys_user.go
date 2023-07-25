@@ -51,6 +51,12 @@ type (
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
 		// ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
 		ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error)
+		// HasSysUserEmail 邮箱是否存在
+		HasSysUserEmail(ctx context.Context, email string) bool
+		// GetSysUserByEmail 根据邮箱获取用户信息
+		GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error)
+		// ResetUserEmail 重置用户邮箱
+		ResetUserEmail(ctx context.Context, userId int64, email string) (bool, error)
 		// SetUserRoles 设置用户角色
 		SetUserRoles(ctx context.Context, userId int64, roleIds []int64, makeUserUnionMainId int64) (bool, error)
 		// UpdateUserExDetail 更新用户扩展信息
