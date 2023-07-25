@@ -17,8 +17,8 @@ type captchaType struct {
 var CaptchaType = captchaType{
 	Register:    enum.New[CaptchaTypeEnum](1, "register"),
 	Login:       enum.New[CaptchaTypeEnum](2, "login"),
-	SetPassword: enum.New[CaptchaTypeEnum](8, "setPassword"),
 	SetUserName: enum.New[CaptchaTypeEnum](4, "setUserName"),
+	SetPassword: enum.New[CaptchaTypeEnum](8, "setPassword"),
 	SetMobile:   enum.New[CaptchaTypeEnum](16, "setMobile"),
 	// 可拓展.....
 }

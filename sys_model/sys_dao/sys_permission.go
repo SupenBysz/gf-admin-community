@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysPermissionDao is internal type for wrapping internal DAO implements.
-type internalSysPermissionDao = *internal.SysPermissionDao
+type SysPermissionDao = dao_interface.TIDao[internal.SysPermissionColumns]
 
-// sysPermissionDao is the data access object for table sys_permission.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysPermissionDao struct {
-	internalSysPermissionDao
+func NewSysPermission(dao ...dao_interface.IDao) SysPermissionDao {
+	return (SysPermissionDao)(internal.NewSysPermissionDao(dao...))
 }
 
 var (
-	// SysPermission is globally public accessible object for table sys_permission operations.
-	SysPermission = sysPermissionDao{
-		internal.NewSysPermissionDao(),
-	}
+	SysPermission = NewSysPermission()
 )
-
-// Fill with you ideas below.

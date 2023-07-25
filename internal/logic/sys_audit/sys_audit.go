@@ -2,7 +2,6 @@ package sys_audit
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -11,8 +10,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/gogf/gf/v2/os/gfile"
-	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 
@@ -92,54 +89,51 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 
 	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), filter, true)
 
-	auditList := make([]sys_entity.SysAudit, 0)
-	for _, item := range result.Records {
-		// 解析json字符串
-		auditJsonData := item.AuditData
-		auditData := sys_model.AuditLicense{}
-		gjson.DecodeTo(auditJsonData, &auditData)
+	//// TODO 抽取到具体业务层处理
+	//auditList := make([]sys_entity.SysAudit, 0)
+	//for _, item := range result.Records {
+	//	// 解析json字符串
+	//	auditJsonData := item.AuditData
+	//	auditData := sys_model.AuditPersonLicense{}
+	//	gjson.DecodeTo(auditJsonData, &auditData)
+	//
+	//	// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
+	//
+	//	// 将路径id换成可访问图片的url
+	//	//if gstr.IsNumeric(auditData.IdcardFrontPath) {
+	//	//	//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+	//	//	auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+	//	//	fmt.Println("身份证：", auditData.IdcardFrontPath)
+	//	//}
+	//
+	//	// 将路径src换成可访问图片的url
+	//	{
+	//		if gfile.IsFile(auditData.IdcardFrontPath) {
+	//			//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
+	//			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+	//			fmt.Println("身份证：", auditData.IdcardFrontPath)
+	//
+	//		}
+	//		if gfile.IsFile(auditData.IdcardBackPath) {
+	//			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
+	//			fmt.Println("身份证：", auditData.IdcardBackPath)
+	//		}
+	//
+	//	}
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	// 重新赋值
+	//	rest := sys_entity.SysAudit{}
+	//	gconv.Struct(item, &rest)
+	//	rest.AuditData = gjson.MustEncodeString(auditData)
+	//
+	//	auditList = append(auditList, rest)
+	//}
+	//
+	//result.Records = auditList
 
-		// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
-
-		// 将路径id换成可访问图片的url
-		//if gstr.IsNumeric(auditData.IdcardFrontPath) {
-		//	//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
-		//	auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
-		//	fmt.Println("身份证：", auditData.IdcardFrontPath)
-		//}
-
-		// 将路径src换成可访问图片的url
-		{
-			if gfile.IsFile(auditData.IdcardFrontPath) {
-				//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
-				auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
-				fmt.Println("身份证：", auditData.IdcardFrontPath)
-
-			}
-			if gfile.IsFile(auditData.IdcardBackPath) {
-				auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
-				fmt.Println("身份证：", auditData.IdcardBackPath)
-			}
-			if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
-				auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-			}
-			if gfile.IsFile(auditData.BusinessLicensePath) {
-				auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
-			}
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		// 重新赋值
-		rest := sys_entity.SysAudit{}
-		gconv.Struct(item, &rest)
-		rest.AuditData = gjson.MustEncodeString(auditData)
-
-		auditList = append(auditList, rest)
-	}
-
-	result.Records = auditList
 	return (*sys_model.AuditListRes)(result), err
 }
 
@@ -152,41 +146,32 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 		return nil
 	}
 
-	// 解析json字符串
-	auditData := sys_model.AuditLicense{}
-	gjson.DecodeTo(result.AuditData, &auditData)
+	fmt.Println("渲染前：", result.AuditData)
 
-	// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
+	// 业务层  Hook处理渲染，如果没有Hook的话，那就直接格式化成默认的个人资质
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Category & result.Category) == result.Category { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			//if hook.Key == sys_enum.Audit.Event.GetAuditData {}
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, result)
+		}
 
-	// 将路径id换成可访问图片的url
-	{
-		if gstr.IsNumeric(auditData.IdcardFrontPath) {
-			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
-		}
-		if gstr.IsNumeric(auditData.IdcardBackPath) {
-			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
-		}
-		if gstr.IsNumeric(auditData.BusinessLicenseLegalPath) {
-			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-		}
-		if gstr.IsNumeric(auditData.BusinessLicensePath) {
-			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
+		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+		if err != nil {
+			return nil
 		}
 	}
-	// fmt.Println(auditData.IdcardFrontPath + " --- " + auditData.IdcardBackPath + " --- " + auditData.BusinessLicensePath + " --- " + auditData.BusinessLicenseLegalPath)
-
-	// 重新赋值  将id转为可访问路径
-	result.AuditData = gjson.MustEncodeString(auditData)
+	fmt.Println("渲染后：", result.AuditData)
 
 	return result
-
 }
 
 // Audit存，将userId 和 上传id从缓存中读取出，然后将file.Src作为身份证、营业执照字段的值，  idCardPath：文件id  idCardPath：/tmp/upload/20230413/20230413/6504378708918341/crvld008yix5scyuio.jpeg
 
 // Audit取，拿出路劲转成带签名的url，
 
-// GetAuditByLatestUnionMainId 获取最新的业务主体审核信息
+// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息
 func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
 	result := sys_entity.SysAudit{}
 	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
@@ -194,34 +179,28 @@ func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId
 		return nil
 	}
 
-	// 将路径src换成可访问图片的url
-	auditData := sys_model.AuditLicense{}
-	gjson.DecodeTo(result.AuditData, &auditData)
+	fmt.Println("渲染前：", result.AuditData)
+	//auditData := sys_model.AuditPersonLicense{}
 
-	{
-		if gfile.IsFile(auditData.IdcardFrontPath) {
-			//auditData.IdcardFrontPath = sys_service.File().GetUrlById(gconv.Int64(auditData.IdcardFrontPath))
-			auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
-
+	// 业务层  Hook处理,处理json数据，渲染数据
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Category & result.Category) == result.Category { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
 		}
-		if gfile.IsFile(auditData.IdcardBackPath) {
-			auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
-		}
-		if gfile.IsFile(auditData.BusinessLicenseLegalPath) {
-			auditData.BusinessLicenseLegalPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicenseLegalPath)
-		}
-		if gfile.IsFile(auditData.BusinessLicensePath) {
-			auditData.BusinessLicensePath = sys_service.File().MakeFileUrlByPath(ctx, auditData.BusinessLicensePath)
+		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+		if err != nil {
+			return nil
 		}
 	}
-
-	result.AuditData = gjson.MustEncodeString(auditData)
+	fmt.Println("渲染后：", result.AuditData)
 
 	return &result
 }
 
 // CreateAudit 创建审核信息
-func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAudit) (*sys_entity.SysAudit, error) {
+func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error) {
 	// 校验参数
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
 		return nil, err
@@ -241,14 +220,17 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 		{
 			// 查询当前关联业务ID是否有审核记录
 			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
-				UnionMainId: info.UnionMainId,
-				Category:    info.Category,
+				UnionMainId:    info.UnionMainId,
+				Category:       info.Category,
+				DataIdentifier: info.DataIdentifier,
 			}).Scan(&audit)
-			if err != nil && err != sql.ErrNoRows {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "查询校验信息失败", sys_dao.SysAudit.Table())
-			}
+
+			//if err != nil && err != sql.ErrNoRows {
+			//	return sys_service.SysLogs().ErrorSimple(ctx, err, "查询校验信息失败", sys_dao.SysAudit.Table())
+			//}
+
 			// 如果当前有审核记录，则转存入历史记录中，并删除当前申请记录，避免后续步骤创建记录时重复导致的失败
-			if audit.Id > 0 {
+			if err == nil && audit.Id > 0 {
 				historyItems := make([]sys_entity.SysAudit, 0)
 				g.Try(ctx, func(ctx context.Context) {
 					// 判断历史记录是否为空
@@ -264,7 +246,9 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 						historyItems = append(historyItems, audit)
 					}
 					// 编码切片列表为JSON字符串
-					data.HistoryItems = gjson.MustEncodeString(historyItems)
+					if len(historyItems) > 0 {
+						data.HistoryItems = gjson.MustEncodeString(historyItems)
+					}
 				})
 
 				_, err = sys_dao.SysAudit.Ctx(ctx).Delete(sys_do.SysAudit{Id: audit.Id})
@@ -274,11 +258,11 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 			}
 		}
 
+		// 插入新的审核数据
 		data.Id = idgen.NextId()
 		data.CreatedAt = gtime.Now()
 
 		_, err := sys_dao.SysAudit.Ctx(ctx).Data(data).Insert()
-
 		if err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", sys_dao.SysAudit.Table())
 		}
@@ -292,7 +276,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateSysAud
 			// 判断注入的Hook业务类型是否一致
 			if hook.Value.Category&info.Category == info.Category {
 				// 业务类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, stateType, data)
+				err = hook.Value.Value(ctx, stateType, &data)
 			}
 			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 			if err != nil {
@@ -349,29 +333,12 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
 		}
 
-		// 审核通过
-		if (data.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
-			// 创建主体资质
-			license := sys_model.AuditLicense{}
-			gjson.DecodeTo(data.AuditData, &license)
-
-			licenseRes, err := sys_service.SysLicense().CreateLicense(ctx, license.License)
-			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后主体资质创建失败", sys_dao.SysLicense.Table())
-			}
-
-			// 设置主体资质的审核编号
-			ret, err := sys_service.SysLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(data.Id))
-			if err != nil || ret == false {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysLicense.Table())
-			}
-		}
-
+		// TODO 业务层订阅 ， Hook
 		for _, hook := range s.hookArr {
 			// 判断注入的Hook业务类型是否一致
 			if hook.Value.Category&info.Category == info.Category {
 				// 业务类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, sys_enum.Audit.Event.ExecAudit, *data)
+				err = hook.Value.Value(ctx, sys_enum.Audit.Event.ExecAudit, data)
 			}
 			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 			if err != nil {

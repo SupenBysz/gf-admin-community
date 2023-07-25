@@ -46,7 +46,7 @@ var sysRoleColumns = SysRoleColumns{
 // NewSysRoleDao creates and returns a new DAO object for table data access.
 func NewSysRoleDao(proxy ...dao_interface.IDao) *SysRoleDao {
 	var dao *SysRoleDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysRoleDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

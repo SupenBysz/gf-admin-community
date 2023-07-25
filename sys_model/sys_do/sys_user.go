@@ -21,4 +21,5 @@ type SysUser struct {
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
 	DeletedAt *gtime.Time //
+	Email     interface{} // 邮箱
 }

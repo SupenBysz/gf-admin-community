@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysSettingsDao is internal type for wrapping internal DAO implements.
-type internalSysSettingsDao = *internal.SysSettingsDao
+type SysSettingsDao = dao_interface.TIDao[internal.SysSettingsColumns]
 
-// sysSettingsDao is the data access object for table sys_settings.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysSettingsDao struct {
-	internalSysSettingsDao
+func NewSysSettings(dao ...dao_interface.IDao) SysSettingsDao {
+	return (SysSettingsDao)(internal.NewSysSettingsDao(dao...))
 }
 
 var (
-	// SysSettings is globally public accessible object for table sys_settings operations.
-	SysSettings = sysSettingsDao{
-		internal.NewSysSettingsDao(),
-	}
+	SysSettings = NewSysSettings()
 )
-
-// Fill with you ideas below.

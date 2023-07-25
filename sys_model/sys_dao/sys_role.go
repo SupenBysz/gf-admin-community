@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysRoleDao is internal type for wrapping internal DAO implements.
-type internalSysRoleDao = *internal.SysRoleDao
+type SysRoleDao = dao_interface.TIDao[internal.SysRoleColumns]
 
-// sysRoleDao is the data access object for table sys_role.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysRoleDao struct {
-	internalSysRoleDao
+func NewSysRole(dao ...dao_interface.IDao) SysRoleDao {
+	return (SysRoleDao)(internal.NewSysRoleDao(dao...))
 }
 
 var (
-	// SysRole is globally public accessible object for table sys_role operations.
-	SysRole = sysRoleDao{
-		internal.NewSysRoleDao(),
-	}
+	SysRole = NewSysRole()
 )
-
-// Fill with you ideas below.

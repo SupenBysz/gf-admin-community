@@ -32,6 +32,7 @@ type SysUserColumns struct {
 	CreatedAt string //
 	UpdatedAt string //
 	DeletedAt string //
+	Email     string // 邮箱
 }
 
 // sysUserColumns holds the columns for table sys_user.
@@ -45,12 +46,13 @@ var sysUserColumns = SysUserColumns{
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
 	DeletedAt: "deleted_at",
+	Email:     "email",
 }
 
 // NewSysUserDao creates and returns a new DAO object for table data access.
 func NewSysUserDao(proxy ...dao_interface.IDao) *SysUserDao {
 	var dao *SysUserDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysUserDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

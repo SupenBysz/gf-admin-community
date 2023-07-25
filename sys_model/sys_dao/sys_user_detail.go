@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysUserDetailDao is internal type for wrapping internal DAO implements.
-type internalSysUserDetailDao = *internal.SysUserDetailDao
+type SysUserDetailDao = dao_interface.TIDao[internal.SysUserDetailColumns]
 
-// sysUserDetailDao is the data access object for table sys_user_detail.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysUserDetailDao struct {
-	internalSysUserDetailDao
+func NewSysUserDetail(dao ...dao_interface.IDao) SysUserDetailDao {
+	return (SysUserDetailDao)(internal.NewSysUserDetailDao(dao...))
 }
 
 var (
-	// SysUserDetail is globally public accessible object for table sys_user_detail operations.
-	SysUserDetail = sysUserDetailDao{
-		internal.NewSysUserDetailDao(),
-	}
+	SysUserDetail = NewSysUserDetail()
 )
-
-// Fill with you ideas below.

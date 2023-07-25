@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/base_tree"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
@@ -184,54 +185,41 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
 func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
-	// 先判断缓存中是否存在权限树，存在直接返回
-	//res, err := g.DB().GetCache().Get(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId))
-	//if res.Val() != nil {
-	//	data := make([]*sys_model.SysPermissionTree, 0)
-	//
-	//	gconv.Struct(res, &data)
-	//	return data, nil
-	//}
 
-	result, err := s.GetPermissionList(ctx, parentId, false)
+	items, err := daoctl.Query[*sys_model.SysPermissionTree](sys_dao.SysPermission.Ctx(ctx), nil, true)
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
 	}
+	// items.Records 代表每一项的权限List， &sys_model.SysPermissionTree{}实现了Tree接口，
+	response := base_tree.ToTree[sys_model.SysPermissionTree](items.Records, &sys_model.SysPermissionTree{})
 
-	response := make([]*sys_model.SysPermissionTree, 0)
-
-	// 有数据，则递归加载
-	if len(result) > 0 {
-		//wg := sync.WaitGroup{}
-
-		for _, sysPermissionItem := range result {
-			//wg.Add(1)
-
-			item := &sys_model.SysPermissionTree{}
-			gconv.Struct(sysPermissionItem, &item)
-
-			//go func(id int64) {
-			item.Children, err = s.GetPermissionTree(ctx, sysPermissionItem.Id)
-			if err != nil {
-				//wg.Done()
-				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
-				//return
-			}
-			response = append(append(make([]*sys_model.SysPermissionTree, 0), item), response...)
-			//	wg.Done()
-			//}(sysPermissionItem.Id)
-
-			//response = append(response, item)
-
-		}
-
-		//wg.Wait()
-	}
-
-	// 将权限树缓存起来
-	//g.DB().GetCache().Set(ctx, "getPermissionTreeCacheById_"+gconv.String(parentId), response, time.Hour*24)
-
+	//result, err := s.GetPermissionList(ctx, parentId, false)
+	//
+	//if err != nil {
+	//	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
+	//}
+	//
+	//response := make([]*sys_model.SysPermissionTree, 0)
+	//
+	//// 有数据，则递归加载
+	//if len(result) > 0 {
+	//	for _, sysPermissionItem := range result {
+	//
+	//		item := &sys_model.SysPermissionTree{}
+	//		gconv.Struct(sysPermissionItem, &item)
+	//
+	//		item.Children, err = s.GetPermissionTree(ctx, sysPermissionItem.Id)
+	//		if err != nil {
+	//			//wg.Done()
+	//			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
+	//			//return
+	//		}
+	//		response = append(append(make([]*sys_model.SysPermissionTree, 0), item), response...)
+	//	}
+	//
+	//}
+	//
 	return response, nil
 }
 

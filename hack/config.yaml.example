@@ -13,7 +13,23 @@ gfcli:
   gen:
     dao:
 #      - link: "pgsql:user=Username password=Password host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
-        tables: "sys_area, sys_config, sys_user, sys_file, sys_logs, sys_menu, sys_casbin, sys_role, sys_organization, sys_permission, sys_sms_logs"
+        tables: "
+          sys_area,
+          sys_config,
+          sys_user,
+          sys_file,
+          sys_logs,
+          sys_menu,
+          sys_casbin,
+          sys_role,
+          sys_organization,
+          sys_permission,
+          sys_sms_logs,
+          sys_person_audit,
+          sys_person_license,
+          sys_user_detail,
+          sys_settings,
+          "
         descriptionTag:  true
         noModelComment:  true
         withTime: false

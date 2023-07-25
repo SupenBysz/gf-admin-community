@@ -11,8 +11,23 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
-func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.Context, info sys_model.License, data *T) (response *T, err error) {
-	newData := &sys_entity.SysLicense{}
+func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, permissions...); has != true {
+		var ret TRes
+		return ret, err
+	}
+	return f()
+}
+func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
+	if has, err := sys_service.SysPermission().CheckPermissionOr(ctx, permissions...); has != true {
+		var ret TRes
+		return ret, err
+	}
+	return f()
+}
+
+func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.PersonLicense, data *T) (response *T, err error) {
+	newData := &sys_entity.SysPersonLicense{}
 	gconv.Struct(data, newData)
 
 	{
@@ -49,50 +64,8 @@ func CheckLicenseFiles[T sys_entity.SysLicense | sys_do.SysLicense](ctx context.
 			newData.IdcardBackPath = fileInfo.Src
 		}
 
-		if !gfile.Exists(info.BusinessLicensePath) {
-			// 检测缓存文件
-			fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.BusinessLicensePath), userId, "请上传营业执照图片")
-			if err != nil {
-				return nil, err
-			}
-			// 保存营业执照图片
-			fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/businessLicense/"+fileAt+fileInfoCache.Ext, fileInfoCache)
-			if err != nil {
-				return nil, err
-			}
-			newData.BusinessLicensePath = fileInfo.Src
-		}
-
-		//if info.BusinessLicenseLegalPath != "" && !gfile.Exists(info.BusinessLicenseLegalPath) {
-		//	// 检测缓存文件
-		//	fileInfoCache, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(info.BusinessLicenseLegalPath), userId, "请上传法人证件照图片")
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//	// 保存法人证件照图片
-		//	fileInfo, err := sys_service.File().SaveFile(ctx, userFolder+"/businessLicense/"+fileAt+fileInfoCache.Ext, fileInfoCache)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//	newData.BusinessLicenseLegalPath = fileInfo.Src
-		//}
 	}
 
 	gconv.Struct(newData, data)
 	return data, err
-}
-
-func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
-	if has, err := sys_service.SysPermission().CheckPermission(ctx, permissions...); has != true {
-		var ret TRes
-		return ret, err
-	}
-	return f()
-}
-func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
-	if has, err := sys_service.SysPermission().CheckPermissionOr(ctx, permissions...); has != true {
-		var ret TRes
-		return ret, err
-	}
-	return f()
 }

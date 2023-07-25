@@ -26,3 +26,15 @@ type SysPermissionInfoRes sys_entity.SysPermission
 type SysPermissionInfoListRes base_model.CollectRes[*sys_entity.SysPermission]
 type SysPermissionInfoTreeRes []*SysPermissionTree
 type MyPermissionListRes []*sys_entity.SysPermission
+
+func (d *SysPermissionTree) GetIsEqual(father *SysPermissionTree, childId *SysPermissionTree) bool {
+	return father.Id == childId.ParentId
+}
+func (d *SysPermissionTree) SetChild(father *SysPermissionTree, branchArr []*SysPermissionTree) {
+
+	father.Children = branchArr
+}
+func (d *SysPermissionTree) RetFather(father *SysPermissionTree) bool {
+	// 顶级的ParentId这块可以看一下保存的时候ParentId 默认值是多少
+	return father.ParentId == 0
+}

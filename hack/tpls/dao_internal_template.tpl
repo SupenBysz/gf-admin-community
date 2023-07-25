@@ -27,14 +27,14 @@ type {TplTableNameCamelCase}Columns struct {
 }
 
 // {TplTableNameCamelLowerCase}Columns holds the columns for table {TplTableName}.
-var {TplTableNameCamelLowerCase}Columns = {TplTableNameCamelCase}Columns {
+var {TplTableNameCamelLowerCase}Columns = {TplTableNameCamelCase}Columns{
 	{TplColumnNames}
 }
 
 // New{TplTableNameCamelCase}Dao creates and returns a new DAO object for table data access.
 func New{TplTableNameCamelCase}Dao(proxy ...dao_interface.IDao) *{TplTableNameCamelCase}Dao {
     var dao *{TplTableNameCamelCase}Dao
-    	if proxy != nil {
+    	if len(proxy) > 0 {
     	    dao = &{TplTableNameCamelCase}Dao{
                 group:   proxy[0].Group(),
                 table:   proxy[0].Table(),
@@ -72,7 +72,7 @@ func (dao *{TplTableNameCamelCase}Dao) Columns() {TplTableNameCamelCase}Columns 
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
 func (dao *{TplTableNameCamelCase}Dao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
-    return dao.DaoConfig(ctx, cacheOption...).Model
+	return dao.DaoConfig(ctx, cacheOption...).Model
 }
 
 func (dao *{TplTableNameCamelCase}Dao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
@@ -98,8 +98,6 @@ func (dao *{TplTableNameCamelCase}Dao) DaoConfig(ctx context.Context, cacheOptio
 
 	return daoConfig
 }
-
-
 
 // Transaction wraps the transaction logic using function f.
 // It rollbacks the transaction and returns the error from function f if it returns non-nil error.

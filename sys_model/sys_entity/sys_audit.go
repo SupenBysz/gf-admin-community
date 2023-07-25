@@ -10,15 +10,16 @@ import (
 
 // SysAudit is the golang structure for table sys_audit.
 type SysAudit struct {
-	Id           int64       `json:"id"           description:""`
-	State        int         `json:"state"        description:"审核状态：-1不通过，0待审核，1通过"`
-	Reply        string      `json:"reply"        description:"不通过时回复的审核不通过原因"`
-	UnionMainId  int64       `json:"unionMainId"  description:"关联主体ID"`
-	Category     int         `json:"category"     description:"业务类别"`
-	AuditData    string      `json:"auditData"    description:"待审核的业务数据包"`
-	ExpireAt     *gtime.Time `json:"expireAt"     description:"服务时限"`
-	AuditReplyAt *gtime.Time `json:"auditReplyAt" description:"审核回复时间"`
-	HistoryItems string      `json:"historyItems" description:"历史申请记录"`
-	CreatedAt    *gtime.Time `json:"createdAt"    description:""`
-	AuditUserId  int64       `json:"auditUserId"  description:"审核操作者id"`
+	Id             int64       `json:"id"             description:""`
+	State          int         `json:"state"          description:"审核状态：-1不通过，0待审核，1通过"`
+	Reply          string      `json:"reply"          description:"不通过时回复的审核不通过原因"`
+	UnionMainId    int64       `json:"unionMainId"    description:"关联主体ID"`
+	Category       int         `json:"category"       description:"业务类别"`
+	AuditData      string      `json:"auditData"      description:"待审核的业务数据包"`
+	ExpireAt       *gtime.Time `json:"expireAt"       description:"服务时限"`
+	AuditReplyAt   *gtime.Time `json:"auditReplyAt"   description:"审核回复时间"`
+	HistoryItems   string      `json:"historyItems"   description:"历史申请记录"`
+	CreatedAt      *gtime.Time `json:"createdAt"      description:""`
+	AuditUserId    int64       `json:"auditUserId"    description:"审核操作者id"`
+	DataIdentifier string      `json:"dataIdentifier" description:"数据标识"`
 }

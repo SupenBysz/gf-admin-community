@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysAuditDao is internal type for wrapping internal DAO implements.
-type internalSysAuditDao = *internal.SysAuditDao
+type SysAuditDao = dao_interface.TIDao[internal.SysAuditColumns]
 
-// sysAuditDao is the data access object for table sys_audit.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysAuditDao struct {
-	internalSysAuditDao
+func NewSysAudit(dao ...dao_interface.IDao) SysAuditDao {
+	return (SysAuditDao)(internal.NewSysAuditDao(dao...))
 }
 
 var (
-	// SysAudit is globally public accessible object for table sys_audit operations.
-	SysAudit = sysAuditDao{
-		internal.NewSysAuditDao(),
-	}
+	SysAudit = NewSysAudit()
 )
-
-// Fill with you ideas below.

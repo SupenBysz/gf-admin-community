@@ -6,22 +6,15 @@ package sys_dao
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao/internal"
+	"github.com/kysion/base-library/utility/daoctl/dao_interface"
 )
 
-// internalSysAreaDao is internal type for wrapping internal DAO implements.
-type internalSysAreaDao = *internal.SysAreaDao
+type SysAreaDao = dao_interface.TIDao[internal.SysAreaColumns]
 
-// sysAreaDao is the data access object for table sys_area.
-// You can define custom methods on it to extend its functionality as you wish.
-type sysAreaDao struct {
-	internalSysAreaDao
+func NewSysArea(dao ...dao_interface.IDao) SysAreaDao {
+	return (SysAreaDao)(internal.NewSysAreaDao(dao...))
 }
 
 var (
-	// SysArea is globally public accessible object for table sys_area operations.
-	SysArea = sysAreaDao{
-		internal.NewSysAreaDao(),
-	}
+	SysArea = NewSysArea()
 )
-
-// Fill with you ideas below.

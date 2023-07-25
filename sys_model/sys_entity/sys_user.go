@@ -19,4 +19,5 @@ type SysUser struct {
 	CreatedAt *gtime.Time `json:"createdAt" description:""`
 	UpdatedAt *gtime.Time `json:"updatedAt" description:""`
 	DeletedAt *gtime.Time `json:"deletedAt" description:""`
+	Email     string      `json:"email"     description:"邮箱"`
 }

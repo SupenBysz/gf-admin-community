@@ -24,6 +24,7 @@ import (
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
+	"github.com/kysion/base-library/utility/rule"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
@@ -36,6 +37,9 @@ type sSysUser struct {
 	hookArr []hookInfo
 	//redisCache *gcache.Cache
 	Duration time.Duration
+
+	//// 密码加密
+	//CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 }
 
 func init() {
@@ -74,6 +78,16 @@ func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserH
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
+
+//// SetCryptoPasswordFunc 用于业务端自定义密码规则
+//func (s *sSysUser) SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)) {
+//	s.CryptoPasswordFunc = f
+//}
+//
+//// GetCryptoPasswordFunc 应用业务端自定义密码规则
+//func (s *sSysUser) GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
+//	return s.CryptoPasswordFunc
+//}
 
 // UnInstallHook 卸载Hook
 func (s *sSysUser) UnInstallHook(savedHookId int64) {
@@ -271,6 +285,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			Username:  info.Username,
 			Password:  info.Password,
 			Mobile:    info.Mobile,
+			Email:     info.Email,
 			State:     userState.Code(),
 			Type:      userType.Code(),
 			CreatedAt: gtime.Now(),
@@ -280,8 +295,12 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	if len(customId) > 0 && customId[0] > 0 {
 		data.Id = customId[0]
 	}
-
 	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
+
+	// 业务层自定义密码加密规则
+	if sys_consts.Global.CryptoPasswordFunc != nil {
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, data.SysUser)
+	}
 
 	// 密码赋值
 	data.Password = pwdHash
@@ -393,12 +412,16 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
 	}
-
+	// if （）{hook()}
 	// 取盐
 	salt := gconv.String(userId)
 
 	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
 	pwdHash, err := en_crypto.PwdHash(password, salt)
+	// 业务层自定义密码加密规则
+	if sys_consts.Global.CryptoPasswordFunc != nil {
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *userInfo)
+	}
 
 	return userInfo.Password == pwdHash, err
 }
@@ -553,6 +576,10 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 	{
 		// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
 		hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
+		// 业务层自定义密码加密规则
+		if sys_consts.Global.CryptoPasswordFunc != nil {
+			hash1 = sys_consts.Global.CryptoPasswordFunc(ctx, info.OldPassword, sysUserInfo.SysUser)
+		}
 		if sysUserInfo.Password != hash1 {
 			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "原密码输入错误，修改失败")
 		}
@@ -577,6 +604,10 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 	}
 
 	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
+	// 业务层自定义密码加密规则
+	if sys_consts.Global.CryptoPasswordFunc != nil {
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, sysUserInfo.SysUser)
+	}
 
 	_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
 
@@ -590,10 +621,9 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 // ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
 func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password string, confirmPassword string) (bool, error) {
 	// hook判断当前登录身份是否可以重置密码
+	user, err := s.GetSysUserById(ctx, userId)
 	{
 		//s.initInnerCacheItems(ctx)
-
-		user, err := s.GetSysUserById(ctx, userId)
 
 		if err != nil {
 			return false, err
@@ -626,6 +656,10 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 
 		// 加密
 		pwdHash, _ := en_crypto.PwdHash(password, salt)
+		// 业务层自定义密码加密规则
+		if sys_consts.Global.CryptoPasswordFunc != nil {
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, user.SysUser)
+		}
 
 		result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
 
@@ -638,6 +672,54 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	}
 
 	return true, nil
+}
+
+// HasSysUserEmail 邮箱是否存在
+func (s *sSysUser) HasSysUserEmail(ctx context.Context, email string) bool {
+	response, _ := s.GetSysUserByEmail(ctx, email)
+
+	return response != nil
+}
+
+// GetSysUserByEmail 根据邮箱获取用户信息
+func (s *sSysUser) GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error) {
+
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Email: email}).Scan(response)
+
+	return
+}
+
+// ResetUserEmail 重置用户邮箱
+func (s *sSysUser) ResetUserEmail(ctx context.Context, userId int64, email string) (bool, error) {
+	// hook判断当前登录身份是否可以重置密码
+	user, err := s.GetSysUserById(ctx, userId)
+	{
+		//s.initInnerCacheItems(ctx)
+
+		if err != nil {
+			return false, err
+		}
+
+		// 发布广播
+		err = g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if hook.Value.Key.Code()&sys_enum.User.Event.ResetEmail.Code() == sys_enum.User.Event.ResetEmail.Code() {
+					_, err = hook.Value.Value(ctx, sys_enum.User.Event.ResetEmail, *kconv.Struct(user, &sys_model.SysUser{}))
+					if err != nil {
+						break
+					}
+				}
+			}
+		})
+
+		if err != nil {
+			return false, err
+		}
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}), sys_do.SysUser{Email: email})
+
+	return affected > 0, err
 }
 
 // SetUserRoles 设置用户角色
@@ -722,9 +804,16 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 	return s.makeMore(ctx, &user), nil
 }
 
-// GetUserListByMobile 根据手机号查询用户列表
-func (s *sSysUser) GetUserListByMobile(ctx context.Context, mobile string) (*sys_model.SysUserListRes, error) {
-	userList, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Mobile: mobile}), nil, false)
+// GetUserListByMobileOrMail 根据手机号或者邮箱查询用户列表
+func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error) {
+	userModel := sys_dao.SysUser.Ctx(ctx)
+	if rule.IsPhone(info) {
+		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
+	} else if rule.IsEmail(info) {
+		userModel = userModel.Where(sys_do.SysUser{Email: info})
+	}
+
+	userList, err := daoctl.Query[*sys_model.SysUser](userModel, nil, false)
 
 	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
@@ -769,6 +858,12 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	user, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
 	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
+
+	// 业务层自定义密码加密规则
+	if sys_consts.Global.CryptoPasswordFunc != nil {
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, userInfo.SysUser)
+	}
+
 	if pwdHash != user.Password {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登录密码错误")
 	}

@@ -5,12 +5,15 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_controller"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/utility/en_crypto"
 )
 
 var (
@@ -60,6 +63,21 @@ var (
 				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
 			}
 
+			// 业务端密码加密规则重写示例
+			{
+				sys_consts.Global.CryptoPasswordFunc = func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
+					// TODO 以下加密规则可替换
+					slat := "kysion.com"
+					if len(user) > 0 {
+						slat = gconv.String(user[0].Id)
+					}
+
+					pwdHash, _ := en_crypto.PwdHash(passwordStr, slat)
+
+					return pwdHash
+				}
+			}
+
 			{
 				// 初始化路由
 				apiPrefix := g.Cfg().MustGet(ctx, "service.apiPrefix").String()
@@ -78,10 +96,8 @@ var (
 						// 图型验证码、短信验证码、地区
 						group.Group("/common", func(group *ghttp.RouterGroup) {
 							group.Bind(
-								// 图型验证码
+								// 验证码（图形、短信、邮箱）
 								sys_controller.Captcha,
-								// 短信验证码
-								sys_controller.SysSms,
 								// 地区
 								sys_controller.SysArea,
 								// 公共：获取图片...
@@ -115,10 +131,10 @@ var (
 						group.Group("/organization", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysOrganization) })
 						// 我的
 						group.Group("/my", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMy) })
-						// 资质
-						group.Group("/license", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysLicense) })
-						// 审核
-						group.Group("/audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
+						// 个人资质
+						group.Group("/person_license", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysLicense) })
+						// 个人资质审核
+						group.Group("/person_audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
 						// 菜单
 						group.Group("/menu", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMenu) })
 

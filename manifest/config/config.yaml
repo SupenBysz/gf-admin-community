@@ -49,6 +49,28 @@ service:
       seconds: 3600
       force: false
 
+# 邮件设置
+email:
+  # 帐号
+  username: ""
+  # 密码
+  password: ""
+  # 发送者昵称
+  sendAuthor: ""
+  # 标题前缀
+  titlePrefix: ""
+  # 授权码
+  authCode: ""
+  pop3:
+    host: "pop3.qq.com"
+    port: 995
+    ssl: true
+  stmp:
+    host: "stmp.qq.com"
+    port: 465
+    ssl: true
+
+
 # 日志配置
 logger:
   path: "temp/logs/default"

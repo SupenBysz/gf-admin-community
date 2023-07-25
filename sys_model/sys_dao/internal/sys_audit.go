@@ -23,38 +23,40 @@ type SysAuditDao struct {
 
 // SysAuditColumns defines and stores column names for table sys_audit.
 type SysAuditColumns struct {
-	Id           string //
-	State        string // 审核状态：-1不通过，0待审核，1通过
-	Reply        string // 不通过时回复的审核不通过原因
-	UnionMainId  string // 关联主体ID
-	Category     string // 业务类别
-	AuditData    string // 待审核的业务数据包
-	ExpireAt     string // 服务时限
-	AuditReplyAt string // 审核回复时间
-	HistoryItems string // 历史申请记录
-	CreatedAt    string //
-	AuditUserId  string // 审核操作者id
+	Id             string //
+	State          string // 审核状态：-1不通过，0待审核，1通过
+	Reply          string // 不通过时回复的审核不通过原因
+	UnionMainId    string // 关联主体ID
+	Category       string // 业务类别
+	AuditData      string // 待审核的业务数据包
+	ExpireAt       string // 服务时限
+	AuditReplyAt   string // 审核回复时间
+	HistoryItems   string // 历史申请记录
+	CreatedAt      string //
+	AuditUserId    string // 审核操作者id
+	DataIdentifier string // 数据标识
 }
 
 // sysAuditColumns holds the columns for table sys_audit.
 var sysAuditColumns = SysAuditColumns{
-	Id:           "id",
-	State:        "state",
-	Reply:        "reply",
-	UnionMainId:  "union_main_id",
-	Category:     "category",
-	AuditData:    "audit_data",
-	ExpireAt:     "expire_at",
-	AuditReplyAt: "audit_reply_at",
-	HistoryItems: "history_Items",
-	CreatedAt:    "created_at",
-	AuditUserId:  "audit_user_id",
+	Id:             "id",
+	State:          "state",
+	Reply:          "reply",
+	UnionMainId:    "union_main_id",
+	Category:       "category",
+	AuditData:      "audit_data",
+	ExpireAt:       "expire_at",
+	AuditReplyAt:   "audit_reply_at",
+	HistoryItems:   "history_Items",
+	CreatedAt:      "created_at",
+	AuditUserId:    "audit_user_id",
+	DataIdentifier: "data_identifier",
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.
 func NewSysAuditDao(proxy ...dao_interface.IDao) *SysAuditDao {
 	var dao *SysAuditDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysAuditDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

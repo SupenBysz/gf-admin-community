@@ -50,7 +50,7 @@ var sysLogsColumns = SysLogsColumns{
 // NewSysLogsDao creates and returns a new DAO object for table data access.
 func NewSysLogsDao(proxy ...dao_interface.IDao) *SysLogsDao {
 	var dao *SysLogsDao
-	if proxy != nil {
+	if len(proxy) > 0 {
 		dao = &SysLogsDao{
 			group:   proxy[0].Group(),
 			table:   proxy[0].Table(),

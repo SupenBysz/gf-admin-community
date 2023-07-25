@@ -6,7 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 )
 
-type AuditHookFunc func(ctx context.Context, state sys_enum.AuditEvent, info sys_entity.SysAudit) error
+type AuditHookFunc func(ctx context.Context, state sys_enum.AuditEvent, info *sys_entity.SysAudit) error
 type AuditHookInfo struct {
 	Key      sys_enum.AuditEvent
 	Value    AuditHookFunc
