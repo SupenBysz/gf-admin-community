@@ -13,6 +13,14 @@ import (
 )
 
 type (
+	ISessionError interface {
+		// Append 追加错误至错误队列
+		Append(ctx context.Context, error error) error
+		// HasError 错误队列中检索指定错误
+		HasError(ctx context.Context, err error) (response bool)
+		// Iterator 获取错误信息队列
+		Iterator(ctx context.Context, f func(k int, err error) bool)
+	}
 	ISysSession interface {
 		// Init 初始化上下文对象指针到上下文对象中，以便后续的请求流程中可以修改。
 		Init(sessionContext *sys_model.SessionContext, r *ghttp.Request, ctx ...*context.Context)
@@ -23,14 +31,6 @@ type (
 		SetUserById(ctx *context.Context, userId int64) *sys_model.SessionContext
 		// SetUser 将上下文信息设置到上下文请求中，注意是完整覆盖
 		SetUser(ctx context.Context, claimsUser *sys_model.JwtCustomClaims)
-	}
-	ISessionError interface {
-		// Append 追加错误至错误队列
-		Append(ctx context.Context, error error) error
-		// HasError 错误队列中检索指定错误
-		HasError(ctx context.Context, err error) (response bool)
-		// Iterator 获取错误信息队列
-		Iterator(ctx context.Context, f func(k int, err error) bool)
 	}
 )
 

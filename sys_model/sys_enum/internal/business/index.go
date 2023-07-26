@@ -1,4 +1,4 @@
-package pro_enum_business
+package sys_enum_business
 
 type business struct {
 	Type businessType

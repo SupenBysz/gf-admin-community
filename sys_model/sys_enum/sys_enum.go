@@ -1,20 +1,19 @@
 package sys_enum
 
 import (
-	sys_enum_audit "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/audit"
-	sys_enum_auth "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
-	sys_enum_business "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
-	sys_enum_captcha "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/captcha"
-	sys_enum_casbin "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
-	sys_enum_file "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
-	sys_enum_license "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/audit"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
-	sys_enum_oss "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
 	sys_enum_permissions "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/permissions"
 	sys_enum_role "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/role"
-	sys_enum_upload "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/upload"
-	sys_enum_user "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/user"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/upload"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/user"
 )
 
 type (
@@ -23,8 +22,6 @@ type (
 	OssType sys_enum_oss.OssTypeEnum
 
 	AuthActionType sys_enum_auth.ActionTypeEnum
-
-	CaptchaType sys_enum_captcha.CaptchaTypeEnum
 
 	UploadEventState sys_enum_upload.EventStateEnum
 
@@ -45,7 +42,7 @@ var (
 
 	Oss = sys_enum_oss.Oss
 
-	Captcha = sys_enum_captcha.Captcha
+	// Captcha = sys_enum_captcha.Captcha 迁移到了base-library
 
 	Auth   = sys_enum_auth.Auth
 	Upload = sys_enum_upload.Upload
