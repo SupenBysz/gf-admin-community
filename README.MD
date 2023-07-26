@@ -196,7 +196,7 @@ type LoginReq struct {
   - docs：仅仅修改了文档，比如 README、CHANGELOG 等等
   - style：仅仅修改了空格、格式缩进、多行等等，不改变逻辑
   - refactor：代码重构，没有加新的功能或者修复 bug
-  - perf：优化相关，比如提升性能、体验等
+  - pref：优化相关，比如提升性能、体验等
   - test：测试用例，包括单元测试、集成测试等
   - chore：改变构建流程，或者增加依赖库、工具等
   - revert：回滚到上一个版本

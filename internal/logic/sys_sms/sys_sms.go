@@ -17,14 +17,14 @@ func init() {
 	sys_service.RegisterSysSms(New())
 }
 
-func New() *sSysSms {
+func New() sys_service.ISysSms {
 	return &sSysSms{
 		cachePrefix: sys_dao.SysSmsLogs.Table() + "_",
 	}
 }
 
 // Verify 校验验证码
-func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...sys_enum.SmsCaptchaType) (bool, error) {
+func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error) {
 	if mobile == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "手机号码不能为空", "Sms")
 	}

@@ -9,7 +9,7 @@ require (
 	github.com/gogf/gf/v2 v2.5.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/kysion/base-library v0.0.17
-	github.com/kysion/sms-library v0.0.4
+	github.com/kysion/sms-library v0.0.5
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230717040633-c8446edaab76
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/yitter/idgenerator-go v1.3.3
@@ -70,7 +70,3 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-//replace github.com/kysion/base-library => ../base-library
-
-//replace github.com/kysion/sms-library => ../sms-library

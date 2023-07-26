@@ -48,6 +48,10 @@ service:
     - name: sys_menu
       seconds: 3600
       force: false
+  # 登陆支持的方式：1用户名+密码+图形验证码、 2手机号+密码或验证码、4邮箱+密码
+  loginRule: [ 1,4 ]
+  # 注册支持的方式：1用户名+密码+图形验证码、 2用户名+手机号+验证码、4用户名+邮箱+验证码
+  registerRule: [4]
 
 # 邮件设置
 email:
@@ -65,8 +69,8 @@ email:
     host: "pop3.qq.com"
     port: 995
     ssl: true
-  stmp:
-    host: "stmp.qq.com"
+  smtp:
+    host: "smtp.qq.com"
     port: 465
     ssl: true
 
