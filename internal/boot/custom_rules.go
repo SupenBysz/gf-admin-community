@@ -1,4 +1,4 @@
-package internal
+package boot
 
 import (
 	"github.com/SupenBysz/gf-admin-community/utility/rules"

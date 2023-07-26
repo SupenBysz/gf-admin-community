@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model/base_enum"
 )
 
 type sSysSms struct {
@@ -24,7 +24,7 @@ func New() sys_service.ISysSms {
 }
 
 // Verify 校验验证码
-func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error) {
+func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...base_enum.CaptchaType) (bool, error) {
 	if mobile == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "手机号码不能为空", "Sms")
 	}

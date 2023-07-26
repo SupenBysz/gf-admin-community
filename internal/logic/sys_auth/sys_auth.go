@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/rule"
@@ -37,7 +38,7 @@ func init() {
 }
 
 // New Auth 验证码管理服务
-func New() *sSysAuth {
+func New() sys_service.ISysAuth {
 	return &sSysAuth{
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -170,7 +171,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	if rule.IsPhone(info.Mobile) {
 		if info.Captcha != "" {
 			// 短信验证码校验
-			ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Captcha.Type.Login)
+			ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.Login)
 		}
 	} else {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号格式填写错误！")
@@ -218,7 +219,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	}
 
 	// 清除该缓存
-	key := sys_enum.Captcha.Type.Login.Description() + "_" + info.Mobile
+	key := base_enum.Captcha.Type.Login.Description() + "_" + info.Mobile
 
 	g.DB().GetCache().Remove(ctx, key)
 
@@ -355,12 +356,12 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 	ver := false
 	if rule.IsPhone(info.MobileOrMail) {
 		// 短信验证码校验
-		ver, err = sys_service.SysSms().Verify(ctx, info.MobileOrMail, info.Captcha, sys_enum.Captcha.Type.Register)
+		ver, err = sys_service.SysSms().Verify(ctx, info.MobileOrMail, info.Captcha, base_enum.Captcha.Type.Register)
 		innerRegisterUser.Mobile = info.MobileOrMail
 
 	} else if rule.IsEmail(info.MobileOrMail) {
 		// 邮箱验证码校验
-		ver, err = sys_service.SysMails().Verify(ctx, info.MobileOrMail, info.Captcha, sys_enum.Captcha.Type.Register)
+		ver, err = sys_service.SysMails().Verify(ctx, info.MobileOrMail, info.Captcha, base_enum.Captcha.Type.Register)
 		innerRegisterUser.Email = info.MobileOrMail
 
 	} else {
@@ -390,7 +391,7 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 		}
 
 		// 短信验证码校验
-		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Captcha.Type.SetPassword)
+		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.SetPassword)
 	} else if rule.IsEmail(info.Mobile) {
 		// 判断绑定的是否是此邮箱
 		if user.Email != info.Mobile {
@@ -398,7 +399,7 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 		}
 
 		// 邮箱验证码校验
-		ver, err = sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, sys_enum.Captcha.Type.SetPassword)
+		ver, err = sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.SetPassword)
 	} else {
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
 	}

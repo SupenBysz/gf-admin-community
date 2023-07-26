@@ -1,4 +1,4 @@
-package permissions
+package sys_enum_permission
 
 type permissions struct {
 	PermissionType permissionType

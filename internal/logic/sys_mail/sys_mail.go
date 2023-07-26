@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/kconv"
 	"gopkg.in/gomail.v2"
 	"math/rand"
@@ -50,7 +50,7 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	}
 
 	// 存储缓存：key = 业务场景 + 邮箱号   register_18170618733@163.com  login_18170618733@163.com
-	captchaType := sys_enum.Captcha.Type.New(typeIdentifier, "")
+	captchaType := base_enum.Captcha.Type.New(typeIdentifier, "")
 	cacheKey := captchaType.Description() + "_" + mailTo
 
 	// 保持验证码到缓存
@@ -90,7 +90,7 @@ func sendMail(info *sys_model.EmailConfig) error {
 }
 
 // Verify 校验验证码
-func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error) {
+func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, typeIdentifier ...base_enum.CaptchaType) (bool, error) {
 	if email == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "邮箱不能为空", "Mail")
 	}

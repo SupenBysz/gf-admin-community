@@ -8,8 +8,9 @@ require (
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.5.0
 	github.com/gogf/gf/v2 v2.5.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
-	github.com/kysion/base-library v0.0.17
-	github.com/kysion/sms-library v0.0.5
+	github.com/kysion/base-library v0.0.18
+	github.com/kysion/oss-library v0.0.7
+	github.com/kysion/sms-library v0.0.7
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230717040633-c8446edaab76
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/yitter/idgenerator-go v1.3.3
@@ -41,7 +42,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
-	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -70,3 +71,11 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+//replace github.com/kysion/base-library => ../base-library
+
+//replace github.com/kysion/sms-library => ../sms-library
+//
+//replace github.com/kysion/oss-library => ../oss-library
+
+//replace github.com/kysion/sms-library => gitea.kysion.com/Kysion/sms-library v0.0.6
