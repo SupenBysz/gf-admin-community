@@ -1,4 +1,4 @@
-package permissions
+package sys_enum_permission
 
 import "github.com/kysion/base-library/utility/enum"
 

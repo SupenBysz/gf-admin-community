@@ -9,16 +9,17 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/utility/base_permission"
 )
 
-func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
+func CheckPermission[TRes any](ctx context.Context, f func() (TRes, error), permissions ...base_permission.IPermission) (TRes, error) {
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, permissions...); has != true {
 		var ret TRes
 		return ret, err
 	}
 	return f()
 }
-func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...*sys_model.SysPermissionTree) (TRes, error) {
+func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), permissions ...base_permission.IPermission) (TRes, error) {
 	if has, err := sys_service.SysPermission().CheckPermissionOr(ctx, permissions...); has != true {
 		var ret TRes
 		return ret, err

@@ -8,13 +8,13 @@ package sys_service
 import (
 	"context"
 
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/kysion/base-library/base_model/base_enum"
 )
 
 type (
 	ISysSms interface {
 		// Verify 校验验证码
-		Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...sys_enum.CaptchaType) (bool, error)
+		Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...base_enum.CaptchaType) (bool, error)
 	}
 )
 

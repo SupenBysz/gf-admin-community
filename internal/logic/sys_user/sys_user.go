@@ -19,6 +19,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
@@ -837,7 +838,7 @@ func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (
 func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, password string, userId int64) (bool, error) {
 	//s.initInnerCacheItems(ctx)
 
-	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha, sys_enum.Captcha.Type.SetMobile)
+	_, err := sys_service.SysSms().Verify(ctx, newMobile, captcha, base_enum.Captcha.Type.SetMobile)
 	if err != nil {
 		return false, err
 	}
