@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
+	"github.com/kysion/base-library/utility/base_permission"
 	"github.com/kysion/base-library/utility/base_tree"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -30,8 +31,15 @@ type sSysPermission struct {
 }
 
 func init() {
+	//base_permission.Factory = Factory
+
 	sys_service.RegisterSysPermission(New())
 }
+
+//
+//func Factory() base_permission.IPermission {
+//	return &sys_model.SysPermissionTree{}
+//}
 
 // New sSysPermission 权限控制逻辑实现
 func New() *sSysPermission {
@@ -184,15 +192,20 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 }
 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
-func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]*sys_model.SysPermissionTree, error) {
+func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]base_permission.IPermission, error) {
 
 	items, err := daoctl.Query[*sys_model.SysPermissionTree](sys_dao.SysPermission.Ctx(ctx), nil, true)
+
+	var itemRes []base_permission.IPermission
+	for _, record := range items.Records {
+		itemRes = append(itemRes, record)
+	}
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
 	}
 	// items.Records 代表每一项的权限List， &sys_model.SysPermissionTree{}实现了Tree接口，
-	response := base_tree.ToTree[sys_model.SysPermissionTree](items.Records, &sys_model.SysPermissionTree{})
+	response := base_tree.ToTree[base_permission.IPermission](itemRes, &sys_model.SysPermissionTree{})
 
 	//result, err := s.GetPermissionList(ctx, parentId, false)
 	//
@@ -280,7 +293,7 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 }
 
 // ImportPermissionTree 导入权限，如果存在则忽略，递归导入权限
-func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []*sys_model.SysPermissionTree, parent *sys_entity.SysPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
+func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTreeArr []base_permission.IPermission, parent base_permission.IPermission) error { // 在项目启动处进行调用，permissionTreeArr就是权限树数组，parent是父级权限id
 	if len(permissionTreeArr) <= 0 {
 		return nil
 	}
@@ -288,42 +301,42 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 	for i, permissionTree := range permissionTreeArr {
 		if parent != nil {
 			// 设置父级ID
-			permissionTree.ParentId = parent.Id
+			permissionTree.SetParentId(parent.GetId())
 			// 继承父级权限类型
-			permissionTree.Type = parent.Type
+			permissionTree.SetType(parent.GetType())
 			// 继承父级权限是否显示
-			permissionTree.IsShow = parent.IsShow
+			permissionTree.SetIsShow(parent.GetIsShow())
 			// 拼接上父级权限标识符 例如(User::View ...)
-			permissionTree.Identifier = parent.Identifier + "::" + permissionTree.Identifier
+			permissionTree.SetIdentifier(parent.GetIdentifier() + "::" + permissionTree.GetIdentifier())
 		}
 		// 排序字段
-		permissionTree.Sort = i
+		permissionTree.SetSort(i)
 
 		// 查询权限数据是否存在
 
-		identifier, _ := s.GetPermissionByIdentifier(ctx, permissionTree.SysPermission.Identifier)
+		identifier, _ := s.GetPermissionByIdentifier(ctx, permissionTree.GetIdentifier())
 		has := identifier != nil
 
 		// 判断权限数据是否存在，不存在则插入数据
 		if !has {
-			if permissionTree.Id == 0 {
-				permissionTree.Id = idgen.NextId()
+			if permissionTree.GetId() == 0 {
+				permissionTree.SetId(idgen.NextId())
 			}
-			result, err := sys_dao.SysPermission.Ctx(ctx).Insert(permissionTree.SysPermission)
+			result, err := sys_dao.SysPermission.Ctx(ctx).Insert(permissionTree)
 
 			if err != nil {
-				fmt.Printf("插入权限信息：%+v\t\t失败\n%v\n\n\n", permissionTree.SysPermission, err)
+				fmt.Printf("插入权限信息：%+v\t\t失败\n%v\n\n\n", permissionTree, err)
 			} else {
 				rowsAffected, _ := result.RowsAffected()
 				if rowsAffected > 0 {
-					fmt.Printf("插入权限信息：%+v\t\t已成功\n\n\n", permissionTree.SysPermission)
+					fmt.Printf("插入权限信息：%+v\t\t已成功\n\n\n", permissionTree)
 				}
 			}
 		}
 
 		// 有下级权限，递归插入权限
-		if len(permissionTree.Children) > 0 {
-			s.ImportPermissionTree(ctx, permissionTree.Children, permissionTree.SysPermission)
+		if len(permissionTree.GetItems()) > 0 {
+			s.ImportPermissionTree(ctx, permissionTree.GetItems(), permissionTree)
 		}
 	}
 	return nil
@@ -438,7 +451,7 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 }
 
 // CheckPermission 校验权限，如果多个则需要同时满足
-func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 权限id  域 资源  方法
+func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...base_permission.IPermission) (has bool, err error) { // 权限id  域 资源  方法
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行
@@ -447,19 +460,19 @@ func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...*sys_model
 	}
 
 	for _, permissionTree := range tree {
-		permissionResourceKey := gconv.String(permissionTree.Id)
-		if permissionTree.MatchMode > 0 {
-			permissionResourceKey = permissionTree.Identifier
+		permissionResourceKey := gconv.String(permissionTree.GetId())
+		if permissionTree.GetMatchMode() > 0 {
+			permissionResourceKey = permissionTree.GetIdentifier()
 		}
 		if has, err = s.CheckPermissionByIdentifier(ctx, permissionResourceKey); has == false {
-			return false, gerror.New("没有权限：" + permissionTree.Name + "，" + permissionTree.Description)
+			return false, gerror.New("没有权限：" + permissionTree.GetName() + "，" + permissionTree.GetDescription())
 		}
 	}
 	return true, nil
 }
 
 // CheckPermissionOr 校验权限，任意一个满足则有权限
-func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*sys_model.SysPermissionTree) (has bool, err error) { // 用户id  域 资源  方法
+func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...base_permission.IPermission) (has bool, err error) { // 用户id  域 资源  方法
 	session := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	// 如果是超级管理员或者某商管理员则直接放行
 	if session.Type == -1 || session.IsAdmin == true || session.IsSuperAdmin == true {
@@ -467,9 +480,9 @@ func (s *sSysPermission) CheckPermissionOr(ctx context.Context, tree ...*sys_mod
 	}
 
 	for _, permissionTree := range tree {
-		permissionResourceKey := gconv.String(permissionTree.Id)
-		if permissionTree.MatchMode > 0 {
-			permissionResourceKey = permissionTree.Identifier
+		permissionResourceKey := gconv.String(permissionTree.GetId())
+		if permissionTree.GetMatchMode() > 0 {
+			permissionResourceKey = permissionTree.GetIdentifier()
 		}
 		if has, err = s.CheckPermissionByIdentifier(ctx, permissionResourceKey); has == true {
 			break

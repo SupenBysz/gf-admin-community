@@ -1,25 +1,22 @@
-package internal
+package boot
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
-	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/kysion/base-library/utility/base_permission"
 )
 
 // InitPermission 初始化权限树结构
-func InitPermission() []*sys_model.SysPermissionTree {
-	sys_consts.Global.PermissionTree = []*sys_model.SysPermissionTree{
-		// 用户管理权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5947106208184773,
-				Name:       "用户管理",
-				Identifier: "User",
-				Type:       1,
-				IsShow:     1,
-			},
-			Children: []*sys_model.SysPermissionTree{
+func InitPermission() []base_permission.IPermission {
+	sys_consts.Global.PermissionTree = []base_permission.IPermission{
+		// 用户管理
+		base_permission.Factory().
+			SetId(5947106208184773).
+			SetName("用户管理").
+			SetIdentifier("User").
+			SetType(1).
+			SetIsShow(1).
+			SetItems([]base_permission.IPermission{
 				// 查看用户，查看某个用户登录账户
 				sys_enum.User.PermissionType.ViewDetail,
 				// 查看更多详情，含完整手机号
@@ -40,18 +37,16 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.User.PermissionType.SetUserRole,
 				// 设置用户权限，设置某一个用户的权限
 				sys_enum.User.PermissionType.SetPermission,
-			},
-		},
+			}),
+
 		// 组织架构权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5948649344204869,
-				Name:       "组织架构",
-				Identifier: "Organization",
-				Type:       1,
-				IsShow:     0,
-			},
-			Children: []*sys_model.SysPermissionTree{
+		base_permission.Factory().
+			SetId(5948649344204869).
+			SetName("组织架构").
+			SetIdentifier("Organization").
+			SetType(1).
+			SetIsShow(0).
+			SetItems([]base_permission.IPermission{
 				// 查看，查看某个组织架构
 				sys_enum.Organization.PermissionType.ViewDetail,
 				// 查看列表，查看所有组织架构列表
@@ -62,18 +57,16 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.Organization.PermissionType.Delete,
 				// 创建，创建组织架构
 				sys_enum.Organization.PermissionType.Create,
-			},
-		},
+			}),
+
 		// 角色管理权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5948684761759818,
-				Name:       "角色管理",
-				Identifier: "Role",
-				Type:       1,
-				IsShow:     1,
-			},
-			Children: []*sys_model.SysPermissionTree{
+		base_permission.Factory().
+			SetId(5948684761759818).
+			SetName("角色管理").
+			SetIdentifier("Role").
+			SetType(1).
+			SetIsShow(1).
+			SetItems([]base_permission.IPermission{
 				// 查看角色，查看某个角色
 				sys_enum.Role.PermissionType.ViewDetail,
 				// 角色列表，查看所有角色
@@ -88,18 +81,16 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.Role.PermissionType.SetMember,
 				// 设置角色权限，设置某个角色的权限
 				sys_enum.Role.PermissionType.SetPermission,
-			},
-		},
+			}),
+
 		// 权限管理权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5950408166668741,
-				Name:       "权限管理",
-				Identifier: "Permission",
-				Type:       1,
-				IsShow:     1,
-			},
-			Children: []*sys_model.SysPermissionTree{
+		base_permission.Factory().
+			SetId(5950408166668741).
+			SetName("权限管理").
+			SetIdentifier("Permission").
+			SetType(1).
+			SetIsShow(1).
+			SetItems([]base_permission.IPermission{
 				// 查看权限，查看某个权限
 				sys_enum.Permissions.PermissionType.ViewDetail,
 				// 权限列表，查看所有权限
@@ -110,18 +101,17 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.Permissions.PermissionType.Delete,
 				// 创建权限，创建权限
 				sys_enum.Permissions.PermissionType.Create,
-			},
-		},
+			}),
+
 		// 菜单管理权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5950408166676321,
-				Name:       "菜单管理",
-				Identifier: "Menu",
-				Type:       1,
-				IsShow:     0, // 默认隐藏
-			},
-			Children: []*sys_model.SysPermissionTree{
+		base_permission.Factory().
+			SetId(5950408166676321).
+			SetName("菜单管理").
+			SetIdentifier("Menu").
+			SetType(1).
+			SetIsShow(0). // 默认隐藏
+
+			SetItems([]base_permission.IPermission{
 				// 查看菜单，查看某个菜单
 				sys_enum.Menu.PermissionType.ViewDetail,
 				// 菜单树，查看菜单树
@@ -132,11 +122,7 @@ func InitPermission() []*sys_model.SysPermissionTree {
 				sys_enum.Menu.PermissionType.Delete,
 				// 创建菜单，创建菜单
 				sys_enum.Menu.PermissionType.Create,
-			},
-		},
-		// sms
-
-		// oss
+			}),
 	}
 
 	// 添加个人资质和审核权限树
@@ -146,19 +132,15 @@ func InitPermission() []*sys_model.SysPermissionTree {
 	return sys_consts.Global.PermissionTree
 }
 
-func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
-	result := []*sys_model.SysPermissionTree{
-
-		// 资质权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5953153121845333,
-				Name:       "个人资质",
-				Identifier: "PersonLicense",
-				Type:       1,
-				IsShow:     1,
-			},
-			Children: []*sys_model.SysPermissionTree{
+func initAuditAndLicensePermission() []base_permission.IPermission {
+	return []base_permission.IPermission{
+		// 资质
+		base_permission.Factory().SetId(5953153121845333).
+			SetName("个人资质").
+			SetIdentifier("PersonLicense").
+			SetType(1).
+			SetIsShow(1).
+			SetItems([]base_permission.IPermission{
 				// 查看资质信息，查看某条资质信息
 				sys_enum.License.PermissionType.ViewDetail,
 				// 资质列表，查看所有资质信息
@@ -169,26 +151,20 @@ func initAuditAndLicensePermission() []*sys_model.SysPermissionTree {
 				sys_enum.License.PermissionType.Create,
 				// 设置资质状态，设置某资质认证状态
 				sys_enum.License.PermissionType.SetState,
-			},
-		},
-		// 审核管理权限树
-		{
-			SysPermission: &sys_entity.SysPermission{
-				Id:         5953151699124300,
-				Name:       "个人资质审核管理",
-				Identifier: "PersonAudit",
-				Type:       1,
-				IsShow:     1,
-			},
-			Children: []*sys_model.SysPermissionTree{
+			}),
+		// 审核管理
+		base_permission.Factory().SetId(5953151699124300).
+			SetName("个人资质审核管理").
+			SetIdentifier("PersonAudit").
+			SetType(1).
+			SetIsShow(1).
+			SetItems([]base_permission.IPermission{
 				// 查看审核信息，查看某条资质审核信息
 				sys_enum.Audit.PermissionType.ViewDetail,
 				// 资质审核列表，查看所有资质审核
 				sys_enum.Audit.PermissionType.List,
 				// 更新资质审核信息，更新某条资质审核信息
 				sys_enum.Audit.PermissionType.Update,
-			},
-		},
+			}),
 	}
-	return result
 }

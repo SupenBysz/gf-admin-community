@@ -14,6 +14,8 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/utility/en_crypto"
+	"github.com/kysion/oss-library/oss_consts"
+	"github.com/kysion/sms-library/sms_consts"
 )
 
 var (
@@ -61,6 +63,10 @@ var (
 				sys_service.Casbin().Enforcer()
 				// Permission 初始化
 				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
+
+				// 导入oss + sms权限树
+				sys_service.SysPermission().ImportPermissionTree(ctx, oss_consts.PermissionTree, nil)
+				sys_service.SysPermission().ImportPermissionTree(ctx, sms_consts.PermissionTree, nil)
 			}
 
 			// 业务端密码加密规则重写示例

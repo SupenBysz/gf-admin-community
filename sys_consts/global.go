@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/gogf/gf/v2/container/garray"
+	"github.com/kysion/base-library/utility/base_permission"
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 )
 
@@ -17,7 +18,7 @@ type global struct {
 	LogLevelToDatabaseArr    *garray.SortedIntArray
 	ApiPreFix                string
 	OrmCacheConf             []*sys_model.TableCacheConf
-	PermissionTree           []*sys_model.SysPermissionTree // PermissionTree 权限信息定义
+	PermissionTree           []base_permission.IPermission // PermissionTree 权限信息定义
 	Searcher                 *xdb.Searcher
 	EmailConfig              sys_model.EmailConfig
 
@@ -34,7 +35,7 @@ var (
 		LogLevelToDatabaseArr:    garray.NewSortedIntArray(),
 		ApiPreFix:                "",
 		OrmCacheConf:             []*sys_model.TableCacheConf{},
-		PermissionTree:           []*sys_model.SysPermissionTree{},
+		PermissionTree:           []base_permission.IPermission{},
 		CryptoPasswordFunc:       nil,
 		EmailConfig:              sys_model.EmailConfig{},
 	}
