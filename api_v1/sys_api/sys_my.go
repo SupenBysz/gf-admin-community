@@ -17,7 +17,7 @@ type UpdateUserPasswordReq struct {
 
 type SetUserMobileReq struct {
 	g.Meta   `path:"/setUserMobile" method:"post" summary:"修改用户手机号" tags:"我的"`
-	Mobile   string `json:"mobile" v:"required|phone#请数据手机号|手机号错误" dc:"手机号"`
+	Mobile   string `json:"mobile" v:"required|phone#请输入手机号|手机号错误" dc:"手机号"`
 	Captcha  string `json:"captcha" v:"required#请输入手机验证码"`
 	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码"`
 }
@@ -28,4 +28,12 @@ type MyPermissionsReq struct {
 
 type MyMenusReq struct {
 	g.Meta `path:"/getMenus" method:"post" summary:"我的菜单|树" tags:"我的"`
+}
+
+type SetUserMailReq struct {
+	g.Meta   `path:"/setUserMail" method:"post" summary:"修改用户邮箱" tags:"我的"`
+	OldMail  string `json:"oldMail" v:"required|email#请输入原邮箱账号|邮箱账号格式错误" dc:"原邮箱"`
+	NewMail  string `json:"newMail" v:"required|email#请输入新邮箱账号|邮箱账号格式错误" dc:"新邮箱"`
+	Captcha  string `json:"captcha" v:"required#请输入邮箱验证码"`
+	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码"`
 }

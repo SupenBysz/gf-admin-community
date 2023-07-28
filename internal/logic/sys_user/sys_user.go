@@ -884,6 +884,57 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	return true, nil
 }
 
+// SetUserMail 设置用户邮箱
+func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, password string, userId int64) (bool, error) {
+	//s.initInnerCacheItems(ctx)
+
+	_, err := sys_service.SysMails().Verify(ctx, newMail, captcha, base_enum.Captcha.Type.SetMail)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = s.GetSysUserByEmail(ctx, oldMail)
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "原邮箱错误", sys_dao.SysUser.Table())
+	}
+
+	userInfo := sys_model.SysUser{}
+	sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
+		Id: userId,
+	}).Scan(&userInfo)
+
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+	}
+	if newMail == userInfo.Email {
+		return true, nil
+	}
+
+	// 检验密码
+	user, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
+
+	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
+
+	// 业务层自定义密码加密规则
+	if sys_consts.Global.CryptoPasswordFunc != nil {
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, userInfo.SysUser)
+	}
+
+	if pwdHash != user.Password {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登录密码错误")
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Email: newMail, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
+		Id: userId,
+	}))
+
+	if err != nil || affected == 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户邮箱失败", sys_dao.SysUser.Table())
+	}
+
+	return true, nil
+}
+
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Password = masker.MaskString(user.Password, masker.Password)
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
