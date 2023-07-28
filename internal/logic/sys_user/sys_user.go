@@ -893,7 +893,8 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 		return false, err
 	}
 
-	_, err = s.GetSysUserByEmail(ctx, oldMail)
+	mailUser := sys_entity.SysUser{}
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId, Email: oldMail}).Scan(&mailUser)
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "原邮箱错误", sys_dao.SysUser.Table())
 	}
