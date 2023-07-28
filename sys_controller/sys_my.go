@@ -52,6 +52,14 @@ func (c *cSysMy) SetUserMobile(ctx context.Context, req *sys_api.SetUserMobileRe
 	return result == true, err
 }
 
+// SetUserMail 设置用户登录邮箱
+func (c *cSysMy) SetUserMail(ctx context.Context, req *sys_api.SetUserMailReq) (api_v1.BoolRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result, err := sys_service.SysUser().SetUserMail(ctx, req.OldMail, req.NewMail, req.Captcha, req.Password, user.Id)
+	return result == true, err
+}
+
 // MyPermission  我的权限
 func (c *cSysMy) MyPermission(ctx context.Context, _ *sys_api.MyPermissionsReq) (*sys_model.MyPermissionListRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
