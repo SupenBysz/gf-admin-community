@@ -54,7 +54,7 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	cacheKey := captchaType.Description() + "_" + mailTo
 
 	// 保持验证码到缓存
-	_, _ = g.Redis().Set(ctx, cacheKey, code)
+	_, err = g.Redis().Set(ctx, cacheKey, code)
 	// 设置验证码缓存时间
 	_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
 
