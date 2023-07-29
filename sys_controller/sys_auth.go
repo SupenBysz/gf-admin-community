@@ -65,6 +65,13 @@ func (c *cAuth) RegisterByMobileOrMail(ctx context.Context, req *sys_api.Registe
 	return true, nil
 }
 
+// ForgotUserName 忘记用户名，返回用户名列表
+func (c *cAuth) ForgotUserName(ctx context.Context, req *sys_api.ForgotUserNameReq) (*sys_model.SysUserListRes, error) {
+	ret, err := sys_service.SysAuth().ForgotUserName(ctx, req.Captcha, req.MobileOrEmail)
+
+	return ret, err
+}
+
 // ForgotPassword 忘记密码
 func (c *cAuth) ForgotPassword(ctx context.Context, req *sys_api.ForgotPasswordReq) (res *sys_api.ForgotPasswordRes, err error) {
 	result, err := sys_service.SysAuth().ForgotPassword(ctx, req.ForgotPassword)

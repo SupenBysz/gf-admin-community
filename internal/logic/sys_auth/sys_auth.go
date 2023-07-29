@@ -375,6 +375,33 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 	return s.registerUser(ctx, &innerRegisterUser)
 }
 
+// ForgotUserName 忘记用户名，返回用户列表
+func (s *sSysAuth) ForgotUserName(ctx context.Context, captcha, mobileOrEmail string) (res *sys_model.SysUserListRes, err error) {
+	ver := false
+	if rule.IsPhone(mobileOrEmail) {
+		// 短信验证码校验
+		ver, err = sys_service.SysSms().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.ForgotUserNameAndPassword)
+
+	} else if rule.IsEmail(mobileOrEmail) {
+		// 邮箱验证码校验
+		ver, err = sys_service.SysMails().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.ForgotUserNameAndPassword)
+
+	} else {
+		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+	}
+
+	if captcha == "" || !ver || err != nil {
+		return nil, gerror.New("请输入正确的验证码")
+	}
+
+	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, mobileOrEmail)
+	if err != nil {
+		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱错误，请重试")
+	}
+
+	return userList, nil
+}
+
 // ForgotPassword 忘记密码
 func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error) {
 	ver := false

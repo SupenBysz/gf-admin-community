@@ -32,6 +32,12 @@ type RegisterByMobileOrMailReq struct {
 	sys_model.SysUserRegisterByMobileOrMail
 }
 
+type ForgotUserNameReq struct {
+	g.Meta        `path:"/forgotUserName" method:"post" summary:"忘记用户名" tags:"鉴权"`
+	Captcha       string `json:"captcha" v:"required#验证吗不能为空" dc:"验证码"`
+	MobileOrEmail string `json:"mobileOrEmail" v:"required-with:phone|required-with:email#邮箱或手机号至少写一个" dc:"邮箱或手机号"`
+}
+
 type ForgotPasswordReq struct {
 	g.Meta `path:"/forgotPassword" method:"post" summary:"忘记密码" tags:"鉴权"`
 	sys_model.ForgotPassword
