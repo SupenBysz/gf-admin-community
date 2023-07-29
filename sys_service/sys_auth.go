@@ -33,6 +33,8 @@ type (
 		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error)
 		// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码)
 		RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail) (res *sys_model.SysUser, err error)
+		// ForgotUserName 忘记用户名，返回用户列表
+		ForgotUserName(ctx context.Context, captcha, mobileOrEmail string) (res *sys_model.SysUserListRes, err error)
 		// ForgotPassword 忘记密码
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		// ResetPassword 重置密码
