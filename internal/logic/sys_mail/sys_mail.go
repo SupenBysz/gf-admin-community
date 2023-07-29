@@ -53,10 +53,17 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	captchaType := base_enum.Captcha.Type.New(typeIdentifier, "")
 	cacheKey := captchaType.Description() + "_" + mailTo
 
+	// 方式1
+	//err = g.DB().GetCache().Set(ctx, cacheKey, code, time.Minute*5)
+
+	// 方式2
 	// 保持验证码到缓存
 	_, err = g.Redis().Set(ctx, cacheKey, code)
 	// 设置验证码缓存时间
 	_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "验证码缓存失败", "Mail-Captcha")
+	}
 
 	return true, nil
 }
@@ -104,7 +111,10 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 	} else {
 		key = email
 	}
+	// 方式1
+	//code0, err := g.DB().GetCache().Get(ctx, key)
 
+	// 方式2
 	code, err := g.Redis().Get(ctx, key)
 
 	if err != nil || code.String() != captcha {
@@ -113,6 +123,16 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 
 	// 成功、清除该缓存
 	g.DB().GetCache().Remove(ctx, key)
+
+	// 此验证码类型是复用类型
+	if (typeIdentifier[0].Code() & base_enum.Captcha.Type.ForgotUserNameAndPassword.Code()) == base_enum.Captcha.Type.ForgotUserNameAndPassword.Code() {
+		cacheKey := base_enum.Captcha.Type.SetPassword.Description() + "_" + email
+
+		// 重新保持验证码到缓存
+		_, err = g.Redis().Set(ctx, cacheKey, code.String())
+		// 设置验证码缓存时间
+		_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
+	}
 
 	return true, nil
 }
