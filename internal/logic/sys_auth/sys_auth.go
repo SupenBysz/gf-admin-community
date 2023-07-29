@@ -380,11 +380,11 @@ func (s *sSysAuth) ForgotUserName(ctx context.Context, captcha, mobileOrEmail st
 	ver := false
 	if rule.IsPhone(mobileOrEmail) {
 		// 短信验证码校验
-		ver, err = sys_service.SysSms().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.ForgotUserNameAndPassword)
+		ver, err = sys_service.SysSms().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.SetUserName)
 
 	} else if rule.IsEmail(mobileOrEmail) {
 		// 邮箱验证码校验
-		ver, err = sys_service.SysMails().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.ForgotUserNameAndPassword)
+		ver, err = sys_service.SysMails().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.SetUserName)
 
 	} else {
 		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
