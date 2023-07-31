@@ -72,7 +72,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-//replace github.com/kysion/base-library => ../base-library
+replace github.com/kysion/base-library => ../base-library
 
 //replace github.com/kysion/sms-library => ../sms-library
 //
