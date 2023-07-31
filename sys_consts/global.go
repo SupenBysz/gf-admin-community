@@ -24,6 +24,9 @@ type global struct {
 
 	// 密码加密
 	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
+
+	// 注册是否需要邀约码
+	RegisterIsNeedInviteCode bool
 }
 
 var (
@@ -38,5 +41,6 @@ var (
 		PermissionTree:           []base_permission.IPermission{},
 		CryptoPasswordFunc:       nil,
 		EmailConfig:              sys_model.EmailConfig{},
+		RegisterIsNeedInviteCode: false,
 	}
 )
