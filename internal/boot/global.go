@@ -22,6 +22,8 @@ func InitGlobal() {
 	sys_consts.Global.AllowLoginUserTypeArr = garray.NewSortedIntArrayFrom(g.Cfg().MustGet(context.Background(), "service.allowLoginUserType", "["+userDefaultType.String()+"]").Ints()).SetUnique(true)
 	// 加载接口前缀
 	sys_consts.Global.ApiPreFix = g.Cfg().MustGet(context.Background(), "service.apiPrefix").String()
+	// 注册是否需要邀约码
+	sys_consts.Global.RegisterIsNeedInviteCode = g.Cfg().MustGet(context.Background(), "service.registerIsNeedInviteCode").Bool()
 	// 加载ORM表缓存参数
 	g.Cfg().MustGet(context.Background(), "service.ormCache", []interface{}{}).Structs(&sys_consts.Global.OrmCacheConf)
 }

@@ -143,6 +143,8 @@ var (
 						group.Group("/person_audit", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAudit) })
 						// 菜单
 						group.Group("/menu", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMenu) })
+						// 邀约
+						group.Group("/invite", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysInvite) })
 
 					})
 				})

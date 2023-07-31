@@ -2,6 +2,12 @@ package rules
 
 import (
 	"context"
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
+	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/invite_id"
+	"github.com/gogf/gf/v2/errors/gcode"
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/utility/rule"
@@ -61,4 +67,21 @@ func CheckRegisterRule(ctx context.Context, registerIdentifier string) bool {
 	}
 
 	return false
+}
+
+func CheckInviteCode(ctx context.Context, code string) (res *sys_model.InviteRes, err error) {
+	// 判断是否填写邀约码
+	if sys_consts.Global.RegisterIsNeedInviteCode && code == "" {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统要求注册必需填写邀约码！")
+	}
+	// 只要填写了必需进行校验
+	if code != "" {
+		id := invite_id.CodeToInviteId(code)
+		res, err = sys_service.SysInvite().GetInviteById(ctx, id)
+		if err != nil {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "填写的邀约码错误，请检查！")
+		}
+	}
+
+	return res, err
 }

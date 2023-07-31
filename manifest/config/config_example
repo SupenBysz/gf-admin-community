@@ -52,6 +52,8 @@ service:
   loginRule: [ 1,2,4 ]
   # 注册支持的方式：1用户名+密码+图形验证码、 2用户名+手机号+验证码、4用户名+邮箱+验证码
   registerRule: [1,2,4]
+  # 注册是否强制需要填写邀约码: true必需填写邀约码、false可选
+  registerIsNeedInviteCode: false
 
 # 日志配置
 logger:
