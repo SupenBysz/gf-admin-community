@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"github.com/kysion/base-library/base_hook"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
@@ -30,7 +31,11 @@ type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
 
 type sSysAuth struct {
 	hookArr []hookInfo
-	conf    gdb.CacheOption
+
+	// 邀约&注册Hook
+	InviteRegisterHook base_hook.BaseHook[sys_enum.InviteType, sys_hook.InviteRegisterHookFunc]
+
+	conf gdb.CacheOption
 }
 
 func init() {
@@ -46,6 +51,11 @@ func New() sys_service.ISysAuth {
 		},
 		hookArr: make([]hookInfo, 0),
 	}
+}
+
+// InstallInviteRegisterHook 订阅邀约注册Hook
+func (s *sSysAuth) InstallInviteRegisterHook(actionType sys_enum.InviteType, hookFunc sys_hook.InviteRegisterHookFunc) {
+	s.InviteRegisterHook.InstallHook(actionType, hookFunc)
 }
 
 // InstallHook 安装Hook
@@ -291,12 +301,20 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		Username:        info.Username,
 		Password:        info.Password,
 		ConfirmPassword: info.ConfirmPassword,
+		InviteCode:      info.InviteCode,
 	}
 
 	return s.registerUser(ctx, &userInnerRegister)
 }
 
 func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister) (*sys_model.SysUser, error) {
+	inviteCode := innerRegister.InviteCode
+	// 判断是否填写邀约码,只要填写了必需进行校验
+	inviteInfo, err := rules.CheckInviteCode(ctx, innerRegister.InviteCode)
+	if err != nil {
+		return nil, err
+	}
+
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, innerRegister.Username)
 	if count > 0 {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
@@ -305,7 +323,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 	data := sys_model.SysUser{}
 
 	// 开启事务
-	err := sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+	err = sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data, err := sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
@@ -326,6 +344,33 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 				return err
 			}
 		}
+		needToSettleInvite := false
+
+		// 广播邀约Hook
+		if inviteCode != "" {
+			s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
+				// 判断订阅的Hook类型是否一致
+				if key.Code()&inviteInfo.Type == inviteInfo.Type {
+					// 业务类型一致则调用注入的Hook函数
+					g.Try(ctx, func(ctx context.Context) {
+						needToSettleInvite, err = value(ctx, sys_enum.Invite.Type.Register, inviteInfo, data)
+						if err != nil {
+							return
+						}
+					})
+				}
+			})
+		}
+
+		// 业务层没有处理邀约
+		if needToSettleInvite {
+			// 修改邀约次数（里面包含了判断邀约次数从而修改邀约状态的逻辑）
+			_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 
@@ -351,6 +396,7 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 		ConfirmPassword: info.ConfirmPassword,
 		Mobile:          "",
 		Email:           "",
+		InviteCode:      info.InviteCode,
 	}
 
 	ver := false
