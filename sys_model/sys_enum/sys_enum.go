@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
+	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
@@ -33,8 +34,14 @@ type (
 
 	PermissionMatchMode sys_enum_permissions.MatchModeEnum
 
-	AuditAction = sys_enum_audit.ActionEnum
+	AuditAction sys_enum_audit.ActionEnum
 	AuditEvent  sys_enum_audit.EventEnum
+
+	// InviteType 邀约类型
+	InviteType sys_enum_invite.TypeEnum
+
+	// InviteState 邀约状态
+	InviteState sys_enum_invite.StateEnum
 )
 
 var (
@@ -58,4 +65,6 @@ var (
 
 	Audit   = sys_enum_audit.Audit
 	License = sys_enum_license.License
+
+	Invite = sys_enum_invite.Invite
 )
