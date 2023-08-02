@@ -24,6 +24,11 @@ func InitGlobal() {
 	sys_consts.Global.ApiPreFix = g.Cfg().MustGet(context.Background(), "service.apiPrefix").String()
 	// 注册是否需要邀约码
 	sys_consts.Global.RegisterIsNeedInviteCode = g.Cfg().MustGet(context.Background(), "service.registerIsNeedInviteCode").Bool()
+	// 邀约码默认有效期天数
+	sys_consts.Global.InviteCodeExpireDay = g.Cfg().MustGet(context.Background(), "service.inviteCodeExpireDay").Int()
+	// 邀约码最大激活次数上限
+	sys_consts.Global.InviteCodeMaxActivateNumber = g.Cfg().MustGet(context.Background(), "service.inviteCodeMaxActivateNumber").Int()
+
 	// 加载ORM表缓存参数
 	g.Cfg().MustGet(context.Background(), "service.ormCache", []interface{}{}).Structs(&sys_consts.Global.OrmCacheConf)
 }

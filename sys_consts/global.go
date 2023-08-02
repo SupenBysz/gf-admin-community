@@ -27,20 +27,26 @@ type global struct {
 
 	// 注册是否需要邀约码
 	RegisterIsNeedInviteCode bool
+	// 邀约码默认时长天数
+	InviteCodeExpireDay int
+	// 邀约码次数上限
+	InviteCodeMaxActivateNumber int
 }
 
 var (
 	Global = global{
-		UserDefaultType:          sys_enum.User.Type.SuperAdmin,
-		UserDefaultState:         sys_enum.User.State.Normal,
-		NotAllowLoginUserTypeArr: garray.NewSortedIntArray(),
-		AllowLoginUserTypeArr:    garray.NewSortedIntArray(),
-		LogLevelToDatabaseArr:    garray.NewSortedIntArray(),
-		ApiPreFix:                "",
-		OrmCacheConf:             []*sys_model.TableCacheConf{},
-		PermissionTree:           []base_permission.IPermission{},
-		CryptoPasswordFunc:       nil,
-		EmailConfig:              sys_model.EmailConfig{},
-		RegisterIsNeedInviteCode: false,
+		UserDefaultType:             sys_enum.User.Type.SuperAdmin,
+		UserDefaultState:            sys_enum.User.State.Normal,
+		NotAllowLoginUserTypeArr:    garray.NewSortedIntArray(),
+		AllowLoginUserTypeArr:       garray.NewSortedIntArray(),
+		LogLevelToDatabaseArr:       garray.NewSortedIntArray(),
+		ApiPreFix:                   "",
+		OrmCacheConf:                []*sys_model.TableCacheConf{},
+		PermissionTree:              []base_permission.IPermission{},
+		CryptoPasswordFunc:          nil,
+		EmailConfig:                 sys_model.EmailConfig{},
+		RegisterIsNeedInviteCode:    false,
+		InviteCodeExpireDay:         0,
+		InviteCodeMaxActivateNumber: 0,
 	}
 )

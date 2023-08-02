@@ -54,6 +54,11 @@ service:
   registerRule: [1,2,4]
   # 注册是否强制需要填写邀约码: true必需填写邀约码、false可选
   registerIsNeedInviteCode: false
+  # 邀约码默认时长
+  inviteCodeExpireDay: 0
+  # 邀约码激活次数上限
+  inviteCodeMaxActivateNumber: 0
+
 
 # 日志配置
 logger:
