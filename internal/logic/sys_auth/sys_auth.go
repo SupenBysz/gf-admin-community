@@ -344,7 +344,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 				return err
 			}
 		}
-		needToSettleInvite := false
+		needToSettleInvite := true
 
 		// 广播邀约Hook
 		if inviteCode != "" {
@@ -353,6 +353,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 				if key.Code()&inviteInfo.Type == inviteInfo.Type {
 					// 业务类型一致则调用注入的Hook函数
 					g.Try(ctx, func(ctx context.Context) {
+						// 假如业务层返回false，那下面就无需执行修改邀约次数逻辑
 						needToSettleInvite, err = value(ctx, sys_enum.Invite.Type.Register, inviteInfo, data)
 						if err != nil {
 							return
