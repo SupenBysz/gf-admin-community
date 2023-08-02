@@ -1,4 +1,4 @@
-package rules
+package sys_rules
 
 import (
 	"context"
