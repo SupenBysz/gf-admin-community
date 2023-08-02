@@ -21,7 +21,7 @@ import (
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/base_funs"
-	"github.com/kysion/base-library/utility/base_rule"
+	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
@@ -310,7 +310,22 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
-				if hook.Value.Key.Code()&sys_enum.User.Event.BeforeCreate.Code() == sys_enum.User.Event.BeforeCreate.Code() {
+				// 枚举优化使用：直接调用Has
+				//enumOb := sys_enum.User.Type.New(3, "")
+				//if enumOb.Has(sys_enum.User.Event.BeforeCreate) { // 单个满足
+				//
+				//}
+				//if hook.Value.Key.Has(sys_enum.User.Event.BeforeCreate, sys_enum.User.Event.AfterCreate) { // 多个满足
+				//
+				//}
+
+				// 自增
+				//enumOb.Add(sys_enum.User.Event.AfterCreate, sys_enum.User.Event.BeforeCreate)
+
+				// 自减少
+				//enumOb.Remove(sys_enum.User.Event.AfterCreate)
+
+				if (hook.Value.Key.Code() & sys_enum.User.Event.BeforeCreate.Code()) == sys_enum.User.Event.BeforeCreate.Code() {
 					res, _ := hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
 					res.Detail.Id = data.Id
 					data.Detail = res.Detail
@@ -808,9 +823,9 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 // GetUserListByMobileOrMail 根据手机号或者邮箱查询用户列表
 func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error) {
 	userModel := sys_dao.SysUser.Ctx(ctx)
-	if base_rule.IsPhone(info) {
+	if base_verify.IsPhone(info) {
 		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
-	} else if base_rule.IsEmail(info) {
+	} else if base_verify.IsEmail(info) {
 		userModel = userModel.Where(sys_do.SysUser{Email: info})
 	}
 
