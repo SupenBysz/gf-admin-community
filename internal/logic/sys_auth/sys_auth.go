@@ -20,7 +20,7 @@ import (
 	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/base_hook"
 	"github.com/kysion/base-library/base_model/base_enum"
-	"github.com/kysion/base-library/utility/base_rule"
+	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -178,7 +178,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 
 	// 短信验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
 	ver := false
-	if base_rule.IsPhone(info.Mobile) {
+	if base_verify.IsPhone(info.Mobile) {
 		if info.Captcha != "" {
 			// 短信验证码校验
 			ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.Login)
@@ -401,12 +401,12 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 	}
 
 	ver := false
-	if base_rule.IsPhone(info.MobileOrMail) {
+	if base_verify.IsPhone(info.MobileOrMail) {
 		// 短信验证码校验
 		ver, err = sys_service.SysSms().Verify(ctx, info.MobileOrMail, info.Captcha, base_enum.Captcha.Type.Register)
 		innerRegisterUser.Mobile = info.MobileOrMail
 
-	} else if base_rule.IsEmail(info.MobileOrMail) {
+	} else if base_verify.IsEmail(info.MobileOrMail) {
 		// 邮箱验证码校验
 		ver, err = sys_service.SysMails().Verify(ctx, info.MobileOrMail, info.Captcha, base_enum.Captcha.Type.Register)
 		innerRegisterUser.Email = info.MobileOrMail
@@ -425,11 +425,11 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 // ForgotUserName 忘记用户名，返回用户列表
 func (s *sSysAuth) ForgotUserName(ctx context.Context, captcha, mobileOrEmail string) (res *sys_model.SysUserListRes, err error) {
 	ver := false
-	if base_rule.IsPhone(mobileOrEmail) {
+	if base_verify.IsPhone(mobileOrEmail) {
 		// 短信验证码校验
 		ver, err = sys_service.SysSms().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.SetUserName)
 
-	} else if base_rule.IsEmail(mobileOrEmail) {
+	} else if base_verify.IsEmail(mobileOrEmail) {
 		// 邮箱验证码校验
 		ver, err = sys_service.SysMails().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.SetUserName)
 
@@ -458,7 +458,7 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名填写错误！")
 	}
 
-	if base_rule.IsPhone(info.Mobile) {
+	if base_verify.IsPhone(info.Mobile) {
 		// 判断绑定的是否是此手机号
 		if user.Mobile != info.Mobile {
 			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的手机号填写错误！")
@@ -466,7 +466,7 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 
 		// 短信验证码校验
 		ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.SetPassword)
-	} else if base_rule.IsEmail(info.Mobile) {
+	} else if base_verify.IsEmail(info.Mobile) {
 		// 判断绑定的是否是此邮箱
 		if user.Email != info.Mobile {
 			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的邮箱填写错误！")

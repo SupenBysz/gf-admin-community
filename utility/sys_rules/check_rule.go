@@ -10,21 +10,21 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/kysion/base-library/utility/base_rule"
+	"github.com/kysion/base-library/utility/base_verify"
 )
 
 // CheckLoginRule 校验用户是否可以通过此方式登陆
 func CheckLoginRule(ctx context.Context, loginIdentifier string) bool {
 	arr := g.Cfg().MustGet(ctx, "service.loginRule").Array()
 
-	if base_rule.IsPhone(loginIdentifier) {
+	if base_verify.IsPhone(loginIdentifier) {
 		for _, v := range arr {
 			if gconv.Int(v) == 2 {
 				return true
 			}
 		}
 
-	} else if base_rule.IsEmail(loginIdentifier) {
+	} else if base_verify.IsEmail(loginIdentifier) {
 		for _, v := range arr {
 			if gconv.Int(v) == 4 {
 				return true
@@ -45,14 +45,14 @@ func CheckLoginRule(ctx context.Context, loginIdentifier string) bool {
 func CheckRegisterRule(ctx context.Context, registerIdentifier string) bool {
 	arr := g.Cfg().MustGet(ctx, "service.registerRule").Array()
 
-	if base_rule.IsPhone(registerIdentifier) {
+	if base_verify.IsPhone(registerIdentifier) {
 		for _, v := range arr {
 			if gconv.Int(v) == 2 {
 				return true
 			}
 		}
 
-	} else if base_rule.IsEmail(registerIdentifier) {
+	} else if base_verify.IsEmail(registerIdentifier) {
 		for _, v := range arr {
 			if gconv.Int(v) == 4 {
 				return true
