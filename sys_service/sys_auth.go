@@ -15,6 +15,8 @@ import (
 
 type (
 	ISysAuth interface {
+		// InstallInviteRegisterHook 订阅邀约注册Hook
+		InstallInviteRegisterHook(actionType sys_enum.InviteType, hookFunc sys_hook.InviteRegisterHookFunc)
 		// InstallHook 安装Hook
 		InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_hook.AuthHookFunc) int64
 		// UnInstallHook 卸载Hook

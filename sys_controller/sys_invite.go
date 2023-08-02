@@ -33,6 +33,8 @@ func (c *cSysInvite) QueryInviteList(ctx context.Context, req *sys_api.QueryInvi
 
 // CreateInvite 创建邀约信息
 func (c *cSysInvite) CreateInvite(ctx context.Context, req *sys_api.CreateInviteReq) (*sys_model.InviteRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+	req.UserId = user.Id
 	ret, err := sys_service.SysInvite().CreateInvite(ctx, &req.Invite)
 
 	return ret, err
