@@ -117,10 +117,19 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 
 	data := sys_do.SysInvite{}
 	gconv.Struct(info, &data)
+	// 过期时间和激活上限次数从配置加载
+	data.ExpireAt = gtime.Now().AddDate(0, 0, sys_consts.Global.InviteCodeExpireDay) // 过期时间
+	data.ActivateNumber = sys_consts.Global.InviteCodeMaxActivateNumber              //
+
 	id := idgen.NextId()
+
+	if sys_consts.Global.InviteCodeExpireDay == 0 {
+		data.ExpireAt = nil
+	}
 	if info.Value == "" {
 		data.Value = nil
 	}
+
 	err = sys_dao.SysInvite.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data.Id = id
 
