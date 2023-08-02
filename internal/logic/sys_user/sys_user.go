@@ -21,11 +21,11 @@ import (
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/base_funs"
+	"github.com/kysion/base-library/utility/base_rule"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
-	"github.com/kysion/base-library/utility/rule"
 	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
@@ -808,9 +808,9 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 // GetUserListByMobileOrMail 根据手机号或者邮箱查询用户列表
 func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error) {
 	userModel := sys_dao.SysUser.Ctx(ctx)
-	if rule.IsPhone(info) {
+	if base_rule.IsPhone(info) {
 		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
-	} else if rule.IsEmail(info) {
+	} else if base_rule.IsEmail(info) {
 		userModel = userModel.Where(sys_do.SysUser{Email: info})
 	}
 
