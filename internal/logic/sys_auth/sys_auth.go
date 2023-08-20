@@ -364,7 +364,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		}
 
 		// 业务层没有处理邀约
-		if needToSettleInvite {
+		if needToSettleInvite && inviteInfo != nil {
 			// 修改邀约次数（里面包含了判断邀约次数从而修改邀约状态的逻辑）
 			_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false)
 			if err != nil {
@@ -454,6 +454,8 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 	ver := false
 
 	user, err := sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
+
+	user, err = sys_service.SysUser().GetUserDetail(ctx, user.Id)
 	if err != nil {
 		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名填写错误！")
 	}

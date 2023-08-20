@@ -25,11 +25,11 @@ func (c *cCaptcha) Index(ctx context.Context, _ *sys_api.CaptchaIndexReq) (res *
 
 // SendCaptchaBySms 发送短信验证码
 func (c *cCaptcha) SendCaptchaBySms(ctx context.Context, req *sys_api.SendCaptchaBySmsReq) (api_v1.BoolRes, error) {
-	//smsType := sys_enum.Sms.CaptchaType.New(req.CaptchaType, "")
+	//smsType := base_enum.Captcha.Type.New(req.CaptchaType, "")
 	//g.DB().GetCache().Set(ctx, smsType.Description()+"_"+req.Mobile, "666666", time.Minute*5)
-
+	//
 	//return true, nil
-
+	
 	sendReq := sms_api.SendSmsReq{
 		CaptchaType: req.CaptchaType,
 		SmsSendMessageReq: sms_model.SmsSendMessageReq{

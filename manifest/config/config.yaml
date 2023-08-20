@@ -29,7 +29,7 @@ service:
   notAllowLoginUserType: [ 0 ]
   # 加载允许登录的用户类型，并去重
   # 如果NotAllowLoginUserTypeArr包含allowLoginUserType中的用户类型，那么前者优先级高于后者, 默认值为UserDefaultType
-  allowLoginUserType: [32]
+  allowLoginUserType: [32,-1]
   # 需要存储到数据库中的日志，支持：all,error,warn,info
   logLevelToDatabase: [ "all" ]
   # 业务审核服务时限，超过时限需要重新申请审核，相关业务有自定义设置时，将自动忽略这里的设置
@@ -49,9 +49,16 @@ service:
       seconds: 3600
       force: false
   # 登陆支持的方式：1用户名+密码+图形验证码、 2手机号+密码或验证码、4邮箱+密码
-  loginRule: [ 1,4 ]
+  loginRule: [ 1,2,4 ]
   # 注册支持的方式：1用户名+密码+图形验证码、 2用户名+手机号+验证码、4用户名+邮箱+验证码
-  registerRule: [4]
+  registerRule: [1,2,4]
+  # 注册是否强制需要填写邀约码: true必需填写邀约码、false可选
+  registerIsNeedInviteCode: true
+  # 邀约码默认时长
+  inviteCodeExpireDay: 0
+  # 邀约码激活次数上限
+  inviteCodeMaxActivateNumber: 0
+
 
 # 邮件设置
 email:
