@@ -47,7 +47,7 @@ func New() *sFile {
 	return &sFile{
 		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
-		CacheDuration: time.Minute * 0,
+		CacheDuration: time.Hour * 2,
 	}
 }
 
@@ -92,7 +92,6 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		}
 
 		uploadPath = uploadPath + "/" + gtime.Now().Format("Ymd")
-
 		// 目录不存在则创建
 		if !gfile.Exists(uploadPath) {
 			gfile.Mkdir(uploadPath)
@@ -261,6 +260,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 // UploadIDCard 上传身份证照片
 func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error) {
+
 	result, err := s.Upload(ctx, in.FileUploadInput)
 
 	if err != nil {
