@@ -328,7 +328,8 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核信息保存失败", sys_dao.SysAudit.Table())
 		}
 
-		data := s.GetAuditById(ctx, info.Id)
+		//data := s.GetAuditById(ctx, info.Id)
+		data, _ := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), info.Id)
 		if data == nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
 		}
