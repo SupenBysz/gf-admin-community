@@ -19,8 +19,8 @@ type GetSettingByNameReq struct {
 	base_model.SearchParams
 }
 
-type UpdateSettingReq struct {
-	g.Meta `path:"/updateSetting" method:"POST" tags:"系统配置" summary:"修改配置|信息" dc:"修改系统配置"`
+type SaveSettingReq struct {
+	g.Meta `path:"/saveSetting" method:"POST" tags:"系统配置" summary:"保存配置|信息" dc:"保存系统配置"`
 
 	sys_model.SysSettings
 }
