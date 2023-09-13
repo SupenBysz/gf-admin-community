@@ -42,11 +42,11 @@ func (c *cSysSettings) GetByName(ctx context.Context, req *sys_api.GetSettingByN
 	return ret, err
 }
 
-func (c *cSysSettings) Update(ctx context.Context, req *sys_api.UpdateSettingReq) (*sys_model.SysSettingsRes, error) {
+func (c *cSysSettings) Save(ctx context.Context, req *sys_api.SaveSettingReq) (*sys_model.SysSettingsRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	req.UnionMainId = user.UnionMainId
 
-	ret, err := sys_service.SysSettings().Update(ctx, &req.SysSettings)
+	ret, err := sys_service.SysSettings().Create(ctx, &req.SysSettings)
 
 	return ret, err
 }
