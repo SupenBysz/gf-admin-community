@@ -9,7 +9,7 @@ require (
 	github.com/gogf/gf/v2 v2.5.4
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/kysion/base-library v0.0.25
-	github.com/kysion/oss-library v0.1.1
+	github.com/kysion/oss-library v0.1.2
 	github.com/kysion/sms-library v0.1.0
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230717040633-c8446edaab76
 	github.com/mojocn/base64Captcha v1.3.5
@@ -79,10 +79,10 @@ require (
 //	github.com/gogf/gf/v2 => /Volumes/DataDocument/CodeSpace/kysion.com/gf-code/c/gf
 //)
 
-//replace github.com/kysion/base-library => ../base-library
-
-//replace github.com/kysion/sms-library => ../sms-library
+//replace github.com/kysion/base-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/base-library
 //
-//replace github.com/kysion/oss-library => ../oss-library
+//replace github.com/kysion/sms-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/sms-library
+//
+//replace github.com/kysion/oss-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/oss-library
 
 //replace github.com/kysion/sms-library => gitea.kysion.com/Kysion/sms-library v0.0.6
