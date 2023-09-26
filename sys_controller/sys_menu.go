@@ -65,7 +65,7 @@ func (c *cSysMenu) DeleteMenu(ctx context.Context, req *sys_api.DeleteMenuReq) (
 }
 
 // GetMenuTree 根据ID获取下级菜单信息，返回菜单树
-func (c *cSysMenu) GetMenuTree(ctx context.Context, req *sys_api.GetMenuTreeReq) ([]*sys_model.SysMenuTreeRes, error) {
+func (c *cSysMenu) GetMenuTree(ctx context.Context, req *sys_api.GetMenuTreeReq) (sys_model.SysMenuTreeListRes, error) {
 	// 权限判断
 	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Menu.PermissionType.Tree); has != true {
 		return nil, err
@@ -78,6 +78,6 @@ func (c *cSysMenu) GetMenuTree(ctx context.Context, req *sys_api.GetMenuTreeReq)
 
 // GetMenuList 根据ID获取下级菜单列表，IsRecursive代表是否需要返回下级
 //func (c *cSysMenu) GetMenuList(ctx context.Context, req *sys_api.GetMenuListReq) ([]*sys_entity.SysMenu, error) {
-//	ret, err := sys_service.SysMenu().GetMenuList(ctx)
+//	ret, err := sys_service.SysMenu().GetMenuList(ctx)Á
 //	return ret, err
 //}

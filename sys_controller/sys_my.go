@@ -82,7 +82,7 @@ func (c *cSysMy) MyPermission(ctx context.Context, _ *sys_api.MyPermissionsReq) 
 }
 
 // MyMenu  我的菜单
-func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) ([]*sys_model.SysMenuTreeRes, error) {
+func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.SysMenuTreeListRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	// 菜单id = 权限id
 
