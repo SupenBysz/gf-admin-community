@@ -210,7 +210,7 @@ func (s *sSysMenu) MakeMenuTree(ctx context.Context, parentId int64, isMakeNodeF
 }
 
 // GetMenuTree 根据ID获取下级菜单信息，返回菜单树，并缓存
-func (s *sSysMenu) GetMenuTree(ctx context.Context, parentId int64) ([]*sys_model.SysMenuTreeRes, error) {
+func (s *sSysMenu) GetMenuTree(ctx context.Context, parentId int64) (sys_model.SysMenuTreeListRes, error) {
 	// 先判断缓存中是否存在菜单树，存在直接返回
 	//res, _ := g.DB().GetCache().Get(ctx, "MenuTreeCache_"+gconv.String(parentId))
 

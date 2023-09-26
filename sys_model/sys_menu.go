@@ -31,10 +31,10 @@ type UpdateSysMenu struct {
 }
 
 type SysMenuRes sys_entity.SysMenu
+type SysMenuListRes base_model.CollectRes[*sys_entity.SysMenu]
 
 type SysMenuTreeRes struct {
 	*sys_entity.SysMenu
 	Children []*SysMenuTreeRes `json:"children" dc:"菜单子级"`
 }
-
-type SysMenuListRes base_model.CollectRes[*sys_entity.SysMenu]
+type SysMenuTreeListRes []*SysMenuTreeRes

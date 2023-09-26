@@ -27,7 +27,7 @@ type (
 		// MakeMenuTree 构建菜单树
 		MakeMenuTree(ctx context.Context, parentId int64, isMakeNodeFun func(ctx context.Context, cruuentMenu *sys_entity.SysMenu) bool) ([]*sys_model.SysMenuTreeRes, error)
 		// GetMenuTree 根据ID获取下级菜单信息，返回菜单树，并缓存
-		GetMenuTree(ctx context.Context, parentId int64) ([]*sys_model.SysMenuTreeRes, error)
+		GetMenuTree(ctx context.Context, parentId int64) (sys_model.SysMenuTreeListRes, error)
 		// GetMenuList 根据ID获取下级菜单列表，IsRecursive代表是否需要返回下级
 		GetMenuList(ctx context.Context, parentId int64, IsRecursive bool, limitChildrenIds ...int64) ([]*sys_entity.SysMenu, error)
 	}
