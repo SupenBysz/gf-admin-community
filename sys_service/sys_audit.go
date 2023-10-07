@@ -29,6 +29,8 @@ type (
 		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
 		// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息
 		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
+		// GetAuditByLatestUserId 获取最新的业务个人审核信息
+		GetAuditByLatestUserId(ctx context.Context, userId int64) *sys_entity.SysAudit
 		// CreateAudit 创建审核信息
 		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error)
 		// UpdateAudit 处理审核信息

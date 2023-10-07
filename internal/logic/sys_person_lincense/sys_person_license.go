@@ -67,12 +67,24 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 
 			// 将路径id换成可访问图片的url
 			{
+				tempIdcardFrontPath := ""
 				if gstr.IsNumeric(auditData.IdcardFrontPath) {
-					auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardFrontPath)
+					if uploadFile, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(auditData.IdcardFrontPath), auditData.UserId); err == nil && uploadFile != nil {
+						tempIdcardFrontPath = uploadFile.Src
+					}
 				}
+
+				auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardFrontPath)
+			}
+			{
+				tempIdcardBackPath := ""
 				if gstr.IsNumeric(auditData.IdcardBackPath) {
-					auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, auditData.IdcardBackPath)
+					if uploadFile, err := sys_service.File().GetUploadFile(ctx, gconv.Int64(auditData.IdcardBackPath), auditData.UserId); err == nil && uploadFile != nil {
+						tempIdcardBackPath = uploadFile.Src
+					}
 				}
+
+				auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardBackPath)
 			}
 
 			// 重新赋值  将id转为可访问路径
@@ -95,10 +107,10 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 		// 审核通过
 		if (info.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
 			// 创建个人资质
-			license := sys_model.AuditPersonLicense{}
-			gjson.DecodeTo(info.AuditData, &license)
+			auditPersonLicense := sys_model.AuditPersonLicense{}
+			gjson.DecodeTo(info.AuditData, &auditPersonLicense)
 
-			licenseRes, err := sys_service.SysPersonLicense().CreateLicense(ctx, license.PersonLicense)
+			licenseRes, err := sys_service.SysPersonLicense().CreateLicense(ctx, auditPersonLicense)
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后个人资质创建失败", sys_dao.SysPersonLicense.Table())
 			}
@@ -137,11 +149,16 @@ func (s *sSysPersonLicense) QueryLicenseList(ctx context.Context, search base_mo
 }
 
 // CreateLicense  新增个人资质|信息
-func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.PersonLicense) (*sys_entity.SysPersonLicense, error) {
+func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.AuditPersonLicense) (*sys_entity.SysPersonLicense, error) {
 	result := sys_entity.SysPersonLicense{}
 	gconv.Struct(info, &result)
 
-	result.Id = idgen.NextId()
+	if info.LicenseId == 0 {
+		result.Id = idgen.NextId()
+	} else {
+		result.Id = info.LicenseId
+	}
+
 	result.State = 0
 	result.AuthType = 0
 	result.CreatedAt = gtime.Now()
@@ -171,7 +188,7 @@ func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.Pe
 }
 
 // UpdateLicense  更新个人资质认证，如果是已经通过的认证，需要重新认证通过后才生效|信息
-func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.PersonLicense, id int64) (*sys_entity.SysPersonLicense, error) {
+func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.AuditPersonLicense, id int64) (*sys_entity.SysPersonLicense, error) {
 	data, err := s.GetLicenseById(ctx, id)
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
@@ -242,7 +259,7 @@ func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, audit
 	return &result
 }
 
-// SetLicenseState  设置个人资质信息状态
+// SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
 func (s *sSysPersonLicense) SetLicenseState(ctx context.Context, id int64, state int) (bool, error) {
 	_, err := s.GetLicenseById(ctx, id)
 	if err != nil {
