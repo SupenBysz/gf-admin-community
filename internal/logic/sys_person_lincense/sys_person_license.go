@@ -137,11 +137,16 @@ func (s *sSysPersonLicense) QueryLicenseList(ctx context.Context, search base_mo
 }
 
 // CreateLicense  新增个人资质|信息
-func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.PersonLicense) (*sys_entity.SysPersonLicense, error) {
+func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.AuditPersonLicense) (*sys_entity.SysPersonLicense, error) {
 	result := sys_entity.SysPersonLicense{}
 	gconv.Struct(info, &result)
 
-	result.Id = idgen.NextId()
+	if info.LicenseId == 0 {
+		result.Id = idgen.NextId()
+	} else {
+		result.Id = info.LicenseId
+	}
+
 	result.State = 0
 	result.AuthType = 0
 	result.CreatedAt = gtime.Now()
