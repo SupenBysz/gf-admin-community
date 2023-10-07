@@ -27,12 +27,13 @@ func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), pe
 	return f()
 }
 
-func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.PersonLicense, data *T) (response *T, err error) {
+func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.AuditPersonLicense, data *T) (response *T, err error) {
 	newData := &sys_entity.SysPersonLicense{}
 	gconv.Struct(data, newData)
 
 	{
-		userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
+		//userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
+		userId := info.UserId
 
 		// 用户资源文件夹
 		userFolder := "./resources/license/" + gconv.String(newData.Id)
