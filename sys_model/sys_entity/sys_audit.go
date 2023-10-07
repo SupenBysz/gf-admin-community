@@ -22,4 +22,5 @@ type SysAudit struct {
 	CreatedAt      *gtime.Time `json:"createdAt"      description:""`
 	AuditUserId    int64       `json:"auditUserId"    description:"审核操作者id"`
 	DataIdentifier string      `json:"dataIdentifier" description:"数据标识"`
+	UserId         int64       `json:"userId"         description:"关联用户ID"`
 }

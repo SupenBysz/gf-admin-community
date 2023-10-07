@@ -24,4 +24,5 @@ type SysAudit struct {
 	CreatedAt      *gtime.Time //
 	AuditUserId    interface{} // 审核操作者id
 	DataIdentifier interface{} // 数据标识
+	UserId         interface{} // 关联用户ID
 }

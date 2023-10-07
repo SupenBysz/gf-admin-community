@@ -35,6 +35,7 @@ type SysAuditColumns struct {
 	CreatedAt      string //
 	AuditUserId    string // 审核操作者id
 	DataIdentifier string // 数据标识
+	UserId         string // 关联用户ID
 }
 
 // sysAuditColumns holds the columns for table sys_audit.
@@ -51,6 +52,7 @@ var sysAuditColumns = SysAuditColumns{
 	CreatedAt:      "created_at",
 	AuditUserId:    "audit_user_id",
 	DataIdentifier: "data_identifier",
+	UserId:         "user_id",
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.

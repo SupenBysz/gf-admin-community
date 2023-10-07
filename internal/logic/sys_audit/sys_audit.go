@@ -171,10 +171,38 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 
 // Audit取，拿出路劲转成带签名的url，
 
-// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息
+// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
 func (s *sSysAudit) GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
 	result := sys_entity.SysAudit{}
-	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
+	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId, UserId: 0}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
+	if err != nil {
+		return nil
+	}
+
+	fmt.Println("渲染前：", result.AuditData)
+	//auditData := sys_model.AuditPersonLicense{}
+
+	// 业务层  Hook处理,处理json数据，渲染数据
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Category & result.Category) == result.Category { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
+		}
+		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+		if err != nil {
+			return nil
+		}
+	}
+	fmt.Println("渲染后：", result.AuditData)
+
+	return &result
+}
+
+// GetAuditByLatestUserId 获取最新的业务个人审核信息
+func (s *sSysAudit) GetAuditByLatestUserId(ctx context.Context, userId int64) *sys_entity.SysAudit {
+	result := sys_entity.SysAudit{}
+	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UserId: userId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
 	}
