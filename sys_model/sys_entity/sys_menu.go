@@ -23,4 +23,5 @@ type SysMenu struct {
 	Description string      `json:"description" description:"描述"`
 	CreatedAt   *gtime.Time `json:"createdAt"   description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:""`
+	IconUrl     string      `json:"iconUrl"     description:"图标URL"`
 }

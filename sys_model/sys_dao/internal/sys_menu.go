@@ -36,6 +36,7 @@ type SysMenuColumns struct {
 	Description string // 描述
 	CreatedAt   string //
 	UpdatedAt   string //
+	IconUrl     string // 图标URL
 }
 
 // sysMenuColumns holds the columns for table sys_menu.
@@ -53,6 +54,7 @@ var sysMenuColumns = SysMenuColumns{
 	Description: "description",
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",
+	IconUrl:     "icon_url",
 }
 
 // NewSysMenuDao creates and returns a new DAO object for table data access.
