@@ -23,38 +23,40 @@ type SysMenuDao struct {
 
 // SysMenuColumns defines and stores column names for table sys_menu.
 type SysMenuColumns struct {
-	Id          string // ID
-	Path        string // 路径
-	Name        string // 名称
-	Redirect    string // 跳转
-	Title       string // 标题
-	Icon        string // 图标
-	Component   string // 组件
-	ParentId    string // 所属父级
-	Sort        string // 排序
-	State       string // 状态：0隐藏，1显示
-	Description string // 描述
-	CreatedAt   string //
-	UpdatedAt   string //
-	IconUrl     string // 图标URL
+	Id           string // ID
+	Path         string // 路径
+	Name         string // 名称
+	Redirect     string // 跳转
+	Title        string // 标题
+	Icon         string // 图标
+	Component    string // 组件
+	ParentId     string // 所属父级
+	Sort         string // 排序
+	State        string // 状态：0隐藏，1显示
+	Description  string // 描述
+	CreatedAt    string //
+	UpdatedAt    string //
+	IconUrl      string // 图标URL
+	RedirectType string // 跳转类型：1当前页面打开、 2新的标签页打开
 }
 
 // sysMenuColumns holds the columns for table sys_menu.
 var sysMenuColumns = SysMenuColumns{
-	Id:          "id",
-	Path:        "path",
-	Name:        "name",
-	Redirect:    "redirect",
-	Title:       "title",
-	Icon:        "icon",
-	Component:   "component",
-	ParentId:    "parent_id",
-	Sort:        "sort",
-	State:       "state",
-	Description: "description",
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
-	IconUrl:     "icon_url",
+	Id:           "id",
+	Path:         "path",
+	Name:         "name",
+	Redirect:     "redirect",
+	Title:        "title",
+	Icon:         "icon",
+	Component:    "component",
+	ParentId:     "parent_id",
+	Sort:         "sort",
+	State:        "state",
+	Description:  "description",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
+	IconUrl:      "icon_url",
+	RedirectType: "redirect_type",
 }
 
 // NewSysMenuDao creates and returns a new DAO object for table data access.
