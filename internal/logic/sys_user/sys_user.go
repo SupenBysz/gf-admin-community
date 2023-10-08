@@ -173,27 +173,11 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 				sysUser := &sys_model.SysUser{}
 				sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&sysUser)
 
-				roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(sysUser.Id), sys_consts.CasbinDomain)
-
-				sysUser.RoleNames = []string{}
-
-				// 如果有角色信息则加载角色信息
-				if len(roleIds) > 0 {
-					roles, err := sys_service.SysRole().QueryRoleList(ctx, base_model.SearchParams{
-						Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
-							Field:     sys_dao.SysRole.Columns().Id,
-							Where:     "in",
-							IsOrWhere: false,
-							Value:     roleIds,
-						}),
-						Pagination: base_model.Pagination{},
-					}, unionMainId)
-					if err == nil && len(roles.Records) > 0 {
-						for _, role := range roles.Records {
-							sysUser.RoleNames = append(sysUser.RoleNames, role.Name)
-						}
-					}
+				_, err = s.getUserRole(ctx, sysUser, unionMainId)
+				if err != nil {
+					return nil, err
 				}
+
 				sysUser = s.masker(s.makeMore(ctx, sysUser))
 
 				response.Records = append(response.Records, sysUser)
@@ -459,6 +443,12 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
+	}
+
+	// 查询用户所拥有的角色 (指针传递)
+	_, err = s.getUserRole(ctx, &user)
+	if err != nil {
+		return nil, err
 	}
 
 	return s.masker(s.makeMore(ctx, &user)), nil
@@ -817,6 +807,12 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 
 	user.Password = masker.MaskString(user.Password, masker.Password)
 
+	// 查询用户所拥有的角色 (指针传递)
+	_, err = s.getUserRole(ctx, &user)
+	if err != nil {
+		return nil, err
+	}
+
 	return s.makeMore(ctx, &user), nil
 }
 
@@ -949,6 +945,38 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}
 
 	return true, nil
+}
+
+func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, unionMainId ...int64) (*sys_model.SysUser, error) {
+	if unionMainId == nil || len(unionMainId) <= 0 || unionMainId[0] == 0 {
+		sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+		unionMainId = make([]int64, 1)
+		unionMainId[0] = sessionUser.UnionMainId
+	}
+
+	roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(sysUser.Id), sys_consts.CasbinDomain)
+
+	sysUser.RoleNames = []string{}
+
+	// 如果有角色信息则加载角色信息
+	if len(roleIds) > 0 {
+		roles, err := sys_service.SysRole().QueryRoleList(ctx, base_model.SearchParams{
+			Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
+				Field:     sys_dao.SysRole.Columns().Id,
+				Where:     "in",
+				IsOrWhere: false,
+				Value:     roleIds,
+			}),
+			Pagination: base_model.Pagination{},
+		}, unionMainId[0])
+		if err == nil && len(roles.Records) > 0 {
+			for _, role := range roles.Records {
+				sysUser.RoleNames = append(sysUser.RoleNames, role.Name)
+			}
+		}
+	}
+
+	return sysUser, nil
 }
 
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
