@@ -12,6 +12,7 @@ type SysMenu struct {
 	Redirect    *string `json:"redirect"  dc:"跳转" v:"max-length:128#跳转URL最大长度请不要超过128字符"`
 	Title       *string `json:"title"     dc:"标题" v:"required|max-length:64#请输入标题|标题最大长度请不要超过128字符"`
 	Icon        *string `json:"icon"      dc:"图标" v:"max-length:128#图标名称最大长度请不要超过128字符"`
+	IconUrl     *string `json:"iconUrl"     description:"图标URL"`
 	Component   *string `json:"component" dc:"组件" v:"max-length:128#组件地址最大长度请不要超过128字符"`
 	ParentId    *int64  `json:"parentId"  dc:"所属父级" v:"integer|min:0#父级ID参数错误|父级ID不能小于0"`
 	Sort        *int    `json:"sort"      dc:"排序" v:"integer#排序参数错误"`
@@ -25,6 +26,7 @@ type UpdateSysMenu struct {
 	Redirect  string `json:"redirect"  dc:"跳转" v:"max-length:128#跳转URL最大长度请不要超过128字符"`
 	Title     string `json:"title"     dc:"标题" v:"required|max-length:64#请输入标题|标题最大长度请不要超过128字符"`
 	Icon      string `json:"icon"      dc:"图标" v:"max-length:128#图标名称最大长度请不要超过128字符"`
+	IconUrl   string `json:"iconUrl"     description:"图标URL"`
 	Component string `json:"component" dc:"组件" v:"max-length:128#组件地址最大长度请不要超过128字符"`
 	Sort      int    `json:"sort"      dc:"排序" v:"integer#排序参数错误"`
 	State     int    `json:"state"    dc:"状态：0隐藏，1显示" v:"in:0,1#请选择状态类型"`
@@ -37,4 +39,5 @@ type SysMenuTreeRes struct {
 	*sys_entity.SysMenu
 	Children []*SysMenuTreeRes `json:"children" dc:"菜单子级"`
 }
+
 type SysMenuTreeListRes []*SysMenuTreeRes

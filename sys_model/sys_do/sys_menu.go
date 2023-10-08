@@ -25,4 +25,5 @@ type SysMenu struct {
 	Description interface{} // 描述
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
+	IconUrl     interface{} // 图标URL
 }
