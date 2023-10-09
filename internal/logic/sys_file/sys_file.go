@@ -230,8 +230,10 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 			}
 		}
 	})
-
+	// 记录到数据表
 	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
+	data.Src = storageAddr
+	data.Url = storageAddr
 
 	count, err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
