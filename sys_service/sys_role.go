@@ -35,8 +35,8 @@ type (
 		GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
 		// GetRoleMemberList 获取角色下的所有用户
 		GetRoleMemberList(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
-		// GetRoleByUserIdList 获取用户拥有的所有角色
-		GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
+		// GetRoleListByUserId 获取用户拥有的所有角色
+		GetRoleListByUserId(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
 		// SetRolePermissions 设置角色权限
 		SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error)
 	}

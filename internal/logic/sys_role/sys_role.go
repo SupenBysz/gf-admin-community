@@ -301,7 +301,7 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 		user.Password = ""
 		user.RoleNames = make([]string, 0)
 
-		roles, err := sys_service.SysRole().GetRoleByUserIdList(ctx, user.Id)
+		roles, err := sys_service.SysRole().GetRoleListByUserId(ctx, user.Id)
 		if err == nil && len(roles) > 0 {
 			for _, role := range roles {
 				user.RoleNames = append(user.RoleNames, role.Name)
@@ -313,8 +313,8 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 	return result, nil
 }
 
-// GetRoleByUserIdList 获取用户拥有的所有角色
-func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
+// GetRoleListByUserId 获取用户拥有的所有角色
+func (s *sSysRole) GetRoleListByUserId(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
