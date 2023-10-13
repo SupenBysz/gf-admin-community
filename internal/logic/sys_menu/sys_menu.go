@@ -77,6 +77,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 				Id:          info.Id,
 				ParentId:    *info.ParentId,
 				Name:        *info.Title,
+				Type:        2,
 				Description: gconv.String(data.Description),
 				Identifier:  "Menu::" + *info.Name,
 			})
