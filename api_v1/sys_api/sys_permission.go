@@ -39,7 +39,7 @@ type CreatePermissionReq struct {
 
 type UpdatePermissionReq struct {
 	g.Meta `path:"/updatePermission" method:"post" summary:"保存权限|信息" tags:"权限"`
-	sys_model.SysPermission
+	sys_model.UpdateSysPermission
 }
 
 type DeletePermissionReq struct {

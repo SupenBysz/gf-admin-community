@@ -96,7 +96,7 @@ func (c *cSysPermission) UpdatePermission(ctx context.Context, req *sys_api.Upda
 		return nil, err
 	}
 
-	result, err := sys_service.SysPermission().UpdatePermission(ctx, req.SysPermission)
+	result, err := sys_service.SysPermission().UpdatePermission(ctx, &req.UpdateSysPermission)
 	return (*sys_model.SysPermissionInfoRes)(result), err
 }
 

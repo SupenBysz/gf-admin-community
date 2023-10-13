@@ -21,6 +21,7 @@ import (
 	"github.com/kysion/base-library/utility/base_permission"
 	"github.com/kysion/base-library/utility/base_tree"
 	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/kconv"
 	"github.com/yitter/idgenerator-go/idgen"
 	"sort"
 )
@@ -240,11 +241,58 @@ func (s *sSysPermission) CreatePermission(ctx context.Context, info sys_model.Sy
 	return s.SavePermission(ctx, info)
 }
 
-func (s *sSysPermission) UpdatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error) {
+func (s *sSysPermission) UpdatePermission(ctx context.Context, info *sys_model.UpdateSysPermission) (*sys_entity.SysPermission, error) {
 	if info.Id <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysPermission.Table())
 	}
-	return s.SavePermission(ctx, info)
+
+	permission, err := s.GetPermissionById(ctx, info.Id)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "权限不存在"), "", sys_dao.SysPermission.Table())
+	}
+
+	data := kconv.Struct(info, &sys_do.SysPermission{})
+
+	{
+		if info.Name != nil {
+			// 同一分类下，排除重名问题
+			model := sys_dao.SysPermission.Ctx(ctx).
+				Where(sys_do.SysPermission{
+					ParentId: permission.ParentId,
+					Name:     info.Name,
+				})
+
+			if info.Id > 0 {
+				model = model.WhereNot(sys_dao.SysPermission.Columns().Id, info.Id)
+			}
+
+			count, _ := model.Count()
+
+			if count > 0 {
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "名称在当前分类下已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
+			}
+		}
+	}
+
+	err = sys_dao.SysPermission.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		data.UpdatedAt = gtime.Now()
+		data.ParentId = nil // 父ID不能修改
+		data.Id = nil
+		_, err = sys_dao.SysPermission.Ctx(ctx).
+			Where(sys_do.SysPermission{Id: info.Id}).OmitNilData().Update(data)
+
+		if err != nil {
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息更新失败", sys_dao.SysPermission.Table())
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetPermissionById(ctx, info.Id)
 }
 
 // SetPermissionsByResource 设置资源权限
@@ -344,18 +392,19 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 
 // SavePermission 新增/保存权限信息
 func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error) {
-	data := sys_entity.SysPermission{}
+	data := sys_do.SysPermission{}
 	gconv.Struct(info, &data)
 
 	// 如果父级ID大于0，则校验父级权限信息是否存在
-	if data.ParentId > 0 {
-		permissionInfo, err := s.GetPermissionById(ctx, data.ParentId)
+	if info.ParentId > 0 {
+		permissionInfo, err := s.GetPermissionById(ctx, info.ParentId)
 		if err != nil || permissionInfo.Id <= 0 {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "父级权限信息不存在"), "", sys_dao.SysPermission.Table())
 		}
 	}
 
 	{
+
 		// 同一分类下，排除重名问题
 		model := sys_dao.SysPermission.Ctx(ctx).
 			Where(sys_do.SysPermission{
@@ -366,22 +415,22 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 		if info.Id > 0 {
 			model = model.WhereNot(sys_dao.SysPermission.Columns().Id, info.Id)
 		}
-
 		count, _ := model.Count()
 
 		if count > 0 {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "名称在当前分类下已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
 		}
+
 	}
 
-	if data.Id <= 0 {
+	if info.Id <= 0 {
 		data.Id = idgen.NextId()
 		data.IsShow = 1
 		data.CreatedAt = gtime.Now()
 
 		{
 			// 校验标识符是否存在
-			if v, _ := s.GetPermissionByIdentifier(ctx, data.Identifier); v != nil {
+			if v, _ := s.GetPermissionByIdentifier(ctx, info.Identifier); v != nil {
 				return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "标识符已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
 			}
 		}
@@ -394,20 +443,14 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 	} else {
 		data.UpdatedAt = gtime.Now()
 		_, err := sys_dao.SysPermission.Ctx(ctx).
-			Where(sys_do.SysPermission{Id: data.Id}).Update(sys_do.SysPermission{
-			ParentId:    data.ParentId,
-			Name:        data.Name,
-			Description: data.Description,
-			Identifier:  data.Identifier,
-			Type:        data.Type,
-		})
+			Where(sys_do.SysPermission{Id: data.Id}).OmitNilData().Update(data)
 
 		if err != nil {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息保存失败", sys_dao.SysPermission.Table())
 		}
 	}
 
-	return &data, nil
+	return s.GetPermissionById(ctx, gconv.Int64(data.Id))
 }
 
 // DeletePermission 删除权限信息
