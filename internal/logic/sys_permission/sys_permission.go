@@ -193,9 +193,13 @@ func (s *sSysPermission) GetPermissionList(ctx context.Context, parentId int64, 
 }
 
 // GetPermissionTree 根据ID获取下级权限信息，返回列表树
-func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64) ([]base_permission.IPermission, error) {
+func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64, permissionType ...int) ([]base_permission.IPermission, error) {
+	selectDao := sys_dao.SysPermission.Ctx(ctx)
+	if len(permissionType) > 0 {
+		selectDao = selectDao.Where(sys_do.SysPermission{Type: permissionType[0]})
+	}
 
-	items, err := daoctl.Query[*sys_model.SysPermissionTree](sys_dao.SysPermission.Ctx(ctx), nil, true)
+	items, err := daoctl.Query[*sys_model.SysPermissionTree](selectDao, nil, true)
 
 	var itemRes []base_permission.IPermission
 	for _, record := range items.Records {

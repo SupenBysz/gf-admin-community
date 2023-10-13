@@ -30,6 +30,7 @@ type GetPermissionListReq struct {
 type GetPermissionTreeReq struct {
 	g.Meta `path:"/getPermissionTree" method:"post" summary:"根据ID获取下级权限|树" tags:"权限"`
 	Id     int64 `json:"id" v:"required#权限ID校验失败" dc:"权限ID"`
+	Type   int   `json:"type" dc:"权限类型：1Api 2Menu"`
 }
 
 type CreatePermissionReq struct {
