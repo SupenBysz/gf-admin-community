@@ -18,6 +18,17 @@ type SysPermission struct {
 	Sort        int    `json:"sort"           dc:"排序"`
 }
 
+type UpdateSysPermission struct {
+	Id          int64   `json:"id"             dc:"ID" v:"required#ID不能为空"`
+	Name        *string `json:"name"           dc:"名称" v:"max-length:64#仅支持最大字符长度64"`
+	Description *string `json:"description"    dc:"描述" v:"max-length:128#仅支持最大字符长度128"`
+	Identifier  *string `json:"identifier"     dc:"标识符"`
+	Type        *int    `json:"type"           dc:"类型：1api、2menu"`
+	MatchMode   *int    `json:"matchMode"      dc:"匹配模式：ID：0，标识符：1"`
+	IsShow      *int    `json:"isShow"         dc:"是否显示：0不显示 1显示"`
+	Sort        *int    `json:"sort"           dc:"排序"`
+}
+
 type SysPermissionTree struct {
 	*sys_entity.SysPermission
 	Children []base_permission.IPermission `json:"children"       dc:"下级权限"`
@@ -25,6 +36,9 @@ type SysPermissionTree struct {
 
 type SysPermissionInfoRes sys_entity.SysPermission
 type SysPermissionInfoListRes base_model.CollectRes[*sys_entity.SysPermission]
+
+//type SysPermissionInfoTreeRes []SysPermissionTree
+
 type SysPermissionInfoTreeRes []base_permission.IPermission
 type MyPermissionListRes []*sys_entity.SysPermission
 

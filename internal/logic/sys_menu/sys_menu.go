@@ -13,6 +13,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/kconv"
 	"sort"
 )
 
@@ -46,11 +47,13 @@ func (s *sSysMenu) CreateMenu(ctx context.Context, info *sys_model.SysMenu) (*sy
 }
 
 // UpdateMenu 更新菜单
-func (s *sSysMenu) UpdateMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error) {
+func (s *sSysMenu) UpdateMenu(ctx context.Context, info *sys_model.UpdateSysMenu) (*sys_entity.SysMenu, error) {
 	if info.Id <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysMenu.Table())
 	}
-	return s.SaveMenu(ctx, info)
+	data := kconv.Struct(info, &sys_model.SysMenu{})
+
+	return s.SaveMenu(ctx, data)
 }
 
 // SaveMenu 新增或保存菜单信息，并自动更新对应的权限信息
@@ -73,7 +76,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 				data.ParentId = 0
 			}
 			// 保存菜单权限信息，更新操作不重新插入权限
-			sysPermission, err := sys_service.SysPermission().SavePermission(ctx, sys_model.SysPermission{
+			sysPermission, err := sys_service.SysPermission().CreatePermission(ctx, sys_model.SysPermission{
 				Id:          info.Id,
 				ParentId:    *info.ParentId,
 				Name:        *info.Title,
@@ -88,6 +91,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 
 			// 菜单id = 权限id
 			data.Id = sysPermission.Id
+			info.Id = sysPermission.Id
 			data.CreatedAt = gtime.Now()
 
 			_, err = sys_dao.SysMenu.Ctx(ctx).Insert(&data)
@@ -98,12 +102,33 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 
 		} else { // 更新
 			data.UpdatedAt = gtime.Now()
+			data.Id = nil
 			_, err := sys_dao.SysMenu.Ctx(ctx).
-				OmitNilData().Where(sys_dao.SysMenu.Columns().Id, data.Id).Update(&data)
-
+				OmitNilData().Where(sys_dao.SysMenu.Columns().Id, info.Id).Update(&data)
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "菜单信息保存失败", sys_dao.SysMenu.Table())
 			}
+
+			permisionInfo := sys_model.UpdateSysPermission{
+				Id:          info.Id,
+				Name:        info.Title,
+				Type:        nil,
+				Description: info.Description,
+				Identifier:  nil,
+			}
+
+			if data.Name != nil {
+				identifier := "Menu::" + *info.Name
+				permisionInfo.Identifier = &identifier
+			}
+
+			// 更新菜单权限信息
+			_, err = sys_service.SysPermission().UpdatePermission(ctx, &permisionInfo)
+
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "菜单权限更新失败", sys_dao.SysMenu.Table())
+			}
+
 		}
 		return nil
 	})
@@ -113,7 +138,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 	}
 
 	//go s.makeMenuTeee(ctx, 0)
-	return s.GetMenuById(ctx, gconv.Int64(data.Id))
+	return s.GetMenuById(ctx, info.Id)
 }
 
 // DeleteMenu 删除菜单，删除的时候要关联删除sys_permission,有子菜单时禁止删除。

@@ -17,7 +17,7 @@ type CreateMenuReq struct {
 
 type UpdateMenuReq struct {
 	g.Meta `path:"/updateMenu" method:"post" summary:"更新菜单" tags:"菜单"`
-	sys_model.SysMenu
+	sys_model.UpdateSysMenu
 }
 
 type DeleteMenuReq struct {
