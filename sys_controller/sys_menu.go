@@ -47,7 +47,7 @@ func (c *cSysMenu) UpdateMenu(ctx context.Context, req *sys_api.UpdateMenuReq) (
 	//menu := sys_model.SysMenu{}
 	//gconv.Struct(req.UpdateSysMenu, &menu)
 
-	ret, err := sys_service.SysMenu().UpdateMenu(ctx, &req.SysMenu)
+	ret, err := sys_service.SysMenu().UpdateMenu(ctx, &req.UpdateSysMenu)
 
 	return (*sys_model.SysMenuRes)(ret), err
 }

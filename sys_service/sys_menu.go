@@ -19,7 +19,7 @@ type (
 		// CreateMenu 创建菜单
 		CreateMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
 		// UpdateMenu 更新菜单
-		UpdateMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
+		UpdateMenu(ctx context.Context, info *sys_model.UpdateSysMenu) (*sys_entity.SysMenu, error)
 		// SaveMenu 新增或保存菜单信息，并自动更新对应的权限信息
 		SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_entity.SysMenu, error)
 		// DeleteMenu 删除菜单，删除的时候要关联删除sys_permission,有子菜单时禁止删除。
