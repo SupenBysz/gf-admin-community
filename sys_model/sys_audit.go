@@ -22,7 +22,7 @@ type SetAudit struct {
 	State       int    `json:"state"         description:"审核状态：-1不通过，1通过" v:"required|in:-1,1#审核状态错误"`
 	Reply       string `json:"reply"        description:"不通过时回复的审核不通过原因"`
 	UnionMainId int64  `json:"unionMainId"       description:"关联业务ID" v:"required#关联业务ID参数粗我"`
-	Category    int    `json:"category"      description:"分类：1运营商主体资质审核，2服务商主体资质审核、4消费者实名审核" v:"required|in:1,2,4#分类类型错误"`
+	Category    int    `json:"category"      description:"分类：1个人资质审核、2主体资质审核、4数据审核" v:"required|in:1,2,4#分类类型错误"`
 }
 
 type AuditRes struct {

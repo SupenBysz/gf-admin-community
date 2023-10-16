@@ -16,7 +16,7 @@ type SysAudit struct {
 	State          interface{} // 审核状态：-1不通过，0待审核，1通过
 	Reply          interface{} // 不通过时回复的审核不通过原因
 	UnionMainId    interface{} // 关联主体ID
-	Category       interface{} // 业务类别
+	Category       interface{} // 业务类别：1个人资质审核、2主体资质审核、4数据审核
 	AuditData      interface{} // 待审核的业务数据包
 	ExpireAt       *gtime.Time // 服务时限
 	AuditReplyAt   *gtime.Time // 审核回复时间
