@@ -38,6 +38,7 @@ type SysMenuColumns struct {
 	UpdatedAt    string //
 	IconUrl      string // 图标URL
 	RedirectType string // 跳转类型：1当前页面打开、 2新的标签页打开
+	Type         string // 类型：1菜单、2按钮
 }
 
 // sysMenuColumns holds the columns for table sys_menu.
@@ -57,6 +58,7 @@ var sysMenuColumns = SysMenuColumns{
 	UpdatedAt:    "updated_at",
 	IconUrl:      "icon_url",
 	RedirectType: "redirect_type",
+	Type:         "type",
 }
 
 // NewSysMenuDao creates and returns a new DAO object for table data access.

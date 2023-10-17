@@ -27,4 +27,5 @@ type SysMenu struct {
 	UpdatedAt    *gtime.Time //
 	IconUrl      interface{} // 图标URL
 	RedirectType interface{} // 跳转类型：1当前页面打开、 2新的标签页打开
+	Type         interface{} // 类型：1菜单、2按钮
 }

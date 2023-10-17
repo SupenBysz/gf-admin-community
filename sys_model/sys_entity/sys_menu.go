@@ -25,4 +25,5 @@ type SysMenu struct {
 	UpdatedAt    *gtime.Time `json:"updatedAt"    description:""`
 	IconUrl      string      `json:"iconUrl"      description:"图标URL"`
 	RedirectType int         `json:"redirectType" description:"跳转类型：1当前页面打开、 2新的标签页打开"`
+	Type         int         `json:"type"         description:"类型：1菜单、2按钮"`
 }
