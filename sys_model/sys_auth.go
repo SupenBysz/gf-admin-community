@@ -12,7 +12,7 @@ import (
 
 type LoginInfo struct {
 	Username string `json:"username" v:"required#请输入用户名" dc:"登录账号"`
-	Password string `json:"password" v:"required#请输入密码" dc:"登录密码"`
+	Password string `json:"password" v:"required#请输入密码" dc:"登录密码" v:"min-length:6#密码最短为6位"`
 	Captcha  string `json:"captcha" v:"required#请输入验证吗" dc:"验证码"`
 }
 
@@ -20,7 +20,7 @@ type LoginByMobileInfo struct {
 	Username string `json:"username"  dc:"登录账号,会检验该手机号有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
 	Mobile   string `json:"mobile" v:"required|phone#手机号不能为空" dc:"手机号"`
 	Captcha  string `json:"captcha" dc:"验证码，和密码二选一"`
-	PassWord string `json:"passWord"  dc:"密码，和验证码二选一"`
+	PassWord string `json:"passWord"  dc:"密码，和验证码二选一" v:"min-length:6#密码最短为6位"`
 }
 
 type LoginByMobileRes struct {
@@ -31,7 +31,7 @@ type LoginByMobileRes struct {
 type LoginByMailInfo struct {
 	Username string `json:"username"  dc:"登录账号,会检验该邮箱有几个账号，多个会返回userList，针对多账号请求需要携带userName"`
 	Mail     string `json:"mail" v:"required|email#邮箱不能为空" dc:"邮箱"`
-	PassWord string `json:"passWord" v:"required#请输入密码" dc:"密码"`
+	PassWord string `json:"passWord" v:"required#请输入密码" dc:"密码" v:"min-length:6#密码最短为6位"`
 }
 
 type LoginByMailRes struct {
