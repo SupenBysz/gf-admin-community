@@ -174,6 +174,6 @@ func (c *cSysRole) SetRolePermissions(ctx context.Context, req *sys_api.SetRoleP
 
 // GetRolePermissionIds 获取角色权限Ids
 func (c *cSysRole) GetRolePermissionIds(ctx context.Context, req *sys_api.GetRolePermissionsIdsReq) (*api_v1.Int64ArrRes, error) {
-	result, err := sys_service.SysPermission().GetPermissionsByResource(ctx, req.Id)
+	result, err := sys_service.SysPermission().GetPermissionsByResource(ctx, gconv.String(req.Id))
 	return (*api_v1.Int64ArrRes)(&result), err
 }
