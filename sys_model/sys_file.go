@@ -8,9 +8,9 @@ import (
 
 // FileUploadInput 上传文件输入参数
 type FileUploadInput struct {
-	File       *ghttp.UploadFile `json:"sys_file" type:"sys_file" dc:"请选择文件，以form-data方式提交"` // 上传文件对象
-	Name       string            `json:"name" dc:"自定义文件名"`                                   // 自定义文件名称
-	RandomName bool              `json:"randomName" dc:"是否随机文件名" default:"true"`             // 是否随机命名文件
+	File       *ghttp.UploadFile `json:"sys_file"  dc:"请选择文件，以form-data方式提交"`    // 上传文件对象
+	Name       string            `json:"name" dc:"自定义文件名"`                       // 自定义文件名称
+	RandomName bool              `json:"randomName" dc:"是否随机文件名" default:"true"` // 是否随机命名文件
 }
 
 type FileInfo struct {
