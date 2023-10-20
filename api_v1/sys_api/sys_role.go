@@ -49,7 +49,7 @@ type GetRoleMemberIdsReq struct {
 }
 
 type GetRoleByUserIdListReq struct {
-	g.Meta `path:"/getRoleByUserIdList" method:"post" summary:"获取用户ID获取所有关联角色|列表" tags:"角色"`
+	g.Meta `path:"/getRoleByUserIdList" method:"post" summary:"根据用户ID获取所有关联角色|列表" tags:"角色"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
