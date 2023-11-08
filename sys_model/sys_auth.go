@@ -37,6 +37,7 @@ type LoginByMailInfo struct {
 
 type LoginByMailRes struct {
 	SysUserListRes
+	SysUser
 	TokenInfo
 }
 
