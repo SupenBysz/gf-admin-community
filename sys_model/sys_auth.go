@@ -43,7 +43,7 @@ type LoginByMailRes struct {
 
 type LoginRes struct {
 	TokenInfo
-	User SysUser `json:"user" dc:"用户信息"`
+	User *SysUser `json:"user" dc:"用户信息"`
 }
 
 type TokenInfo struct {
