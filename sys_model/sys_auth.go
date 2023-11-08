@@ -24,9 +24,9 @@ type LoginByMobileInfo struct {
 }
 
 type LoginByMobileRes struct {
-	SysUserListRes
-	SysUser
+	UserList SysUserListRes `json:"userList" dc:"手机号关联的用户列表"`
 	TokenInfo
+	User *SysUser `json:"user"`
 }
 
 type LoginByMailInfo struct {
@@ -36,9 +36,9 @@ type LoginByMailInfo struct {
 }
 
 type LoginByMailRes struct {
-	SysUserListRes
-	SysUser
+	UserList SysUserListRes `json:"userList" dc:"邮箱关联的用户列表"`
 	TokenInfo
+	User *SysUser `json:"user"`
 }
 
 type LoginRes struct {
