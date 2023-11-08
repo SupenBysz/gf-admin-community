@@ -25,6 +25,7 @@ type LoginByMobileInfo struct {
 
 type LoginByMobileRes struct {
 	SysUserListRes
+	SysUser
 	TokenInfo
 }
 
@@ -41,7 +42,7 @@ type LoginByMailRes struct {
 
 type LoginRes struct {
 	TokenInfo
-	User SysUser
+	User SysUser `json:"user" dc:"用户信息"`
 }
 
 type TokenInfo struct {
