@@ -14,13 +14,13 @@ var Auth = cAuth{}
 type cAuth struct{}
 
 // Login 登陆
-func (c *cAuth) Login(ctx context.Context, req *sys_api.LoginReq) (res *sys_api.LoginRes, err error) {
+func (c *cAuth) Login(ctx context.Context, req *sys_api.LoginReq) (res *sys_model.LoginRes, err error) {
 	result, err := sys_service.SysAuth().Login(ctx, req.LoginInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	return (*sys_api.LoginRes)(result), nil
+	return (*sys_model.LoginRes)(result), nil
 }
 
 // LoginByMobile 通过手机号码+验证码登陆
