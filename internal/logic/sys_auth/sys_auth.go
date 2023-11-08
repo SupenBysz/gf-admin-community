@@ -245,6 +245,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	// 返回token数据
 	return &sys_model.LoginByMobileRes{
 		TokenInfo: *tokenInfo,
+		SysUser:   *userInfo,
 	}, nil
 
 }
@@ -289,6 +290,7 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 	// 返回token数据
 	return &sys_model.LoginByMailRes{
 		TokenInfo: *tokenInfo,
+		SysUser:   *userInfo,
 	}, nil
 
 }
