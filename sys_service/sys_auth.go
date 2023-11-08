@@ -24,7 +24,7 @@ type (
 		// CleanAllHook 清除所有Hook
 		CleanAllHook()
 		// Login 登陆
-		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.TokenInfo, error)
+		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.LoginRes, error)
 		// InnerLogin 内部登录，无需校验验证码和密码
 		InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error)
 		// LoginByMobile 手机号 + 验证码登陆

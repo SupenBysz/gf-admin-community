@@ -83,7 +83,7 @@ func (s *sSysAuth) CleanAllHook() {
 }
 
 // Login 登陆
-func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.TokenInfo, error) {
+func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.LoginRes, error) {
 	if (len(needCaptcha) == 0 || needCaptcha[0] == true) && !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), req.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
 	}
@@ -100,8 +100,17 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 		}
 		return nil, gerror.New("用户密码错误")
 	}
+	res := sys_model.LoginRes{}
 
-	return s.InnerLogin(ctx, sysUserInfo)
+	token, err := s.InnerLogin(ctx, sysUserInfo)
+	res.TokenInfo = *token
+	if err != nil {
+		return &res, err
+	}
+
+	res.User = *sysUserInfo
+
+	return &res, err
 }
 
 // InnerLogin 内部登录，无需校验验证码和密码
