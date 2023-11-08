@@ -20,8 +20,6 @@ type LoginByMailReq struct {
 	sys_model.LoginByMailInfo
 }
 
-type LoginRes sys_model.TokenInfo
-
 type RegisterReq struct {
 	g.Meta `path:"/register" method:"post" summary:"注册" tags:"鉴权"`
 	sys_model.SysUserRegister
