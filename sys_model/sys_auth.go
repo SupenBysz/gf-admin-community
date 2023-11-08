@@ -39,6 +39,11 @@ type LoginByMailRes struct {
 	TokenInfo
 }
 
+type LoginRes struct {
+	TokenInfo
+	User SysUser
+}
+
 type TokenInfo struct {
 	Token    string    `json:"token" dc:"Token"`
 	ExpireAt time.Time `json:"expireAt" dc:"Expire"`

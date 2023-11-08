@@ -28,7 +28,7 @@ type (
 		// GetPermissionList 根据ID获取下级权限信息，返回列表
 		GetPermissionList(ctx context.Context, parentId int64, IsRecursive bool) ([]*sys_entity.SysPermission, error)
 		// GetPermissionTree 根据ID获取下级权限信息，返回列表树
-		GetPermissionTree(ctx context.Context, parentId int64, perrmissionType ...int) ([]base_permission.IPermission, error)
+		GetPermissionTree(ctx context.Context, parentId int64, permissionType ...int) ([]base_permission.IPermission, error)
 		CreatePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error)
 		UpdatePermission(ctx context.Context, info *sys_model.UpdateSysPermission) (*sys_entity.SysPermission, error)
 		// SetPermissionsByResource 设置资源权限
