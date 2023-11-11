@@ -13,10 +13,10 @@ type permissionType struct {
 	SetState       PermissionTypeEnum
 	ResetPassword  PermissionTypeEnum
 	ChangePassword PermissionTypeEnum
-	// Create         PermissionTypeEnum
-	SetUsername   PermissionTypeEnum
-	SetUserRole   PermissionTypeEnum
-	SetPermission PermissionTypeEnum
+	Create         PermissionTypeEnum
+	SetUsername    PermissionTypeEnum
+	SetUserRole    PermissionTypeEnum
+	SetPermission  PermissionTypeEnum
 }
 
 var PermissionType = permissionType{
@@ -26,8 +26,8 @@ var PermissionType = permissionType{
 	SetState:       base_permission.New(5947176737372613, "SetState", "设置状态", "设置某个用户的状态"),
 	ResetPassword:  base_permission.New(5947177123969477, "ResetPassword", "重置密码", "重置某个用户的登录密码"),
 	ChangePassword: base_permission.New(5947177469213125, "ChangePassword", "修改密码", "修改自己的登录密码"),
-	// Create:         base_permission.New(5949854362632261, "Create", "创建用户", "创建一个新用户"),
-	SetUsername:   base_permission.New(5949854362632262, "Update", "修改用户名称", "修改用户登录账户名称信息"),
-	SetUserRole:   base_permission.New(5949854362632264, "SetUserRole", "设置用户角色", "设置某一个用户的角色"),
-	SetPermission: base_permission.New(5949854362632265, "SetPermission", "设置用户权限", "设置某一个用户的权限"),
+	Create:         base_permission.New(5949854362632261, "Create", "创建用户", "创建一个新用户"),
+	SetUsername:    base_permission.New(5949854362632262, "Update", "修改用户名称", "修改用户登录账户名称信息"),
+	SetUserRole:    base_permission.New(5949854362632264, "SetUserRole", "设置用户角色", "设置某一个用户的角色"),
+	SetPermission:  base_permission.New(5949854362632265, "SetPermission", "设置用户权限", "设置某一个用户的权限"),
 }
