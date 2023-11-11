@@ -360,6 +360,9 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 	})
 
+	// 查询用户所拥有的角色 (指针传递)
+	s.getUserRole(ctx, &data)
+
 	// 增删改后不需要重新设置缓存，因为增伤缓存参数Duration为-1，就是删除缓存了
 	// s.redisCache.Set(ctx, data.Id, data, s.Duration)
 
@@ -391,6 +394,8 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 		sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
 		if user.Username == username {
 			response = s.masker(s.makeMore(ctx, user))
+			// 查询用户所拥有的角色 (指针传递)
+			s.getUserRole(ctx, response)
 			return
 		}
 	}
