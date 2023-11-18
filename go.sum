@@ -85,8 +85,8 @@ github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfV
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/kysion/base-library v0.0.25 h1:UxbfF4zBmg8S73IcJ9QNRnp9S7erEnuWfsEg0N3H5Ko=
-github.com/kysion/base-library v0.0.25/go.mod h1:piPYAqlUX4bRo1p1fjYe4MIcEeZef83WoXFzURtadyM=
+github.com/kysion/base-library v0.0.26 h1:wIB+9gs+yGwzAQEnMvFM3Oc+uQcMYAFhBCER0iPzt1Q=
+github.com/kysion/base-library v0.0.26/go.mod h1:piPYAqlUX4bRo1p1fjYe4MIcEeZef83WoXFzURtadyM=
 github.com/kysion/oss-library v0.1.2 h1:CLWL/Vs7ihTHGPinAo6PCocGT+7aY1rXhAkJ0IUzF4k=
 github.com/kysion/oss-library v0.1.2/go.mod h1:voqoDkygy9BEIO0wGdSry/OhLfdmX7YCuWqG4IU7DQw=
 github.com/kysion/sms-library v0.1.0 h1:Zf/JGqlEYu9wWbqjSSdylBIxyL5ThZSn4+XbXrMNtj4=
