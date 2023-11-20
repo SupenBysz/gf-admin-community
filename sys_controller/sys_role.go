@@ -88,7 +88,7 @@ func (c *cSysRole) RemoveRoleMember(ctx context.Context, req *sys_api.RemoveRole
 		return false, err
 	}
 
-	result, err := sys_service.SysRole().RemoveRoleMember(ctx, req.RoleId, req.UserId)
+	result, err := sys_service.SysRole().RemoveRoleMember(ctx, req.RoleId, req.UserIds)
 
 	return result == true, err
 }
