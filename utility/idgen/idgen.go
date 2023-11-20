@@ -1,4 +1,4 @@
-package boot
+package idgen
 
 import (
 	"context"
@@ -20,4 +20,16 @@ func InitIdGenerator() {
 	// ...... 其它参数设置参考 IdGeneratorOptions 定义，一般来说，只要再设置 WorkerIdBitLength （决定 WorkerId 的最大值）。
 	// 保存参数（必须的操作，否则以上设置都不能生效）：
 	idgen.SetIdGenerator(options)
+}
+
+var isInit = false
+
+// NextId 构建新ID
+func NextId() int64 {
+	if isInit == false {
+		isInit = true
+		InitIdGenerator()
+	}
+
+	return idgen.NextId()
 }

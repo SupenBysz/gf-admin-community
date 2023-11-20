@@ -3,8 +3,8 @@ package permission
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/kysion/base-library/utility/base_permission"
-	"github.com/yitter/idgenerator-go/idgen"
 )
 
 func initFactory() {
