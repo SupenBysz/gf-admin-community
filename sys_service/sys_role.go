@@ -30,7 +30,7 @@ type (
 		// SetRoleMember 设置角色用户
 		SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error)
 		// RemoveRoleMember 移除角色中的用户
-		RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error)
+		RemoveRoleMember(ctx context.Context, roleId int64, userIds []int64) (bool, error)
 		// GetRoleMemberIds 获取角色下的所有用户ID
 		GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
 		// GetRoleMemberList 获取角色下的所有用户

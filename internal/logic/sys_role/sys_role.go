@@ -220,7 +220,7 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 }
 
 // RemoveRoleMember 移除角色中的用户
-func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error) {
+func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userIds []int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -228,19 +228,26 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
 	}
 
-	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
+	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		for _, userId := range userIds {
+			userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
-	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
-	}
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+			}
 
-	ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 
-	if ret == true {
-		// 重置用户角色名称，并自动去重
-		userInfo.RoleNames = garray.NewSortedStrArrayFrom(base_funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
-	}
-	return ret, err
+			if ret == true {
+				// 重置用户角色名称，并自动去重
+				userInfo.RoleNames = garray.NewSortedStrArrayFrom(base_funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+			}
+		}
+
+		return nil
+	})
+
+	return err == nil, err
 }
 
 // GetRoleMemberIds 获取角色下的所有用户ID
