@@ -294,7 +294,7 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 			Value:       userIds,
 			IsNullValue: false,
 		}),
-	}, makeUserUnionMainId, false)
+	}, makeUserUnionMainId, true)
 
 	userInfoArr = userList.Records
 
