@@ -465,6 +465,9 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 	ver := false
 
 	user, err := sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
+	if err != nil {
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名不存在！")
+	}
 
 	user, err = sys_service.SysUser().GetUserDetail(ctx, user.Id)
 	if err != nil {
