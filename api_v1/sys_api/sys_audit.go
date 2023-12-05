@@ -16,8 +16,8 @@ type QueryAuditListReq struct {
 }
 
 type GetAuditByIdReq struct { //
-	g.Meta `path:"/getAuditById" method:"post" summary:"根据资质ID获取资质审核|信息" tags:"审核管理"`
-	Id     int64 `json:"id" dc:"资质审核ID"`
+	g.Meta `path:"/getAuditById" method:"post" summary:"根据审核ID获取审核|信息" tags:"审核管理"`
+	Id     int64 `json:"id" dc:"审核ID"`
 }
 
 type SetAuditApproveReq struct {
