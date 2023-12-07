@@ -49,7 +49,9 @@ func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLic
 			if err != nil {
 				return nil, err
 			}
-			newData.IdcardFrontPath = fileInfo.Src
+
+			//  注意：实际存储的License 需要存储持久化后的文件ID，而不是路径
+			newData.IdcardFrontPath = gconv.String(fileInfo.Id)
 		}
 
 		if !gfile.Exists(info.IdcardBackPath) {
@@ -63,7 +65,9 @@ func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLic
 			if err != nil {
 				return nil, err
 			}
-			newData.IdcardBackPath = fileInfo.Src
+
+			//  注意：实际存储的License 需要存储持久化后的文件ID，而不是路径
+			newData.IdcardBackPath = gconv.String(fileInfo.Id)
 		}
 
 	}
