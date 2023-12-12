@@ -160,6 +160,10 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
 	}
 
+	if info.IsSystem {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统默认的角色不能删除"), "", sys_dao.SysRole.Table())
+	}
+
 	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if len(userIds) > 0 {
@@ -168,10 +172,6 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 
 	if info.Id == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "删除角色ID不存在"), "", sys_dao.SysRole.Table())
-	}
-
-	if info.IsSystem {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统默认的角色不能删除"), "", sys_dao.SysRole.Table())
 	}
 
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
