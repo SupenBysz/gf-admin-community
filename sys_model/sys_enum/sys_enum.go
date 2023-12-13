@@ -42,6 +42,9 @@ type (
 
 	// InviteState 邀约状态
 	InviteState sys_enum_invite.StateEnum
+
+	// RoleMemberChange 角色成员事件
+	RoleMemberChange sys_enum_role.ChangeEnum
 )
 
 var (

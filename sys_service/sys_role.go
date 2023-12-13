@@ -10,11 +10,15 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/kysion/base-library/base_model"
 )
 
 type (
 	ISysRole interface {
+		// InstallInviteRegisterHook 订阅邀约注册Hook
+		InstallInviteRegisterHook(action sys_enum.RoleMemberChange, hookFunc sys_hook.RoleMemberChangeHookFunc)
 		// QueryRoleList 获取角色列表
 		QueryRoleList(ctx context.Context, info base_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
 		// GetRoleById 根据id获取角色
