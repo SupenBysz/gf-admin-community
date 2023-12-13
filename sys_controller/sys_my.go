@@ -9,6 +9,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 )
@@ -87,6 +88,13 @@ func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.S
 	// 菜单id = 权限id
 
 	// 获取用户的菜单权限ids
+	if (user.Type & sys_enum.User.Type.SuperAdmin.Code()) == sys_enum.User.Type.SuperAdmin.Code() {
+		tree, _ := sys_service.SysMenu().GetMenuTree(ctx, 0)
+		g.Dump(tree)
+
+		return tree, nil
+	}
+
 	ids, err := sys_service.SysPermission().GetPermissionsByResource(ctx, gconv.String(user.Id)) // ids 7
 	////pId := sys_service.Casbin().GetAllNamedRoles(gconv.String(user.Id))
 	//pId, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
