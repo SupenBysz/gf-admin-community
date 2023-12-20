@@ -22,6 +22,6 @@ hack/config.yaml
 temp/
 example/.env
 config.yaml
-resources/store
-resources/upload
+resource/store
+resource/upload
 /.env

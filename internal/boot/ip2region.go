@@ -8,13 +8,21 @@ import (
 	"github.com/kysion/base-library/utility/downloader"
 	"github.com/lionsoul2014/ip2region/binding/golang/xdb"
 	"log"
+	"os"
 )
 
 func InitIp2region() {
+	workFolder, _ := os.Getwd()
+	folderPath := workFolder + "/resource/assets/static"
+
+	if !gfile.Exists(folderPath) {
+		_ = gfile.Mkdir(folderPath)
+	}
+
 	ip2regionPath := g.Cfg().MustGet(
 		context.Background(),
 		"service.ip2region.xdbPath",
-		"./resources/assets/static/ip2resion.xdb",
+		folderPath+"/ip2region.xdb",
 	).String()
 
 	if ip2regionPath == "" || gfile.Size(ip2regionPath) <= 0 {
