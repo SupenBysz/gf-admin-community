@@ -6,14 +6,15 @@ server:
   accessLogEnabled: false
   SessionIdName: "KysionGfAdminCommunitySessionId"
   sessionPath: "temp/sessions/gf-admin_community_sessions"    # Session文件存储目录
-  openapiPath: "/openapi/gf-admin-community.json"
-  swaggerPath: "/docs/gf-admin-community"
+  openapiPath: "/docs/openapi.json"
+  swaggerPath: "/docs"
+  swaggerJsURL: "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" # 自定义 文档 JS 镜像地址，需要 gf 2.6.0 以上版本才支持
 
 service:
   # 用户表ID生成器，分布式终端标识，取值范围 1 ~ 63，解决分布式多服务横向扩展时保证生成的ID不重复
   idGeneratorWorkerId: 1
   # 接口前缀
-  apiPrefix: "/kysion/gf-admin-community"
+  apiPrefix: "/api"
   # Token Sign Key
   tokenSignKey: "KysionGfAdminProTokenSignKey"
   # 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营商；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
