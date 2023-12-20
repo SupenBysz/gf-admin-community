@@ -13,7 +13,7 @@ import (
 
 func InitIp2region() {
 	workFolder, _ := os.Getwd()
-	folderPath := workFolder + "/resources/assets/static"
+	folderPath := workFolder + "/resource/assets/static"
 
 	if !gfile.Exists(folderPath) {
 		_ = gfile.Mkdir(folderPath)
