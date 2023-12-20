@@ -30,6 +30,15 @@ gfcli:
           sys_user_detail,
           sys_settings,
           "
+
+        daoPath: "model/dao"
+        doPath: "model/do"
+        entityPath: "model/entity"
+        tplDaoIndexPath: "hack/tpls/dao_template.tpl"
+        tplDaoInternalPath: "hack/tpls/dao_internal_template.tpl"
+        tplDaoDoPath: "hack/tpls/do_template"
+        tplDaoEntityPath: "hack/tpls/entity_template"
+        dstFolder: "sys_service"
         descriptionTag:  true
         noModelComment:  true
         withTime: false
