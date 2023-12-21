@@ -6,8 +6,8 @@ server:
   accessLogEnabled: false
   SessionIdName: "KysionGfAdminCommunitySessionId"
   sessionPath: "temp/sessions/gf-admin_community_sessions"    # Session文件存储目录
-  openapiPath: "/docs/openapi.json"
-  swaggerPath: "/docs"
+  openapiPath: "/api/openapi.json"
+  swaggerPath: "/api"
   swaggerJsURL: "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" # 自定义 文档 JS 镜像地址，需要 gf 2.6.0 以上版本才支持
 
 service:
