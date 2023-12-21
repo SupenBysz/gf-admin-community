@@ -9,8 +9,8 @@ require (
 	github.com/gogf/gf/v2 v2.6.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/kysion/base-library v0.0.30
-	github.com/kysion/oss-library v0.1.3
-	github.com/kysion/sms-library v0.1.2
+	github.com/kysion/oss-library v0.1.4
+	github.com/kysion/sms-library v0.1.3
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/yitter/idgenerator-go v1.3.3
