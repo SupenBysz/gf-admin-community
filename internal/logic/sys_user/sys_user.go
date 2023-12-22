@@ -391,8 +391,9 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 	user := &sys_model.SysUser{}
 
 	for _, k := range userList.Records {
-		sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
-		if user.Username == username {
+		//sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
+		if k.Username == username {
+			sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
 			response = s.masker(s.makeMore(ctx, user))
 			// 查询用户所拥有的角色 (指针传递)
 			s.getUserRole(ctx, response)
