@@ -28,7 +28,7 @@ func InitIp2region() {
 	if ip2regionPath == "" || gfile.Size(ip2regionPath) <= 0 {
 		log.Println("开始下载IP信息库资源")
 		d := downloader.NewDownloader(
-			"https://gh-proxy.com/https://github.com/lionsoul2014/ip2region/raw/master/data/ip2region.xdb",
+			"https://mirror.ghproxy.com/https://github.com/lionsoul2014/ip2region/raw/master/data/ip2region.xdb",
 			gfile.Basename(ip2regionPath),
 			gfile.Abs(gfile.Dir(ip2regionPath)),
 			10,
