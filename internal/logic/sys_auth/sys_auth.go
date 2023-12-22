@@ -138,14 +138,10 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
-	{
-		// 更新用户最后登录信息
-		area, _ := sys_consts.Global.Searcher.SearchByStr(g.RequestFromCtx(ctx).GetRemoteIp())
-		user.Detail.Id = user.Id
-		user.Detail.LastLoginIp = g.RequestFromCtx(ctx).GetRemoteIp()
-		user.Detail.LastLoginArea = area
-		user.Detail.LastLoginAt = gtime.Now()
-	}
+	ip := g.RequestFromCtx(ctx).GetRemoteIp()
+	user.Detail.Id = user.Id
+	user.Detail.LastLoginAt = gtime.Now()
+	user.Detail.LastLoginIp = ip
 
 	for _, hook := range s.hookArr {
 		// 判断注入的Hook用户类型是否一致
@@ -158,7 +154,20 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		}
 	}
 
-	sys_service.SysUser().UpdateUserExDetail(ctx, user)
+	{
+		// 更新用户最后登录信息
+		go func() {
+			area, err := sys_consts.Global.Searcher.SearchByStr(ip)
+			if err != nil {
+				sys_service.SysLogs().ErrorSimple(ctx, err, "用户登陆地区更新失败", sys_dao.SysUser.Table())
+			}
+			if area != "" {
+				user.Detail.LastLoginArea = area
+			}
+
+			sys_service.SysUser().UpdateUserExDetail(context.Background(), user)
+		}()
+	}
 
 	return tokenInfo, err
 }
