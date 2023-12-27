@@ -40,6 +40,11 @@ func (s *sSysSession) HasCustom(ctx context.Context) bool {
 	return ctx.Value("hasCustom") != nil
 }
 
+// GetSessionKey 获取上下文缓存Key
+func (s *sSysSession) GetSessionKey(ctx context.Context) string {
+	return s.contextKey
+}
+
 // Get 获得上下文变量，如果没有设置，那么返回nil
 func (s *sSysSession) Get(ctx context.Context) *sys_model.SessionContext {
 	value := ctx.Value(s.contextKey)

@@ -26,6 +26,8 @@ type (
 		Init(sessionContext *sys_model.SessionContext, r *ghttp.Request, ctx ...*context.Context)
 		NewSessionCtx(ctx context.Context) context.Context
 		HasCustom(ctx context.Context) bool
+		// GetSessionKey 获取上下文缓存Key
+		GetSessionKey(ctx context.Context) string
 		// Get 获得上下文变量，如果没有设置，那么返回nil
 		Get(ctx context.Context) *sys_model.SessionContext
 		SetUserById(ctx *context.Context, userId int64) *sys_model.SessionContext
