@@ -232,7 +232,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		pwdHash, _ := en_crypto.PwdHash(info.PassWord, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
 		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.PassWord, userInfo.SysUser)
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.PassWord, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -550,7 +550,7 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 	// 业务层自定义密码加密规则
 	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, sysUserInfo.SysUser)
+		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *sysUserInfo.SysUser)
 	}
 
 	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})
