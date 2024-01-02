@@ -8,7 +8,7 @@ require (
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.6.0
 	github.com/gogf/gf/v2 v2.6.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/kysion/base-library v0.0.30
+	github.com/kysion/base-library v0.0.31
 	github.com/kysion/oss-library v0.1.4
 	github.com/kysion/sms-library v0.1.3
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
