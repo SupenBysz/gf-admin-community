@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -139,6 +140,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
+	user.Detail = &sys_entity.SysUserDetail{}
 	user.Detail.Id = user.Id
 	user.Detail.LastLoginAt = gtime.Now()
 	user.Detail.LastLoginIp = ip
