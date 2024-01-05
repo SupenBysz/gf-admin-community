@@ -42,7 +42,7 @@ type SysUserRegisterRes struct {
 
 type SysUser struct {
 	*sys_entity.SysUser
-	Detail    *sys_entity.SysUserDetail `orm:"with:id" json:"detail"`
+	Detail    *sys_entity.SysUserDetail `json:"detail"`
 	RoleNames []string                  `json:"roleNames" dc:"所属角色"`
 }
 
