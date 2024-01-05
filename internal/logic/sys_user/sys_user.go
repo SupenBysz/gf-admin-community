@@ -770,28 +770,45 @@ func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int
 func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error) {
 	//s.initInnerCacheItems(ctx)
 
-	data := sys_entity.SysUserDetail{}
+	var data *sys_entity.SysUserDetail
 
 	err := sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: user.Id}).Scan(&data)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
-	if errors.Is(err, sql.ErrNoRows) {
+	if user.Detail == nil {
+		if data != nil {
+			user.Detail = data
+		} else {
+			user.Detail = &sys_entity.SysUserDetail{
+				Id:            user.Id,
+				Realname:      "",
+				UnionMainName: "",
+				LastLoginIp:   "",
+				LastLoginArea: "",
+				LastLoginAt:   nil,
+			}
+		}
+	}
+
+	if err == nil && data == nil || errors.Is(err, sql.ErrNoRows) {
 		_, err = sys_dao.SysUserDetail.Ctx(ctx).Insert(user.Detail)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		_, err = sys_dao.SysUserDetail.Ctx(ctx).Data(sys_do.SysUserDetail{
-			Realname:      user.Detail.Realname,
-			UnionMainName: user.Detail.UnionMainName,
-			LastLoginIp:   user.Detail.LastLoginIp,
-			LastLoginArea: user.Detail.LastLoginArea,
-			LastLoginAt:   user.Detail.LastLoginAt,
-		}).Where(sys_do.SysUserDetail{Id: user.Id}).Update()
-		if err != nil {
-			return nil, err
+		if data == nil {
+			_, err = sys_dao.SysUserDetail.Ctx(ctx).Data(sys_do.SysUserDetail{
+				Realname:      user.Detail.Realname,
+				UnionMainName: user.Detail.UnionMainName,
+				LastLoginIp:   user.Detail.LastLoginIp,
+				LastLoginArea: user.Detail.LastLoginArea,
+				LastLoginAt:   user.Detail.LastLoginAt,
+			}).Where(sys_do.SysUserDetail{Id: user.Id}).Update()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -998,11 +1015,24 @@ func (s *sSysUser) makeMore(ctx context.Context, data *sys_model.SysUser) *sys_m
 	base_funs.AttrMake[sys_model.SysUser](ctx,
 		sys_dao.SysUser.Columns().Id,
 		func() *sys_entity.SysUserDetail {
-			result, _ := daoctl.GetByIdWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
+
+			//result, _ := daoctl.GetByIdWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
+			resultArr, _ := daoctl.Query[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), nil, true)
+			//result, _ := daoctl.ScanWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: data.Id}))
+			var result *sys_entity.SysUserDetail
+			for _, record := range resultArr.Records {
+				if record.Id == data.Id {
+					result = &record
+					break
+				}
+			}
 			if result == nil {
 				return nil
 			}
 			res := kconv.Struct[sys_entity.SysUserDetail](ctx, *result)
+			if res.LastLoginIp == "" {
+				return nil
+			}
 			data.Detail = &res
 			return data.Detail
 		},
