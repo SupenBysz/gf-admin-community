@@ -53,8 +53,8 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/redis/go-redis/v9 v9.3.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.798 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.798 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.834 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.834 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
