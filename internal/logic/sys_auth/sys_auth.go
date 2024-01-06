@@ -161,11 +161,11 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		// 更新用户最后登录区域信息
 		go func() {
 			area := "内网"
-			if !(gstr.StrLimit(ip, 3) == "127" ||
-				gstr.StrLimit(ip, 3) == "10." ||
-				gstr.StrLimit(ip, 3) == "172" ||
-				gstr.StrLimit(ip, 3) == "192" ||
-				gstr.ContainsI(ip, "local")) {
+			if gstr.StrLimit(ip, 3) != "127..." &&
+				gstr.StrLimit(ip, 3) != "10..." &&
+				gstr.StrLimit(ip, 3) != "172..." &&
+				gstr.StrLimit(ip, 3) != "192..." &&
+				gstr.ContainsI(ip, "local") == false {
 
 				area, err = sys_consts.Global.Searcher.SearchByStr(ip)
 				if err != nil {
