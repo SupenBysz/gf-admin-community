@@ -17,6 +17,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcache"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/base_hook"
@@ -157,17 +158,26 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	}
 
 	{
-		// 更新用户最后登录信息
+		// 更新用户最后登录区域信息
 		go func() {
-			area, err := sys_consts.Global.Searcher.SearchByStr(ip)
-			if err != nil {
-				sys_service.SysLogs().ErrorSimple(ctx, err, "用户登陆地区更新失败", sys_dao.SysUser.Table())
+			area := "内网"
+			if !(gstr.StrLimit(ip, 3) == "127" ||
+				gstr.StrLimit(ip, 3) == "10." ||
+				gstr.StrLimit(ip, 3) == "172" ||
+				gstr.StrLimit(ip, 3) == "192" ||
+				gstr.ContainsI(ip, "local")) {
+
+				area, err = sys_consts.Global.Searcher.SearchByStr(ip)
+				if err != nil {
+					_ = sys_service.SysLogs().ErrorSimple(ctx, err, "用户登陆地区更新失败", sys_dao.SysUser.Table())
+				}
 			}
+
 			if area != "" {
 				user.Detail.LastLoginArea = area
 			}
 
-			sys_service.SysUser().UpdateUserExDetail(context.Background(), user)
+			_, _ = sys_service.SysUser().UpdateUserExDetail(context.Background(), user)
 		}()
 	}
 
