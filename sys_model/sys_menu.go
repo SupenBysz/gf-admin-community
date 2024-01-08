@@ -35,6 +35,7 @@ type UpdateSysMenu struct {
 	Component    *string `json:"component" dc:"组件" v:"max-length:128#组件地址最大长度请不要超过128字符"`
 	Sort         *int    `json:"sort"      dc:"排序" v:"integer#排序参数错误"`
 	State        *int    `json:"state"    dc:"状态：0隐藏，1显示" v:"in:0,1#请选择状态类型"`
+	Description  *string `json:"description" description:"描述"`
 }
 
 type SysMenuRes sys_entity.SysMenu
