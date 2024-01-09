@@ -14,6 +14,7 @@ type CreateUserReq struct {
 type QueryUserListReq struct {
 	g.Meta `path:"/queryUserList" method:"post" summary:"获取用户|列表" tags:"用户"`
 	base_model.SearchParams
+	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
 type SetUserPermissionIdsReq struct {
@@ -28,8 +29,9 @@ type GetUserPermissionIdsReq struct {
 }
 
 type GetUserDetailReq struct {
-	g.Meta `path:"/getUserDetail" method:"post" summary:"查看详情" dc:"含完整手机号的详情" tags:"用户"`
-	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	g.Meta  `path:"/getUserDetail" method:"post" summary:"查看详情" dc:"含完整手机号的详情" tags:"用户"`
+	Id      int64    `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
 type SetUserRolesReq struct {
