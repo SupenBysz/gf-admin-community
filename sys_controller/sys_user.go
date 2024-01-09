@@ -136,6 +136,11 @@ func (c *cSysUser) makeMore(ctx context.Context) context.Context {
 		arr := kconv.Struct(array, &[]string{})
 		include = garray.NewStrArrayFrom(*arr)
 	}
+
+	if include.Contains("*") {
+		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+	}
+
 	if include.Contains("detail") {
 		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
 	}
