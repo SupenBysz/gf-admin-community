@@ -593,3 +593,38 @@ func makeSign(fileSrc string, id int64) string {
 
 	return checkSign
 }
+
+// UploadPicture 审核图片
+func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error) {
+
+	result, err := s.Upload(ctx, input.FileUploadInput)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ret := sys_model.PictureWithOCR{
+		SysFile: *result,
+		Data:    make([]sys_model.DescriptionData, 0),
+	}
+
+	fileBase64, err := gbase64.EncodeFileToString(result.Src)
+
+	if err != nil {
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "图片审核失败", sys_dao.SysFile.Table())
+	}
+
+	imageBase64 := fileBase64
+
+	PictureInfo, err := sys_service.SdkBaidu().AuditPicture(ctx, imageBase64, input.ImageType)
+
+	if err != nil {
+		return &ret, err
+	}
+
+	ret.Conclusion = PictureInfo.Conclusion
+	ret.ConclusionType = PictureInfo.ConclusionType
+	ret.Data = PictureInfo.Data
+
+	return &ret, err
+}
