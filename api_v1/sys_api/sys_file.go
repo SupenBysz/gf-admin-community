@@ -46,3 +46,10 @@ type GetFileReq struct {
 	Id     int64  `json:"id" dc:"文件id"`
 	CId    int64  `json:"cid" dc:"缓存id"`
 }
+
+type UploadPictureReq struct {
+	g.Meta `path:"/uploadPicture" method:"post" summary:"上传图片" tags:"工具"`
+	sys_model.PictureWithOCRInput
+}
+
+type UploadPictureRes sys_model.PictureWithOCR

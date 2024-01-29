@@ -29,6 +29,8 @@ type (
 		OCRIDCard(ctx context.Context, imageBase64 string, detectRisk string, idCardSide string) (*sys_model.BaiduSdkOCRIDCard, error)
 		// OCRBusinessLicense OCR识别营业执照
 		OCRBusinessLicense(ctx context.Context, imageBase64 string) (*sys_model.BusinessLicenseOCR, error)
+		// AuditPicture 审核图片
+		AuditPicture(ctx context.Context, imageBase64 string, imageType uint64) (*sys_model.PictureWithOCR, error)
 	}
 )
 

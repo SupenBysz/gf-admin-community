@@ -58,3 +58,26 @@ type BankCardWithOCR struct {
 	// SDK返回的识别数据
 	BaiduSdkOCRBankCard
 }
+
+// PictureWithOCRInput 上传图片
+type PictureWithOCRInput struct {
+	FileUploadInput
+	ImageType uint64 `json:"imageType" dc:"图片类型：0静态图片,1GIF动态图片（仅对首帧进行审核）" default:"0" v:"in:0,1#请选择正确的数据范围"`
+}
+
+// PictureWithOCR 图片审核响应信息
+type PictureWithOCR struct {
+	sys_entity.SysFile
+	Conclusion     string            `json:"conclusion" dc:"审核结果，可取值描述：合规、不合规、疑似、审核失败"`
+	ConclusionType int               `json:"conclusionType" dc:"审核结果类型，可取值1、2、3、4，分别代表1：合规，2：不合规，3：疑似，4：审核失败："`
+	Data           []DescriptionData `json:"data" dc:"不合规/疑似/命中白名单项详细信息。响应成功并且conclusion为疑似或不合规或命中白名单时才返回，响应失败或conclusion为合规且未命中白名单时不返回。"`
+}
+
+// DescriptionData 图片不合规描述
+type DescriptionData struct {
+	Type           int    `json:"type"`
+	SubType        int    `json:"subType"`
+	Conclusion     string `json:"conclusion" dc:"审核结果，可取值描述：合规、不合规、疑似、审核失败"`
+	ConclusionType int    `json:"conclusionType" dc:"审核结果类型，可取值1、2、3、4，分别代表1：合规，2：不合规，3：疑似，4：审核失败："`
+	Msg            string `json:"msg"`
+}

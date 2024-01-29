@@ -48,6 +48,8 @@ type (
 		GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64) (*sys_model.FileInfo, error)
 		// UseFile 用图片
 		UseFile(ctx context.Context, src string)
+		// UploadPicture 审核图片
+		UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error)
 	}
 )
 
