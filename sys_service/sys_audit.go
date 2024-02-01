@@ -27,10 +27,10 @@ type (
 		QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error)
 		// GetAuditById 根据ID获取审核信息
 		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
-		// GetAuditByLatestUnionMainId 获取最新的业务个人审核信息
-		GetAuditByLatestUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
-		// GetAuditByLatestUserId 获取最新的业务个人审核信息
-		GetAuditByLatestUserId(ctx context.Context, userId int64) *sys_entity.SysAudit
+		// GetAuditLatestByUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
+		GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
+		// GetAuditLatestByUserId 获取最新的业务个人审核信息
+		GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_entity.SysAudit
 		// CreateAudit 创建审核信息
 		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error)
 		// UpdateAudit 处理审核信息
