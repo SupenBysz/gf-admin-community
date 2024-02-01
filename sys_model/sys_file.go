@@ -73,7 +73,7 @@ type PictureWithOCR struct {
 	Data           []DescriptionData `json:"data" dc:"不合规/疑似/命中白名单项详细信息。响应成功并且conclusion为疑似或不合规或命中白名单时才返回，响应失败或conclusion为合规且未命中白名单时不返回。"`
 }
 
-// DescriptionData 图片不合规描述
+// DescriptionData 图片审核描述
 type DescriptionData struct {
 	Type           int    `json:"type"`
 	SubType        int    `json:"subType"`

@@ -336,6 +336,17 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				}
 			}
 
+			/*
+				//	if data.Detail != nil && data.Detail.Id > 0 && (data.Detail.Realname != "" || data.Detail.UnionMainName != "") {
+
+						_, err = sys_dao.SysUserDetail.Ctx(ctx).OmitNilData().Data(data.Detail).Insert()
+
+						if err != nil {
+							return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+						}
+					//}
+			*/
+
 		}
 		if len(info.RoleIds) > 0 {
 			ret, err := s.SetUserRoleIds(ctx, info.RoleIds, data.Id)
@@ -470,8 +481,9 @@ func (s *sSysUser) MakeSession(ctx context.Context, userId int64) {
 	}
 
 	token, err := sys_service.Jwt().GenerateToken(ctx, user)
-
-	sys_service.Jwt().MakeSession(ctx, token.Token)
+	if token != nil {
+		sys_service.Jwt().MakeSession(ctx, token.Token)
+	}
 }
 
 // SetUserPermissionIds 设置用户权限
@@ -973,10 +985,17 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 }
 
 func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, unionMainId ...int64) (*sys_model.SysUser, error) {
+
 	if unionMainId == nil || len(unionMainId) <= 0 || unionMainId[0] == 0 {
-		sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
-		unionMainId = make([]int64, 1)
-		unionMainId[0] = sessionUser.UnionMainId
+		getS := sys_service.SysSession().Get(ctx)
+		if getS != nil {
+			sessionUser := getS.JwtClaimsUser
+			if sessionUser != nil {
+				unionMainId = make([]int64, 1)
+				unionMainId[0] = sessionUser.UnionMainId
+			}
+		}
+
 	}
 
 	roleIds, _ := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(sysUser.Id), sys_consts.CasbinDomain)

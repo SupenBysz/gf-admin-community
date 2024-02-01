@@ -594,7 +594,7 @@ func makeSign(fileSrc string, id int64) string {
 	return checkSign
 }
 
-// UploadPicture 审核图片
+// UploadPicture 上传图片并审核
 func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error) {
 
 	result, err := s.Upload(ctx, input.FileUploadInput)

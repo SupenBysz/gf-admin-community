@@ -41,7 +41,7 @@ func NewSysPersonLicense() *sSysPersonLicense {
 		},
 	}
 
-	// 订阅审核Hook,审核通过添加个人资质主体信息
+	// 订阅审核Hook,审核通过添加个人资质信息
 	sys_service.SysAudit().InstallHook(sys_enum.Audit.Action.Approve, sys_enum.Audit.Category.PersonLicenseAudit.Code(), result.AuditChange)
 
 	// 订阅审核数据获取Hook, 将审核数据渲染成个人资质然后进行输出

@@ -48,7 +48,7 @@ type GetFileReq struct {
 }
 
 type UploadPictureReq struct {
-	g.Meta `path:"/uploadPicture" method:"post" summary:"上传图片" tags:"工具"`
+	g.Meta `path:"/uploadPicture" method:"post" summary:"上传图片并审核" tags:"工具"`
 	sys_model.PictureWithOCRInput
 }
 
