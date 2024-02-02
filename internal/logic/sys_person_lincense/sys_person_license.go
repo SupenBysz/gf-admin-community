@@ -284,8 +284,8 @@ func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, audit
 	// 需要将持久化的文件ID替换成可访问的接口URL
 	s.buildURL(ctx, &result)
 
-	return &result
-	//return s.Masker(&result)
+	//return &result
+	return s.Masker(&result)
 }
 
 // SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
@@ -368,6 +368,7 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 // Masker  个人资质信息脱敏
 func (s *sSysPersonLicense) Masker(license *sys_entity.SysPersonLicense) *sys_entity.SysPersonLicense {
 	license.No = masker.MaskString(license.No, masker.IDCard)
+	license.Name = masker.MaskString(license.Name, masker.Other)
 
 	return license
 }
