@@ -16,6 +16,8 @@ func InitPermission() []base_permission.IPermission {
 			SetIdentifier("User").
 			SetType(1).
 			SetIsShow(1).
+			SetMatchMode(0). // ID匹配
+			// 匹配模式： permission.New
 			SetItems([]base_permission.IPermission{
 				// 查看用户，查看某个用户登录账户
 				sys_enum.User.PermissionType.ViewDetail,
@@ -46,6 +48,7 @@ func InitPermission() []base_permission.IPermission {
 			SetIdentifier("Organization").
 			SetType(1).
 			SetIsShow(0).
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看，查看某个组织架构
 				sys_enum.Organization.PermissionType.ViewDetail,
@@ -66,6 +69,7 @@ func InitPermission() []base_permission.IPermission {
 			SetIdentifier("Role").
 			SetType(1).
 			SetIsShow(1).
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看角色，查看某个角色
 				sys_enum.Role.PermissionType.ViewDetail,
@@ -90,6 +94,7 @@ func InitPermission() []base_permission.IPermission {
 			SetIdentifier("Permission").
 			SetType(1).
 			SetIsShow(1).
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看权限，查看某个权限
 				sys_enum.Permissions.PermissionType.ViewDetail,
@@ -109,8 +114,8 @@ func InitPermission() []base_permission.IPermission {
 			SetName("菜单管理").
 			SetIdentifier("Menu").
 			SetType(1).
-			SetIsShow(0). // 默认隐藏
-
+			SetIsShow(0).    // 默认隐藏
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看菜单，查看某个菜单
 				sys_enum.Menu.PermissionType.ViewDetail,
@@ -140,6 +145,7 @@ func initAuditAndLicensePermission() []base_permission.IPermission {
 			SetIdentifier("PersonLicense").
 			SetType(1).
 			SetIsShow(1).
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看资质信息，查看某条资质信息
 				sys_enum.License.PermissionType.ViewDetail,
@@ -158,6 +164,7 @@ func initAuditAndLicensePermission() []base_permission.IPermission {
 			SetIdentifier("PersonAudit").
 			SetType(1).
 			SetIsShow(1).
+			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看审核信息，查看某条资质审核信息
 				sys_enum.Audit.PermissionType.ViewDetail,

@@ -360,6 +360,8 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 			permissionTree.SetIsShow(parent.GetIsShow())
 			// 拼接上父级权限标识符 例如(User::View ...)
 			permissionTree.SetIdentifier(parent.GetIdentifier() + "::" + permissionTree.GetIdentifier())
+			// 拼接上父级的匹配模式 （例如：0ID匹配，1标识符匹配）
+			permissionTree.SetMatchMode(parent.GetMatchMode())
 		}
 		// 排序字段
 		permissionTree.SetSort(i)
