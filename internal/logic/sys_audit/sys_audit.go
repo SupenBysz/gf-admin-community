@@ -248,6 +248,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 		{
 			// 查询当前关联业务ID是否有审核记录
 			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
+				UserId:  info.UserId,
 				UnionMainId:    info.UnionMainId,
 				Category:       info.Category,
 				DataIdentifier: info.DataIdentifier,
