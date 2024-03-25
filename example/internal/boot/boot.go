@@ -3,6 +3,7 @@ package boot
 import (
 	"context"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
+	"github.com/SupenBysz/gf-admin-community/example/internal/hello"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_controller"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
@@ -111,6 +112,8 @@ var (
 							)
 						})
 
+						// 测试接口
+						group.Group("/test", func(group *ghttp.RouterGroup) { group.Bind(hello.MYHelloWorld) })
 					})
 
 					// 权限路由绑定
