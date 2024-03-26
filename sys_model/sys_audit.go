@@ -14,6 +14,7 @@ type CreateAudit struct {
 	AuditData      string      `json:"auditData"     description:"待审核的业务数据包" v:"required|json#验证信息必须为json格式字符串"`
 	ExpireAt       *gtime.Time `json:"expireAt"      description:"审核服务时限，超过该时间后没有审核通过的需要重新申请审核"`
 	DataIdentifier string      `json:"dataIdentifier" description:"数据标识"`
+	UserId         int64       `json:"userId" dc:"关联业务用户ID" `
 }
 
 type SetAudit struct {
@@ -21,7 +22,7 @@ type SetAudit struct {
 	State       int    `json:"state"         description:"审核状态：-1不通过，1通过" v:"required|in:-1,1#审核状态错误"`
 	Reply       string `json:"reply"        description:"不通过时回复的审核不通过原因"`
 	UnionMainId int64  `json:"unionMainId"       description:"关联业务ID" v:"required#关联业务ID参数粗我"`
-	Category    int    `json:"category"      description:"分类：1运营商主体资质审核，2服务商主体资质审核、4消费者实名审核" v:"required|in:1,2,4#分类类型错误"`
+	Category    int    `json:"category"      description:"分类：1个人资质审核、2主体资质审核、4数据审核" v:"required|in:1,2,4#分类类型错误"`
 }
 
 type AuditRes struct {

@@ -10,11 +10,15 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/kysion/base-library/base_model"
 )
 
 type (
 	ISysRole interface {
+		// InstallInviteRegisterHook 订阅邀约注册Hook
+		InstallInviteRegisterHook(action sys_enum.RoleMemberChange, hookFunc sys_hook.RoleMemberChangeHookFunc)
 		// QueryRoleList 获取角色列表
 		QueryRoleList(ctx context.Context, info base_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
 		// GetRoleById 根据id获取角色
@@ -30,13 +34,13 @@ type (
 		// SetRoleMember 设置角色用户
 		SetRoleMember(ctx context.Context, roleId int64, userIds []int64, makeUserUnionMainId int64) (bool, error)
 		// RemoveRoleMember 移除角色中的用户
-		RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error)
+		RemoveRoleMember(ctx context.Context, roleId int64, userIds []int64) (bool, error)
 		// GetRoleMemberIds 获取角色下的所有用户ID
 		GetRoleMemberIds(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]int64, error)
 		// GetRoleMemberList 获取角色下的所有用户
 		GetRoleMemberList(ctx context.Context, roleId int64, makeUserUnionMainId int64) ([]*sys_model.SysUser, error)
-		// GetRoleByUserIdList 获取用户拥有的所有角色
-		GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
+		// GetRoleListByUserId 获取用户拥有的所有角色
+		GetRoleListByUserId(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
 		// SetRolePermissions 设置角色权限
 		SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error)
 	}

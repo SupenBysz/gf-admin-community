@@ -32,11 +32,11 @@ type SetRoleMemberReq struct {
 	UserIds []int64 `json:"userIds" v:"required#用户ID校验失败" dc:"用户IDS"`
 }
 
-//type RemoveRoleMemberReq struct {
-//	g.Meta `path:"/removeRoleMember" method:"post" summary:"移除角色成员" tags:"角色"`
-//	RoleId int64 `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
-//	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
-//}
+type RemoveRoleMemberReq struct {
+	g.Meta  `path:"/removeRoleMember" method:"post" summary:"移除角色成员" tags:"角色"`
+	RoleId  int64   `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
+	UserIds []int64 `json:"userIds" v:"required#用户ID校验失败" dc:"用户IDS"`
+}
 
 type GetRoleMemberReq struct {
 	g.Meta `path:"/getRoleMemberList" method:"post" summary:"获取角色成员|列表" tags:"角色"`
@@ -49,7 +49,7 @@ type GetRoleMemberIdsReq struct {
 }
 
 type GetRoleByUserIdListReq struct {
-	g.Meta `path:"/getRoleByUserIdList" method:"post" summary:"获取用户ID获取所有关联角色|列表" tags:"角色"`
+	g.Meta `path:"/getRoleByUserIdList" method:"post" summary:"根据用户ID获取所有关联角色|列表" tags:"角色"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 
@@ -61,7 +61,7 @@ type SetRolePermissionsReq struct {
 
 type GetRolePermissionsIdsReq struct {
 	g.Meta `path:"/getRolePermissionIds" method:"post" summary:"获取角色权限Ids" tags:"角色"`
-	Id     string `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
+	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
 type RoleInfoRes sys_model.RoleInfo

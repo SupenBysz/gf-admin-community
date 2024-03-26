@@ -1,9 +1,8 @@
 package internal
 
 import (
-	_ "github.com/SupenBysz/gf-admin-community/internal/boot/init_factory"
-
 	"github.com/SupenBysz/gf-admin-community/internal/boot"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
@@ -13,8 +12,7 @@ import (
 func init() {
 	env.LoadEnv()
 
-	//init_factory.InitIdGenerator()
-	//init_factory.InitFactory()
+	idgen.InitIdGenerator()
 	boot.InitIp2region()
 	boot.InitCustomRules()
 	boot.InitGlobal()

@@ -20,7 +20,7 @@ func (c *cCommon) GetFile(ctx context.Context, req *sys_api.GetFileReq) (res *sy
 
 	if err != nil || file == nil {
 		// 渲染默认的图片
-		g.RequestFromCtx(ctx).Response.ServeFile("./resources/1x1_#00000000.png")
+		g.RequestFromCtx(ctx).Response.ServeFile("./resource/1x1_#00000000.png")
 		return nil, err
 	}
 

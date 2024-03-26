@@ -8,13 +8,17 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/kysion/base-library/base_hook"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/daoctl"
@@ -24,6 +28,9 @@ import (
 
 type sSysRole struct {
 	conf gdb.CacheOption
+
+	// 修改团队成员Hook
+	RoleMemberHook base_hook.BaseHook[sys_enum.RoleMemberChange, sys_hook.RoleMemberChangeHookFunc]
 }
 
 func init() {
@@ -37,6 +44,11 @@ func New() *sSysRole {
 			Force:    false,
 		},
 	}
+}
+
+// InstallInviteRegisterHook 订阅邀约注册Hook
+func (s *sSysRole) InstallInviteRegisterHook(action sys_enum.RoleMemberChange, hookFunc sys_hook.RoleMemberChangeHookFunc) {
+	s.RoleMemberHook.InstallHook(action, hookFunc)
 }
 
 // QueryRoleList 获取角色列表
@@ -160,6 +172,10 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
 	}
 
+	if info.IsSystem {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统默认的角色不能删除"), "", sys_dao.SysRole.Table())
+	}
+
 	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if len(userIds) > 0 {
@@ -220,7 +236,7 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 }
 
 // RemoveRoleMember 移除角色中的用户
-func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId int64) (bool, error) {
+func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userIds []int64) (bool, error) {
 	roleInfo := sys_entity.SysRole{}
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
@@ -228,19 +244,52 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userId in
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
 	}
 
-	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
+	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		for _, userId := range userIds {
+			userInfo, _ := sys_service.SysUser().GetSysUserById(ctx, userId)
+			if err != nil || userInfo == nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+			}
 
-	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
-	}
+			//userInfo.RoleNames
+			//user := sys_service.SysSession().Get(ctx).JwtClaimsUser // 这样只能避免自己操作自己，别人操作自己就避免不了
+			//if user.IsAdmin && userId == user.Id {
+			//}
 
-	ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			// 不能将系统的个管理员移除出系统默认的管理员角色 （Hook方案解决）
+			s.RoleMemberHook.Iterator(func(key sys_enum.RoleMemberChange, value sys_hook.RoleMemberChangeHookFunc) {
+				// 判断注入的Hook业务类型是否一致
+				if key.Code()&sys_enum.Role.Change.Remove.Code() == sys_enum.Role.Change.Remove.Code() {
+					// 业务类型一致则调用注入的Hook函数
+					g.Try(ctx, func(ctx context.Context) {
+						canRemove, err2 := value(ctx, sys_enum.Role.Change.Remove, roleInfo, userInfo)
+						if err2 != nil && canRemove == false {
+							err = err2
+							return
+						}
+					})
+				}
+			})
 
-	if ret == true {
-		// 重置用户角色名称，并自动去重
-		userInfo.RoleNames = garray.NewSortedStrArrayFrom(base_funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
-	}
-	return ret, err
+			if err != nil {
+				return err
+			}
+
+			ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "移除角色成员失败", sys_dao.SysRole.Table())
+			}
+
+			if ret == true {
+				// 重置用户角色名称，并自动去重
+				userInfo.RoleNames = garray.NewSortedStrArrayFrom(base_funs.RemoveSliceAt(userInfo.RoleNames, roleInfo.Name)).Unique().Slice()
+			}
+		}
+
+		return nil
+	})
+
+	return err == nil, err
 }
 
 // GetRoleMemberIds 获取角色下的所有用户ID
@@ -287,7 +336,7 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 			Value:       userIds,
 			IsNullValue: false,
 		}),
-	}, makeUserUnionMainId, false)
+	}, makeUserUnionMainId, true)
 
 	userInfoArr = userList.Records
 
@@ -301,7 +350,7 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 		user.Password = ""
 		user.RoleNames = make([]string, 0)
 
-		roles, err := sys_service.SysRole().GetRoleByUserIdList(ctx, user.Id)
+		roles, err := sys_service.SysRole().GetRoleListByUserId(ctx, user.Id)
 		if err == nil && len(roles) > 0 {
 			for _, role := range roles {
 				user.RoleNames = append(user.RoleNames, role.Name)
@@ -313,8 +362,8 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 	return result, nil
 }
 
-// GetRoleByUserIdList 获取用户拥有的所有角色
-func (s *sSysRole) GetRoleByUserIdList(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
+// GetRoleListByUserId 获取用户拥有的所有角色
+func (s *sSysRole) GetRoleListByUserId(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error) {
 
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 

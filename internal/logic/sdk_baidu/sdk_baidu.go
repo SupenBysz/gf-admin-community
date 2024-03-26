@@ -14,6 +14,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/kconv"
 	"time"
 )
 
@@ -380,6 +381,60 @@ func (s *sSdkBaidu) OCRBusinessLicense(ctx context.Context, imageBase64 string) 
 		ExpirationDate:    jsonObj.Get("words_result.有效期.words", "").String(),
 		ApprovalDate:      jsonObj.Get("words_result.核准日期.words", "").String(),
 		RegistrationDate:  jsonObj.Get("words_result.类型.words", "").String(),
+	}
+
+	return &ret, nil
+}
+
+// AuditPicture 审核图片
+func (s *sSdkBaidu) AuditPicture(ctx context.Context, imageBase64 string, imageType uint64) (*sys_model.PictureWithOCR, error) {
+	param := g.Map{
+		"image":   imageBase64,
+		"imgType": imageType,
+	}
+
+	tokenInfo, err := s.GetBaiduSdkConfToken(ctx, "audit_picture")
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := g.Client().Header(g.MapStrStr{"Content-Type": "application/x-www-form-urlencoded"}).
+		Post(ctx, "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token="+tokenInfo.AccessToken, param)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("审核图片失败"), "", sys_dao.SysFile.Table())
+	}
+
+	jsonObj, err := gjson.DecodeToJson(response.ReadAll())
+
+	if err != nil || jsonObj.IsNil() {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析审核图片结果失败"), "", sys_dao.SysFile.Table())
+	}
+
+	if jsonObj.Get("error_code").Int() != 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("图片审核失败"), "", sys_dao.SysFile.Table())
+	}
+
+	ret := sys_model.PictureWithOCR{Data: make([]sys_model.DescriptionData, 0)}
+
+	if jsonObj.Get("conclusionType").Int() == 1 {
+		ret.Conclusion = jsonObj.Get("conclusion").String()
+		ret.ConclusionType = jsonObj.Get("conclusionType", "").Int()
+	}
+
+	if jsonObj.Get("conclusionType").Int() == 2 {
+		ret.Conclusion = jsonObj.Get("conclusion").String()
+		ret.ConclusionType = jsonObj.Get("conclusionType", "").Int()
+		data := sys_model.DescriptionData{}
+		for _, item := range jsonObj.Get("data").Array() {
+			record := kconv.Struct(item, &sys_model.DescriptionData{})
+			data.Type = record.Type
+			data.SubType = record.SubType
+			data.Conclusion = record.Conclusion
+			data.ConclusionType = record.ConclusionType
+			data.Msg = record.Msg
+		}
+		ret.Data = append(ret.Data, data)
 	}
 
 	return &ret, nil

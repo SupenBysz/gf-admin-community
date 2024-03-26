@@ -32,8 +32,9 @@ type PersonLicenseRes sys_entity.SysPersonLicense
 type PersonLicenseListRes base_model.CollectRes[sys_entity.SysPersonLicense]
 
 type AuditPersonLicense struct {
-	UnionMainId int64 `json:"unionMainId"             dc:"资质审核关联的业务主体ID"`
+	UnionMainId int64 `json:"unionMainId"             dc:"资质审核关联的业务主体ID"` // 个人资质的unionMainId, 没有则为0
 	LicenseId   int64 `json:"licenseId"             dc:"资质ID"`
-	UserId      int64 `json:"userId" dc:"上传资质的userId"`
+	UserId      int64 `json:"userId" dc:"上传资质的userId"` // 个人资质存在待上传的问题， 所以userID代表上传者
+	OwnerUserId int64 `json:"ownerUserId" dc:"资质的所属userId" `
 	PersonLicense
 }

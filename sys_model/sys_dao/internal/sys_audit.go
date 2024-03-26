@@ -27,7 +27,7 @@ type SysAuditColumns struct {
 	State          string // 审核状态：-1不通过，0待审核，1通过
 	Reply          string // 不通过时回复的审核不通过原因
 	UnionMainId    string // 关联主体ID
-	Category       string // 业务类别
+	Category       string // 业务类别：1个人资质审核、2主体资质审核、4数据审核
 	AuditData      string // 待审核的业务数据包
 	ExpireAt       string // 服务时限
 	AuditReplyAt   string // 审核回复时间
@@ -35,6 +35,7 @@ type SysAuditColumns struct {
 	CreatedAt      string //
 	AuditUserId    string // 审核操作者id
 	DataIdentifier string // 数据标识
+	UserId         string // 关联用户ID
 }
 
 // sysAuditColumns holds the columns for table sys_audit.
@@ -51,6 +52,7 @@ var sysAuditColumns = SysAuditColumns{
 	CreatedAt:      "created_at",
 	AuditUserId:    "audit_user_id",
 	DataIdentifier: "data_identifier",
+	UserId:         "user_id",
 }
 
 // NewSysAuditDao creates and returns a new DAO object for table data access.

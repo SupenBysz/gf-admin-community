@@ -25,12 +25,12 @@ type (
 		// QueryLicenseList  查询个人资质认证|列表
 		QueryLicenseList(ctx context.Context, search base_model.SearchParams) (*sys_model.PersonLicenseListRes, error)
 		// CreateLicense  新增个人资质|信息
-		CreateLicense(ctx context.Context, info sys_model.PersonLicense) (*sys_entity.SysPersonLicense, error)
+		CreateLicense(ctx context.Context, info sys_model.AuditPersonLicense) (*sys_entity.SysPersonLicense, error)
 		// UpdateLicense  更新个人资质认证，如果是已经通过的认证，需要重新认证通过后才生效|信息
-		UpdateLicense(ctx context.Context, info sys_model.PersonLicense, id int64) (*sys_entity.SysPersonLicense, error)
+		UpdateLicense(ctx context.Context, info sys_model.AuditPersonLicense, id int64) (*sys_entity.SysPersonLicense, error)
 		// GetLicenseByLatestAuditId  获取最新的审核记录Id获取资质信息
 		GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysPersonLicense
-		// SetLicenseState  设置个人资质信息状态
+		// SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
 		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)
 		// SetLicenseAuditNumber  设置个人资质神审核编号
 		SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error)

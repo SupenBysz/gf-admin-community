@@ -74,8 +74,11 @@ func (c *cSysPermission) GetPermissionTree(ctx context.Context, req *sys_api.Get
 		return nil, err
 	}
 
-	result, err := sys_service.SysPermission().GetPermissionTree(ctx, req.Id)
+	result, err := sys_service.SysPermission().GetPermissionTree(ctx, req.Id, req.Type)
+
 	return (*sys_model.SysPermissionInfoTreeRes)(&result), err
+
+	//return kconv.Struct(result, &sys_model.SysPermissionInfoTreeRes{}), err
 }
 
 // CreatePermission 新增权限|信息
@@ -96,7 +99,7 @@ func (c *cSysPermission) UpdatePermission(ctx context.Context, req *sys_api.Upda
 		return nil, err
 	}
 
-	result, err := sys_service.SysPermission().UpdatePermission(ctx, req.SysPermission)
+	result, err := sys_service.SysPermission().UpdatePermission(ctx, &req.UpdateSysPermission)
 	return (*sys_model.SysPermissionInfoRes)(result), err
 }
 

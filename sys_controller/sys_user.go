@@ -10,6 +10,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/kconv"
 )
@@ -122,5 +124,26 @@ func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateRe
 
 // makeMore 是否订阅附加数据
 func (c *cSysUser) makeMore(ctx context.Context) context.Context {
-	return base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+
+	include := &garray.StrArray{}
+	if ctx.Value("include") == nil {
+		r := g.RequestFromCtx(ctx)
+		array := r.GetForm("include").Array()
+		arr := kconv.Struct(array, &[]string{})
+		include = garray.NewStrArrayFrom(*arr)
+	} else {
+		array := ctx.Value("include")
+		arr := kconv.Struct(array, &[]string{})
+		include = garray.NewStrArrayFrom(*arr)
+	}
+
+	if include.Contains("*") {
+		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+	}
+
+	if include.Contains("detail") {
+		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+	}
+
+	return ctx
 }

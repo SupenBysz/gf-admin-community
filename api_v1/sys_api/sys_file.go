@@ -44,5 +44,12 @@ type GetFileReq struct {
 	Sign   string `json:"sign" dc:"签名数据，组成部分：(srcBase64 + srcMd5 + fileId) ==> md5加密"`
 	Path   string `json:"path" dc:"文件Src的base64编码后的数据"`
 	Id     int64  `json:"id" dc:"文件id"`
-	CId    int64  `json:"cId" dc:"缓存id"`
+	CId    int64  `json:"cid" dc:"缓存id"`
 }
+
+type UploadPictureReq struct {
+	g.Meta `path:"/uploadPicture" method:"post" summary:"上传图片并审核" tags:"工具"`
+	sys_model.PictureWithOCRInput
+}
+
+type UploadPictureRes sys_model.PictureWithOCR

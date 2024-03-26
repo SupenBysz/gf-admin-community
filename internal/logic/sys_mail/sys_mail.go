@@ -8,7 +8,9 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model/base_enum"
+	"github.com/kysion/base-library/utility/enum"
 	"github.com/kysion/base-library/utility/kconv"
 	"gopkg.in/gomail.v2"
 	"math/rand"
@@ -36,12 +38,16 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 
 	kconv.Struct(sys_consts.Global.EmailConfig, &mailConfig)
 
+	captchaTypes := enum.GetTypes[int, base_enum.CaptchaType](typeIdentifier, base_enum.Captcha.Type)
+
+	cacheTimeLen := 5 * len(captchaTypes)
+
 	// 随机的六位数验证码
 	code := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
 
 	mailConfig.MailTo = mailTo
 	mailConfig.Subject = mailConfig.TitlePrefix + "验证码邮件"
-	mailConfig.Body = "您的验证码为：" + code + "，请在5分钟内验证，系统邮件请勿回复！"
+	mailConfig.Body = "您的验证码为：" + code + "，请在" + gconv.String(cacheTimeLen) + "分钟内验证，系统邮件请勿回复！"
 	mailConfig.SendAuthor = strings.Split(mailConfig.Username, "@")[0]
 
 	err = sendMail(&mailConfig)
@@ -49,14 +55,20 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "邮件发送失败", "Mail-Captcha")
 	}
 
-	// 存储缓存：key = 业务场景 + 邮箱号   register_18170618733@163.com  login_18170618733@163.com
-	captchaType := base_enum.Captcha.Type.New(typeIdentifier, "")
-	cacheKey := captchaType.Description() + "_" + mailTo
+	for _, value := range captchaTypes {
+		// 存储缓存：key = 业务场景 + 邮箱号   register_18170618733@163.com  login_18170618733@163.com
+		cacheKey := value.Description() + "_" + mailTo
 
-	// 保持验证码到缓存
-	_, _ = g.Redis().Set(ctx, cacheKey, code)
-	// 设置验证码缓存时间
-	_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
+		// 保持验证码到缓存
+		_, err = g.Redis().Set(ctx, cacheKey, code)
+		if err == nil {
+			_, err = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*time.Duration(int64(cacheTimeLen)))
+		}
+		// 设置验证码缓存时间
+		if err != nil {
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "验证码缓存失败", "Mail-Captcha")
+		}
+	}
 
 	return true, nil
 }
@@ -112,7 +124,17 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 	}
 
 	// 成功、清除该缓存
-	g.DB().GetCache().Remove(ctx, key)
+	_, _ = g.DB().GetCache().Remove(ctx, key)
+
+	//// 此验证码类型是复用类型
+	//if (typeIdentifier[0].Code() & base_enum.Captcha.Type.ForgotUserNameAndPassword.Code()) == base_enum.Captcha.Type.ForgotUserNameAndPassword.Code() {
+	//	cacheKey := base_enum.Captcha.Type.SetPassword.Description() + "_" + email
+	//
+	//	// 重新保持验证码到缓存
+	//	_, err = g.Redis().Set(ctx, cacheKey, code.String())
+	//	// 设置验证码缓存时间
+	//	_, _ = g.Redis().Do(ctx, "EXPIRE", cacheKey, time.Minute*5)
+	//}
 
 	return true, nil
 }

@@ -27,15 +27,16 @@ func CheckPermissionOr[TRes any](ctx context.Context, f func() (TRes, error), pe
 	return f()
 }
 
-func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.PersonLicense, data *T) (response *T, err error) {
+func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLicense](ctx context.Context, info sys_model.AuditPersonLicense, data *T) (response *T, err error) {
 	newData := &sys_entity.SysPersonLicense{}
 	gconv.Struct(data, newData)
 
 	{
-		userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
+		//userId := sys_service.SysSession().Get(ctx).JwtClaimsUser.Id
+		userId := info.UserId
 
 		// 用户资源文件夹
-		userFolder := "./resources/license/" + gconv.String(newData.Id)
+		userFolder := "./resource/license/" + gconv.String(newData.Id)
 		fileAt := gtime.Now().Format("YmdHis")
 		if !gfile.Exists(info.IdcardFrontPath) {
 			// 检测缓存文件
@@ -48,7 +49,9 @@ func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLic
 			if err != nil {
 				return nil, err
 			}
-			newData.IdcardFrontPath = fileInfo.Src
+
+			//  注意：实际存储的License 需要存储持久化后的文件ID，而不是路径
+			newData.IdcardFrontPath = gconv.String(fileInfo.Id)
 		}
 
 		if !gfile.Exists(info.IdcardBackPath) {
@@ -62,7 +65,9 @@ func CheckPersonLicenseFiles[T sys_entity.SysPersonLicense | sys_do.SysPersonLic
 			if err != nil {
 				return nil, err
 			}
-			newData.IdcardBackPath = fileInfo.Src
+
+			//  注意：实际存储的License 需要存储持久化后的文件ID，而不是路径
+			newData.IdcardBackPath = gconv.String(fileInfo.Id)
 		}
 
 	}

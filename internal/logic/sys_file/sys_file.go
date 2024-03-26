@@ -47,7 +47,7 @@ func New() *sFile {
 	return &sFile{
 		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
-		CacheDuration: time.Minute * 0,
+		CacheDuration: time.Hour * 2,
 	}
 }
 
@@ -92,7 +92,6 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		}
 
 		uploadPath = uploadPath + "/" + gtime.Now().Format("Ymd")
-
 		// 目录不存在则创建
 		if !gfile.Exists(uploadPath) {
 			gfile.Mkdir(uploadPath)
@@ -231,8 +230,10 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 			}
 		}
 	})
-
+	// 记录到数据表
 	data := kconv.Struct(info.SysFile, &sys_do.SysFile{})
+	data.Src = storageAddr
+	data.Url = storageAddr
 
 	count, err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{Id: data.Id}).Count()
 	if count == 0 {
@@ -261,6 +262,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 
 // UploadIDCard 上传身份证照片
 func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error) {
+
 	result, err := s.Upload(ctx, in.FileUploadInput)
 
 	if err != nil {
@@ -590,4 +592,39 @@ func makeSign(fileSrc string, id int64) string {
 	checkSign := crypto.Md5Hash(cryptoData)
 
 	return checkSign
+}
+
+// UploadPicture 上传图片并审核
+func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error) {
+
+	result, err := s.Upload(ctx, input.FileUploadInput)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ret := sys_model.PictureWithOCR{
+		SysFile: *result,
+		Data:    make([]sys_model.DescriptionData, 0),
+	}
+
+	fileBase64, err := gbase64.EncodeFileToString(result.Src)
+
+	if err != nil {
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "图片审核失败", sys_dao.SysFile.Table())
+	}
+
+	imageBase64 := fileBase64
+
+	PictureInfo, err := sys_service.SdkBaidu().AuditPicture(ctx, imageBase64, input.ImageType)
+
+	if err != nil {
+		return &ret, err
+	}
+
+	ret.Conclusion = PictureInfo.Conclusion
+	ret.ConclusionType = PictureInfo.ConclusionType
+	ret.Data = PictureInfo.Data
+
+	return &ret, err
 }

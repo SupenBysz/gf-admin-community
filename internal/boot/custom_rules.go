@@ -1,7 +1,7 @@
 package boot
 
 import (
-	"github.com/SupenBysz/gf-admin-community/utility/rules"
+	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/kysion/base-library/utility/validator"
 )
 
@@ -10,5 +10,5 @@ func InitCustomRules() {
 	// 注册电话验证规则
 	validator.RegisterServicePhone()
 	// 注册资质自定义规则
-	rules.RequiredLicense()
+	sys_rules.RequiredLicense()
 }

@@ -14,6 +14,7 @@ type CreateUserReq struct {
 type QueryUserListReq struct {
 	g.Meta `path:"/queryUserList" method:"post" summary:"获取用户|列表" tags:"用户"`
 	base_model.SearchParams
+	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
 type SetUserPermissionIdsReq struct {
@@ -28,8 +29,9 @@ type GetUserPermissionIdsReq struct {
 }
 
 type GetUserDetailReq struct {
-	g.Meta `path:"/getUserDetail" method:"post" summary:"查看详情" dc:"含完整手机号的详情" tags:"用户"`
-	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	g.Meta  `path:"/getUserDetail" method:"post" summary:"查看详情" dc:"含完整手机号的详情" tags:"用户"`
+	Id      int64    `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
+	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
 type SetUserRolesReq struct {
@@ -43,8 +45,8 @@ type UserInfoListRes sys_model.UserInfoList
 
 type ResetUserPasswordReq struct {
 	g.Meta          `path:"/resetUserPassword" method:"post" summary:"重置用户密码" tags:"用户"`
-	Password        string `json:"password" v:"required#请输入密码" dc:"登录密码"`
-	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"确认密码"`
+	Password        string `json:"password" v:"required#请输入密码" dc:"登录密码" v:"min-length:6#密码最短为6位"`
+	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"确认密码" v:"min-length:6#密码最短为6位"`
 	Id              int64  `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 }
 

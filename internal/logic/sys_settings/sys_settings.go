@@ -38,7 +38,7 @@ func (s *sSysSettings) QueryList(ctx context.Context, params *base_model.SearchP
 
 // GetByName 根据 name 查询百度SDK应用配置信息
 func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_model.SearchParams) (*sys_model.SysSettingsRes, error) {
-	items, err := s.QueryList(ctx, info, false)
+	items, err := s.QueryList(ctx, info, true)
 	if err != nil {
 		return nil, err
 	}
