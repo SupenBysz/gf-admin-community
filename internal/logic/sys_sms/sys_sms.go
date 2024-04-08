@@ -39,16 +39,16 @@ func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typ
 		key = mobile
 	}
 
-	code, _ := g.DB().GetCache().Get(ctx, key)
+	code, err := g.DB().GetCache().Get(ctx, key)
 
 	fmt.Println("验证码：", code.String())
 
-	if code.String() != captcha {
+	if err != nil || code.String() != captcha {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码错误", "Sms")
 	}
 
 	// 成功、清除该缓存
-	g.DB().GetCache().Remove(ctx, key)
+	_, _ = g.DB().GetCache().Remove(ctx, key)
 
 	// 此验证码类型是复用类型
 	//if (typeIdentifier[0].Code() & base_enum.Captcha.Type.ForgotUserNameAndPassword.Code()) == base_enum.Captcha.Type.ForgotUserNameAndPassword.Code() {
