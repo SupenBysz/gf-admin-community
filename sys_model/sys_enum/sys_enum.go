@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
+	sys_enum_industry "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/industry"
 	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
@@ -70,4 +71,6 @@ var (
 	License = sys_enum_license.License
 
 	Invite = sys_enum_invite.Invite
+
+	Industry = sys_enum_industry.Industry
 )
