@@ -128,6 +128,27 @@ func InitPermission() []base_permission.IPermission {
 				// 创建菜单，创建菜单
 				sys_enum.Menu.PermissionType.Create,
 			}),
+
+		// 行业类别管理权限树
+		base_permission.Factory().
+			SetId(5950408166626311).
+			SetName("行业类别管理").
+			SetIdentifier("Industry").
+			SetType(1).
+			SetIsShow(1).    // 默认隐藏
+			SetMatchMode(0). // ID匹配
+			SetItems([]base_permission.IPermission{
+				// 查看行业类别，查看某个行业类别
+				sys_enum.Industry.PermissionType.ViewDetail,
+				// 行业类别树，查看行业类别树
+				sys_enum.Industry.PermissionType.Tree,
+				// 更新行业类别，更新某个行业类别
+				sys_enum.Industry.PermissionType.Update,
+				// 删除行业类别，删除某个行业类别
+				sys_enum.Industry.PermissionType.Delete,
+				// 创建行业类别，创建行业类别
+				sys_enum.Industry.PermissionType.Create,
+			}),
 	}
 
 	// 添加个人资质和审核权限树

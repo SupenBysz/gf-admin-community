@@ -145,6 +145,8 @@ var (
 						group.Group("/menu", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMenu) })
 						// 邀约
 						group.Group("/invite", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysInvite) })
+						// 行业类别
+						group.Group("/industry", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIndustry) })
 
 					})
 				})
