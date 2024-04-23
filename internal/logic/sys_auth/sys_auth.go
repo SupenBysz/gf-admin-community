@@ -105,10 +105,10 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	res := sys_model.LoginRes{}
 
 	token, err := s.InnerLogin(ctx, sysUserInfo)
-	res.TokenInfo = *token
 	if err != nil {
 		return &res, err
 	}
+	res.TokenInfo = *token
 
 	res.User = sysUserInfo
 
