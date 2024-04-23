@@ -3,14 +3,14 @@ module github.com/SupenBysz/gf-admin-community
 go 1.21
 
 require (
-	github.com/casbin/casbin/v2 v2.81.0
+	github.com/casbin/casbin/v2 v2.87.1
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.6.1
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.6.1
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/kysion/base-library v0.0.32
 	github.com/kysion/oss-library v0.1.4
-	github.com/kysion/sms-library v0.1.3
+	github.com/kysion/sms-library v0.1.4
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/yitter/idgenerator-go v1.3.3
@@ -43,6 +43,7 @@ require (
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -80,6 +81,7 @@ require (
 // replace github.com/kysion/base-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/base-library
 //
 //replace github.com/kysion/sms-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/sms-library
+
 //
 //replace github.com/kysion/oss-library => /Volumes/DataDocument/CodeSpace/github.com/kysion/oss-library
 

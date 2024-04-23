@@ -46,6 +46,11 @@ type (
 
 	// RoleMemberChange 角色成员事件
 	RoleMemberChange sys_enum_role.ChangeEnum
+
+	// LicenseState 个人资质状态
+	LicenseState = sys_enum_license.StateEnum
+	// LicenseAuthType 个人资质认证类型
+	LicenseAuthType = sys_enum_license.AuthTypeEnum
 )
 
 var (
@@ -67,10 +72,13 @@ var (
 
 	Menu = sys_enum_menu.Menu
 
-	Audit   = sys_enum_audit.Audit
-	License = sys_enum_license.License
+	Audit = sys_enum_audit.Audit
 
 	Invite = sys_enum_invite.Invite
 
+	// Industry 行业类别
 	Industry = sys_enum_industry.Industry
+
+	// License 个人资质
+	License = sys_enum_license.License
 )
