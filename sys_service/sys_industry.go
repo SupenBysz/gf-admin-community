@@ -15,7 +15,7 @@ import (
 type (
 	ISysIndustry interface {
 		// GetIndustryById 根据ID获取行业类别信息
-		GetIndustryById(ctx context.Context, menuId int64) (*sys_entity.SysIndustry, error)
+		GetIndustryById(ctx context.Context, id int64) (*sys_entity.SysIndustry, error)
 		// CreateIndustry 创建行业类别
 		CreateIndustry(ctx context.Context, info *sys_model.SysIndustry) (*sys_entity.SysIndustry, error)
 		// UpdateIndustry 更新行业类别
