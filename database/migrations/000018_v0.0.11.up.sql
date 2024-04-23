@@ -1,0 +1,1 @@
+COMMENT ON COLUMN "public"."sys_person_license"."state" IS '状态：0失效、1正常';
