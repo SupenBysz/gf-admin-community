@@ -38,7 +38,7 @@ type SysPersonLicenseColumns struct {
 	CreatedAt        string //
 	UpdatedAt        string //
 	DeletedAt        string //
-	State            string // 状态
+	State            string // 状态：0失效、1正常
 	AuthType         string // 认证类型:
 	Remark           string // 备注信息
 	LatestAuditLogId string // 最新的审核记录id

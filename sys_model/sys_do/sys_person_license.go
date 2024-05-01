@@ -27,7 +27,7 @@ type SysPersonLicense struct {
 	CreatedAt        *gtime.Time //
 	UpdatedAt        *gtime.Time //
 	DeletedAt        *gtime.Time //
-	State            interface{} // 状态
+	State            interface{} // 状态：0失效、1正常
 	AuthType         interface{} // 认证类型:
 	Remark           interface{} // 备注信息
 	LatestAuditLogId interface{} // 最新的审核记录id
