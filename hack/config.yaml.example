@@ -32,6 +32,7 @@ gfcli:
           sys_audit,
           sys_invite,
           sys_industry,
+          sys_message,
           "
 
 

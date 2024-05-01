@@ -10,6 +10,7 @@ import (
 	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
+	sys_enum_messages "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/message"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/oss"
 	sys_enum_permissions "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/permissions"
@@ -51,6 +52,11 @@ type (
 	LicenseState = sys_enum_license.StateEnum
 	// LicenseAuthType 个人资质认证类型
 	LicenseAuthType = sys_enum_license.AuthTypeEnum
+
+	// MessageType 消息类型
+	MessageType sys_enum_messages.TypeEnum
+	// MessageState 消息状态
+	MessageState sys_enum_messages.StateEnum
 )
 
 var (
@@ -81,4 +87,7 @@ var (
 
 	// License 个人资质
 	License = sys_enum_license.License
+
+	// Message 消息
+	Message = sys_enum_messages.Message
 )

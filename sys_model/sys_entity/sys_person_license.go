@@ -25,7 +25,7 @@ type SysPersonLicense struct {
 	CreatedAt        *gtime.Time `json:"createdAt"        description:""`
 	UpdatedAt        *gtime.Time `json:"updatedAt"        description:""`
 	DeletedAt        *gtime.Time `json:"deletedAt"        description:""`
-	State            int         `json:"state"            description:"状态"`
+	State            int         `json:"state"            description:"状态：0失效、1正常"`
 	AuthType         int         `json:"authType"         description:"认证类型:"`
 	Remark           string      `json:"remark"           description:"备注信息"`
 	LatestAuditLogId int64       `json:"latestAuditLogId" description:"最新的审核记录id"`
