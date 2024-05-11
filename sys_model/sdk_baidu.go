@@ -2,6 +2,22 @@ package sys_model
 
 import "github.com/kysion/base-library/base_model"
 
+/*
+	百度智能云：（API访问认证模式：Token）
+*/
+
+//func (m *BaiduSdkConfRes) Data() *BaiduSdkConfRes {
+//	return m
+//}
+
+func (m *BaiduSdkConfRes) Data() {
+
+}
+
+type BaiduSdkConfRes BaiduSdkConf
+
+type BaiduSdkConfListRes base_model.CollectRes[*BaiduSdkConf]
+
 type BaiduSdkConf struct {
 	Identifier  string `json:"identifier" v:"required#业务标识符参数错误" dc:"业务标识符，唯一，且不可修改"`
 	Description string `json:"description" dc:"描述"`
@@ -74,7 +90,9 @@ type BaiduSdkOCRBankCard struct {
 }
 
 type BaiduSdkConfToken struct {
+	// 百度SDK某个API的应用配置
 	BaiduSdkConf
+	// 百度SDK的API访问认证的Token
 	BaiduSdkConfAccessToken
 }
 

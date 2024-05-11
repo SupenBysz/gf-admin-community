@@ -124,3 +124,12 @@ func (s *sArea) GetAreaByCode(ctx context.Context, areaCode string) *sys_entity.
 	}
 	return &result
 }
+
+// GetAreaByName 根据区域名称获取区域信息
+func (s *sArea) GetAreaByName(ctx context.Context, areaName string) *sys_entity.SysArea {
+	result := sys_entity.SysArea{}
+	if sys_dao.SysArea.Ctx(ctx).Scan(&result, sys_do.SysArea{AreaName: areaName}) != nil {
+		return nil
+	}
+	return &result
+}

@@ -59,7 +59,8 @@ service:
   inviteCodeExpireDay: 0
   # 邀约码激活次数上限
   inviteCodeMaxActivateNumber: 0
-
+  # 是否部署NFS文件系统
+  isDeployNFS: false
 
 # 邮件设置
 email:
@@ -96,7 +97,20 @@ upload:
   fileMaxUploadCountMinute: 10
   # 文件上传的默认保存路径
   path: "resource/upload"
-  temp: "temp/upload"
+  # 文件上传默认的临时保存路径
+  tempPath: "temp/upload"
+
+# 文件下载设置
+download:
+  # 文件下载默认的临时保存路径
+  tempPath: "temp/download"
+
+# oss对象存储
+oss:
+  # 平台的oss-bucket名称，没有部署NFS系统的话，一般temp资源、公共资源 都是放在平台的oss中
+  masterBucketName: ""
+  # 当前服务的oss-bucket名称，各服务端的单独的对象存储空间
+  bucketName: ""
 
 # 数据库连接配置
 database:
@@ -114,3 +128,4 @@ redis:
   # 单实例配置示例1
   default:
     address: 127.0.0.1:6379
+    db: 1
