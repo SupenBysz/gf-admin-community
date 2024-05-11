@@ -20,6 +20,8 @@ type (
 		GetAreaById(ctx context.Context, id int64) *sys_entity.SysArea
 		// GetAreaByCode 根据区域编号获取区域信息
 		GetAreaByCode(ctx context.Context, areaCode string) *sys_entity.SysArea
+		// GetAreaByName 根据区域名称获取区域信息
+		GetAreaByName(ctx context.Context, areaName string) *sys_entity.SysArea
 	}
 )
 
