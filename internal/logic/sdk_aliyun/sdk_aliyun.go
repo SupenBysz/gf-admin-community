@@ -134,7 +134,28 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info *sys_model.Aliy
 	return info, nil
 }
 
-// DeleteAliyunSdkConf 删除百度SDK应用配置信息
+// syncAliyunSdkConfList 同步阿里云SDK应用配置信息列表缓存  （代码中要是用到了s.AliyunSdkConfList缓存变量的话，一定需要在CUD操作后调用此方法更新缓存变量）
+func (s *sSdkAliyun) syncAliyunSdkConfList(ctx context.Context) error {
+	items, err := s.GetAliyunSdkConfList(ctx)
+	if err != nil {
+		return err
+	}
+
+	newTokenItems := make([]*sys_model.AliyunSdkConfToken, 0)
+	for _, conf := range items {
+		for _, tokenInfo := range s.AliyunSdkConfTokenList { // tokenList
+			if tokenInfo.Identifier == conf.Identifier {
+				newTokenItems = append(newTokenItems, tokenInfo)
+			}
+		}
+	}
+
+	s.AliyunSdkConfTokenList = newTokenItems
+
+	return nil
+}
+
+// DeleteAliyunSdkConf 删除阿里云SDK应用配置信息
 func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string) (bool, error) {
 	items, err := s.GetAliyunSdkConfList(ctx)
 
@@ -167,4 +188,47 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 	return true, nil
 }
 
-// 阿里云服务的具体应用实例
+//  阿里云服务的具体应用实例
+
+// GetWsCustomizedChGeneral 中文分词
+func (s *sSdkAliyun) GetWsCustomizedChGeneral(ctx context.Context, text string) (sys_model.AliyunNlpDataRes, error) {
+	/**
+	 * 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
+	 * 此处以把AccessKey和AccessKeySecret保存在环境变量为例说明。您也可以根据业务需要，保存到配置文件里。
+	 * 强烈建议不要把AccessKey和AccessKeySecret保存到代码里，会存在密钥泄漏风险
+	 */
+
+	config, err := s.GetAliyunSdkConf(ctx, "nlp")
+
+	AccessKeyId := config.AESKey
+	AccessKeySecret := config.SecretKey
+	client, err := sdk.NewClientWithAccessKey("cn-hangzhou", AccessKeyId, AccessKeySecret)
+	if err != nil {
+		panic(err)
+	}
+
+	request := requests.NewCommonRequest()
+	request.Domain = "alinlp.cn-hangzhou.aliyuncs.com"
+	request.Version = "2020-06-29"
+	// 因为是RPC接口，因此需指定ApiName(Action)
+	request.ApiName = "GetWsCustomizedChGeneral" // ApiName 就是文档中的请求参数 Action
+	request.QueryParams["ServiceCode"] = "alinlp"
+	request.QueryParams["Text"] = text
+	request.QueryParams["TokenizerId"] = "GENERAL_CHN"
+	response, err := client.ProcessCommonRequest(request)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(response.GetHttpContentString())
+	var data struct {
+		RequestId string `json:"RequestId" dc:"唯一请求id，排查问题的依据"`
+		Data      string `json:"data"`
+	}
+
+	res := sys_model.AliyunNlpDataRes{}
+	_ = gjson.DecodeTo(response.GetHttpContentString(), &data)
+
+	kconv.Struct(data, &res)
+
+	return res, nil
+}
