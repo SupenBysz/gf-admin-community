@@ -36,8 +36,6 @@ type (
 		UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense) (*sys_model.BusinessLicenseWithOCR, error)
 		// DownLoadFile 下载文件
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
-		// GetUrlById 通过id返回图片url
-		GetUrlById(id int64) string
 		// GetFileById 根据id获取并返回文件信息
 		GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
 		// MakeFileUrl 图像id换取url: 拼接三个参数,缓存fileInfo、然后返回url + 三参
@@ -46,10 +44,12 @@ type (
 		MakeFileUrlByPath(ctx context.Context, path string) string
 		// GetFile 获取图片 公开  (srcBase64 + srcMd5 + fileId) ==> md5加密
 		GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64) (*sys_model.FileInfo, error)
-		// UseFile 用图片
-		UseFile(ctx context.Context, src string)
-		// UploadPicture 审核图片
+		// UploadPicture 上传图片并审核
 		UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error)
+		// GetOssFileSingUrl 获取文件的签名访问URL
+		GetOssFileSingUrl(ctx context.Context, bucketName, objectKey string) (string, error)
+		// GetOssFileWithURL 根据文件的签名访问URL获取文件
+		GetOssFileWithURL(ctx context.Context, bucketName, filePath, singUrl string) (bool, error)
 	}
 )
 
