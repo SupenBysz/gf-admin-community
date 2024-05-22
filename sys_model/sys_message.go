@@ -10,6 +10,7 @@ type SysMessage struct {
 	Summary   string  `json:"summary"      description:"摘要" `
 	Content   string  `json:"content"      description:"内容" v:"required#内容不能为空"`
 	Type      int     `json:"type"         description:"类型：1系统消息"  v:"required#请限定消息类型"`
+	Link      string  `json:"link"           description:"跳转链接"`
 	ToUserIds []int64 `json:"toUserIds"     description:"接收者UserIds，允许有多个接收者" v:"required#接收者id不能为空"`
 	//ToUserType   int    `json:"toUserType"   description:"接收者类型" v:"required#接收者类型不能为空"`
 	FromUserId     int64  `json:"fromUserId"   description:"发送者id"`
@@ -28,6 +29,7 @@ type UpdateSysMessage struct {
 	Summary   *string `json:"summary"      description:"摘要" `
 	Content   *string `json:"content"      description:"内容" `
 	Type      *int    `json:"type"         description:"类型：1系统消息"  `
+	Link      *string `json:"link"           description:"跳转链接"`
 	ToUserIds []int64 `json:"toUserId"     description:"接收者UserIds，允许有多个接收者" `
 	//ToUserType   int    `json:"toUserType"   description:"接收者类型" v:"required#接收者类型不能为空"`
 	ExtJson        string  `json:"extJson"      description:"拓展数据Json"`

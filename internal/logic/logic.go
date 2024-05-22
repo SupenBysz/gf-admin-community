@@ -15,6 +15,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_auth"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_captcha"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_casbin"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_config"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_file"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_industry"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_invite"

@@ -7,6 +7,10 @@ import (
 	"github.com/gogf/gf/v2/os/gcache"
 )
 
+/*
+	初始化全局的缓存服务：Redis｜内存缓存
+*/
+
 func InitRedisCache() {
 	// 获取配置文件addr对象
 	addr, _ := g.Cfg().Get(context.Background(), "redis.default.address")
@@ -32,8 +36,9 @@ func InitRedisCache() {
 		g.DB().GetCache().SetAdapter(gcache.New())
 		return
 	}
-	// 根据redis配置创建Redis
+	// 根据redis配置创建Redis客户端对象
 	redis, _ := gredis.New(conf)
 	// 全局设置Redis适配器
 	g.DB().GetCache().SetAdapter(gcache.NewAdapterRedis(redis))
+
 }
