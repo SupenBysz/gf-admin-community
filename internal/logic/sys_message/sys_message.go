@@ -108,7 +108,7 @@ func (s *sMessage) CreateMessage(ctx context.Context, info *sys_model.SysMessage
 
 	err = sys_dao.SysMessage.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data.CreatedAt = gtime.Now()
-		affected, err := daoctl.InsertWithError(sys_dao.SysMessage.Ctx(ctx).Data(data))
+		affected, err := daoctl.InsertWithError(sys_dao.SysMessage.Ctx(ctx).OmitNilData().Data(data))
 
 		if affected == 0 || err != nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "添加消息失败"+err.Error(), sys_dao.SysMessage.Table())
