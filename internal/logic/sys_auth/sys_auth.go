@@ -162,7 +162,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		go func() {
 			area := "内网"
 			if gstr.StrLimit(ip, 3) != "127..." &&
-				gstr.StrLimit(ip, 3) != "10..." &&
+				gstr.StrLimit(ip, 2) != "10..." &&
 				gstr.StrLimit(ip, 3) != "172..." &&
 				gstr.StrLimit(ip, 3) != "192..." &&
 				gstr.ContainsI(ip, "local") == false {
