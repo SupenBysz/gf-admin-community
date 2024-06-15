@@ -339,7 +339,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	return s.registerUser(ctx, &userInnerRegister)
 }
 
-func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister) (*sys_model.SysUser, error) {
+func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister, customId ...int64) (*sys_model.SysUser, error) {
 	inviteCode := innerRegister.InviteCode
 	// 判断是否填写邀约码,只要填写了必需进行校验
 	inviteInfo, err := sys_rules.CheckInviteCode(ctx, innerRegister.InviteCode)
@@ -360,6 +360,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
 			sys_consts.Global.UserDefaultType,
+			customId[0],
 		)
 
 		if err != nil {
@@ -415,8 +416,8 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 	return &data, nil
 }
 
-// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码)
-func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail) (res *sys_model.SysUser, err error) {
+// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码) customId 可以限定用户ID
+func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail, customId ...int64) (res *sys_model.SysUser, err error) {
 	// 判断是否支持方式注册
 	registerRule := sys_rules.CheckRegisterRule(ctx, info.MobileOrMail)
 	if !registerRule {
@@ -451,7 +452,7 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 		return nil, gerror.New("请输入正确的验证码")
 	}
 
-	return s.registerUser(ctx, &innerRegisterUser)
+	return s.registerUser(ctx, &innerRegisterUser, customId...)
 }
 
 // ForgotUserName 忘记用户名，返回用户列表
