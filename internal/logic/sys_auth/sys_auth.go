@@ -352,15 +352,15 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
 
-	data := sys_model.SysUser{}
+	data := &sys_model.SysUser{}
 
 	// 开启事务
 	err = sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		data, err := sys_service.SysUser().CreateUser(ctx,
+		data, err = sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
 			sys_consts.Global.UserDefaultType,
-			customId[0],
+			customId...,
 		)
 
 		if err != nil {
@@ -413,7 +413,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号注册失败")
 	}
 
-	return &data, nil
+	return data, nil
 }
 
 // RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码) customId 可以限定用户ID
