@@ -225,7 +225,7 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 	gjson.DecodeTo(gfile.GetContents(userCacheJsonPath), &userUploadInfoCache)
 
 	// 从oss获取: upload_8610476923551813.json
-	if userUploadInfoCache.IsEmpty() {
+	if userUploadInfoCache.Contains(uploadId) {
 		//bucketName := g.Cfg().MustGet(ctx, "oss.bucketName").String() // 各端的oss
 		bucketName := g.Cfg().MustGet(ctx, "oss.masterBucketName").String() // 平台的oss
 		url, _ := s.GetOssFileSingUrl(ctx, bucketName, userCacheJsonPath)
