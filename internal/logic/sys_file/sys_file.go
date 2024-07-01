@@ -224,63 +224,61 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 
 	gjson.DecodeTo(gfile.GetContents(userCacheJsonPath), &userUploadInfoCache)
 
+	item, has := userUploadInfoCache.Search(uploadId)
+	if item != nil && has {
+		return item, nil
+	}
+
 	// 从oss获取: upload_8610476923551813.json
-	if userUploadInfoCache.Contains(uploadId) {
-		//bucketName := g.Cfg().MustGet(ctx, "oss.bucketName").String() // 各端的oss
-		bucketName := g.Cfg().MustGet(ctx, "oss.masterBucketName").String() // 平台的oss
-		url, _ := s.GetOssFileSingUrl(ctx, bucketName, userCacheJsonPath)
+	//bucketName := g.Cfg().MustGet(ctx, "oss.bucketName").String() // 各端的oss
+	bucketName := g.Cfg().MustGet(ctx, "oss.masterBucketName").String() // 平台的oss
+	url, _ := s.GetOssFileSingUrl(ctx, bucketName, userCacheJsonPath)
 
-		if url != "" {
-			// 3、根据文件的签名URL，直接io读取文件，然后解析使用
-			v, err := http.Get(url)
-			if err != nil {
-				return nil, sys_service.SysLogs().WarnSimple(ctx, err, "Http get ["+url+"] failed!", sys_dao.SysFile.Table())
-			}
-			defer v.Body.Close()
-			// 读取文件字节流
-			content, err := io.ReadAll(v.Body)
-			if err != nil {
-				return nil, sys_service.SysLogs().WarnSimple(ctx, err, "Read http response failed! "+url, sys_dao.SysFile.Table())
-			}
-			if string(content) != "" {
-				// 将云存储中下载到本地的文件读取内容出来，序列化到userUploadInfoCache
-				gjson.DecodeTo(string(content), &userUploadInfoCache)
-			}
-
-			// 3、根据文件的签名URL，下载文件到本地 （Pass，本地带宽压力大）
-			// 临时的转载路径
-			//filePath := "temp/download" + "/" + gtime.Now().Format("Ymd") （ userCacheJson.json路径不需要加Ymd）
-			//filePath := g.Cfg().MustGet(ctx, "download.tempPath", "temp/download").String()
-			//
-			//// 目录不存在则创建
-			//if !gfile.Exists(filePath) {
-			//	gfile.Mkdir(filePath)
-			//	gfile.Chmod(filePath, gfile.DefaultPermCopy)
-			//}
-			//
-			//filePath += "/" + s.cachePrefix + "_" + strUserId + ".json"
-
-			//info.LocalPath = filePath
-
-			//withURL, err := s.GetOssFileWithURL(ctx, bucketName, filePath, url)
-			//if err != nil {
-			//	fmt.Println(err)
-			//}
-			//if withURL {
-			//	// 将云存储中下载到本地的文件读取内容出来，序列化到userUploadInfoCache
-			//	gjson.DecodeTo(gfile.GetContents(filePath), &userUploadInfoCache)
-			//}
+	if url != "" {
+		// 3、根据文件的签名URL，直接io读取文件，然后解析使用
+		v, err := http.Get(url)
+		if err != nil {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, err, "Http get ["+url+"] failed!", sys_dao.SysFile.Table())
 		}
+		defer v.Body.Close()
+		// 读取文件字节流
+		content, err := io.ReadAll(v.Body)
+		if err != nil {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, err, "Read http response failed! "+url, sys_dao.SysFile.Table())
+		}
+		if string(content) != "" {
+			// 将云存储中下载到本地的文件读取内容出来，序列化到userUploadInfoCache
+			gjson.DecodeTo(string(content), &userUploadInfoCache)
+		}
+
+		// 3、根据文件的签名URL，下载文件到本地 （Pass，本地带宽压力大）
+		// 临时的转载路径
+		//filePath := "temp/download" + "/" + gtime.Now().Format("Ymd") （ userCacheJson.json路径不需要加Ymd）
+		//filePath := g.Cfg().MustGet(ctx, "download.tempPath", "temp/download").String()
+		//
+		//// 目录不存在则创建
+		//if !gfile.Exists(filePath) {
+		//	gfile.Mkdir(filePath)
+		//	gfile.Chmod(filePath, gfile.DefaultPermCopy)
+		//}
+		//
+		//filePath += "/" + s.cachePrefix + "_" + strUserId + ".json"
+
+		//info.LocalPath = filePath
+
+		//withURL, err := s.GetOssFileWithURL(ctx, bucketName, filePath, url)
+		//if err != nil {
+		//	fmt.Println(err)
+		//}
+		//if withURL {
+		//	// 将云存储中下载到本地的文件读取内容出来，序列化到userUploadInfoCache
+		//	gjson.DecodeTo(gfile.GetContents(filePath), &userUploadInfoCache)
+		//}
 	}
 
 	messageStr := "文件不存在"
 	if len(message) > 0 {
 		messageStr = message[0]
-	}
-
-	item, has := userUploadInfoCache.Search(uploadId)
-	if item != nil && has {
-		return item, nil
 	}
 
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, messageStr, sys_dao.SysFile.Table())
