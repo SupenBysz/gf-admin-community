@@ -51,6 +51,10 @@ func (c *cSysFile) GetFileById(ctx context.Context, _ *sys_api.GetFileByIdReq) (
 
 	file, err := sys_service.File().GetFileById(ctx, id, "文件加载失败")
 
+	if err != nil {
+		return nil, err
+	}
+
 	// 加载显示图片
 	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
 
