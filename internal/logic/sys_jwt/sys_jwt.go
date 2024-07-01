@@ -125,7 +125,7 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	tokenString := gstr.Trim(r.Header.Get("Authorization"))
 
 	if gstr.ToUpper(r.Method) == "GET" && tokenString == "" {
-		tokenString = r.GetParam("token", "").String()
+		tokenString = r.Get("token", "").String()
 	}
 
 	s.MakeSession(r.Context(), tokenString)
