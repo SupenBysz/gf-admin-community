@@ -45,6 +45,7 @@ type GetUserMessageReq struct {
 
 type HasUnReadMessageReq struct {
 	g.Meta `path:"/hasUnReadMessage" method:"post" summary:"获取未读消息数量" tags:"消息管理"`
+	Type   int `json:"type" dc:"消息类型"`
 }
 
 // TODO 在消息查看详情的时候，就给当前登录User进行追加进已读用户[]里面，不要直接暴露接口

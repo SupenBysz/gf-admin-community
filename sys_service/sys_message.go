@@ -29,7 +29,7 @@ type (
 		// QueryUnionMainMessage 查询指定主体发送的消息列表 （支持未发送消息列表，添加params参数）
 		QueryUnionMainMessage(ctx context.Context, unionMainId int64, params *base_model.SearchParams, isExport bool) (*sys_model.SysMessageListRes, error)
 		// HasUnReadMessage 是否存在未读消息
-		HasUnReadMessage(ctx context.Context, userId int64) (int, error)
+		HasUnReadMessage(ctx context.Context, userId int64, messageType int) (int, error)
 		// SetMessageReadUserIds 追加公告已读用户
 		SetMessageReadUserIds(ctx context.Context, messageId int64, userId int64) (bool, error)
 	}
