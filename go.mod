@@ -12,8 +12,8 @@ require (
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/kysion/base-library v0.0.35
-	github.com/kysion/oss-library v0.1.7
-	github.com/kysion/sms-library v0.1.6
+	github.com/kysion/oss-library v0.1.8
+	github.com/kysion/sms-library v0.1.7
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.917
