@@ -74,7 +74,7 @@ func (c *cSysMessage) QueryUserMessage(ctx context.Context, req *v1.GetUserMessa
 func (c *cSysMessage) HasUnReadMessage(ctx context.Context, req *v1.HasUnReadMessageReq) (api_v1.IntRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	ret, err := sys_service.Message().HasUnReadMessage(ctx, user.Id)
+	ret, err := sys_service.Message().HasUnReadMessage(ctx, user.Id, req.Type)
 
 	return (api_v1.IntRes)(ret), err
 }

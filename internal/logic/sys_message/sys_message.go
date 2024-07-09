@@ -154,10 +154,6 @@ func (s *sMessage) UpdateMessage(ctx context.Context, id int64, info *sys_model.
 		data.ToUserIds = nil
 	}
 
-	if info.ExtJson == "" {
-		data.ExtJson = nil
-	}
-
 	err = sys_dao.SysMessage.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		affected, err := daoctl.UpdateWithError(sys_dao.SysMessage.Ctx(ctx).Where(
 			sys_do.SysMessage{
@@ -235,18 +231,30 @@ func (s *sMessage) QueryUnionMainMessage(ctx context.Context, unionMainId int64,
 }
 
 // HasUnReadMessage 是否存在未读消息
-func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64) (int, error) {
+func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64, messageType int) (int, error) {
 
-	count, err := sys_dao.SysMessage.Ctx(ctx).
-		WhereLike(sys_dao.SysMessage.Columns().ToUserIds, "%"+gconv.String(userId)+"%").
-		WhereNotLike(sys_dao.SysMessage.Columns().ReadUserIds, "%"+gconv.String(userId)+"%").
-		Count()
+	model := sys_dao.SysMessage.Ctx(ctx).
+		WhereLike(sys_dao.SysMessage.Columns().ToUserIds, "%"+gconv.String(userId)+"%")
+	if messageType != 0 {
+		model = model.Where(sys_dao.SysMessage.Columns().Type, messageType)
+	}
 
+	// 消息总量
+	messageCount, err := model.Count()
 	if err != nil {
 		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "查询未读的消息失败"+err.Error(), sys_dao.SysMessage.Table())
-
 	}
-	return count, nil
+
+	// 已读数量
+	readCount, err := model.WhereLike(sys_dao.SysMessage.Columns().ReadUserIds, "%"+gconv.String(userId)+"%").Count()
+	if err != nil {
+		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "查询未读的消息失败"+err.Error(), sys_dao.SysMessage.Table())
+	}
+
+	// 未读数量 = 消息总量 - 已读数量
+	unReadCount := messageCount - readCount
+
+	return unReadCount, nil
 }
 
 //// SetMessageState 设置消息状态  有已读UserIds，就不需要消息状态了

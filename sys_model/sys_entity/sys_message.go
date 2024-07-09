@@ -27,4 +27,6 @@ type SysMessage struct {
 	CreatedAt      *gtime.Time `json:"createdAt"      description:""`
 	UpdatedAt      *gtime.Time `json:"updatedAt"      description:""`
 	DeletedAt      *gtime.Time `json:"deletedAt"      description:""`
+	SceneDesc      string      `json:"sceneDesc"      description:"场景描述"`
+	SceneType      int         `json:"sceneType"      description:"场景类型【业务层自定义】例如：1活动即将开始提醒、2活动开始提醒、3活动即将结束提醒、4活动结束提醒、5活动获奖提醒、6券即将生效提醒、7券的生效提醒、8券的失效提醒、9券即将失效提醒、10券核销提醒、8192系统通知、"`
 }
