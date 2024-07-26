@@ -18,6 +18,7 @@ import (
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
+	"github.com/samber/lo"
 	"github.com/yitter/idgenerator-go/idgen"
 )
 
@@ -274,8 +275,12 @@ func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64, messageTy
 //	return affected > 0, nil
 //}
 
-// SetMessageReadUserIds 追加公告已读用户
+// SetMessageReadUserIds 追加消息已读用户
 func (s *sMessage) SetMessageReadUserIds(ctx context.Context, messageId int64, userId int64) (bool, error) {
+	if userId == 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户ID不能为空", sys_dao.SysMessage.Table())
+	}
+
 	message, err := s.GetMessageById(ctx, messageId)
 	if err != nil {
 		return false, err
@@ -291,10 +296,46 @@ func (s *sMessage) SetMessageReadUserIds(ctx context.Context, messageId int64, u
 	affected, err := daoctl.UpdateWithError(sys_dao.SysMessage.Ctx(ctx).Where(sys_do.SysMessage{Id: messageId}).Data(sys_do.SysMessage{ReadUserIds: arr}))
 
 	if err != nil || affected <= 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "追加公告已读用户失败"+err.Error(), sys_dao.SysMessage.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "追加消息已读用户失败"+err.Error(), sys_dao.SysMessage.Table())
 	}
 
 	return affected > 0, nil
+}
+
+// OneClickRead 一键已读
+func (s *sMessage) OneClickRead(ctx context.Context, userId int64, messageType sys_enum.MessageType) (bool, error) {
+	if userId == 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户ID不能为空", sys_dao.SysMessage.Table())
+	}
+
+	// 1、找到用户的消息列表
+	params := base_model.SearchParams{}
+	if messageType != nil && messageType.Code() != 0 {
+		params.Filter = append(params.Filter, base_model.FilterInfo{
+			Field: sys_dao.SysMessage.Columns().Type,
+			Where: "=",
+			Value: messageType.Code(),
+		})
+	}
+	params.OrderBy = append(params.OrderBy, base_model.OrderBy{Field: sys_dao.SysMessage.Columns().CreatedAt, Sort: "desc"})
+
+	messageList, _ := sys_service.Message().QueryUserMessage(ctx, userId, &params, true)
+
+	// 2、未读的消息List，设置已读
+	for _, item := range messageList.Records {
+		if item.ReadUserIds == "" {
+			var ids []string
+			_ = gconv.Struct(item.ReadUserIds, &ids)
+			if lo.Contains(ids, gconv.String(userId)) { // 已读的消息，不再设置
+				continue
+			}
+
+			// 未读消息，设置已读
+			_, _ = s.SetMessageReadUserIds(ctx, item.Id, userId)
+		}
+	}
+
+	return true, nil
 }
 
 // checkUser 校验消息接受者toUserIds是否全部存在
