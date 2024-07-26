@@ -17,9 +17,9 @@ var Action = action{
 }
 
 func (e action) New(code int, description string) ActionEnum {
-	if (code&Action.Reject.Code()) == Action.Reject.Code() ||
-		(code&Action.WaitReview.Code()) == Action.WaitReview.Code() ||
-		(code&Action.Approve.Code()) == Action.Approve.Code() {
+	if code == Action.Reject.Code() ||
+		code == Action.WaitReview.Code() ||
+		code == Action.Approve.Code() {
 		return enum.New[ActionEnum](code, description)
 	} else {
 		panic("kyAudit.Action.New: error")
