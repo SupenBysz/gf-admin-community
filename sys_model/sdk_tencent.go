@@ -38,6 +38,126 @@ type TencentSdkConfToken struct {
 
 type TencentSdkConfList base_model.CollectRes[*TencentSdkConf]
 
+// AccessTokenByTencent 腾讯云API的AccessToken的响应参数。（AccessToken 是调用接口的认证Token）
+type AccessTokenByTencent struct {
+	Code            string `json:"code"`
+	Msg             string `json:"msg"`
+	TransactionTime string `json:"transactionTime"`
+	AccessToken     string `json:"access_token"`
+	ExpireTime      string `json:"expire_time"`
+	ExpireIn        string `json:"expire_in"`
+}
+
+// SignTicketRes 腾讯云API的Ticket的响应参数。（SIGN ticket 是合作方后台服务端业务请求生成签名鉴权参数之一，用于后台查询验证结果、调用其他业务服务等。）
+type SignTicketRes struct {
+	Code            string       `json:"code" dc:"code 不为 0 则表示获取失败，可以根据 code 和 msg 字段进行定位和调试。"`
+	Msg             string       `json:"msg" `
+	TransactionTime string       `json:"transactionTime" `
+	Tickets         []SignTicket `json:"tickets" dc:"tickets 只有一个。"`
+}
+type SignTicket struct {
+	Value      string `json:"value" dc:"ticket字符串值"`
+	ExpireIn   string `json:"expire_in" dc:"expire_in 为 SIGN ticket 的最大生存时间，单位秒，合作伙伴在 判定有效期时以此为准。"`
+	ExpireTime string `json:"expire_time" dc:"expire_time 为 SIGN ticket 失效的绝对时间，"`
+}
+
+// GetAdvFaceIdRes 腾讯云-合作方后台上传身份信息响应参数  ` POST https://kyc1.qcloud.com/api/server/getAdvFaceId?orderNo=xxx `
+type GetAdvFaceIdRes struct {
+	Code     string `json:"code" dc:"0：成功、非0：失败"`
+	Msg      string `json:"msg" dc:"请求结果描述"`
+	BizSeqNo string `json:"bizSeqNo" dc:"请求业务流水号"`
+	Result   struct {
+		BizSeqNo        string `json:"bizSeqNo" dc:"请求业务流水号"`
+		TransactionTime string `json:"transactionTime" dc:"接口请求的时间"`
+		OrderNo         string `json:"orderNo" dc:"订单编号"`
+		FaceId          string `json:"faceId" dc:"此次刷脸用户标识"`
+		OptimalDomain   string `json:"optimalDomain" dc:"启动 H5 人脸核身步骤中调用 login 接口使用的域名"`
+		Success         bool   `json:"success" dc:""`
+	} `json:"result"`
+	TransactionTime string `json:"transactionTime" dc:"接口请求的时间"`
+}
+
+type StartAdvFaceAuthRes struct {
+	OrderNo string `json:"orderNo" dc:"订单编号,查询认证结果时需要此参数"`
+	FaceId  string `json:"faceId" dc:"此次刷脸用户标识"`
+	Url     string `json:"url"  dc:"用于发起H5人脸核身流程的URL"`
+}
+
+// QueryFaceRecordRes 腾讯云-人脸核身结果查询响应参数
+type QueryFaceRecordRes struct {
+	Code     string `json:"code" dc:"0：表示身份验证成功且认证为同一人"`
+	Msg      string `json:"msg" dc:"返回结果描述"`
+	BizSeqNo string `json:"bizSeqNo" dc:"业务流水号"`
+	Result   struct {
+		OrderNo      string `json:"orderNo" dc:"订单编号"`
+		LiveRate     string `json:"liveRate" dc:"活体检测得分"`
+		Similarity   string `json:"similarity" dc:"人脸比对得分"`
+		OccurredTime string `json:"occurredTime" dc:"进行刷脸的时间"`
+		AppId        string `json:"appId" dc:"腾讯云控制台申请的 appid"`
+		Photo        string `json:"photo" dc:"人脸核身时的照片，base64 位编码"`
+		Video        string `json:"video" dc:"人脸核身时的视频，base64 位编码"`
+		BizSeqNo     string `json:"bizSeqNo" dc:"业务流水号"`
+		SdkVersion   string `json:"sdkVersion" dc:"人脸核身时的 sdk 版本号"`
+		TrtcFlag     string `json:"trtcFlag" dc:"Trtc 渠道刷脸则标识Y"`
+	} `json:"result" dc:"返回结果"`
+
+	TransactionTime string `json:"transactionTime" dc:"请求接口的时间"`
+}
+
+/*
+
+
+liveRate
+
+String
+
+
+
+similarity
+
+String
+
+
+
+occurredTime
+
+String
+
+
+
+photo
+
+Base 64 string
+
+
+
+video
+
+Base 64 string
+
+
+
+sdkVersion
+
+String
+
+人脸核身时的 sdk 版本号
+
+trtcFlag
+
+String
+
+Trtc 渠道刷脸则标识"Y"
+
+appId
+
+String
+
+腾讯云控制台申请的 appid
+
+
+*/
+
 // 腾讯云服务应用列表
 
 type TencentOSS struct {

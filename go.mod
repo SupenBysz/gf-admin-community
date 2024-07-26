@@ -11,13 +11,15 @@ require (
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.6.1
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/google/uuid v1.3.0
 	github.com/kysion/base-library v0.0.35
 	github.com/kysion/oss-library v0.1.8
 	github.com/kysion/sms-library v0.1.7
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.917
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.917
+	github.com/samber/lo v1.46.0
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.972
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.972
 	github.com/yitter/idgenerator-go v1.3.3
 	golang.org/x/sync v0.7.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -64,7 +66,7 @@ require (
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
