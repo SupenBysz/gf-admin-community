@@ -13,8 +13,8 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
 	github.com/kysion/base-library v0.0.36
-	github.com/kysion/oss-library v0.1.8
-	github.com/kysion/sms-library v0.1.7
+	github.com/kysion/oss-library v0.1.9
+	github.com/kysion/sms-library v0.1.8
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/samber/lo v1.46.0
