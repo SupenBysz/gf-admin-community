@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/kysion/base-library/base_model"
 )
 
@@ -30,8 +31,10 @@ type (
 		QueryUnionMainMessage(ctx context.Context, unionMainId int64, params *base_model.SearchParams, isExport bool) (*sys_model.SysMessageListRes, error)
 		// HasUnReadMessage 是否存在未读消息
 		HasUnReadMessage(ctx context.Context, userId int64, messageType int) (int, error)
-		// SetMessageReadUserIds 追加公告已读用户
+		// SetMessageReadUserIds 追加消息已读用户
 		SetMessageReadUserIds(ctx context.Context, messageId int64, userId int64) (bool, error)
+		// OneClickRead 一键已读
+		OneClickRead(ctx context.Context, userId int64, messageType sys_enum.MessageType) (bool, error)
 	}
 )
 
