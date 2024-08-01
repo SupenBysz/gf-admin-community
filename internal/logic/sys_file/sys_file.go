@@ -551,7 +551,7 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 }
 
 // MakeFileUrl 图像id换取url: 拼接三个参数,缓存fileInfo、然后返回url + 三参
-func (s *sFile) MakeFileUrl(ctx context.Context, id int64) string {
+func (s *sFile) MakeFileUrl(ctx context.Context, id int64, styleStr ...string) string {
 	file := &sys_entity.SysFile{}
 	err := sys_dao.SysFile.Ctx(ctx).
 		Where(sys_do.SysFile{Id: id}).Scan(file)
@@ -568,7 +568,32 @@ func (s *sFile) MakeFileUrl(ctx context.Context, id int64) string {
 	apiPrefix := sys_consts.Global.ApiPreFix
 
 	// 拼接请求url
-	return apiPrefix + "/common/getFile?sign=" + sign + "&path=" + srcBase64 + "&id=" + fileId // id: oss.masterBucketName
+	requestUrl := apiPrefix + "/common/getFile?sign=" + sign + "&path=" + srcBase64 + "&id=" + fileId // id: oss.masterBucketName
+
+	// TODO Oss优化方向
+	style := "" // 图片样式
+	if len(styleStr) > 0 {
+		style = styleStr[0]
+	}
+
+	// TODO 图片输出优化2：图片按宽高等比缩放，输出速度提升 /resize,h_100,m_lfit
+	// 图片按照固定宽高缩放/resize,m_fixed,h_100,w_100
+	//style += "/resize,w_100,m_lfit"
+
+	// TODO 图片输出优化1：图片质量变换，输出速度提升
+	quality := g.Cfg().MustGet(ctx, "oss.quality").String() // 平台的oss
+	if quality != "" {
+		style = style + "/quality," + quality
+		// 统一格式化为jpg输出 【质量变换仅支持JPG和WebP，其他图片格式不支持】
+		style += "/format,jpg"
+	}
+
+	// TODO  文字水印输出 /watermark,text_SGVsbG8gV29ybGQ
+	// TODO 图片水印输出 /watermark,image_cGFuZGEucG5n
+
+	requestUrl += "&styleStr=" + style
+
+	return requestUrl
 }
 
 // MakeFileUrlByPath 文件path换取url: 拼接三个参数,缓存签名数据、然后返回url + 三参
@@ -582,12 +607,14 @@ func (s *sFile) MakeFileUrlByPath(ctx context.Context, path string) string {
 	// 获取到api接口前缀
 	apiPrefix := sys_consts.Global.ApiPreFix
 
+	// TODO 缓存中的文件暂不做Oss图片格式化优化
+
 	// 拼接请求url
 	return apiPrefix + "/common/getFile?sign=" + sign + "&path=" + srcBase64 + "&cid=" + fileId // cid: oss.bucketName
 }
 
 // GetFile 获取图片 公开  (srcBase64 + srcMd5 + fileId) ==> md5加密
-func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64) (*sys_model.FileInfo, error) {
+func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64, styleStr ...string) (*sys_model.FileInfo, error) {
 	// oss --> id: oss.masterBucketName  cid: oss.bucketName
 	if cId != 0 { // 缓存
 		// 验签
@@ -607,7 +634,7 @@ func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, c
 
 			// 从oss 获取
 			bucketName := g.Cfg().MustGet(ctx, "oss.masterBucketName").String()
-			url, _ := s.GetOssFileSingUrl(ctx, bucketName, srcDecode)
+			url, _ := s.GetOssFileSingUrl(ctx, bucketName, srcDecode, styleStr[0])
 
 			if url != "" {
 				srcDecode = url
@@ -710,7 +737,7 @@ func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, c
 			// 方案2: fileInfo，存储bucket的bucketDomain 或者bucket-name
 			split := gstr.Split(fileInfo.Url, ".") // mlj-merchant-service.oss-cn-shenzhen.aliyuncs.com
 			bucketName := split[0]
-			url, _ := s.GetOssFileSingUrl(ctx, bucketName, fileInfo.Src)
+			url, _ := s.GetOssFileSingUrl(ctx, bucketName, fileInfo.Src, styleStr[0])
 
 			// TODO 本来我想直接使用url作为src输出，但是这个方法g.RequestFromCtx(ctx).Response.ServeFile(file.Src) 不支持输出网络路径的图片，所以需要临时下载 （Pref 不需要，直接使用这个url，进行Redirect跳转即可）
 			if url != "" {
@@ -802,7 +829,7 @@ func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOC
 }
 
 // GetOssFileSingUrl 获取文件的签名访问URL
-func (s *sFile) GetOssFileSingUrl(ctx context.Context, bucketName, objectKey string) (string, error) {
+func (s *sFile) GetOssFileSingUrl(ctx context.Context, bucketName, objectKey string, styleStr ...string) (string, error) {
 	modules := oss_global.Global.Modules
 
 	// 1、获取默认的渠道商 (优先级最高的渠道商)
@@ -817,7 +844,7 @@ func (s *sFile) GetOssFileSingUrl(ctx context.Context, bucketName, objectKey str
 		return "", err
 	}
 
-	// 24小时过期
+	// 签名的url24小时过期
 	duration := gconv.Int64(60 * 60 * 24)
 
 	reqInfo := oss_api.GetFileSingURLReq{
@@ -831,8 +858,11 @@ func (s *sFile) GetOssFileSingUrl(ctx context.Context, bucketName, objectKey str
 			ExpiredInSec: duration,
 		},
 	}
+	if len(styleStr) > 0 {
+		reqInfo.GetFileSingURL.StyleStr = styleStr[0]
+	}
 
-	// 2、调用oss 进行请求
+	// 2、调用oss 进行请求 // TODO优化：Oss文件压缩输出
 	ret, err := oss_controller.OssFile(modules).GetFileSingURL(ctx, &reqInfo)
 
 	return (string)(ret), err

@@ -17,7 +17,7 @@ func (c *cCommon) GetFile(ctx context.Context, req *sys_api.GetFileReq) (res *sy
 
 	// 优先从缓存获取，缓存要是获取不到，那么从数据库加载文件信息，从而加载文件   缓存key == sign
 
-	file, err := sys_service.File().GetFile(ctx, req.Sign, req.Path, req.Id, req.CId)
+	file, err := sys_service.File().GetFile(ctx, req.Sign, req.Path, req.Id, req.CId, req.StyleStr)
 
 	if err != nil || file == nil {
 		// 渲染默认的图片

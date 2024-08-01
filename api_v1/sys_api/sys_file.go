@@ -45,6 +45,9 @@ type GetFileReq struct {
 	Path   string `json:"path" dc:"文件Src的base64编码后的数据"`
 	Id     int64  `json:"id" dc:"文件id"`
 	CId    int64  `json:"cid" dc:"缓存id"`
+
+	//  拓展图片处理的参数。。
+	StyleStr string `json:"styleStr" dc:"图片样式字符串，需要按照格式拼接，阿里云Oss图片格式化需求为jpg输出，并且质量相对变换50%，如：/quality,q_50/format,jpg/；需要拓展缩放比例，新的参数可以在后面添加。如：/quality,q_50/format,jpg/resize,h_100,m_lfit"`
 }
 
 type UploadPictureReq struct {
