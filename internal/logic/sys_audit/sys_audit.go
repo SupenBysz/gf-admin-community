@@ -21,7 +21,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 
-	"github.com/yitter/idgenerator-go/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"time"
 )
 
