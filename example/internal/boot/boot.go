@@ -121,6 +121,8 @@ var (
 							// sys_service.Middleware().CheckPermission,
 						)
 
+						// 用户鉴权 - 需要登陆
+						group.Group("/auth", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.UserAuth) })
 						// 文件上传
 						group.Group("/common/file", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFile) })
 						// 应用配置

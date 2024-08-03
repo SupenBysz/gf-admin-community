@@ -577,3 +577,29 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 
 	return true, nil
 }
+
+// RefreshJwtToken 刷新用户jwtToken
+func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.JwtCustomClaims) (res *sys_model.LoginRes, err error) {
+	if loginUser == nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+	}
+
+	result := sys_model.LoginRes{}
+
+	// 生成新的token
+	newToken, err := sys_service.Jwt().GenerateToken(ctx, &loginUser.SysUser)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
+	}
+
+	result.TokenInfo = *newToken
+
+	user, err := sys_service.SysUser().GetSysUserById(ctx, loginUser.SysUser.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	result.User = user
+
+	return &result, err
+}
