@@ -8,7 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
-// Auth 鉴权
+// Auth 鉴权 - 需要登陆
 var Auth = cAuth{}
 
 type cAuth struct{}

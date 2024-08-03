@@ -41,6 +41,8 @@ type (
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		// ResetPassword 重置密码
 		ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error)
+		// RefreshJwtToken 刷新用户jwtToken
+		RefreshJwtToken(ctx context.Context, loginUser *sys_model.JwtCustomClaims) (res *sys_model.LoginRes, err error)
 	}
 )
 
