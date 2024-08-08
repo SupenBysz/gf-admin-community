@@ -35,6 +35,8 @@ type (
 		SetMessageReadUserIds(ctx context.Context, messageId int64, userId int64) (bool, error)
 		// OneClickRead 一键已读
 		OneClickRead(ctx context.Context, userId int64, messageType sys_enum.MessageType) (bool, error)
+		// HasMessage 是否存在指定消息
+		HasMessage(ctx context.Context, toUserIds []int64, dataIdentifier string, title string, enumType sys_enum.MessageType, sceneType sys_enum.MessageSceneType) bool
 	}
 )
 

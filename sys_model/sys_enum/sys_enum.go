@@ -55,6 +55,8 @@ type (
 
 	// MessageType 消息类型
 	MessageType sys_enum_messages.TypeEnum
+	// MessageSceneType 消息场景
+	MessageSceneType sys_enum_messages.SceneTypeEnum
 	// MessageState 消息状态
 	MessageState sys_enum_messages.StateEnum
 )
