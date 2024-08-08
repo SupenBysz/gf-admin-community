@@ -18,6 +18,7 @@ import (
 	"github.com/kysion/base-library/base_hook"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
+	"github.com/kysion/base-library/utility/format_utils"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/samber/lo"
 )
@@ -41,12 +42,12 @@ func (s *sMessage) GetMessageById(ctx context.Context, id int64) (*sys_model.Sys
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询消息失败"+err.Error(), sys_dao.SysMessage.Table())
 	}
 
-	// 业务层  Hook处理渲染，如果没有Hook的话，那就直接格式化成默认的个人资质
+	// 业务层  Hook处理渲染，如果没有Hook的话，
 	s.MessageHook.Iterator(func(key sys_enum.MessageType, value sys_hook.MessageTypeHookFunc) {
 		// 判断注入的Hook业务类型是否一致
 		if key.Code()&result.Type == result.Type {
 			// 业务类型一致则调用注入的Hook函数
-			g.Try(ctx, func(ctx context.Context) {
+			_ = g.Try(ctx, func(ctx context.Context) {
 				err = value(ctx, sys_enum.Message.State.New(result.Type), (*sys_model.SysMessageRes)(result))
 			})
 		}
@@ -336,6 +337,20 @@ func (s *sMessage) OneClickRead(ctx context.Context, userId int64, messageType s
 	}
 
 	return true, nil
+}
+
+// HasMessage 是否存在指定消息
+func (s *sMessage) HasMessage(ctx context.Context, toUserIds []int64, dataIdentifier string, title string, enumType sys_enum.MessageType, sceneType sys_enum.MessageSceneType) bool {
+	idsStr := format_utils.BuildIdsToStrIds(toUserIds)
+	count, _ := sys_dao.SysMessage.Ctx(ctx).Where(sys_do.SysMessage{
+		ToUserIds:      gconv.String(idsStr),
+		Type:           enumType.Code(),
+		DataIdentifier: dataIdentifier,
+		Title:          title,
+		SceneType:      sceneType.Code(),
+	}).Count()
+
+	return count > 0
 }
 
 // checkUser 校验消息接受者toUserIds是否全部存在
