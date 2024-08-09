@@ -13,8 +13,8 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/glog"
 
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/yitter/idgenerator-go/idgen"
 )
 
 type sSysLogs struct {
@@ -82,14 +82,24 @@ func (s *sSysLogs) Write(ctx context.Context, err error, info sys_entity.SysLogs
 		})
 	}
 
-	if sys_consts.Global.LogLevelToDatabaseArr.Search(info.Level) == -1 {
+	isHas := false
+	sys_consts.Global.LogLevelToDatabaseArr.Iterator(func(k int, v int) bool {
+		if v&info.Level == info.Level {
+			isHas = true
+			return false
+		}
+		return true
+	})
+	if !isHas {
 		return err
 	}
 
 	g.Try(ctx, func(ctx context.Context) {
-
 		info.Id = idgen.NextId()
 		info.CreatedAt = gtime.Now()
+		if info.Content == "" {
+			info.Content = "{}"
+		}
 		sys_dao.SysLogs.Ctx(context.Background()).Cache(gdb.CacheOption{Duration: -1, Force: false}).Insert(info)
 	})
 

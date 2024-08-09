@@ -21,7 +21,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 
-	"github.com/yitter/idgenerator-go/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"time"
 )
 
@@ -248,7 +248,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 		{
 			// 查询当前关联业务ID是否有审核记录
 			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
-				UserId:  info.UserId,
+				UserId:         info.UserId,
 				UnionMainId:    info.UnionMainId,
 				Category:       info.Category,
 				DataIdentifier: info.DataIdentifier,
@@ -380,4 +380,21 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 	})
 
 	return err == nil, err
+}
+
+// SetUnionMainId  设置审核关联的主体Id
+func (s *sSysAudit) SetUnionMainId(ctx context.Context, id, unionMainId int64) (bool, error) {
+	data := sys_entity.SysAudit{}
+	err := sys_dao.SysAudit.Ctx(ctx).Scan(&data, sys_do.SysAudit{Id: id})
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "未找到ID关联的审核记录", sys_dao.SysAudit.Table())
+	}
+
+	_, err = sys_dao.SysAudit.Ctx(ctx).Data(sys_do.SysAudit{UnionMainId: unionMainId}).OmitNilData().Where(sys_do.SysAudit{Id: id}).Update()
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新审核关联的主体ID失败", sys_dao.SysAudit.Table())
+	}
+	return true, nil
+
 }

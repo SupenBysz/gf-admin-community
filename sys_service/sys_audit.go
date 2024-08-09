@@ -35,6 +35,8 @@ type (
 		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error)
 		// UpdateAudit 处理审核信息
 		UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error)
+		// SetUnionMainId  设置审核关联的主体Id
+		SetUnionMainId(ctx context.Context, id, unionMainId int64) (bool, error)
 	}
 )
 

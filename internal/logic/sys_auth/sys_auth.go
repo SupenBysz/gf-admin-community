@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -25,7 +26,6 @@ import (
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
-	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
 
@@ -105,10 +105,10 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	res := sys_model.LoginRes{}
 
 	token, err := s.InnerLogin(ctx, sysUserInfo)
-	res.TokenInfo = *token
 	if err != nil {
 		return &res, err
 	}
+	res.TokenInfo = *token
 
 	res.User = sysUserInfo
 
@@ -162,7 +162,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		go func() {
 			area := "内网"
 			if gstr.StrLimit(ip, 3) != "127..." &&
-				gstr.StrLimit(ip, 3) != "10..." &&
+				gstr.StrLimit(ip, 2) != "10..." &&
 				gstr.StrLimit(ip, 3) != "172..." &&
 				gstr.StrLimit(ip, 3) != "192..." &&
 				gstr.ContainsI(ip, "local") == false {
@@ -339,7 +339,7 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	return s.registerUser(ctx, &userInnerRegister)
 }
 
-func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister) (*sys_model.SysUser, error) {
+func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister, customId ...int64) (*sys_model.SysUser, error) {
 	inviteCode := innerRegister.InviteCode
 	// 判断是否填写邀约码,只要填写了必需进行校验
 	inviteInfo, err := sys_rules.CheckInviteCode(ctx, innerRegister.InviteCode)
@@ -352,14 +352,15 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
 	}
 
-	data := sys_model.SysUser{}
+	data := &sys_model.SysUser{}
 
 	// 开启事务
 	err = sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		data, err := sys_service.SysUser().CreateUser(ctx,
+		data, err = sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
 			sys_consts.Global.UserDefaultType,
+			customId...,
 		)
 
 		if err != nil {
@@ -412,11 +413,11 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号注册失败")
 	}
 
-	return &data, nil
+	return data, nil
 }
 
-// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码)
-func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail) (res *sys_model.SysUser, err error) {
+// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码) customId 可以限定用户ID
+func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail, customId ...int64) (res *sys_model.SysUser, err error) {
 	// 判断是否支持方式注册
 	registerRule := sys_rules.CheckRegisterRule(ctx, info.MobileOrMail)
 	if !registerRule {
@@ -451,7 +452,7 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 		return nil, gerror.New("请输入正确的验证码")
 	}
 
-	return s.registerUser(ctx, &innerRegisterUser)
+	return s.registerUser(ctx, &innerRegisterUser, customId...)
 }
 
 // ForgotUserName 忘记用户名，返回用户列表
@@ -575,4 +576,30 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	}
 
 	return true, nil
+}
+
+// RefreshJwtToken 刷新用户jwtToken
+func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.JwtCustomClaims) (res *sys_model.LoginRes, err error) {
+	if loginUser == nil {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+	}
+
+	result := sys_model.LoginRes{}
+
+	// 生成新的token
+	newToken, err := sys_service.Jwt().GenerateToken(ctx, &loginUser.SysUser)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
+	}
+
+	result.TokenInfo = *newToken
+
+	user, err := sys_service.SysUser().GetSysUserById(ctx, loginUser.SysUser.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	result.User = user
+
+	return &result, err
 }

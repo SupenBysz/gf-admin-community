@@ -29,6 +29,10 @@ gfcli:
           sys_person_license,
           sys_user_detail,
           sys_settings,
+          sys_audit,
+          sys_invite,
+          sys_industry,
+          sys_message,
           "
 
 

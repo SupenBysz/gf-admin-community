@@ -50,3 +50,8 @@ type ResetPasswordReq struct {
 	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"确认密码" v:"min-length:6#密码最短为6位"`
 	IdKey           string `json:"idKey" v:"required#请输入KEY" dc:"KEY，通过ForgotPassword结构获取"`
 }
+
+type RefreshJwtTokenReq struct {
+	g.Meta `path:"/refreshJwtToken" method:"post" summary:"刷新用户jwtToken" tags:"鉴权"`
+	Token  string `json:"token" v:"required#请输入token" dc:"token"`
+}

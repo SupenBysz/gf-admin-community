@@ -2,17 +2,13 @@ package sdk_ctyun
 
 import (
 	"context"
-	"database/sql"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/kysion/base-library/utility/daoctl"
 	"time"
 )
 
@@ -25,7 +21,7 @@ type sSdkCtyun struct {
 }
 
 // New SdkBaidu 系统配置逻辑实现
-func New() *sSdkCtyun {
+func New() sys_service.ISdkCtyun {
 	return &sSdkCtyun{
 		CtyunSdkConfTokenList: make([]*sys_model.CtyunSdkConfInfo, 0),
 		sysConfigName:         "ctyun_sdk_conf",
@@ -42,48 +38,19 @@ func init() {
 
 // 我估计没有token的认证，后期可能需要添加一个签名函数
 
-// syncCtyunSdkConfTokenList 同步天翼云SDK应用配置信息Token列表缓存
-func (s *sSdkCtyun) syncCtyunSdkConfTokenList(ctx context.Context) error {
-	items, err := s.GetCtyunSdkConfList(ctx)
-	if err != nil {
-		return err
-	}
-
-	newTokenItems := make([]*sys_model.CtyunSdkConfInfo, 0)
-	for _, conf := range items {
-		for _, tokenInfo := range s.CtyunSdkConfTokenList {
-			if tokenInfo.Identifier == conf.Identifier {
-				newTokenItems = append(newTokenItems, tokenInfo)
-			}
-		}
-	}
-
-	s.CtyunSdkConfTokenList = newTokenItems
-
-	return nil
-}
-
 // GetCtyunSdkConfList 获取天翼云SDK应用配置列表
 func (s *sSdkCtyun) GetCtyunSdkConfList(ctx context.Context) ([]*sys_model.CtyunSdkConf, error) {
 	items := make([]*sys_model.CtyunSdkConf, 0)
-
-	data := sys_entity.SysConfig{}
-
-	err := sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{
-		Name: s.sysConfigName,
-	}).Scan(&data)
-
-	if err != nil && err != sql.ErrNoRows {
-		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("天翼云 SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+	config, err := sys_service.SysConfig().GetByName(ctx, s.sysConfigName)
+	if err != nil {
+		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("天翼云SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	if data.Value == "" {
+	if config.Value == "" {
 		return items, nil
 	}
 
-	if nil == gjson.DecodeTo(data.Value, &items) {
-		return items, nil
-	}
+	_ = gjson.DecodeTo(config.Value, &items)
 
 	return items, nil
 }
@@ -91,7 +58,6 @@ func (s *sSdkCtyun) GetCtyunSdkConfList(ctx context.Context) ([]*sys_model.Ctyun
 // GetCtyunSdkConf 根据identifier标识获取SDK配置信息
 func (s *sSdkCtyun) GetCtyunSdkConf(ctx context.Context, identifier string) (tokenInfo *sys_model.CtyunSdkConf, err error) {
 	items, err := s.GetCtyunSdkConfList(ctx)
-
 	if err != nil {
 		return nil, err
 	}
@@ -106,60 +72,68 @@ func (s *sSdkCtyun) GetCtyunSdkConf(ctx context.Context, identifier string) (tok
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询天翼云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
-// SaveCtyunSdkConf 保存天翼SDK应用配信息, isCreate判断是更新还是新建
+// SaveCtyunSdkConf 保存SDK应用配信息, isCreate判断是更新还是新建
 func (s *sSdkCtyun) SaveCtyunSdkConf(ctx context.Context, info *sys_model.CtyunSdkConf, isCreate bool) (*sys_model.CtyunSdkConf, error) {
-	items, _ := s.GetCtyunSdkConfList(ctx)
+	oldItems, _ := s.GetCtyunSdkConfList(ctx)
 
 	isHas := false
 	newItems := make([]*sys_model.CtyunSdkConf, 0)
-	for _, conf := range items {
-		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在
+	for _, conf := range oldItems {
+		if conf.Identifier == info.Identifier { // 如果标识符相等，说明已经存在， 将最新的追加到新的容器中
 			isHas = true
 			newItems = append(newItems, info)
 			continue
 		}
 
-		newItems = append(newItems, conf)
+		newItems = append(newItems, conf) // 将旧的Item追加到新的容器中
 	}
 
-	if !isHas {
-		if isCreate {
+	if !isHas { // 不存在
+		if isCreate { // 创建 --- 追加info （原有的 + 最新的Info）
 			newItems = append(newItems, info)
-		} else {
+		} else { // 更新 --- 不存在此配置，那么就提示错误
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("天翼云SDK配置信息保存失败，标识符错误"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 	}
 
 	// 序列化后进行保存至数据库
 	jsonString := gjson.MustEncodeString(newItems)
-
-	count, err := sys_dao.SysConfig.Ctx(ctx).Count(sys_do.SysConfig{
-		Name: s.sysConfigName,
+	_, err := sys_service.SysConfig().SaveConfig(ctx, &sys_model.SysConfig{
+		Name:  s.sysConfigName,
+		Value: jsonString,
 	})
-
-	if count > 0 { // 已经存在，Save更新
-		_, err = sys_dao.SysConfig.Ctx(ctx).Data(sys_do.SysConfig{Value: jsonString}).Where(sys_do.SysConfig{
-			Name: s.sysConfigName,
-		}).Update()
-	} else { // 不存在，Insert添加
-		_, err = sys_dao.SysConfig.Ctx(ctx).Insert(sys_do.SysConfig{
-			Name:  s.sysConfigName,
-			Value: jsonString,
-		})
-	}
-
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "天翼云SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	// 移除缓存列表
-	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
+	// 同步天翼云SDK应用配置缓存列表
+	s.syncCtyunSdkConfList(ctx)
 
-	// 同步token列表
 	return info, nil
 }
 
-// DeleteCtyunSdkConf 删除天翼SDK应用配置信息
+// syncCtyunSdkConfList 同步天翼云SDK应用配置信息列表缓存  （代码中要是用到了s.CtyunSdkConfList缓存变量的话，一定需要在CUD操作后调用此方法更新缓存变量）
+func (s *sSdkCtyun) syncCtyunSdkConfList(ctx context.Context) error {
+	items, err := s.GetCtyunSdkConfList(ctx)
+	if err != nil {
+		return err
+	}
+
+	newTokenItems := make([]*sys_model.CtyunSdkConfInfo, 0)
+	for _, conf := range items {
+		for _, tokenInfo := range s.CtyunSdkConfTokenList { // tokenList
+			if tokenInfo.Identifier == conf.Identifier {
+				newTokenItems = append(newTokenItems, tokenInfo)
+			}
+		}
+	}
+
+	s.CtyunSdkConfTokenList = newTokenItems
+
+	return nil
+}
+
+// DeleteCtyunSdkConf 删除天翼云SDK应用配置信息
 func (s *sSdkCtyun) DeleteCtyunSdkConf(ctx context.Context, identifier string) (bool, error) {
 	items, err := s.GetCtyunSdkConfList(ctx)
 
@@ -178,16 +152,16 @@ func (s *sSdkCtyun) DeleteCtyunSdkConf(ctx context.Context, identifier string) (
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
-
-	if sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: s.sysConfigName}).Update(sys_do.SysConfig{Value: jsonString}); err != nil {
+	_, err = sys_service.SysConfig().SaveConfig(ctx, &sys_model.SysConfig{
+		Name:  s.sysConfigName,
+		Value: jsonString,
+	})
+	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "天翼云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
-	// 移除缓存列表
-	daoctl.RemoveQueryCache(sys_dao.SysConfig.DB(), s.sysConfigName)
-
 	// 同步Token列表
-	s.syncCtyunSdkConfTokenList(ctx)
+	s.syncCtyunSdkConfList(ctx)
 
 	return true, nil
 }

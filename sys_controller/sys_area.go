@@ -16,3 +16,8 @@ type cSysArea struct{}
 func (c *cSysArea) GetAreaListByParentId(ctx context.Context, req *sys_api.GetAreaListByParentIdReq) (*sys_model.AreaListRes, error) {
 	return sys_service.Area().GetAreaListByParentId(ctx, req.ParentId)
 }
+
+// GetAreaListByLevel 获取指定级别的地区列表
+func (c *cSysArea) GetAreaListByLevel(ctx context.Context, req *sys_api.GetAreaListByLevelReq) (*sys_model.AreaListRes, error) {
+	return sys_service.Area().GetAreaListByLevel(ctx, req.Level)
+}

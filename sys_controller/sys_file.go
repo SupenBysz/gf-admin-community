@@ -51,13 +51,17 @@ func (c *cSysFile) GetFileById(ctx context.Context, _ *sys_api.GetFileByIdReq) (
 
 	file, err := sys_service.File().GetFileById(ctx, id, "文件加载失败")
 
+	if err != nil {
+		return nil, err
+	}
+
 	// 加载显示图片
 	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
 
 	return (*sys_api.UploadFileRes)(&file.SysFile), err
 }
 
-// UploadPicture 上传图片
+// UploadPicture 上传图片并审核
 func (c *cSysFile) UploadPicture(ctx context.Context, req *sys_api.UploadPictureReq) (res *sys_api.UploadPictureRes, err error) {
 	result, err := sys_service.File().UploadPicture(ctx, req.PictureWithOCRInput)
 

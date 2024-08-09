@@ -6,13 +6,13 @@ import "github.com/kysion/base-library/utility/enum"
 type StateEnum enum.IEnumCode[int]
 
 type inviteState struct {
-	Normal  StateEnum
 	Invalid StateEnum
+	Normal  StateEnum
 }
 
 var State = inviteState{
-	Normal:  enum.New[StateEnum](0, "失效"),
-	Invalid: enum.New[StateEnum](1, "正常"),
+	Invalid: enum.New[StateEnum](0, "失效"),
+	Normal:  enum.New[StateEnum](1, "正常"),
 }
 
 func (e inviteState) New(code int, description string) StateEnum {
@@ -20,7 +20,7 @@ func (e inviteState) New(code int, description string) StateEnum {
 	if code == State.Normal.Code() {
 		return e.Normal
 	}
-	
+
 	if (code & State.Invalid.Code()) == State.Invalid.Code() {
 		return e.Invalid
 	}

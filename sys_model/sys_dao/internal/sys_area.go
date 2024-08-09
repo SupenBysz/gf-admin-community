@@ -26,10 +26,11 @@ type SysAreaColumns struct {
 	Id            string // ID
 	AreaCode      string // 地区编码
 	AreaName      string // 地区名称
-	Level         string // 1区县district、2市city、4省份province、8大区region、16全国nation
+	Level         string // 1街道street、2区县district、4市city、8省份province、16大区region、32全国nation
 	CityCode      string // 城市编码
-	LatLongCenter string // 城市中心点（即经纬度）
+	LongLatCenter string // 城市中心点（即经纬度）
 	ParentId      string // 地区父节点
+	PinYin        string // 地区拼音
 }
 
 // sysAreaColumns holds the columns for table sys_area.
@@ -39,8 +40,9 @@ var sysAreaColumns = SysAreaColumns{
 	AreaName:      "area_name",
 	Level:         "level",
 	CityCode:      "city_code",
-	LatLongCenter: "lat_long_center",
+	LongLatCenter: "long_lat_center",
 	ParentId:      "parent_id",
+	PinYin:        "pin_yin",
 }
 
 // NewSysAreaDao creates and returns a new DAO object for table data access.

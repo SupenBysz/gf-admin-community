@@ -12,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -27,7 +28,6 @@ import (
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
-	"github.com/yitter/idgenerator-go/idgen"
 	"math"
 	"sort"
 	"time"
@@ -1004,6 +1004,10 @@ func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, 
 
 	// 如果有角色信息则加载角色信息
 	if len(roleIds) > 0 {
+		var unionMainIdInfo int64 = 0
+		if len(unionMainId) > 0 {
+			unionMainIdInfo = unionMainId[0]
+		}
 		roles, err := sys_service.SysRole().QueryRoleList(ctx, base_model.SearchParams{
 			Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
 				Field:     sys_dao.SysRole.Columns().Id,
@@ -1012,7 +1016,7 @@ func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, 
 				Value:     roleIds,
 			}),
 			Pagination: base_model.Pagination{},
-		}, unionMainId[0])
+		}, unionMainIdInfo)
 		if err == nil && len(roles.Records) > 0 {
 			for _, role := range roles.Records {
 				sysUser.RoleNames = append(sysUser.RoleNames, role.Name)

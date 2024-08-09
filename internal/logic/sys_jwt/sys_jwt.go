@@ -6,8 +6,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
-	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -125,7 +125,7 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	tokenString := gstr.Trim(r.Header.Get("Authorization"))
 
 	if gstr.ToUpper(r.Method) == "GET" && tokenString == "" {
-		tokenString = r.GetParam("token", "").String()
+		tokenString = r.Get("token", "").String()
 	}
 
 	s.MakeSession(r.Context(), tokenString)

@@ -6,6 +6,10 @@ import (
 	"github.com/kysion/base-library/base_model"
 )
 
+/*
+	为什么每一个云都要有一套一模一样的接口 ---> 因为不同云的Input 和 Output 是不一样的
+*/
+
 // 百度云SDk
 
 type GetBaiduSdkConfListReq struct {

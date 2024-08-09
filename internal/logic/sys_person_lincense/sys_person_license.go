@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -20,7 +21,6 @@ import (
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/masker"
-	"github.com/yitter/idgenerator-go/idgen"
 	"time"
 )
 
@@ -62,6 +62,9 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 
 			//解析json字符串
 			gjson.DecodeTo(info.AuditData, &auditData)
+			if auditData.No == "" { // 说明不是默认结构，业务层自己封装了结构
+				return nil
+			}
 
 			// 还未审核的图片从缓存中寻找  0 缓存  1 数据库
 
@@ -74,7 +77,9 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 					}
 				}
 
-				auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardFrontPath)
+				if tempIdcardFrontPath != "" {
+					auditData.IdcardFrontPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardFrontPath)
+				}
 			}
 
 			{
@@ -85,11 +90,18 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 					}
 				}
 
-				auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardBackPath)
+				if tempIdcardBackPath != "" {
+					auditData.IdcardBackPath = sys_service.File().MakeFileUrlByPath(ctx, tempIdcardBackPath)
+				}
 			}
 
-			// 重新赋值  将id转为可访问路径
-			info.AuditData = gjson.MustEncodeString(auditData)
+			if auditData.No != "" { // 说明是默认结构
+				// 重新赋值  将id转为可访问路径
+				info.AuditData = gjson.MustEncodeString(auditData)
+			} else { // 业务层自己自定义的审核机构，业务层自己解析即可
+
+			}
+
 		}
 	}
 	return nil
@@ -109,6 +121,9 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 			// 创建个人资质
 			auditPersonLicense := sys_model.AuditPersonLicense{}
 			gjson.DecodeTo(info.AuditData, &auditPersonLicense)
+			if auditPersonLicense.No == "" { // 业务层自己处理审核通过的逻辑
+				return nil
+			}
 
 			licenseRes, err := sys_service.SysPersonLicense().CreateLicense(ctx, auditPersonLicense)
 			if err != nil {
@@ -130,7 +145,6 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 func (s *sSysPersonLicense) GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysPersonLicense, error) {
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
-
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "个人资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
@@ -173,8 +187,8 @@ func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.Au
 		result.Id = info.LicenseId
 	}
 
-	result.State = 0
-	result.AuthType = 0
+	//result.State = 0
+	//result.AuthType = 0
 	result.CreatedAt = gtime.Now()
 
 	// TODO 校验
@@ -213,7 +227,6 @@ func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.Au
 func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.AuditPersonLicense, id int64) (*sys_entity.SysPersonLicense, error) {
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
-	//data, err := s.GetLicenseById(ctx, id)
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
@@ -290,15 +303,14 @@ func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, audit
 
 // SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
 func (s *sSysPersonLicense) SetLicenseState(ctx context.Context, id int64, state int) (bool, error) {
-	//_, err := s.GetLicenseById(ctx, id)
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 
 	if err != nil {
-		return false, err
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
 
-	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{State: state}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
+	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{State: state, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新个人资质状态信息失败", sys_dao.SysPersonLicense.Table())
@@ -309,14 +321,13 @@ func (s *sSysPersonLicense) SetLicenseState(ctx context.Context, id int64, state
 
 // SetLicenseAuditNumber  设置个人资质神审核编号
 func (s *sSysPersonLicense) SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error) {
-	//_, err := s.GetLicenseById(ctx, id)
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 	if err != nil {
-		return false, err
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
 
-	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogId: auditNumber}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
+	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogId: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新个人资质证照审核编号失败", sys_dao.SysPersonLicense.Table())
@@ -358,7 +369,7 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 
 	// 将新创建的个人资质认证信息关联至个人资质
 	_, err = sys_dao.SysPersonLicense.Ctx(ctx).
-		Data(sys_do.SysPersonLicense{LatestAuditLogId: latestAuditLogId}).
+		Data(sys_do.SysPersonLicense{LatestAuditLogId: latestAuditLogId, UpdatedAt: gtime.Now()}).
 		Where(sys_do.SysPersonLicense{Id: id}).
 		Update()
 
