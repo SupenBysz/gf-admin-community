@@ -12,9 +12,9 @@ require (
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
-	github.com/kysion/base-library v0.0.38
-	github.com/kysion/oss-library v0.1.12
-	github.com/kysion/sms-library v0.1.10
+	github.com/kysion/base-library v0.0.39
+	github.com/kysion/oss-library v0.1.13
+	github.com/kysion/sms-library v0.1.11
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20231013030745-3066d243cd04
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/samber/lo v1.46.0
