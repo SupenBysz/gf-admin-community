@@ -20,33 +20,33 @@ import (
 )
 
 type (
-	BusinessType sys_enum_business.TypeEnum
+	BusinessType = sys_enum_business.TypeEnum
 
-	OssType sys_enum_oss.OssTypeEnum
+	OssType = sys_enum_oss.OssTypeEnum
 
-	AuthActionType sys_enum_auth.ActionTypeEnum
+	AuthActionType = sys_enum_auth.ActionTypeEnum
 
-	UploadEventState sys_enum_upload.EventStateEnum
+	UploadEventState = sys_enum_upload.EventStateEnum
 
-	UserEvent sys_enum_user.EventEnum
-	UserType  sys_enum_user.TypeEnum
-	UserState sys_enum_user.StateEnum
+	UserEvent = sys_enum_user.EventEnum
+	UserType  = sys_enum_user.TypeEnum
+	UserState = sys_enum_user.StateEnum
 
-	CabinEvent sys_enum_casbin.EventEnum
+	CabinEvent = sys_enum_casbin.EventEnum
 
-	PermissionMatchMode sys_enum_permissions.MatchModeEnum
+	PermissionMatchMode = sys_enum_permissions.MatchModeEnum
 
-	AuditAction sys_enum_audit.ActionEnum
-	AuditEvent  sys_enum_audit.EventEnum
+	AuditAction = sys_enum_audit.ActionEnum
+	AuditEvent  = sys_enum_audit.EventEnum
 
 	// InviteType 邀约类型
-	InviteType sys_enum_invite.TypeEnum
+	InviteType = sys_enum_invite.TypeEnum
 
 	// InviteState 邀约状态
-	InviteState sys_enum_invite.StateEnum
+	InviteState = sys_enum_invite.StateEnum
 
 	// RoleMemberChange 角色成员事件
-	RoleMemberChange sys_enum_role.ChangeEnum
+	RoleMemberChange = sys_enum_role.ChangeEnum
 
 	// LicenseState 个人资质状态
 	LicenseState = sys_enum_license.StateEnum
@@ -54,11 +54,11 @@ type (
 	LicenseAuthType = sys_enum_license.AuthTypeEnum
 
 	// MessageType 消息类型
-	MessageType sys_enum_messages.TypeEnum
+	MessageType = sys_enum_messages.TypeEnum
 	// MessageSceneType 消息场景
-	MessageSceneType sys_enum_messages.SceneTypeEnum
+	MessageSceneType = sys_enum_messages.SceneTypeEnum
 	// MessageState 消息状态
-	MessageState sys_enum_messages.StateEnum
+	MessageState = sys_enum_messages.StateEnum
 )
 
 var (
