@@ -10,7 +10,6 @@ server:
   swaggerPath: "/api/docs"
   swaggerJsURL: "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" # 自定义 文档 JS 镜像地址，需要 gf 2.6.0 以上版本才支持
 
-
 service:
   # 用户表ID生成器，分布式终端标识，取值范围 1 ~ 63，解决分布式多服务横向扩展时保证生成的ID不重复
   idGeneratorWorkerId: 1
@@ -60,7 +59,29 @@ service:
   inviteCodeExpireDay: 0
   # 邀约码激活次数上限
   inviteCodeMaxActivateNumber: 0
+  # 是否部署NFS文件系统
+  isDeployNFS: false
 
+# 邮件设置
+email:
+  # 帐号
+  username: ""
+  # 密码
+  password: ""
+  # 发送者昵称
+  sendAuthor: ""
+  # 标题前缀
+  titlePrefix: ""
+  # 授权码
+  authCode: ""
+  pop3:
+    host: "pop3.qq.com"
+    port: 995
+    ssl: true
+  smtp:
+    host: "smtp.qq.com"
+    port: 25
+    ssl: false
 
 # 日志配置
 logger:
@@ -76,6 +97,24 @@ upload:
   # 文件上传的默认保存路径
   path: "resource/upload"
   temp: "temp/upload"
+
+# 文件下载设置
+download:
+  # 文件下载默认的临时保存路径
+  tempPath: "temp/download"
+
+# oss对象存储
+oss:
+  # 平台的oss-bucket名称，没有部署NFS系统的话，一般temp资源、公共资源 都是放在平台的oss中
+  masterBucketName: ""
+  # 当前服务的oss-bucket名称，各服务端的单独的对象存储空间
+  bucketName: ""
+  # oss图片输出质量变换，质量变换仅支持JPG和WebP，其他图片格式不支持。 【quality,q_90 相对质量变换。quality,Q_90 绝对质量变换。】
+  quality: "q_90"
+  # 图片输出的文字水印，注意：同时选择文字水印+图片水印，代表输出的水印需求是：添加图片和文字混合水印
+  textWatermark: ""
+  # 图片输出的图片水印，注意：同时选择文字水印+图片水印，代表输出的水印需求是：添加图片和文字混合水印
+  imageWatermark: ""
 
 # 数据库连接配置
 database:
@@ -94,20 +133,3 @@ redis:
   default:
     address: 127.0.0.1:6379
 
-#email:
-#  # 帐号
-#  username: ""
-#  # 密码
-#  password: ""
-#  # 标题前缀
-#  titlePrefix: ""
-#  # 授权码
-#  authCode: ""
-#  pop3:
-#    host: "pop.qq.com"
-#    port: 995
-#    ssl: true
-#  smtp:
-#    host: "smtp.qq.com"
-#    port: 465
-#    ssl: true
