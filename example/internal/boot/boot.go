@@ -62,11 +62,11 @@ var (
 				// CASBIN 初始化
 				sys_service.Casbin().Enforcer()
 				// Permission 初始化
-				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
 
 				// 导入oss + sms权限树
-				sys_service.SysPermission().ImportPermissionTree(ctx, oss_consts.PermissionTree, nil)
-				sys_service.SysPermission().ImportPermissionTree(ctx, sms_consts.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, oss_consts.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, sms_consts.PermissionTree, nil)
 			}
 
 			// 业务端密码加密规则重写示例
@@ -92,6 +92,7 @@ var (
 					group.Middleware(
 						// sys_service.Middleware().Casbin,
 						sys_service.Middleware().CTX,
+						sys_service.Middleware().CORS,
 						sys_service.Middleware().ResponseHandler,
 					)
 
