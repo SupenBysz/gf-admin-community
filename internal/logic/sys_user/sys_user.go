@@ -860,6 +860,8 @@ func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (
 		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
 	} else if base_verify.IsEmail(info) {
 		userModel = userModel.Where(sys_do.SysUser{Email: info})
+	} else {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号或邮箱格式错误")
 	}
 
 	userList, err := daoctl.Query[*sys_model.SysUser](userModel, nil, false)
