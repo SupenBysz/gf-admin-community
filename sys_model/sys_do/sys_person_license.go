@@ -30,5 +30,5 @@ type SysPersonLicense struct {
 	State            interface{} // 状态：0失效、1正常
 	AuthType         interface{} // 认证类型:
 	Remark           interface{} // 备注信息
-	LatestAuditLogId interface{} // 最新的审核记录id
+	LatestAuditLogid interface{} // 最新的审核记录id
 }
