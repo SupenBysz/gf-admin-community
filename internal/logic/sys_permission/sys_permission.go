@@ -3,6 +3,7 @@ package sys_permission
 import (
 	"context"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/internal/boot"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -34,6 +35,7 @@ type sSysPermission struct {
 func init() {
 	//base_permission.Factory = Factory
 
+	boot.InitPermissionFactory()
 	sys_service.RegisterSysPermission(New())
 }
 

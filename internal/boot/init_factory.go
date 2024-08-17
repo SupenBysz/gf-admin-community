@@ -1,26 +1,22 @@
 package boot
 
 import (
-	"fmt"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/kysion/base-library/utility/base_permission"
 )
 
 //func init() {
-//	InitIdGenerator()
-//	InitFactory()
+//	//InitIdGenerator()
+//	//InitPermissionFactory()
 //}
 
-func InitFactory() func() base_permission.IPermission {
-	base_permission.Factory = func() base_permission.IPermission {
+func InitPermissionFactory() {
+	base_permission.InitializePermissionFactory(func() base_permission.IPermission {
 		return &sys_model.SysPermissionTree{
 			SysPermission: &sys_entity.SysPermission{},
 		}
-	}
-
-	fmt.Println(base_permission.Factory())
-	return base_permission.Factory
+	})
 }
 
 //

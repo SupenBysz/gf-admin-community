@@ -8,35 +8,20 @@ import (
 )
 
 func initFactory() {
-	if base_permission.Factory == nil {
-		base_permission.Factory = func() base_permission.IPermission {
-			return &sys_model.SysPermissionTree{
-				SysPermission: &sys_entity.SysPermission{},
-			}
+	base_permission.InitializePermissionFactory(func() base_permission.IPermission {
+		return &sys_model.SysPermissionTree{
+			SysPermission: &sys_entity.SysPermission{},
 		}
-	}
+	})
 }
 
 func New(id int64, identifier string, name string, description ...string) base_permission.IPermission {
-	var desc string
-	if len(description) > 0 {
-		desc = description[0]
-	}
-
 	initFactory()
-
-	return base_permission.Factory().SetId(id).SetIdentifier(identifier).SetName(name).SetDescription(desc)
+	return base_permission.New(id, identifier, name, description...)
 }
 
 // NewInIdentifier 构造权限信息
 func NewInIdentifier(identifier string, name string, description ...string) base_permission.IPermission {
-	var desc string
-
-	if len(description) > 0 {
-		desc = description[0]
-	}
-
 	initFactory()
-
-	return base_permission.Factory().SetId(idgen.NextId()).SetIdentifier(identifier).SetName(name).SetDescription(desc)
+	return base_permission.New(idgen.NextId(), identifier, name, description...)
 }
