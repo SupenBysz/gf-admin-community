@@ -8,12 +8,11 @@ import (
 
 // InitPermission 初始化权限树结构
 func InitPermission() []base_permission.IPermission {
+	InitPermissionFactory()
+
 	sys_consts.Global.PermissionTree = []base_permission.IPermission{
 		// 用户管理
-		base_permission.Factory().
-			SetId(5947106208184773).
-			SetName("用户管理").
-			SetIdentifier("User").
+		base_permission.New(5947106208184773, "User", "用户管理").
 			SetType(1).
 			SetIsShow(1).
 			SetMatchMode(0). // ID匹配
@@ -42,10 +41,7 @@ func InitPermission() []base_permission.IPermission {
 			}),
 
 		// 组织架构权限树
-		base_permission.Factory().
-			SetId(5948649344204869).
-			SetName("组织架构").
-			SetIdentifier("Organization").
+		base_permission.New(5948649344204869, "Organization", "组织架构").
 			SetType(1).
 			SetIsShow(0).
 			SetMatchMode(0). // ID匹配
@@ -63,10 +59,7 @@ func InitPermission() []base_permission.IPermission {
 			}),
 
 		// 角色管理权限树
-		base_permission.Factory().
-			SetId(5948684761759818).
-			SetName("角色管理").
-			SetIdentifier("Role").
+		base_permission.New(5948684761759818, "Role", "角色管理").
 			SetType(1).
 			SetIsShow(1).
 			SetMatchMode(0). // ID匹配
@@ -88,10 +81,7 @@ func InitPermission() []base_permission.IPermission {
 			}),
 
 		// 权限管理权限树
-		base_permission.Factory().
-			SetId(5950408166668741).
-			SetName("权限管理").
-			SetIdentifier("Permission").
+		base_permission.New(5950408166668741, "Permission", "权限管理").
 			SetType(1).
 			SetIsShow(1).
 			SetMatchMode(0). // ID匹配
@@ -109,10 +99,7 @@ func InitPermission() []base_permission.IPermission {
 			}),
 
 		// 菜单管理权限树
-		base_permission.Factory().
-			SetId(5950408166676321).
-			SetName("菜单管理").
-			SetIdentifier("Menu").
+		base_permission.New(5950408166676321, "Menu", "菜单管理").
 			SetType(1).
 			SetIsShow(0).    // 默认隐藏
 			SetMatchMode(0). // ID匹配
@@ -130,10 +117,7 @@ func InitPermission() []base_permission.IPermission {
 			}),
 
 		// 行业类别管理权限树
-		base_permission.Factory().
-			SetId(5950408166626311).
-			SetName("行业类别管理").
-			SetIdentifier("Industry").
+		base_permission.New(5950408166626311, "Industry", "行业类别管理").
 			SetType(1).
 			SetIsShow(1).    // 默认隐藏
 			SetMatchMode(0). // ID匹配
@@ -161,9 +145,7 @@ func InitPermission() []base_permission.IPermission {
 func initAuditAndLicensePermission() []base_permission.IPermission {
 	return []base_permission.IPermission{
 		// 资质
-		base_permission.Factory().SetId(5953153121845333).
-			SetName("个人资质").
-			SetIdentifier("PersonLicense").
+		base_permission.New(5953153121845333, "PersonLicense", "个人资质").
 			SetType(1).
 			SetIsShow(1).
 			SetMatchMode(0). // ID匹配
@@ -180,9 +162,7 @@ func initAuditAndLicensePermission() []base_permission.IPermission {
 				sys_enum.License.PermissionType.SetState,
 			}),
 		// 审核管理
-		base_permission.Factory().SetId(5953151699124300).
-			SetName("个人资质审核管理").
-			SetIdentifier("PersonAudit").
+		base_permission.New(5953151699124300, "PersonAudit", "个人资质审核管理").
 			SetType(1).
 			SetIsShow(1).
 			SetMatchMode(0). // ID匹配

@@ -13,6 +13,7 @@ func init() {
 	env.LoadEnv()
 
 	idgen.InitIdGenerator()
+	boot.InitPermissionFactory()
 	boot.InitIp2region()
 	boot.InitCustomRules()
 	boot.InitGlobal()
