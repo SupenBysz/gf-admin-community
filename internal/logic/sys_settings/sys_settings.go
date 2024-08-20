@@ -36,7 +36,7 @@ func (s *sSysSettings) QueryList(ctx context.Context, params *base_model.SearchP
 	return (*sys_model.SysSettingListRes)(result), err
 }
 
-// GetByName 根据 name 查询百度SDK应用配置信息
+// GetByName 根据 name 查询配置信息
 func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_model.SearchParams) (*sys_model.SysSettingsRes, error) {
 	items, err := s.QueryList(ctx, info, true)
 	if err != nil {
@@ -49,13 +49,13 @@ func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_mo
 		}
 	}
 
-	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询配置信息失败", sys_dao.SysSettings.Table()+":"+name)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询配置信息失败", sys_dao.SysSettings.Table())
 }
 
 // Save 保存系统配置信息
 func (s *sSysSettings) Save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysSettings{})
-  
+
 	count, err := sys_dao.SysSettings.Ctx(ctx).Count(sys_do.SysSettings{Name: info.Name})
 	if count > 0 {
 		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values, Desc: data.Desc})
@@ -89,7 +89,7 @@ func (s *sSysSettings) Delete(ctx context.Context, name string, unionMainId int6
 	affected, err := daoctl.DeleteWithError(sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: name, UnionMainId: unionMainId}))
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysSettings.Table()+":"+name)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysSettings.Table())
 	}
 
 	return affected > 0, err
