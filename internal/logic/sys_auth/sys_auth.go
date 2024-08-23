@@ -218,7 +218,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		if info.PassWord == "" {
+		if info.Password == "" {
 			return nil, gerror.New("请输入正确的验证码")
 		}
 	}
@@ -235,16 +235,16 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
 	}
 
-	if info.PassWord != "" {
+	if info.Password != "" {
 		// 含密码的userInfo
 		userInfo, err = daoctl.ScanWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 			Id: userInfo.Id,
 		}))
 
-		pwdHash, _ := en_crypto.PwdHash(info.PassWord, gconv.String(userInfo.Id))
+		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
 		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.PassWord, *userInfo.SysUser)
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -296,7 +296,7 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		if info.PassWord == "" {
+		if info.Password == "" {
 			return nil, gerror.New("请输入正确的验证码")
 		}
 	}
@@ -313,16 +313,16 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
 	}
 
-	if info.PassWord != "" {
+	if info.Password != "" {
 		// 含密码的userInfo
 		userInfo, err = daoctl.ScanWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 			Id: userInfo.Id,
 		}))
 
-		pwdHash, _ := en_crypto.PwdHash(info.PassWord, gconv.String(userInfo.Id))
+		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
 		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.PassWord, *userInfo.SysUser)
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
