@@ -62,7 +62,7 @@ require (
 	github.com/mozillazg/go-pinyin v0.20.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
-	github.com/redis/go-redis/v9 v9.3.1 // indirect
+	github.com/redis/go-redis/v9 v9.6.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.985 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
