@@ -53,5 +53,4 @@ type ResetPasswordReq struct {
 
 type RefreshJwtTokenReq struct {
 	g.Meta `path:"/refreshJwtToken" method:"post" summary:"刷新用户jwtToken" tags:"鉴权"`
-	Token  string `json:"token" v:"required#请输入token" dc:"token"`
 }

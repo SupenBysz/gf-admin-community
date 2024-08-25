@@ -13,7 +13,7 @@ var UserAuth = cUserAuth{}
 type cUserAuth struct{}
 
 // RefreshJwtToken 刷新用户jwtToken
-func (c *cUserAuth) RefreshJwtToken(ctx context.Context, req *sys_api.RefreshJwtTokenReq) (res *sys_model.LoginRes, err error) {
+func (c *cUserAuth) RefreshJwtToken(ctx context.Context, _ *sys_api.RefreshJwtTokenReq) (res *sys_model.LoginRes, err error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	res, err = sys_service.SysAuth().RefreshJwtToken(ctx, user)
