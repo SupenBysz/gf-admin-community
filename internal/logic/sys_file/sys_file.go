@@ -138,7 +138,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 			return true
 		})
 
-		fileMaxUploadCountMinute := g.Cfg().MustGet(ctx, "service.fileMaxUploadCountMinute", 10).Int()
+		fileMaxUploadCountMinute := g.Cfg().MustGet(ctx, "upload.fileMaxUploadCountMinute", 10).Int()
 		// 限定1分钟内允许上传的最大数量
 		if newUserUploadItemsCache.Size() >= fileMaxUploadCountMinute {
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
