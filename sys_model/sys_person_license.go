@@ -21,17 +21,19 @@ type PersonLicense struct {
 	Remark           string `json:"remark"          description:"备注信息"`
 	LatestAuditLogId int64  `json:"latestAuditLogId" description:"最新的审核记录id"`
 
-	State    int `json:"state"           description:"状态：0失效、1正常" v:"in:0,1#状态错误"`
-	AuthType int `json:"authType"        description:"认证类型:"`
+	State    int    `json:"state"           description:"状态：0失效、1正常" v:"in:0,1#状态错误"`
+	AuthType int    `json:"authType"        description:"认证类型:"`
+	Summary  string `json:"summary"              description:"概述"`
 }
 
 type PersonLicenseRes sys_entity.SysPersonLicense
 type PersonLicenseListRes base_model.CollectRes[sys_entity.SysPersonLicense]
 
 type AuditPersonLicense struct {
-	UnionMainId int64 `json:"unionMainId"             dc:"资质审核关联的业务主体ID"` // 个人资质的unionMainId, 没有则为0
-	LicenseId   int64 `json:"licenseId"             dc:"资质ID"`
-	UserId      int64 `json:"userId" dc:"上传资质的userId"` // 个人资质存在待上传的问题， 所以userID代表上传者
-	OwnerUserId int64 `json:"ownerUserId" dc:"资质的所属userId" `
+	UnionMainId int64  `json:"unionMainId"             dc:"资质审核关联的业务主体ID"` // 个人资质的unionMainId, 没有则为0
+	LicenseId   int64  `json:"licenseId"             dc:"资质ID"`
+	UserId      int64  `json:"userId" dc:"上传资质的userId"` // 个人资质存在待上传的问题， 所以userID代表上传者
+	OwnerUserId int64  `json:"ownerUserId" dc:"资质的所属userId" `
+	Summary     string `json:"summary"               description:"概述"`
 	PersonLicense
 }
