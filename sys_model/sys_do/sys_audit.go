@@ -25,4 +25,5 @@ type SysAudit struct {
 	AuditUserId    interface{} // 审核操作者id
 	DataIdentifier interface{} // 数据标识
 	UserId         interface{} // 关联用户ID
+	Summary        interface{} // 概述
 }

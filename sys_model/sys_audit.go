@@ -15,6 +15,7 @@ type CreateAudit struct {
 	ExpireAt       *gtime.Time `json:"expireAt"      description:"审核服务时限，超过该时间后没有审核通过的需要重新申请审核"`
 	DataIdentifier string      `json:"dataIdentifier" description:"数据标识"`
 	UserId         int64       `json:"userId" dc:"关联业务用户ID" `
+	Summary        string      `json:"summary"                 dc:"概述"`
 }
 
 type SetAudit struct {
