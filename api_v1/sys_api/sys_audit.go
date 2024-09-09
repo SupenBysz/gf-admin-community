@@ -1,7 +1,6 @@
 package sys_api
 
 import (
-	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/base_model"
 )
@@ -30,6 +29,3 @@ type SetAuditRejectReq struct {
 	Id     int64  `json:"id" v:"required|min:1#ID参数错误|ID必须大于0" dc:"审核ID"`
 	Reply  string `json:"reply" v:"required#请输入不通过原因" dc:"不通过原因"`
 }
-
-type AuditRes sys_model.Audit
-type AuditListRes sys_model.AuditListRes
