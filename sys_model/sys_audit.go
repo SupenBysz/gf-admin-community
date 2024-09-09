@@ -26,10 +26,7 @@ type SetAudit struct {
 	Category    int    `json:"category"      description:"分类：1个人资质审核、2主体资质审核、4数据审核" v:"required|in:1,2,4#分类类型错误"`
 }
 
-
-
-// compnay 库修改审核信息
-type Audit  sys_entity.SysAudit
+type Audit sys_entity.SysAudit
 
 type AuditRes sys_entity.SysAudit
 type AuditListRes base_model.CollectRes[sys_entity.SysAudit]
