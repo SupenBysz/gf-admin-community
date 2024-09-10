@@ -178,3 +178,12 @@ func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.S
 //	}
 //
 //}
+
+// MyPersonLicense 我的个人资质
+func (c *cSysMy) MyPersonLicense(ctx context.Context, _ *sys_api.MyPersonLicenseReq) (*sys_model.PersonLicenseRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	ret, err := sys_service.SysPersonLicense().GetLatestUserNormalLicense(ctx, user.Id)
+
+	return ret, err
+}
