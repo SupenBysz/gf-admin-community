@@ -30,6 +30,10 @@ type MyMenusReq struct {
 	g.Meta `path:"/getMenus" method:"post" summary:"我的菜单|树" tags:"我的"`
 }
 
+type MyPersonLicenseReq struct {
+	g.Meta `path:"/myPersonLicense" method:"post" summary:"我的个人资质" tags:"我的" dc:"返回的是当前登陆用户，最新且正在生效的资质"`
+}
+
 type SetUserMailReq struct {
 	g.Meta   `path:"/setUserMail" method:"post" summary:"修改用户邮箱" tags:"我的"`
 	OldMail  string `json:"oldMail" v:"email#邮箱账号格式错误" dc:"原邮箱，首次设置原邮箱地址可为空"`
