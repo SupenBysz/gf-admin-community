@@ -31,4 +31,5 @@ type SysPersonLicense struct {
 	AuthType         interface{} // 认证类型:
 	Remark           interface{} // 备注信息
 	LatestAuditLogid interface{} // 最新的审核记录id
+	UserId           interface{} // 关联的用户ID
 }

@@ -46,6 +46,7 @@ type SysPersonLicenseColumns struct {
 	AuthType         string // 认证类型:
 	Remark           string // 备注信息
 	LatestAuditLogid string // 最新的审核记录id
+	UserId           string // 关联的用户ID
 }
 
 // sysPersonLicenseColumns holds the columns for table sys_person_license.
@@ -69,6 +70,7 @@ var sysPersonLicenseColumns = SysPersonLicenseColumns{
 	AuthType:         "auth_type",
 	Remark:           "remark",
 	LatestAuditLogid: "latest_audit_logId",
+	UserId:           "user_id",
 }
 
 // NewSysPersonLicenseDao creates and returns a new DAO object for table data access.

@@ -20,6 +20,7 @@ type PersonLicense struct {
 	ExpriyDate       string `json:"expriyDate"      description:""`
 	Remark           string `json:"remark"          description:"备注信息"`
 	LatestAuditLogId int64  `json:"latestAuditLogId" description:"最新的审核记录id"`
+	UserId           int64  `json:"userId"           description:"关联的用户ID"`
 
 	State    int    `json:"state"           description:"状态：0失效、1正常" v:"in:0,1#状态错误"`
 	AuthType int    `json:"authType"        description:"认证类型:"`

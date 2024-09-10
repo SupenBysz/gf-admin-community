@@ -29,4 +29,5 @@ type SysPersonLicense struct {
 	AuthType         int         `json:"authType"         orm:"auth_type"          description:"认证类型:"`
 	Remark           string      `json:"remark"           orm:"remark"             description:"备注信息"`
 	LatestAuditLogid int64       `json:"latestAuditLogId" orm:"latest_audit_logId" description:"最新的审核记录id"`
+	UserId           int64       `json:"userId"           orm:"user_id"            description:"关联的用户ID"`
 }
