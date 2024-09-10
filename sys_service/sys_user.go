@@ -66,9 +66,9 @@ type (
 		// GetUserListByMobileOrMail 根据手机号或者邮箱查询用户列表
 		GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error)
 		// SetUserMobile 设置用户手机号
-		SetUserMobile(ctx context.Context, newMobile, captcha, password string, userId int64) (bool, error)
+		SetUserMobile(ctx context.Context, newMobile string, captcha string, password string, userId int64) (bool, error)
 		// SetUserMail 设置用户邮箱
-		SetUserMail(ctx context.Context, oldMail, newMail, captcha, password string, userId int64) (bool, error)
+		SetUserMail(ctx context.Context, oldMail string, newMail string, captcha string, password string, userId int64) (bool, error)
 	}
 )
 

@@ -31,12 +31,12 @@ type (
 		GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
 		// GetAuditLatestByUserId 获取最新的业务个人审核信息
 		GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_entity.SysAudit
-		// CreateAudit 创建审核信息
+		// CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload
 		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error)
 		// UpdateAudit 处理审核信息
 		UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error)
 		// SetUnionMainId  设置审核关联的主体Id
-		SetUnionMainId(ctx context.Context, id, unionMainId int64) (bool, error)
+		SetUnionMainId(ctx context.Context, id int64, unionMainId int64) (bool, error)
 	}
 )
 
