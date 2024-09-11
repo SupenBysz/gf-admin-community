@@ -19,6 +19,12 @@ type GetNerChEcomReq struct {
 	Text   string `json:"text" dc:"需要分词的内容"`
 }
 
+type GetAiSummaryReq struct {
+	g.Meta     `path:"/getSummary" method:"POST" tags:"工具/文字分析" summary:"AI文字分析总结"`
+	Text       string `json:"text" dc:"需要分析的内容"`
+	Identifier string `json:"identifier" dc:"智能体标识符【业务层自定义】，例如：appbuilder_bot_1 家访分析总结、appbuilder_bot_2 谈心谈话分析总结、appbuilder_bot_4 学生情况分析总结"`
+}
+
 // ************************************ 认证 *****************************************
 
 type LivenessRecognitionReq struct {

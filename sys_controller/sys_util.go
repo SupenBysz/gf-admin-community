@@ -14,11 +14,22 @@ var SysUtil = cSysUtil{}
 
 type cSysUtil struct{}
 
+// *********************************** 工具 *****************************************
+
 // GetNerChEcom 中文分词
 func (c *cSysUtil) GetNerChEcom(ctx context.Context, req *sys_api.GetNerChEcomReq) (sys_model.AliyunNlpDataRes, error) {
 	ret, err := sys_service.SdkAliyun().GetWsCustomizedChGeneral(ctx, req.Text)
 	return ret, err
 }
+
+// GetAiSummary 文字分析总结
+func (c *cSysUtil) GetAiSummary(ctx context.Context, req *sys_api.GetAiSummaryReq) (api_v1.StringRes, error) {
+	ret, err := sys_service.SdkBaidu().GetAiSummary(ctx, req.Text, req.Identifier)
+
+	return (api_v1.StringRes)(ret), err
+}
+
+// ************************************ 认证 *****************************************
 
 // LivenessRecognition 身份验证/活体核验
 func (c *cSysUtil) LivenessRecognition(ctx context.Context, req *sys_api.LivenessRecognitionReq) (api_v1.BoolRes, error) {
@@ -55,7 +66,7 @@ func (c *cSysUtil) StartAdvFaceAuth(ctx context.Context, req *sys_api.StartAdvFa
 // FaceAuthCallback 人脸核身回调地址
 func (c *cSysUtil) FaceAuthCallback(ctx context.Context, req *sys_api.FaceAuthCallbackReq) (api_v1.BoolRes, error) {
 	res := req.Code == "0"
-	
+
 	// 注意：实际业务中，处理逻辑更加复杂，这里仅仅做了简单的结果处理返回
 
 	return res == true, nil
