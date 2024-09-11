@@ -182,7 +182,7 @@ func getRawData(ev *appbuilder.Event) ([]byte, error) {
 }
 
 // GetAppList 获取应用列表 【暂未对接】
-func (s *sSdkBaidu) GetAppList(ctx context.Context) (*sys_model.AppBuilderAppListRes, error) {
+func (s *sSdkBaidu) GetAppList(ctx context.Context) (*sys_model.AiBotAppListRes, error) {
 
 	config := appbuilder.SDKConfig{
 		GatewayURL:            "",
@@ -201,7 +201,7 @@ func (s *sSdkBaidu) GetAppList(ctx context.Context) (*sys_model.AppBuilderAppLis
 	}
 	fmt.Println(len(apps))
 
-	res := kconv.Struct(apps, &sys_model.AppBuilderAppListRes{})
+	res := kconv.Struct(apps, &sys_model.AiBotAppListRes{})
 
 	return res, err
 }
