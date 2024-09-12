@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.62.731
+	github.com/baidubce/app-builder/go/appbuilder v0.9.2
 	github.com/casbin/casbin/v2 v2.87.1
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.7.2
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.7.2
@@ -26,7 +27,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
-	github.com/baidubce/app-builder/go/appbuilder v0.9.2 // indirect
 	github.com/casbin/govaluate v1.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
