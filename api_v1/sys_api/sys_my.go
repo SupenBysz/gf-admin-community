@@ -16,7 +16,7 @@ type UpdateUserPasswordReq struct {
 }
 
 type SetUserMobileReq struct {
-	g.Meta   `path:"/setUserMobile" method:"post" summary:"修改用户手机号" tags:"我的"`
+	g.Meta   `path:"/setUserMobile" method:"post" summary:"修改用户登陆手机号" tags:"我的" dc:"修改的是用户用于登陆的手机号"`
 	Mobile   string `json:"mobile" v:"required|phone#请输入手机号|手机号错误" dc:"手机号"`
 	Captcha  string `json:"captcha" v:"required#请输入手机验证码"`
 	Password string `json:"password" v:"required#请输入账号密码" dc:"登录密码" v:"min-length:6#密码最短为6位"`
@@ -39,7 +39,7 @@ type MyPersonLicenseAuditReq struct {
 }
 
 type SetUserMailReq struct {
-	g.Meta   `path:"/setUserMail" method:"post" summary:"修改用户邮箱" tags:"我的"`
+	g.Meta   `path:"/setUserMail" method:"post" summary:"修改用户邮箱" tags:"我的" dc:"修改的是用户用于登陆的邮箱"`
 	OldMail  string `json:"oldMail" v:"email#邮箱账号格式错误" dc:"原邮箱，首次设置原邮箱地址可为空"`
 	NewMail  string `json:"newMail" v:"required|email#请输入新邮箱账号|邮箱账号格式错误" dc:"新邮箱"`
 	Captcha  string `json:"captcha" v:"required#请输入邮箱验证码"`
