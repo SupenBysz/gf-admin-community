@@ -23,7 +23,7 @@ type SetUserMobileReq struct {
 }
 
 type SetUserMailReq struct {
-	g.Meta   `path:"/setUserMail" method:"post" summary:"修改登陆用户邮箱" tags:"我的" dc:"修改的是用户用于登陆的邮箱"`
+	g.Meta   `path:"/setUserMail" method:"post" summary:"修改用户登陆邮箱" tags:"我的" dc:"修改的是用户用于登陆的邮箱"`
 	OldMail  string `json:"oldMail" v:"email#邮箱账号格式错误" dc:"原邮箱，首次设置原邮箱地址可为空"`
 	NewMail  string `json:"newMail" v:"required|email#请输入新邮箱账号|邮箱账号格式错误" dc:"新邮箱"`
 	Captcha  string `json:"captcha" v:"required#请输入邮箱验证码"`
