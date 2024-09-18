@@ -18,8 +18,6 @@ type (
 		QueryList(ctx context.Context, params *base_model.SearchParams, isExport bool) (*sys_model.SysSettingListRes, error)
 		// GetByName 根据 name 查询配置信息
 		GetByName(ctx context.Context, name string, info *base_model.SearchParams) (*sys_model.SysSettingsRes, error)
-		// Save 保存系统配置信息
-		Save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error)
 		// Create  创建系统配置信息
 		Create(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error)
 		// Update  修改系统配置信息
