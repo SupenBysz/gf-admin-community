@@ -5,6 +5,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/kysion/base-library/base_model"
@@ -58,9 +59,13 @@ func (s *sSysFrontSettings) GetByName(ctx context.Context, name string, info *ba
 func (s *sSysFrontSettings) save(ctx context.Context, info *sys_model.SysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysFrontSettings{})
 
-	count, err := sys_dao.SysFrontSettings.Ctx(ctx).Count(sys_do.SysFrontSettings{Name: info.Name})
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name}))
 
-	if count > 0 {
+	if selectInfo != nil {
+		if selectInfo.UnionMainId != info.UnionMainId {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+info.Name)
+		}
+
 		_, err = sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysFrontSettings{Values: data.Values, Desc: data.Desc})
 	} else {
 		_, err = sys_dao.SysFrontSettings.Ctx(ctx).Insert(data)
@@ -85,6 +90,11 @@ func (s *sSysFrontSettings) Update(ctx context.Context, info *sys_model.SysFront
 
 // Delete 删除
 func (s *sSysFrontSettings) Delete(ctx context.Context, name string, unionMainId int64) (bool, error) {
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: name, UnionMainId: unionMainId}))
+	if selectInfo != nil && selectInfo.UnionMainId <= 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "平台配置禁止删除", sys_dao.SysFrontSettings.Table())
+	}
+
 	affected, err := daoctl.DeleteWithError(sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: name, UnionMainId: unionMainId}))
 
 	if err != nil {
