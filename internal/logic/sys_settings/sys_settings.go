@@ -55,9 +55,13 @@ func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_mo
 func (s *sSysSettings) save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysSettings{})
 
-	count, err := sys_dao.SysSettings.Ctx(ctx).Count(sys_do.SysSettings{Name: info.Name})
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysSettings](sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name}))
 
-	if count > 0 {
+	if selectInfo != nil {
+		if selectInfo.UnionMainId != info.UnionMainId {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+info.Name)
+		}
+
 		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values, Desc: data.Desc})
 	} else {
 		_, err = sys_dao.SysSettings.Ctx(ctx).Insert(data)
@@ -82,6 +86,11 @@ func (s *sSysSettings) Update(ctx context.Context, info *sys_model.SysSettings) 
 
 // Delete 删除
 func (s *sSysSettings) Delete(ctx context.Context, name string, unionMainId int64) (bool, error) {
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: name, UnionMainId: unionMainId}))
+	if selectInfo != nil && selectInfo.UnionMainId <= 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "平台配置禁止删除", sys_dao.SysFrontSettings.Table())
+	}
+
 	affected, err := daoctl.DeleteWithError(sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: name, UnionMainId: unionMainId}))
 
 	if err != nil {
