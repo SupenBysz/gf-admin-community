@@ -17,6 +17,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_casbin"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_config"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_file"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_front_settings"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_industry"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_invite"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_jwt"

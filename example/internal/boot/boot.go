@@ -134,6 +134,8 @@ var (
 						group.Group("/utils", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAuthUtil) })
 						// 系统配置
 						group.Group("/system/settings", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysSettings) })
+						// 系统前端配置
+						group.Group("/system/frontSettings", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFrontSettings) })
 						// 用户
 						group.Group("/user", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUser) })
 						// 角色
