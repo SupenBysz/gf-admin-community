@@ -34,6 +34,8 @@ type SysFrontSettingsColumns struct {
 	UserId      string // 关联的用户id，为0代表平台配置
 	CreatedAt   string //
 	UpdatedAt   string //
+	Version     string // 版本
+	Sys         string // 1除主体管理员外，主体下的其他用户仅有只读权限
 }
 
 // sysFrontSettingsColumns holds the columns for table sys_front_settings.
@@ -45,6 +47,8 @@ var sysFrontSettingsColumns = SysFrontSettingsColumns{
 	UserId:      "user_id",
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",
+	Version:     "version",
+	Sys:         "sys",
 }
 
 // NewSysFrontSettingsDao creates and returns a new DAO object for table data access.
