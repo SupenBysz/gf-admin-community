@@ -19,4 +19,6 @@ type SysFrontSettings struct {
 	UserId      interface{} // 关联的用户id，为0代表平台配置
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
+	Version     interface{} // 版本
+	Sys         interface{} // 1除主体管理员外，主体下的其他用户仅有只读权限
 }

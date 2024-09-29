@@ -17,4 +17,6 @@ type SysFrontSettings struct {
 	UserId      int64       `json:"userId"      orm:"user_id"       description:"关联的用户id，为0代表平台配置"`
 	CreatedAt   *gtime.Time `json:"createdAt"   orm:"created_at"    description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   orm:"updated_at"    description:""`
+	Version     string      `json:"version"     orm:"version"       description:"版本"`
+	Sys         int         `json:"sys"         orm:"sys"           description:"1除主体管理员外，主体下的其他用户仅有只读权限"`
 }

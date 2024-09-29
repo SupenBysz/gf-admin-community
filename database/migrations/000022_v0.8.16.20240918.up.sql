@@ -19,3 +19,7 @@ COMMENT ON COLUMN "public"."sys_front_settings"."desc" IS '描述';
 COMMENT ON COLUMN "public"."sys_front_settings"."union_main_id" IS '关联的主体id，为0代表是平台配置';
 
 COMMENT ON COLUMN "public"."sys_front_settings"."user_id" IS '关联的用户id，为0代表平台配置';
+
+
+ALTER TABLE "public"."sys_front_settings"
+    OWNER TO "当前数据库的所属用户";

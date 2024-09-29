@@ -55,21 +55,11 @@ func (s *sSysFrontSettings) GetByName(ctx context.Context, name string, info *ba
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询前端配置信息失败", sys_dao.SysFrontSettings.Table())
 }
 
-// save 保存系统前端配置信息
-func (s *sSysFrontSettings) save(ctx context.Context, info *sys_model.SysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
+// Create  创建系统前端配置信息
+func (s *sSysFrontSettings) Create(ctx context.Context, info *sys_model.SysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysFrontSettings{})
 
-	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name}))
-
-	if selectInfo != nil {
-		if selectInfo.UnionMainId != info.UnionMainId {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+info.Name)
-		}
-
-		_, err = sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysFrontSettings{Values: data.Values, Desc: data.Desc})
-	} else {
-		_, err = sys_dao.SysFrontSettings.Ctx(ctx).Insert(data)
-	}
+	_, err := sys_dao.SysFrontSettings.Ctx(ctx).Insert(data)
 
 	if nil != err {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置保存失败", sys_dao.SysFrontSettings.Table()+":"+info.Name)
@@ -78,14 +68,31 @@ func (s *sSysFrontSettings) save(ctx context.Context, info *sys_model.SysFrontSe
 	return s.GetByName(ctx, info.Name, nil)
 }
 
-// Create  创建系统前端配置信息
-func (s *sSysFrontSettings) Create(ctx context.Context, info *sys_model.SysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
-	return s.save(ctx, info)
-}
-
 // Update  修改系统前端配置信息
-func (s *sSysFrontSettings) Update(ctx context.Context, info *sys_model.SysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
-	return s.save(ctx, info)
+func (s *sSysFrontSettings) Update(ctx context.Context, info *sys_model.UpdateSysFrontSettings) (*sys_model.SysFrontSettingsRes, error) {
+	data := kconv.Struct(info, &sys_do.SysFrontSettings{})
+	data.UnionMainId = nil
+	data.UserId = nil
+	data.Name = nil
+
+	//return s.save(ctx, info)
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name}))
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询前端配置信息失败", sys_dao.SysFrontSettings.Table())
+	}
+
+	if selectInfo != nil {
+		if selectInfo.UnionMainId != *info.UnionMainId {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+*info.Name)
+		}
+	}
+
+	_, err = sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(&data)
+	if nil != err {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置保存失败", sys_dao.SysFrontSettings.Table()+":"+*info.Name)
+	}
+
+	return s.GetByName(ctx, *info.Name, nil)
 }
 
 // Delete 删除
