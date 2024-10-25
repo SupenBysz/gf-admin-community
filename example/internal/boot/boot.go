@@ -158,6 +158,8 @@ var (
 						group.Group("/industry", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIndustry) })
 						// 消息
 						group.Group("/message", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMessage) })
+						// 会员等级
+						group.Group("/memberLevel", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMemberLevel) })
 
 					})
 				})
