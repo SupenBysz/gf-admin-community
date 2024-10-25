@@ -23,6 +23,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_jwt"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_logs"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_mail"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_member_level"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_menu"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_message"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_middleware"
