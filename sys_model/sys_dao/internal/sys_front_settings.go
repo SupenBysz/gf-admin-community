@@ -35,7 +35,7 @@ type SysFrontSettingsColumns struct {
 	CreatedAt   string //
 	UpdatedAt   string //
 	Version     string // 版本
-	Sys         string // 1除主体管理员外，主体下的其他用户仅有只读权限
+	Sys         string // 1除主体管理员外，主体下的其他用户仅有只读权限，（默认0）
 }
 
 // sysFrontSettingsColumns holds the columns for table sys_front_settings.
