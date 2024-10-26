@@ -20,5 +20,5 @@ type SysFrontSettings struct {
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
 	Version     interface{} // 版本
-	Sys         interface{} // 1除主体管理员外，主体下的其他用户仅有只读权限
+	Sys         interface{} // 1除主体管理员外，主体下的其他用户仅有只读权限，（默认0）
 }
