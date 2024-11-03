@@ -82,6 +82,15 @@ func (c *cSysMy) MyPermission(ctx context.Context, _ *sys_api.MyPermissionsReq) 
 	return &ret, err
 }
 
+// Heartbeat 上报用户在线心跳
+func (c *cSysMy) Heartbeat(ctx context.Context, _ *sys_api.HeartbeatReq) (api_v1.BoolRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	heartbeat, err := sys_service.SysUser().Heartbeat(ctx, user.Id)
+
+	return heartbeat == true, err
+}
+
 // MyMenu  我的菜单
 func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.SysMenuTreeListRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser

@@ -227,7 +227,7 @@ func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *s
 	return &result
 }
 
-// CreateAudit 创建审核信息
+// CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload
 func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error) {
 	// 校验参数
 	if err := g.Validator().Data(info).Run(ctx); err != nil {

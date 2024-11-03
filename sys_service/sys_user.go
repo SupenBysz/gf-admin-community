@@ -8,6 +8,7 @@ package sys_service
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
@@ -22,6 +23,8 @@ type (
 		UnInstallHook(savedHookId int64)
 		// CleanAllHook 清除所有Hook
 		CleanAllHook()
+		// UpdateHeartbeatAt 更新用户心跳监测时间
+		UpdateHeartbeatAt(ctx context.Context, heartbeatTimeout int) (api_v1.BoolRes, error)
 		// QueryUserList 获取用户列表
 		QueryUserList(ctx context.Context, info *base_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error)
 		// SetUserRoleIds 设置用户角色
@@ -69,6 +72,8 @@ type (
 		SetUserMobile(ctx context.Context, newMobile string, captcha string, password string, userId int64) (bool, error)
 		// SetUserMail 设置用户邮箱
 		SetUserMail(ctx context.Context, oldMail string, newMail string, captcha string, password string, userId int64) (bool, error)
+		// Heartbeat 用户在线心跳
+		Heartbeat(ctx context.Context, userId int64) (bool, error)
 	}
 )
 

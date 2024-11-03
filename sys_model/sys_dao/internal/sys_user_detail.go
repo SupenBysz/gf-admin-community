@@ -27,22 +27,24 @@ type SysUserDetailDao struct {
 
 // SysUserDetailColumns defines and stores column names for table sys_user_detail.
 type SysUserDetailColumns struct {
-	Id            string // ID，保持与USERID一致
-	Realname      string // 姓名
-	UnionMainName string // 关联主体名称
-	LastLoginIp   string // 最后登录IP
-	LastLoginArea string // 最后登录地区
-	LastLoginAt   string // 最后登录时间
+	Id              string // ID，保持与USERID一致
+	Realname        string // 姓名
+	UnionMainName   string // 关联主体名称
+	LastLoginIp     string // 最后登录IP
+	LastLoginArea   string // 最后登录地区
+	LastLoginAt     string // 最后登录时间
+	LastHeartbeatAt string // 最后在线时间
 }
 
 // sysUserDetailColumns holds the columns for table sys_user_detail.
 var sysUserDetailColumns = SysUserDetailColumns{
-	Id:            "id",
-	Realname:      "realname",
-	UnionMainName: "union_main_name",
-	LastLoginIp:   "last_login_ip",
-	LastLoginArea: "last_login_area",
-	LastLoginAt:   "last_login_at",
+	Id:              "id",
+	Realname:        "realname",
+	UnionMainName:   "union_main_name",
+	LastLoginIp:     "last_login_ip",
+	LastLoginArea:   "last_login_area",
+	LastLoginAt:     "last_login_at",
+	LastHeartbeatAt: "last_heartbeat_at",
 }
 
 // NewSysUserDetailDao creates and returns a new DAO object for table data access.

@@ -6,7 +6,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
@@ -20,6 +19,20 @@ import (
 var SysUser = cSysUser{}
 
 type cSysUser struct{}
+
+// UpdateHeartbeatAt 更新用户在线通信心跳时间，单位/秒
+func (c *cSysUser) UpdateHeartbeatAt(ctx context.Context, req *sys_api.UpdateHeartbeatAtReq) (api_v1.BoolRes, error) {
+	return funs.CheckPermission(ctx,
+		func() (api_v1.BoolRes, error) {
+			ret, err := sys_service.SysUser().UpdateHeartbeatAt(
+				ctx,
+				req.HeartbeatAt,
+			)
+			return ret == true, err
+		},
+		sys_enum.User.PermissionType.UpdateHeartbeatAt,
+	)
+}
 
 // QueryUserList 获取用户|列表
 func (c *cSysUser) QueryUserList(ctx context.Context, req *sys_api.QueryUserListReq) (*sys_model.SysUserListRes, error) {
@@ -138,11 +151,11 @@ func (c *cSysUser) makeMore(ctx context.Context) context.Context {
 	}
 
 	if include.Contains("*") {
-		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_model.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
 	}
 
 	if include.Contains("detail") {
-		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_entity.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
+		ctx = base_funs.AttrBuilder[sys_model.SysUser, *sys_model.SysUserDetail](ctx, sys_dao.SysUser.Columns().Id)
 	}
 
 	return ctx

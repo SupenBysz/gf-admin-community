@@ -40,10 +40,15 @@ type SysUserRegisterRes struct {
 	RoleInfoList []*sys_entity.SysRole `json:"roleInfoList" dc:"角色信息列表"`
 }
 
+type SysUserDetail struct {
+	sys_entity.SysUserDetail
+	IsOnline bool `json:"isOnline" dc:"是否在线，"`
+}
+
 type SysUser struct {
 	*sys_entity.SysUser
-	Detail    *sys_entity.SysUserDetail `json:"detail"`
-	RoleNames []string                  `json:"roleNames" dc:"所属角色"`
+	Detail    *SysUserDetail `json:"detail"`
+	RoleNames []string       `json:"roleNames" dc:"所属角色"`
 }
 
 type UpdateUserPassword struct {
