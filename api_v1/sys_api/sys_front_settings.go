@@ -15,12 +15,13 @@ type QueryFrontSettingListReq struct {
 	base_model.SearchParams
 }
 
-type GetFrontSettingByNameReq struct {
-	g.Meta `path:"/getFrontSettingByName" method:"POST" tags:"系统前端配置" summary:"获取配置|信息" dc:"系统配置：会限制主体获取"`
+type GetFrontSettingReq struct {
+	g.Meta `path:"/getFrontSetting" method:"POST" tags:"系统前端配置" summary:"获取配置|信息" dc:"系统配置：会限制主体获取"`
 
-	Name string `json:"name" dc:"系统配置的名称"`
-
-	base_model.SearchParams
+	Name        string `json:"name" dc:"系统配置的名称"`
+	UnionMainId int64  `json:"unionMainId" dc:"关联的主体id，为0代表是平台配置" `
+	UserId      int64  `json:"userId" dc:"关联的用户id，为0代表平台配置" `
+	Sys         *int   `json:"sys" dc:"1除主体管理员外，主体下的其他用户仅有只读权限"`
 }
 
 type SaveFrontSettingReq struct {
@@ -32,5 +33,7 @@ type SaveFrontSettingReq struct {
 type DeleteFrontSettingReq struct {
 	g.Meta `path:"/deleteFrontSetting" method:"POST" tags:"系统前端配置" summary:"删除配置|信息" dc:"删除系统配置，会根据unionMainId进行判断"`
 
-	Name string `json:"name" dc:"系统配置的名称"`
+	UserId      int64  `json:"user_id" dc:"用户ID"`
+	UnionMainId int64  `json:"union_main_id" dc:"主体ID"`
+	Name        string `json:"name" dc:"系统配置的名称"`
 }
