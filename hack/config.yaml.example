@@ -36,6 +36,8 @@ gfcli:
           sys_message,
           sys_member_level,
           sys_member_level_user,
+          sys_announcement,
+          sys_announcement_read_user,
           "
 
 

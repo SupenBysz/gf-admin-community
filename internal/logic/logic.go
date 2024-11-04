@@ -10,6 +10,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_ctyun"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_huawei"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sdk_tencent"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_announcement"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_area"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_audit"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_auth"
