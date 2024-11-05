@@ -135,7 +135,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 	var err error
 
 	// 判断公告是否存在
-	announcement, err := s.GetAnnouncementById(ctx, info.Id)
+	announcement, err := s.GetAnnouncementById(ctx, *info.Id)
 	if err != nil || announcement == nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 		return nil, err
 	}
 
-	return s.GetAnnouncementById(ctx, info.Id)
+	return s.GetAnnouncementById(ctx, *info.Id)
 }
 
 // DeleteAnnouncement 删除公告

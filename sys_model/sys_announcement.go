@@ -24,11 +24,11 @@ type SysAnnouncement struct {
 }
 
 type UpdateSysAnnouncement struct {
-	Id            int64  `json:"id"  v:"required#公告Id不能为空"`
-	Title         string `json:"title"         orm:"title"           description:"公告标题"`
-	Body          string `json:"body"          orm:"body"            description:"公告正文"`
-	UserTypeScope int64  `json:"userTypeScope" orm:"user_type_scope" description:"受众用户类型：0则所有，复合类型"`
-	ExtDataJson   string `json:"extDataJson"   orm:"ext_data_json"   description:"扩展json数据"`
+	Id            *int64  `json:"id"  v:"required#公告Id不能为空"`
+	Title         *string `json:"title"         orm:"title"           description:"公告标题"`
+	Body          *string `json:"body"          orm:"body"            description:"公告正文"`
+	UserTypeScope *int64  `json:"userTypeScope" orm:"user_type_scope" description:"受众用户类型：0则所有，复合类型"`
+	ExtDataJson   *string `json:"extDataJson"   orm:"ext_data_json"   description:"扩展json数据"`
 
 	PublicAt *gtime.Time `json:"publicAt"      orm:"public_at"       description:"公示时间，只有到了公示时间用户才可见"`
 	ExpireAt *gtime.Time `json:"expireAt"      orm:"expire_at"       description:"过期时间，过期后前端用户不可见"`
