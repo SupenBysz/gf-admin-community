@@ -1,6 +1,7 @@
 package sys_enum
 
 import (
+	sys_enum_announcement "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/announcement"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/audit"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
@@ -59,6 +60,9 @@ type (
 	MessageSceneType = sys_enum_messages.SceneTypeEnum
 	// MessageState 消息状态
 	MessageState = sys_enum_messages.StateEnum
+
+	// AnnouncementState 公告状态
+	AnnouncementState = sys_enum_announcement.StateEnum
 )
 
 var (
@@ -92,4 +96,7 @@ var (
 
 	// Message 消息
 	Message = sys_enum_messages.Message
+
+	// Announcement 公告
+	Announcement = sys_enum_announcement.Announcement
 )
