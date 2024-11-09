@@ -18,7 +18,7 @@ type QueryUserListReq struct {
 }
 
 type UpdateHeartbeatAtReq struct {
-	g.Meta      `path:"/updateHeartbeatAt" method:"post" summary:"获取用户|列表" tags:"用户"`
+	g.Meta      `path:"/updateHeartbeatAt" method:"post" summary:"更新在线超时设定" tags:"用户"`
 	HeartbeatAt int `json:"heartbeat_at" summary:"在线超时时间，单位/秒"`
 }
 
