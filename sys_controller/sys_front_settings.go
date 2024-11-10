@@ -85,9 +85,9 @@ func (c *cSysFrontSettings) GetFrontSetting(ctx context.Context, req *sys_api.Ge
 		req.UserId = 0
 	}
 
-	ret, err := sys_service.SysFrontSettings().GetFrontSetting(ctx, req.Name, unionMainId, req.UserId)
+	ret, _ := sys_service.SysFrontSettings().GetFrontSetting(ctx, req.Name, unionMainId, req.UserId)
 
-	return ret, err
+	return ret, nil
 }
 
 func (c *cSysFrontSettings) Save(ctx context.Context, req *sys_api.SaveFrontSettingReq) (*sys_model.SysFrontSettingsRes, error) {
