@@ -3,6 +3,7 @@ package sys_person_lincense
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -33,7 +34,7 @@ func init() {
 	sys_service.RegisterSysPersonLicense(NewSysPersonLicense())
 }
 
-func NewSysPersonLicense() *sSysPersonLicense {
+func NewSysPersonLicense() sys_service.ISysPersonLicense {
 	result := &sSysPersonLicense{
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -118,23 +119,50 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 	if (auditEvent.Code() & sys_enum.Audit.Event.ExecAudit.Code()) == sys_enum.Audit.Event.ExecAudit.Code() {
 		// 审核通过
 		if (info.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
-			// 创建个人资质
 			auditPersonLicense := sys_model.AuditPersonLicense{}
-			gjson.DecodeTo(info.AuditData, &auditPersonLicense)
+			_ = gjson.DecodeTo(info.AuditData, &auditPersonLicense)
+			auditPersonLicense.State = sys_enum.License.State.Normal.Code() // 审核通过，资质是正常状态
+
 			if auditPersonLicense.No == "" { // 业务层自己处理审核通过的逻辑
 				return nil
 			}
 
-			licenseRes, err := sys_service.SysPersonLicense().CreateLicense(ctx, auditPersonLicense)
+			// 1、将用户其他的资质记录的状态修改为失效，生效的只有下面这一条最新的
+			{
+				var userId int64 = 0
+				if auditPersonLicense.OwnerUserId != 0 {
+					userId = auditPersonLicense.OwnerUserId
+				} else if auditPersonLicense.OwnerUserId == 0 && auditPersonLicense.UserId != 0 {
+					userId = auditPersonLicense.UserId
+				}
+				licenseList, _ := s.QueryLicenseByUserId(ctx, userId)
+				if licenseList != nil && len(licenseList.Records) > 0 {
+					for _, record := range licenseList.Records {
+						if record.State == sys_enum.License.State.Disabled.Code() { // 如果已经失效，则不再更新
+							continue
+						} else if record.State == sys_enum.License.State.Normal.Code() { // 如果正常，则更新为失效
+							_, err := s.SetLicenseState(ctx, record.Id, sys_enum.License.State.Disabled.Code())
+							if err != nil {
+								return sys_service.SysLogs().ErrorSimple(ctx, err, "审核通过后，个人历史资质更新状态失败。", sys_dao.SysPersonLicense.Table())
+							}
+						}
+					}
+				}
+
+			}
+
+			// 2、创建个人资质
+			licenseRes, err := s.CreateLicense(ctx, auditPersonLicense)
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后个人资质创建失败", sys_dao.SysPersonLicense.Table())
 			}
 
-			// 设置个人资质的审核编号
-			ret, err := sys_service.SysPersonLicense().SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(info.Id))
+			// 3、设置个人资质的审核编号 (TODO： Perf 可以合并到上一个CreateLicense中)
+			ret, err := s.SetLicenseAuditNumber(ctx, licenseRes.Id, gconv.String(info.Id))
 			if err != nil || ret == false {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "", sys_dao.SysPersonLicense.Table())
 			}
+
 		}
 	}
 
@@ -179,7 +207,13 @@ func (s *sSysPersonLicense) QueryLicenseList(ctx context.Context, search base_mo
 // CreateLicense  新增个人资质|信息
 func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.AuditPersonLicense) (*sys_entity.SysPersonLicense, error) {
 	result := sys_entity.SysPersonLicense{}
-	gconv.Struct(info, &result)
+	_ = gconv.Struct(info, &result)
+
+	if info.OwnerUserId != 0 { // 个人资质所属 --> 所属userId (可能是代提交的情况)
+		result.UserId = info.OwnerUserId
+	} else if info.OwnerUserId == 0 && info.UserId != 0 { // 个人资质所属 --> 提交资质的用户 (可能是自提交的情况)
+		result.UserId = info.UserId
+	}
 
 	if info.LicenseId == 0 {
 		result.Id = idgen.NextId()
@@ -212,9 +246,6 @@ func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.Au
 			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增资质信息失败", sys_dao.SysPersonLicense.Table())
 		}
 
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// 需要将持久化的文件ID替换成可访问的接口URL
@@ -231,13 +262,13 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
 
-	if data.State == -1 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "操作是不，资质信息被冻结，禁止修改"), "", sys_dao.SysPersonLicense.Table())
+	if data.State == sys_enum.License.State.Disabled.Code() {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "操作失败，资质信息被冻结，禁止修改"), "", sys_dao.SysPersonLicense.Table())
 	}
 
 	newData := sys_do.SysPersonLicense{}
 
-	gconv.Struct(info, &newData)
+	_ = gconv.Struct(info, &newData)
 
 	// TODO 校验
 	{
@@ -259,7 +290,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 		}
 
 		{
-			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogId)
+			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogid)
 			// 未审核通过的资质资质，直接更改待审核的资质信息
 			if audit != nil && audit.State == 0 {
 				_, err := tx.Ctx(ctx).Model(sys_dao.SysPersonLicense.Table()).Where(sys_do.SysPersonLicense{Id: id}).OmitNil().Save(&newData)
@@ -289,7 +320,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 // GetLicenseByLatestAuditId  获取最新的审核记录Id获取资质信息
 func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysPersonLicense {
 	result := sys_entity.SysPersonLicense{}
-	err := sys_dao.SysPersonLicense.Ctx(ctx).Where(sys_do.SysPersonLicense{LatestAuditLogId: auditId}).OrderDesc(sys_dao.SysPersonLicense.Columns().CreatedAt).Limit(1).Scan(&result)
+	err := sys_dao.SysPersonLicense.Ctx(ctx).Where(sys_do.SysPersonLicense{LatestAuditLogid: auditId}).OrderDesc(sys_dao.SysPersonLicense.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
 	}
@@ -301,7 +332,7 @@ func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, audit
 	return s.Masker(&result)
 }
 
-// SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
+// SetLicenseState  设置个人资质信息状态 0失效、1正常
 func (s *sSysPersonLicense) SetLicenseState(ctx context.Context, id int64, state int) (bool, error) {
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
@@ -327,7 +358,7 @@ func (s *sSysPersonLicense) SetLicenseAuditNumber(ctx context.Context, id int64,
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
 	}
 
-	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogId: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
+	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogid: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新个人资质证照审核编号失败", sys_dao.SysPersonLicense.Table())
@@ -360,7 +391,7 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 	// 加载资质信息
 	err = sys_dao.SysPersonLicense.Ctx(ctx).Scan(&license, sys_do.SysPersonLicense{Id: id})
 	// 如果资质不存在则无需更新，直接返回
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return true, nil
 	}
 	if err != nil {
@@ -369,11 +400,98 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 
 	// 将新创建的个人资质认证信息关联至个人资质
 	_, err = sys_dao.SysPersonLicense.Ctx(ctx).
-		Data(sys_do.SysPersonLicense{LatestAuditLogId: latestAuditLogId, UpdatedAt: gtime.Now()}).
+		Data(sys_do.SysPersonLicense{LatestAuditLogid: latestAuditLogId, UpdatedAt: gtime.Now()}).
 		Where(sys_do.SysPersonLicense{Id: id}).
 		Update()
 
 	return err == nil, err
+}
+
+// QueryLicenseByUserId 根据UserId 查找用户的资质|列表 (按照创建时间desc 倒叙排序)
+func (s *sSysPersonLicense) QueryLicenseByUserId(ctx context.Context, userId int64) (*sys_model.PersonLicenseListRes, error) {
+	response := sys_model.PersonLicenseListRes{Records: make([]sys_entity.SysPersonLicense, 0)}
+
+	// 根据userId 查找用户的资质|列表 (按照创建时间desc 倒叙排序)
+	result, err := daoctl.Query[sys_entity.SysPersonLicense](sys_dao.SysPersonLicense.Ctx(ctx), &base_model.SearchParams{
+		Filter: append(make([]base_model.FilterInfo, 0), base_model.FilterInfo{
+			Field: sys_dao.SysPersonLicense.Columns().UserId,
+			Where: "=",
+			Value: userId,
+		}),
+		OrderBy: []base_model.OrderBy{
+			{Field: sys_dao.SysPersonLicense.Columns().CreatedAt, Sort: "desc"},
+		},
+		Pagination: base_model.Pagination{},
+	}, false)
+	if err != nil {
+		return &response, err
+	}
+
+	for _, record := range result.Records {
+		// 需要将持久化的文件ID替换成可访问的接口URL
+		s.buildURL(ctx, &record)
+
+		response.Records = append(response.Records, record)
+	}
+	response.PaginationRes = result.PaginationRes
+
+	return &response, err
+}
+
+// GetLatestUserNormalLicense  获取用户最新，正在生效的主体资质 （最新，正在生效的）
+func (s *sSysPersonLicense) GetLatestUserNormalLicense(ctx context.Context, userId int64) (*sys_model.PersonLicenseRes, error) {
+
+	/*
+		方案1：（No）
+			 1、根据userId 找到最新的审核记录
+			 2、根据审核记录 找到最新的资质记录
+			注意：需要考虑原先有身份证的情况，后面申请更换身份证，但是还没有通过审核，此时无法通过最新的审核记录ID找到 资质记录
+		方案2：（yes）
+			1、根据userId 找到最新的资质记录
+	*/
+
+	/*
+		方案1：
+		// 1、根据userId 找到最新的审核记录
+		latestAudit := sys_service.SysAudit().GetAuditLatestByUserId(ctx, user.Id)
+		if latestAudit == nil {
+			return nil, nil
+		}
+
+		// 2、根据审核记录 找到最新的资质记录
+		licenseInfo := sys_service.SysPersonLicense().GetLicenseByLatestAuditId(ctx, latestAudit.Id)
+
+		// 需要考虑原先有身份证的情况，后面申请更换身份证，但是还没有通过审核，此时无法通过最新的审核记录ID找到 资质记录
+
+		// 3、返回资质记录
+	*/
+
+	/*
+		方案2：
+			// 1、根据userId 找到最新的资质记录 | 列表
+			// 2、根据资质记录列表，输出最新的资质记录（最新&生效中）
+	*/
+
+	// 1、根据userId 找到最新的资质记录 | 列表
+	licenseList, err := s.QueryLicenseByUserId(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2、根据资质记录列表，输出最新的资质记录（最新&生效中）
+	var ret sys_entity.SysPersonLicense
+	for _, item := range licenseList.Records {
+		if item.State == sys_enum.License.State.Normal.Code() {
+			ret = item
+			break
+		}
+	}
+
+	if ret.Id == 0 {
+		return nil, nil
+	}
+
+	return (*sys_model.PersonLicenseRes)(&ret), err
 }
 
 // Masker  个人资质信息脱敏

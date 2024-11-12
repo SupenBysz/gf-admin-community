@@ -10,20 +10,20 @@ import (
 
 // SysMenu is the golang structure for table sys_menu.
 type SysMenu struct {
-	Id           int64       `json:"id"           description:"ID"`
-	Path         string      `json:"path"         description:"路径"`
-	Name         string      `json:"name"         description:"名称"`
-	Redirect     string      `json:"redirect"     description:"跳转"`
-	Title        string      `json:"title"        description:"标题"`
-	Icon         string      `json:"icon"         description:"图标"`
-	Component    string      `json:"component"    description:"组件"`
-	ParentId     int64       `json:"parentId"     description:"所属父级"`
-	Sort         int         `json:"sort"         description:"排序"`
-	State        int         `json:"state"        description:"状态：0隐藏，1显示"`
-	Description  string      `json:"description"  description:"描述"`
-	CreatedAt    *gtime.Time `json:"createdAt"    description:""`
-	UpdatedAt    *gtime.Time `json:"updatedAt"    description:""`
-	IconUrl      string      `json:"iconUrl"      description:"图标URL"`
-	RedirectType int         `json:"redirectType" description:"跳转类型：1当前页面打开、 2新的标签页打开"`
-	Type         int         `json:"type"         description:"类型：1菜单、2按钮"`
+	Id           int64       `json:"id"           orm:"id"            description:"ID"`
+	Path         string      `json:"path"         orm:"path"          description:"路径"`
+	Name         string      `json:"name"         orm:"name"          description:"名称"`
+	Redirect     string      `json:"redirect"     orm:"redirect"      description:"跳转"`
+	Title        string      `json:"title"        orm:"title"         description:"标题"`
+	Icon         string      `json:"icon"         orm:"icon"          description:"图标"`
+	Component    string      `json:"component"    orm:"component"     description:"组件"`
+	ParentId     int64       `json:"parentId"     orm:"parent_id"     description:"所属父级"`
+	Sort         int         `json:"sort"         orm:"sort"          description:"排序"`
+	State        int         `json:"state"        orm:"state"         description:"状态：0隐藏，1显示"`
+	Description  string      `json:"description"  orm:"description"   description:"描述"`
+	CreatedAt    *gtime.Time `json:"createdAt"    orm:"created_at"    description:""`
+	UpdatedAt    *gtime.Time `json:"updatedAt"    orm:"updated_at"    description:""`
+	IconUrl      string      `json:"iconUrl"      orm:"icon_url"      description:"图标URL"`
+	RedirectType int         `json:"redirectType" orm:"redirect_type" description:"跳转类型：1当前页面打开、 2新的标签页打开"`
+	Type         int         `json:"type"         orm:"type"          description:"类型：1菜单、2按钮"`
 }

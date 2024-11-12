@@ -16,9 +16,13 @@ import (
 
 // SysLogsDao is the data access object for table sys_logs.
 type SysLogsDao struct {
-	table   string         // table is the underlying table name of the DAO.
-	group   string         // group is the database configuration group name of current DAO.
-	columns SysLogsColumns // columns contains all the column names of Table for convenient usage.
+	dao_interface.IDao
+	table       string         // table is the underlying table name of the DAO.
+	group       string         // group is the database configuration group name of current DAO.
+	columns     SysLogsColumns // columns contains all the column names of Table for convenient usage.
+	daoConfig   *dao_interface.DaoConfig
+	ignoreCache bool
+	exWhereArr  []string
 }
 
 // SysLogsColumns defines and stores column names for table sys_logs.
@@ -52,10 +56,15 @@ func NewSysLogsDao(proxy ...dao_interface.IDao) *SysLogsDao {
 	var dao *SysLogsDao
 	if len(proxy) > 0 {
 		dao = &SysLogsDao{
-			group:   proxy[0].Group(),
-			table:   proxy[0].Table(),
-			columns: sysLogsColumns,
+			group:       proxy[0].Group(),
+			table:       proxy[0].Table(),
+			columns:     sysLogsColumns,
+			daoConfig:   proxy[0].DaoConfig(context.Background()),
+			IDao:        proxy[0].DaoConfig(context.Background()).Dao,
+			ignoreCache: proxy[0].DaoConfig(context.Background()).IsIgnoreCache(),
+			exWhereArr:  proxy[0].DaoConfig(context.Background()).Dao.GetExtWhereKeys(),
 		}
+
 		return dao
 	}
 
@@ -91,28 +100,25 @@ func (dao *SysLogsDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption)
 	return dao.DaoConfig(ctx, cacheOption...).Model
 }
 
-func (dao *SysLogsDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
-	daoConfig := dao_interface.DaoConfig{
-		Dao:   dao,
-		DB:    dao.DB(),
-		Table: dao.table,
-		Group: dao.group,
-		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
+func (dao *SysLogsDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) *dao_interface.DaoConfig {
+	//if dao.daoConfig != nil && len(dao.exWhereArr) == 0 {
+	//	return dao.daoConfig
+	//}
+
+	var daoConfig = daoctl.NewDaoConfig(ctx, dao, cacheOption...)
+	dao.daoConfig = &daoConfig
+
+	if len(dao.exWhereArr) > 0 {
+		daoConfig.IgnoreExtModel(dao.exWhereArr...)
+		dao.exWhereArr = []string{}
+
 	}
 
-	if len(cacheOption) == 0 {
-		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
-		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
-	} else {
-		if cacheOption[0] != nil {
-			daoConfig.CacheOption = cacheOption[0]
-			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
-		}
+	if dao.ignoreCache {
+		daoConfig.IgnoreCache()
 	}
 
-	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
-
-	return daoConfig
+	return dao.daoConfig
 }
 
 // Transaction wraps the transaction logic using function f.
@@ -123,4 +129,21 @@ func (dao *SysLogsDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheO
 // as it is automatically handled by this function.
 func (dao *SysLogsDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
+}
+
+func (dao *SysLogsDao) GetExtWhereKeys() []string {
+	return dao.exWhereArr
+}
+
+func (dao *SysLogsDao) IsIgnoreCache() bool {
+	return dao.ignoreCache
+}
+
+func (dao *SysLogsDao) IgnoreCache() dao_interface.IDao {
+	dao.ignoreCache = true
+	return dao
+}
+func (dao *SysLogsDao) IgnoreExtModel(whereKey ...string) dao_interface.IDao {
+	dao.exWhereArr = append(dao.exWhereArr, whereKey...)
+	return dao
 }

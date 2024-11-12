@@ -22,6 +22,8 @@ service:
   # -1超级管理员，不支持注册为超级管理员
   # 业务层有自定义类型时将忽略这里的设置
   userDefaultType: 32
+  # 心跳超时时间，单位秒
+  heartbeatTimeout: 60
   # 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
   userDefaultState: 0
   # 是否运行注册用户，false时用户注册接口将强制返回失败

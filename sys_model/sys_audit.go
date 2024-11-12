@@ -15,6 +15,7 @@ type CreateAudit struct {
 	ExpireAt       *gtime.Time `json:"expireAt"      description:"审核服务时限，超过该时间后没有审核通过的需要重新申请审核"`
 	DataIdentifier string      `json:"dataIdentifier" description:"数据标识"`
 	UserId         int64       `json:"userId" dc:"关联业务用户ID" `
+	Summary        string      `json:"summary"                 dc:"概述"`
 }
 
 type SetAudit struct {
@@ -25,14 +26,7 @@ type SetAudit struct {
 	Category    int    `json:"category"      description:"分类：1个人资质审核、2主体资质审核、4数据审核" v:"required|in:1,2,4#分类类型错误"`
 }
 
-type AuditRes struct {
-	Id           int64       `json:"auditId"       description:""`
-	State        int         `json:"state"         description:"审核状态：-1不通过，0待审核，1通过"`
-	Reply        string      `json:"reply"        description:"不通过时回复的审核不通过原因"`
-	ExpireAt     *gtime.Time `json:"expireAt"      description:"服务时限"`
-	AuditReplyAt *gtime.Time `json:"auditReplyAt" description:"审核回复时间"`
-	CreatedAt    *gtime.Time `json:"createdAt"     description:""`
-}
-
 type Audit sys_entity.SysAudit
+
+type AuditRes sys_entity.SysAudit
 type AuditListRes base_model.CollectRes[sys_entity.SysAudit]

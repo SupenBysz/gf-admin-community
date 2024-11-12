@@ -27,16 +27,16 @@ type (
 		Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.LoginRes, error)
 		// InnerLogin 内部登录，无需校验验证码和密码
 		InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error)
-		// LoginByMobile 手机号 + 验证码登陆
+		// LoginByMobile 手机号 + 验证码或密码登陆
 		LoginByMobile(ctx context.Context, info sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error)
-		// LoginByMail 邮箱 + 密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
+		// LoginByMail 邮箱 + 验证码或密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
 		LoginByMail(ctx context.Context, info sys_model.LoginByMailInfo) (*sys_model.LoginByMailRes, error)
 		// Register 注册账号 (用户名+密码+图形验证码)
 		Register(ctx context.Context, info sys_model.SysUserRegister) (*sys_model.SysUser, error)
 		// RegisterByMobileOrMail 注册账号 (用户名+密码+ 手机号+验证码 或者 用户名+密码+ 邮箱+验证码) customId 可以限定用户ID
 		RegisterByMobileOrMail(ctx context.Context, info sys_model.SysUserRegisterByMobileOrMail, customId ...int64) (res *sys_model.SysUser, err error)
 		// ForgotUserName 忘记用户名，返回用户列表
-		ForgotUserName(ctx context.Context, captcha, mobileOrEmail string) (res *sys_model.SysUserListRes, err error)
+		ForgotUserName(ctx context.Context, captcha string, mobileOrEmail string) (res *sys_model.SysUserListRes, err error)
 		// ForgotPassword 忘记密码
 		ForgotPassword(ctx context.Context, info sys_model.ForgotPassword) (int64, error)
 		// ResetPassword 重置密码

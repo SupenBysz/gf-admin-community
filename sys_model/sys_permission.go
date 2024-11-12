@@ -44,13 +44,13 @@ type MyPermissionListRes []*sys_entity.SysPermission
 
 // 实现权限树接口
 
-func (d *SysPermissionTree) GetIsEqual(father base_permission.IPermission, childId base_permission.IPermission) bool {
+func (d *SysPermissionTree) IsParentChildEqual(father base_permission.IPermission, childId base_permission.IPermission) bool {
 	return father.GetId() == childId.GetParentId()
 }
-func (d *SysPermissionTree) SetChild(father base_permission.IPermission, branchArr []base_permission.IPermission) {
+func (d *SysPermissionTree) AssignChildren(father base_permission.IPermission, branchArr []base_permission.IPermission) {
 	father.SetItems(branchArr)
 }
-func (d *SysPermissionTree) RetFather(father base_permission.IPermission) bool {
+func (d *SysPermissionTree) IsRoot(father base_permission.IPermission) bool {
 	// 顶级的ParentId这块可以看一下保存的时候ParentId 默认值是多少
 	return father.GetParentId() == 0
 }

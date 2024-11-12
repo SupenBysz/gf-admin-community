@@ -6,7 +6,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -141,7 +140,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
-	user.Detail = &sys_entity.SysUserDetail{}
+	user.Detail = &sys_model.SysUserDetail{}
 	user.Detail.Id = user.Id
 	user.Detail.LastLoginAt = gtime.Now()
 	user.Detail.LastLoginIp = ip
@@ -184,7 +183,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	return tokenInfo, err
 }
 
-// LoginByMobile 手机号 + 验证码登陆
+// LoginByMobile 手机号 + 验证码或密码登陆
 func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobileInfo) (*sys_model.LoginByMobileRes, error) {
 	// 在此之前，用户除了提供验证码，还需要补全自己的用户名信息  林 * 菲
 
@@ -218,7 +217,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		if info.PassWord == "" {
+		if info.Password == "" {
 			return nil, gerror.New("请输入正确的验证码")
 		}
 	}
@@ -235,16 +234,16 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
 	}
 
-	if info.PassWord != "" {
+	if info.Password != "" {
 		// 含密码的userInfo
 		userInfo, err = daoctl.ScanWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 			Id: userInfo.Id,
 		}))
 
-		pwdHash, _ := en_crypto.PwdHash(info.PassWord, gconv.String(userInfo.Id))
+		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
 		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.PassWord, *userInfo.SysUser)
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -258,11 +257,6 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
 	}
 
-	// 清除该缓存
-	key := base_enum.Captcha.Type.Login.Description() + "_" + info.Mobile
-
-	g.DB().GetCache().Remove(ctx, key)
-
 	// 返回token数据
 	return &sys_model.LoginByMobileRes{
 		TokenInfo: *tokenInfo,
@@ -271,7 +265,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 
 }
 
-// LoginByMail 邮箱 + 密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
+// LoginByMail 邮箱 + 验证码或密码登陆 (如果指定用户名，代表明确知道要登陆的是哪一个账号)
 func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailInfo) (*sys_model.LoginByMailRes, error) {
 	loginRule := sys_rules.CheckLoginRule(ctx, info.Mail)
 	if !loginRule {
@@ -282,13 +276,29 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 	if err != nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱错误，请重试")
 	}
+	// 邮箱+密码验证,如果存在多个账号，返回账号列表，不存在直接校验，直接返回用户信息即可
 	if info.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
 		return &sys_model.LoginByMailRes{
 			UserList: *userList,
 		}, nil
 	}
 
-	// 邮箱+密码验证,如果存在多个账号，返回账号列表，不存在直接校验，直接返回用户信息即可
+	// 邮箱验证,如果验证码通过，那就不需要判断密码啥的，直接返回用户信息即可
+	ver := false
+	if base_verify.IsEmail(info.Mail) {
+		if info.Captcha != "" {
+			// 邮箱+验证码校验
+			ver, err = sys_service.SysMails().Verify(ctx, info.Mail, info.Captcha, base_enum.Captcha.Type.Login)
+		}
+	} else {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱格式填写错误！")
+	}
+
+	if info.Captcha == "" || !ver || err != nil {
+		if info.Password == "" {
+			return nil, gerror.New("请输入正确的验证码")
+		}
+	}
 
 	var userInfo *sys_model.SysUser
 	if info.Username == "" && len(userList.Records) == 1 { // 只有一个账号,不检验用户名，直接去拿用户信息
@@ -300,6 +310,23 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 	}
 	if err != nil || userInfo == nil {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
+	}
+
+	if info.Password != "" {
+		// 含密码的userInfo
+		userInfo, err = daoctl.ScanWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
+			Id: userInfo.Id,
+		}))
+
+		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
+		// 业务层自定义密码加密规则
+		if sys_consts.Global.CryptoPasswordFunc != nil {
+			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
+		}
+
+		if pwdHash != userInfo.Password {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码校验不通过, 请检查")
+		}
 	}
 
 	// 返回token

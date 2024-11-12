@@ -17,6 +17,11 @@ type QueryUserListReq struct {
 	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
+type UpdateHeartbeatAtReq struct {
+	g.Meta      `path:"/updateHeartbeatAt" method:"post" summary:"更新在线超时设定" tags:"用户"`
+	HeartbeatAt int `json:"heartbeat_at" dc:"在线超时时间，单位/秒"`
+}
+
 type SetUserPermissionIdsReq struct {
 	g.Meta        `path:"/setUserPermissionIds" method:"post" summary:"设置用户权限" tags:"用户"`
 	Id            int64   `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`

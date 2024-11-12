@@ -18,7 +18,7 @@ type (
 		// GetMessageById 根据id查询消息
 		GetMessageById(ctx context.Context, id int64) (*sys_model.SysMessageRes, error)
 		// GetMessageDetailById 根据id查询消息详情
-		GetMessageDetailById(ctx context.Context, messageId, userId int64) (*sys_model.SysMessageRes, error)
+		GetMessageDetailById(ctx context.Context, messageId int64, userId int64) (*sys_model.SysMessageRes, error)
 		// CreateMessage 添加消息
 		CreateMessage(ctx context.Context, info *sys_model.SysMessage) (*sys_model.SysMessageRes, error)
 		// UpdateMessage 编辑消息 （限制是还未发送的）

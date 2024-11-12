@@ -30,7 +30,7 @@ type (
 		UpdateLicense(ctx context.Context, info sys_model.AuditPersonLicense, id int64) (*sys_entity.SysPersonLicense, error)
 		// GetLicenseByLatestAuditId  获取最新的审核记录Id获取资质信息
 		GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysPersonLicense
-		// SetLicenseState  设置个人资质信息状态 -1未通过 0待审核 1通过
+		// SetLicenseState  设置个人资质信息状态 0失效、1正常
 		SetLicenseState(ctx context.Context, id int64, state int) (bool, error)
 		// SetLicenseAuditNumber  设置个人资质神审核编号
 		SetLicenseAuditNumber(ctx context.Context, id int64, auditNumber string) (bool, error)
@@ -38,7 +38,11 @@ type (
 		DeleteLicense(ctx context.Context, id int64, flag bool) (bool, error)
 		// UpdateLicenseAuditLogId  设置个人资质资质关联的审核ID
 		UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error)
-		// Masker  资质信息脱敏
+		// QueryLicenseByUserId 根据UserId 查找用户的资质|列表 (按照创建时间desc 倒叙排序)
+		QueryLicenseByUserId(ctx context.Context, userId int64) (*sys_model.PersonLicenseListRes, error)
+		// GetLatestUserNormalLicense  获取用户最新，正在生效的主体资质 （最新，正在生效的）
+		GetLatestUserNormalLicense(ctx context.Context, userId int64) (*sys_model.PersonLicenseRes, error)
+		// Masker  个人资质信息脱敏
 		Masker(license *sys_entity.SysPersonLicense) *sys_entity.SysPersonLicense
 	}
 )

@@ -13,6 +13,12 @@ import (
 
 type (
 	ISdkBaidu interface {
+		// GetAiSummary 文字AI分析总结
+		GetAiSummary(ctx context.Context, text string, identifier string) (string, error)
+		// StartConversation 开始AI会话，并返回智能体的回答
+		StartConversation(ctx context.Context, appId string, appBuilderToken string, text string, filePath string) (string, error)
+		// GetAppList 获取应用列表 【暂未对接】
+		GetAppList(ctx context.Context) (*sys_model.AiBotAppListRes, error)
 		// GetBaiduSdkConfToken 根据 identifier 查询百度SDK应用配置和Token信息
 		GetBaiduSdkConfToken(ctx context.Context, identifier string) (tokenInfo *sys_model.BaiduSdkConfToken, err error)
 		// GetBaiduSdkConfList 获取百度SDK应用配置列表

@@ -43,13 +43,13 @@ type (
 		// MakeFileUrlByPath 文件path换取url: 拼接三个参数,缓存签名数据、然后返回url + 三参
 		MakeFileUrlByPath(ctx context.Context, path string) string
 		// GetFile 获取图片 公开  (srcBase64 + srcMd5 + fileId) ==> md5加密
-		GetFile(ctx context.Context, sign, srcBase64 string, id int64, cId int64, styleStr ...string) (*sys_model.FileInfo, error)
+		GetFile(ctx context.Context, sign string, srcBase64 string, id int64, cId int64, styleStr ...string) (*sys_model.FileInfo, error)
 		// UploadPicture 上传图片并审核
 		UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error)
 		// GetOssFileSingUrl 获取文件的签名访问URL
-		GetOssFileSingUrl(ctx context.Context, bucketName, objectKey string, styleStr ...string) (string, error)
+		GetOssFileSingUrl(ctx context.Context, bucketName string, objectKey string, styleStr ...string) (string, error)
 		// GetOssFileWithURL 根据文件的签名访问URL获取文件
-		GetOssFileWithURL(ctx context.Context, bucketName, filePath, singUrl string) (bool, error)
+		GetOssFileWithURL(ctx context.Context, bucketName string, filePath string, singUrl string) (bool, error)
 	}
 )
 

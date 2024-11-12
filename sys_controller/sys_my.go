@@ -82,6 +82,15 @@ func (c *cSysMy) MyPermission(ctx context.Context, _ *sys_api.MyPermissionsReq) 
 	return &ret, err
 }
 
+// Heartbeat 上报用户在线心跳
+func (c *cSysMy) Heartbeat(ctx context.Context, _ *sys_api.HeartbeatReq) (api_v1.BoolRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	heartbeat, err := sys_service.SysUser().Heartbeat(ctx, user.Id)
+
+	return heartbeat == true, err
+}
+
 // MyMenu  我的菜单
 func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.SysMenuTreeListRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
@@ -178,3 +187,21 @@ func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.S
 //	}
 //
 //}
+
+// MyPersonLicense 我的个人资质
+func (c *cSysMy) MyPersonLicense(ctx context.Context, _ *sys_api.MyPersonLicenseReq) (*sys_model.PersonLicenseRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	ret, err := sys_service.SysPersonLicense().GetLatestUserNormalLicense(ctx, user.Id)
+
+	return ret, err
+}
+
+// MyPersonLicenseAudit 获取最后一次提交的我个人资质审核信息
+func (c *cSysMy) MyPersonLicenseAudit(ctx context.Context, _ *sys_api.MyPersonLicenseAuditReq) (*sys_model.AuditRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	ret := sys_service.SysAudit().GetAuditLatestByUserId(ctx, user.Id)
+
+	return (*sys_model.AuditRes)(ret), nil
+}

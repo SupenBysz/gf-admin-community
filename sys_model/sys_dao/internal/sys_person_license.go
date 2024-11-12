@@ -16,9 +16,13 @@ import (
 
 // SysPersonLicenseDao is the data access object for table sys_person_license.
 type SysPersonLicenseDao struct {
-	table   string                  // table is the underlying table name of the DAO.
-	group   string                  // group is the database configuration group name of current DAO.
-	columns SysPersonLicenseColumns // columns contains all the column names of Table for convenient usage.
+	dao_interface.IDao
+	table       string                  // table is the underlying table name of the DAO.
+	group       string                  // group is the database configuration group name of current DAO.
+	columns     SysPersonLicenseColumns // columns contains all the column names of Table for convenient usage.
+	daoConfig   *dao_interface.DaoConfig
+	ignoreCache bool
+	exWhereArr  []string
 }
 
 // SysPersonLicenseColumns defines and stores column names for table sys_person_license.
@@ -41,7 +45,8 @@ type SysPersonLicenseColumns struct {
 	State            string // 状态：0失效、1正常
 	AuthType         string // 认证类型:
 	Remark           string // 备注信息
-	LatestAuditLogId string // 最新的审核记录id
+	LatestAuditLogid string // 最新的审核记录id
+	UserId           string // 关联的用户ID
 }
 
 // sysPersonLicenseColumns holds the columns for table sys_person_license.
@@ -64,7 +69,8 @@ var sysPersonLicenseColumns = SysPersonLicenseColumns{
 	State:            "state",
 	AuthType:         "auth_type",
 	Remark:           "remark",
-	LatestAuditLogId: "latest_audit_logId",
+	LatestAuditLogid: "latest_audit_logId",
+	UserId:           "user_id",
 }
 
 // NewSysPersonLicenseDao creates and returns a new DAO object for table data access.
@@ -72,10 +78,15 @@ func NewSysPersonLicenseDao(proxy ...dao_interface.IDao) *SysPersonLicenseDao {
 	var dao *SysPersonLicenseDao
 	if len(proxy) > 0 {
 		dao = &SysPersonLicenseDao{
-			group:   proxy[0].Group(),
-			table:   proxy[0].Table(),
-			columns: sysPersonLicenseColumns,
+			group:       proxy[0].Group(),
+			table:       proxy[0].Table(),
+			columns:     sysPersonLicenseColumns,
+			daoConfig:   proxy[0].DaoConfig(context.Background()),
+			IDao:        proxy[0].DaoConfig(context.Background()).Dao,
+			ignoreCache: proxy[0].DaoConfig(context.Background()).IsIgnoreCache(),
+			exWhereArr:  proxy[0].DaoConfig(context.Background()).Dao.GetExtWhereKeys(),
 		}
+
 		return dao
 	}
 
@@ -111,28 +122,25 @@ func (dao *SysPersonLicenseDao) Ctx(ctx context.Context, cacheOption ...*gdb.Cac
 	return dao.DaoConfig(ctx, cacheOption...).Model
 }
 
-func (dao *SysPersonLicenseDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) dao_interface.DaoConfig {
-	daoConfig := dao_interface.DaoConfig{
-		Dao:   dao,
-		DB:    dao.DB(),
-		Table: dao.table,
-		Group: dao.group,
-		Model: dao.DB().Model(dao.Table()).Safe().Ctx(ctx),
+func (dao *SysPersonLicenseDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) *dao_interface.DaoConfig {
+	//if dao.daoConfig != nil && len(dao.exWhereArr) == 0 {
+	//	return dao.daoConfig
+	//}
+
+	var daoConfig = daoctl.NewDaoConfig(ctx, dao, cacheOption...)
+	dao.daoConfig = &daoConfig
+
+	if len(dao.exWhereArr) > 0 {
+		daoConfig.IgnoreExtModel(dao.exWhereArr...)
+		dao.exWhereArr = []string{}
+
 	}
 
-	if len(cacheOption) == 0 {
-		daoConfig.CacheOption = daoctl.MakeDaoCache(dao.Table())
-		daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
-	} else {
-		if cacheOption[0] != nil {
-			daoConfig.CacheOption = cacheOption[0]
-			daoConfig.Model = daoConfig.Model.Cache(*daoConfig.CacheOption)
-		}
+	if dao.ignoreCache {
+		daoConfig.IgnoreCache()
 	}
 
-	daoConfig.Model = daoctl.RegisterDaoHook(daoConfig.Model)
-
-	return daoConfig
+	return dao.daoConfig
 }
 
 // Transaction wraps the transaction logic using function f.
@@ -143,4 +151,21 @@ func (dao *SysPersonLicenseDao) DaoConfig(ctx context.Context, cacheOption ...*g
 // as it is automatically handled by this function.
 func (dao *SysPersonLicenseDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
+}
+
+func (dao *SysPersonLicenseDao) GetExtWhereKeys() []string {
+	return dao.exWhereArr
+}
+
+func (dao *SysPersonLicenseDao) IsIgnoreCache() bool {
+	return dao.ignoreCache
+}
+
+func (dao *SysPersonLicenseDao) IgnoreCache() dao_interface.IDao {
+	dao.ignoreCache = true
+	return dao
+}
+func (dao *SysPersonLicenseDao) IgnoreExtModel(whereKey ...string) dao_interface.IDao {
+	dao.exWhereArr = append(dao.exWhereArr, whereKey...)
+	return dao
 }

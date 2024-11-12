@@ -62,11 +62,11 @@ var (
 				// CASBIN 初始化
 				sys_service.Casbin().Enforcer()
 				// Permission 初始化
-				sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, sys_consts.Global.PermissionTree, nil)
 
 				// 导入oss + sms权限树
-				sys_service.SysPermission().ImportPermissionTree(ctx, oss_consts.PermissionTree, nil)
-				sys_service.SysPermission().ImportPermissionTree(ctx, sms_consts.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, oss_consts.PermissionTree, nil)
+				_ = sys_service.SysPermission().ImportPermissionTree(ctx, sms_consts.PermissionTree, nil)
 			}
 
 			// 业务端密码加密规则重写示例
@@ -92,6 +92,7 @@ var (
 					group.Middleware(
 						// sys_service.Middleware().Casbin,
 						sys_service.Middleware().CTX,
+						sys_service.Middleware().CORS,
 						sys_service.Middleware().ResponseHandler,
 					)
 
@@ -129,8 +130,12 @@ var (
 						group.Group("/system/config", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysConfig) })
 						// 工具
 						group.Group("/utils", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUtil) })
+						// 认证工具
+						group.Group("/utils", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAuthUtil) })
 						// 系统配置
 						group.Group("/system/settings", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysSettings) })
+						// 系统前端配置
+						group.Group("/system/frontSettings", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysFrontSettings) })
 						// 用户
 						group.Group("/user", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUser) })
 						// 角色
@@ -153,6 +158,10 @@ var (
 						group.Group("/industry", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIndustry) })
 						// 消息
 						group.Group("/message", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMessage) })
+						// 公告
+						group.Group("/announcement", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAnnouncement) })
+						// 会员等级
+						group.Group("/memberLevel", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMemberLevel) })
 
 					})
 				})

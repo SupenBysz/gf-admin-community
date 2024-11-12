@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -15,6 +16,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -40,18 +42,24 @@ type sSysUser struct {
 	//redisCache *gcache.Cache
 	Duration time.Duration
 
+	heartbeatTimeout time.Duration
 	//// 密码加密
 	//CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 }
 
 func init() {
 	sys_service.RegisterSysUser(New())
+
+	// 初始化用户在线用户心跳超时设置
+	_, _ = sys_service.SysUser().UpdateHeartbeatAt(context.Background(), 0)
 }
 
-func New() *sSysUser {
+func New() sys_service.ISysUser {
+
 	return &sSysUser{
 		//redisCache: gcache.New(),
-		hookArr: make([]hookInfo, 0),
+		hookArr:          make([]hookInfo, 0),
+		heartbeatTimeout: 60,
 	}
 }
 
@@ -108,17 +116,93 @@ func (s *sSysUser) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
+// UpdateHeartbeatAt 更新用户心跳监测时间
+func (s *sSysUser) UpdateHeartbeatAt(ctx context.Context, heartbeatTimeout int) (api_v1.BoolRes, error) {
+
+	// 加载心跳超时时间默认配置
+	newHeartbeatTimeout := g.Cfg().MustGet(context.Background(), "service.heartbeatTimeout", 60).Duration() * time.Second
+
+	// 如果配置了心跳超时时间,且大于10秒，则使用配置的时间，否则使用默认时间
+	if heartbeatTimeout > 10 {
+		newHeartbeatTimeout = time.Duration(heartbeatTimeout) * time.Second
+	}
+
+	heartbeatTimeoutKey := "heartbeatTimeout"
+	// 从数据库中查询心跳超时时间设置
+	settingInfo, _ := sys_service.SysSettings().GetByName(context.Background(), heartbeatTimeoutKey, nil)
+
+	// 如果数据库中有设置，则覆盖默认值
+	if settingInfo == nil {
+		data := &sys_model.SysSettings{
+			Name:   heartbeatTimeoutKey,
+			Values: gjson.MustEncodeString(newHeartbeatTimeout.Seconds()),
+			Desc:   "心跳超时时间",
+		}
+
+		_, err := sys_service.SysSettings().Create(ctx, data)
+
+		if err != nil {
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "保存用户在线心跳超时设置失败", sys_dao.SysUser.Table())
+		}
+	} else {
+		_, err := sys_service.SysSettings().Update(ctx, &sys_model.SysSettings{
+			Name:        settingInfo.Name,
+			Values:      gjson.MustEncodeString(newHeartbeatTimeout.Seconds()),
+			Desc:        settingInfo.Desc,
+			UnionMainId: settingInfo.UnionMainId,
+		})
+
+		if err != nil {
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "保存用户在线心跳超时设置失败", sys_dao.SysUser.Table())
+		}
+	}
+	s.heartbeatTimeout = newHeartbeatTimeout
+	return true, nil
+}
+
 // QueryUserList 获取用户列表
 func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
+	isFilterOnlineUser := false
+
 	if info != nil {
 		newFields := make([]base_model.FilterInfo, 0)
 
-		// 移除类型筛选条件
 		for _, field := range info.Filter {
-			if field.Field != sys_dao.SysUser.Columns().Type {
-				newFields = append(newFields, field)
+			if field.Field != sys_dao.SysUser.Columns().Type { // 移除类型筛选条件
+				// 移除在线过滤标识
+				if field.Field == "is_online" {
+					isFilterOnlineUser = true
+				} else {
+					newFields = append(newFields, field)
+				}
 			}
 		}
+
+		// 是否过滤在线用户
+		if isFilterOnlineUser {
+			// 查询最后心跳小于30秒的用户作为在线用户，
+			// 由于中线还有其他业务逻辑，可能影响在线判断逻辑，
+			// 因此在 makeMore 方法附加数据中判断在线逻辑时，应大于30秒，避免返回的数据出现离线用户
+			result, _ := sys_dao.SysUserDetail.Ctx(ctx).WhereGT(
+				sys_dao.SysUserDetail.Columns().LastHeartbeatAt,
+				time.Now().Add(-time.Second*s.heartbeatTimeout-time.Second*10),
+			).Fields([]string{sys_dao.SysUserDetail.Columns().Id}).All()
+
+			// 提取用户Ids
+			userIds := make([]int64, 0)
+			for _, value := range result.Array() {
+				userIds = append(userIds, value.Int64())
+			}
+
+			// 附加查询条件
+			newFields = append(newFields, base_model.FilterInfo{
+				Field: sys_dao.SysUser.Columns().Id,
+				Where: "in",
+				Value: userIds,
+			})
+		}
+
+		info.Filter = newFields
 	}
 
 	// 如果没有查询条件，则默认从缓存返回数据
@@ -312,7 +396,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 
 				if (hook.Value.Key.Code() & sys_enum.User.Event.BeforeCreate.Code()) == sys_enum.User.Event.BeforeCreate.Code() {
 					res, _ := hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
-					res.Detail = &sys_entity.SysUserDetail{}
+					res.Detail = &sys_model.SysUserDetail{}
 					res.Detail.Id = data.Id
 					data.Detail = res.Detail
 				}
@@ -782,7 +866,7 @@ func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int
 func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error) {
 	//s.initInnerCacheItems(ctx)
 
-	var data *sys_entity.SysUserDetail
+	var data *sys_model.SysUserDetail
 
 	err := sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: user.Id}).Scan(&data)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -793,13 +877,15 @@ func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUs
 		if data != nil {
 			user.Detail = data
 		} else {
-			user.Detail = &sys_entity.SysUserDetail{
-				Id:            user.Id,
-				Realname:      "",
-				UnionMainName: "",
-				LastLoginIp:   "",
-				LastLoginArea: "",
-				LastLoginAt:   nil,
+			user.Detail = &sys_model.SysUserDetail{
+				SysUserDetail: sys_entity.SysUserDetail{
+					Id:            user.Id,
+					Realname:      "",
+					UnionMainName: "",
+					LastLoginIp:   "",
+					LastLoginArea: "",
+					LastLoginAt:   nil,
+				},
 			}
 		}
 	}
@@ -860,6 +946,8 @@ func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (
 		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
 	} else if base_verify.IsEmail(info) {
 		userModel = userModel.Where(sys_do.SysUser{Email: info})
+	} else {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号或邮箱格式错误")
 	}
 
 	userList, err := daoctl.Query[*sys_model.SysUser](userModel, nil, false)
@@ -1027,6 +1115,20 @@ func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, 
 	return sysUser, nil
 }
 
+// Heartbeat 用户在线心跳
+func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (bool, error) {
+	affected, err := daoctl.UpdateWithError(
+		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
+		sys_do.SysUserDetail{LastHeartbeatAt: gtime.Now()},
+	)
+
+	if err != nil || affected == 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户心跳失败", sys_dao.SysUser.Table())
+	}
+
+	return true, nil
+}
+
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 	user.Password = masker.MaskString(user.Password, masker.Password)
 	user.Mobile = masker.MaskString(user.Mobile, masker.MaskPhone)
@@ -1037,27 +1139,39 @@ func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
 func (s *sSysUser) makeMore(ctx context.Context, data *sys_model.SysUser) *sys_model.SysUser {
 	base_funs.AttrMake[sys_model.SysUser](ctx,
 		sys_dao.SysUser.Columns().Id,
-		func() *sys_entity.SysUserDetail {
+		func() *sys_model.SysUserDetail {
 
-			//result, _ := daoctl.GetByIdWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
-			resultArr, _ := daoctl.Query[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), nil, true)
-			//result, _ := daoctl.ScanWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: data.Id}))
-			var result *sys_entity.SysUserDetail
-			for _, record := range resultArr.Records {
-				if record.Id == data.Id {
-					result = &record
-					break
-				}
+			data.Detail, _ = daoctl.GetByIdWithError[sys_model.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), data.Id)
+
+			// 最后心跳小于 60秒内的认为在线
+			if data.Detail != nil && data.Detail.LastHeartbeatAt != nil && data.Detail.LastHeartbeatAt.After(gtime.Now().Add(-time.Second*s.heartbeatTimeout)) {
+				data.Detail.IsOnline = true
 			}
-			if result == nil {
-				return nil
-			}
-			res := kconv.Struct[sys_entity.SysUserDetail](ctx, *result)
-			if res.LastLoginIp == "" {
-				return nil
-			}
-			data.Detail = &res
+
 			return data.Detail
+
+			//resultArr, _ := daoctl.Query[sys_model.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx), nil, true)
+			//result, _ := daoctl.ScanWithError[sys_entity.SysUserDetail](sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: data.Id}))
+			//var result *sys_model.SysUserDetail
+			//for _, record := range resultArr.Records {
+			//	// 最后心跳小于 60秒内的认为在线
+			//	if record.LastHeartbeatAt != nil && record.LastHeartbeatAt.Before(gtime.Now().Add(-time.Second*60)) {
+			//		record.IsOnline = true
+			//	}
+			//
+			//	if record.Id == data.Id {
+			//		result = &record
+			//		break
+			//	}
+			//}
+			//if result == nil {
+			//	return nil
+			//}
+			//res := kconv.Struct[sys_model.SysUserDetail](ctx, *result)
+			//if res.LastLoginIp == "" {
+			//	return nil
+			//}
+
 		},
 	)
 	return data

@@ -7,7 +7,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
@@ -36,7 +35,7 @@ func (s *sSysSettings) QueryList(ctx context.Context, params *base_model.SearchP
 	return (*sys_model.SysSettingListRes)(result), err
 }
 
-// GetByName 根据 name 查询百度SDK应用配置信息
+// GetByName 根据 name 查询配置信息
 func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_model.SearchParams) (*sys_model.SysSettingsRes, error) {
 	items, err := s.QueryList(ctx, info, true)
 	if err != nil {
@@ -49,15 +48,20 @@ func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_mo
 		}
 	}
 
-	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询配置信息失败", sys_dao.SysSettings.Table()+":"+name)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询配置信息失败", sys_dao.SysSettings.Table())
 }
 
-// Save 保存系统配置信息
-func (s *sSysSettings) Save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
+// save 保存系统配置信息
+func (s *sSysSettings) save(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
 	data := kconv.Struct(info, &sys_do.SysSettings{})
-  
-	count, err := sys_dao.SysSettings.Ctx(ctx).Count(sys_do.SysSettings{Name: info.Name})
-	if count > 0 {
+
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysSettings](sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name}))
+
+	if selectInfo != nil {
+		if selectInfo.UnionMainId != info.UnionMainId {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+info.Name)
+		}
+
 		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values, Desc: data.Desc})
 	} else {
 		_, err = sys_dao.SysSettings.Ctx(ctx).Insert(data)
@@ -72,24 +76,25 @@ func (s *sSysSettings) Save(ctx context.Context, info *sys_model.SysSettings) (*
 
 // Create  创建系统配置信息
 func (s *sSysSettings) Create(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
-	info.Values = gjson.MustEncodeString(info.Values)
-
-	return s.Save(ctx, info)
+	return s.save(ctx, info)
 }
 
 // Update  修改系统配置信息
 func (s *sSysSettings) Update(ctx context.Context, info *sys_model.SysSettings) (*sys_model.SysSettingsRes, error) {
-	info.Values = gjson.MustEncodeString(info.Values)
-
-	return s.Save(ctx, info)
+	return s.save(ctx, info)
 }
 
 // Delete 删除
 func (s *sSysSettings) Delete(ctx context.Context, name string, unionMainId int64) (bool, error) {
+	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: name, UnionMainId: unionMainId}))
+	if selectInfo != nil && selectInfo.UnionMainId <= 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "平台配置禁止删除", sys_dao.SysFrontSettings.Table())
+	}
+
 	affected, err := daoctl.DeleteWithError(sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: name, UnionMainId: unionMainId}))
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysSettings.Table()+":"+name)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysSettings.Table())
 	}
 
 	return affected > 0, err

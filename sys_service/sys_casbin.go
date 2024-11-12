@@ -24,19 +24,19 @@ type (
 		// AddRoleForUserInDomain 添加用户角色关联关系
 		AddRoleForUserInDomain(userName string, roleName string, domain string) (bool, error)
 		// DeleteRoleForUserInDomain 删除用户角色关联关系
-		DeleteRoleForUserInDomain(userName, roleName string, domain string) (bool, error)
+		DeleteRoleForUserInDomain(userName string, roleName string, domain string) (bool, error)
 		// DeleteRolesForUser 清空用户角色关联关系
 		DeleteRolesForUser(userName string, domain string) (bool, error)
 		// AddPermissionForUser 添加角色与资源关系
-		AddPermissionForUser(roleName, path, method string) (bool, error)
+		AddPermissionForUser(roleName string, path string, method string) (bool, error)
 		// AddPermissionsForUser 添加角色与资源关系
 		AddPermissionsForUser(roleName string, path []string) (bool, error)
 		// DeletePermissionForUser 删除角色与资源关系
-		DeletePermissionForUser(roleName, path, method string) (bool, error)
+		DeletePermissionForUser(roleName string, path string, method string) (bool, error)
 		// DeletePermissionsForUser 清空角色与资源关系
 		DeletePermissionsForUser(roleName string) (bool, error)
 		// EnforceCheck 校验  确认访问权限
-		EnforceCheck(userName, path, role, method interface{}) (bool, error)
+		EnforceCheck(userName interface{}, path interface{}, role interface{}, method interface{}) (bool, error)
 	}
 )
 
