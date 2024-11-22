@@ -32,6 +32,10 @@ type (
 		HasUnReadAnnouncement(ctx context.Context, userId int64, unionMainId int64) (int, error)
 		// QueryAnnouncementListByUser 查询用户的公告｜列表 （qType：0未读，1已读、2全部）
 		QueryAnnouncementListByUser(ctx context.Context, userId int64, unionMainId int64, qType int, params *base_model.SearchParams, isExport bool) (*sys_model.SysAnnouncementListRes, error)
+		// RevokedAnnouncement 撤销公告
+		RevokedAnnouncement(ctx context.Context, announcementId int64) (bool, error)
+		// SetAnnouncementState 设置公告状态
+		SetAnnouncementState(ctx context.Context, announcementId int64, state int) (bool, error)
 	}
 )
 
