@@ -162,7 +162,8 @@ var (
 						group.Group("/announcement", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAnnouncement) })
 						// 会员等级
 						group.Group("/memberLevel", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMemberLevel) })
-
+						// 类目管理
+						group.Group("/category", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysCategory) })
 					})
 				})
 			}

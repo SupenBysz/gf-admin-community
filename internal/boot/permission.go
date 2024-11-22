@@ -40,6 +40,21 @@ func InitPermission() []base_permission.IPermission {
 				sys_enum.User.PermissionType.SetPermission,
 			}),
 
+		base_permission.New(614206186025049, "Category", "类目管理").
+			SetType(1).
+			SetIsShow(1).
+			SetMatchMode(0).
+			SetItems([]base_permission.IPermission{
+				// 查看类目，查看某个类目
+				sys_enum.Category.PermissionType.ViewDetail,
+				// 更新类目，更新某个类目
+				sys_enum.Category.PermissionType.Update,
+				// 删除类目，删除某个类目
+				sys_enum.Category.PermissionType.Delete,
+				// 创建类目，创建一个新类目
+				sys_enum.Category.PermissionType.Create,
+			}),
+
 		// 组织架构权限树
 		base_permission.New(5948649344204869, "Organization", "组织架构").
 			SetType(1).

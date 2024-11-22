@@ -6,6 +6,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/auth"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
+	sys_enum_category "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/category"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_industry "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/industry"
 	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
@@ -99,4 +100,7 @@ var (
 
 	// Announcement 公告
 	Announcement = sys_enum_announcement.Announcement
+
+	// Category 类目
+	Category = sys_enum_category.Category
 )
