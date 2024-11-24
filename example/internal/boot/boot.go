@@ -166,6 +166,8 @@ var (
 						group.Group("/memberLevel", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMemberLevel) })
 						// 类目管理
 						group.Group("/category", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysCategory) })
+						// UEditor 编辑器
+						group.Group("/ueditor", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUEditor) })
 					})
 				})
 			}
