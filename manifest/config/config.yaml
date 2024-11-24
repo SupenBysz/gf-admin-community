@@ -97,6 +97,8 @@ logger:
 upload:
   # 用戶1分钟内限制上传最大文件数量
   fileMaxUploadCountMinute: 10
+  # 加载临时文件缓存天数，默认缓存90天，最小有效值7天
+  tempFileExpiresDays: 90
   # 文件上传的默认保存路径
   path: "resource/upload"
   # 文件上传默认的临时保存路径
