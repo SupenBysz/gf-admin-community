@@ -27,34 +27,36 @@ type SysFileDao struct {
 
 // SysFileColumns defines and stores column names for table sys_file.
 type SysFileColumns struct {
-	Id          string // 自增ID
-	Name        string // 文件名称
-	Src         string // 存储路径
-	Url         string // URL地址
-	Ext         string // 扩展名
-	Size        string // 文件大小
-	Category    string // 文件分类
-	UserId      string // 用户ID
-	UnionMainId string // 关联主体ID
-	CreatedAt   string //
-	UpdatedAt   string //
-	LocalPath   string // 本地路径
+	Id             string // 自增ID
+	Name           string // 文件名称
+	Src            string // 存储路径
+	Url            string // URL地址
+	Ext            string // 扩展名
+	Size           string // 文件大小
+	Category       string // 文件分类
+	UserId         string // 用户ID
+	UnionMainId    string // 关联主体ID
+	CreatedAt      string //
+	UpdatedAt      string //
+	LocalPath      string // 本地路径
+	AllowAnonymous string // 是否允许匿名
 }
 
 // sysFileColumns holds the columns for table sys_file.
 var sysFileColumns = SysFileColumns{
-	Id:          "id",
-	Name:        "name",
-	Src:         "src",
-	Url:         "url",
-	Ext:         "ext",
-	Size:        "size",
-	Category:    "category",
-	UserId:      "user_id",
-	UnionMainId: "union_main_id",
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
-	LocalPath:   "local_path",
+	Id:             "id",
+	Name:           "name",
+	Src:            "src",
+	Url:            "url",
+	Ext:            "ext",
+	Size:           "size",
+	Category:       "category",
+	UserId:         "user_id",
+	UnionMainId:    "union_main_id",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	LocalPath:      "local_path",
+	AllowAnonymous: "allow_anonymous",
 }
 
 // NewSysFileDao creates and returns a new DAO object for table data access.

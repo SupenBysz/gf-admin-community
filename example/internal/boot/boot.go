@@ -109,6 +109,8 @@ var (
 								sys_controller.SysArea,
 								// 公共：获取图片...
 								sys_controller.Common,
+								// 匿名访问文件
+								sys_controller.SysFileAllowAnonymous,
 							)
 						})
 

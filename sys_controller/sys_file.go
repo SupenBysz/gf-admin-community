@@ -67,3 +67,24 @@ func (c *cSysFile) UploadPicture(ctx context.Context, req *sys_api.UploadPicture
 
 	return (*sys_api.UploadPictureRes)(result), err
 }
+
+// SysFileAllowAnonymous 文件
+var SysFileAllowAnonymous = cSysFileAllowAnonymous{}
+
+type cSysFileAllowAnonymous struct{}
+
+func (c *cSysFileAllowAnonymous) GetAnyFileById(ctx context.Context, _ *sys_api.GetFileAllowAnonymousByIdReq) (res *sys_api.UploadFileRes, err error) {
+	// 获取图片id 还有图片类型 临时还是永久
+	id := g.RequestFromCtx(ctx).GetQuery("id").Int64()
+
+	file, err := sys_service.File().GetAnyFileById(ctx, id, "文件加载失败")
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 加载显示图片
+	g.RequestFromCtx(ctx).Response.ServeFile(file.Src)
+
+	return (*sys_api.UploadFileRes)(&file.SysFile), err
+}

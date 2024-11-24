@@ -12,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/kysion/base-library/base_model"
 )
 
 type (
@@ -22,12 +23,13 @@ type (
 		UnInstallHook(savedHookId int64)
 		// CleanAllHook 清除Hook
 		CleanAllHook()
+		MakeTempUploadPath(ctx context.Context) (string, string, error)
 		// Upload 统一上传文件
 		Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error)
 		// GetUploadFile 根据上传ID 获取上传文件信息
 		GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error)
-		// SaveFile 保存文件
-		SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error)
+		// SaveFile 保存文件,storageAddr 参数包含路径及文件名
+		SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo, saveToLocal ...bool) (*sys_model.FileInfo, error)
 		// UploadIDCard 上传身份证照片
 		UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error)
 		// UploadBankCard 上传银行卡照片
@@ -38,6 +40,7 @@ type (
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
 		// GetFileById 根据id获取并返回文件信息
 		GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
+		GetAnyFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
 		// MakeFileUrl 图像id换取url: 拼接三个参数,缓存fileInfo、然后返回url + 三参
 		MakeFileUrl(ctx context.Context, id int64, styleStr ...string) string
 		// MakeFileUrlByPath 文件path换取url: 拼接三个参数,缓存签名数据、然后返回url + 三参
@@ -50,6 +53,7 @@ type (
 		GetOssFileSingUrl(ctx context.Context, bucketName string, objectKey string, styleStr ...string) (string, error)
 		// GetOssFileWithURL 根据文件的签名访问URL获取文件
 		GetOssFileWithURL(ctx context.Context, bucketName string, filePath string, singUrl string) (bool, error)
+		QueryFile(ctx context.Context, search *base_model.SearchParams) (*base_model.CollectRes[sys_entity.SysFile], error)
 	}
 )
 

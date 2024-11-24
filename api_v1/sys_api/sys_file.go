@@ -36,6 +36,10 @@ type GetFileByIdReq struct {
 	g.Meta `path:"/getFileById" method:"get" summary:"通过id获取文件" tags:"工具"`
 	Id     int64 `json:"id" v:"required#资源ID错误" dc:"文件资源ID"`
 }
+type GetFileAllowAnonymousByIdReq struct {
+	g.Meta `path:"/getFileById" method:"get" summary:"通过id获取文件｜允许匿名" tags:"工具"`
+	Id     int64 `json:"id" v:"required#资源ID错误" dc:"文件资源ID"`
+}
 
 type UploadFileRes sys_model.UploadFile
 
