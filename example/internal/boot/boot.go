@@ -168,6 +168,8 @@ var (
 						group.Group("/category", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysCategory) })
 						// UEditor 编辑器
 						group.Group("/ueditor", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUEditor) })
+						// Iconify 图标集反向代理
+						group.Group("/iconify", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIconify) })
 					})
 				})
 			}
