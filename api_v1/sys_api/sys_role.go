@@ -26,6 +26,11 @@ type DeleteRoleInfoReq struct {
 	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
 }
 
+type GetRoleByIdReq struct {
+	g.Meta `path:"/getRoleById" method:"post" summary:"根据ID获取角色" tags:"角色"`
+	Id     int64 `json:"id" v:"required#角色ID校验失败" dc:"角色ID"`
+}
+
 type SetRoleMemberReq struct {
 	g.Meta  `path:"/setRoleMember" method:"post" summary:"设置角色成员" tags:"角色"`
 	RoleId  int64   `json:"roleId" v:"required#角色ID校验失败" dc:"角色ID"`
