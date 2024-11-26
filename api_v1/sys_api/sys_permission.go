@@ -17,12 +17,12 @@ type GetPermissionByIdentifierReq struct {
 }
 
 type QueryPermissionListReq struct {
-	g.Meta `path:"/queryPermissionList" method:"post" summary:"根据ID获取下级权限|列表，返回列表" tags:"权限"`
+	g.Meta `path:"/queryPermissionList" method:"post" summary:"查询权限|列表" tags:"权限"`
 	base_model.SearchParams
 }
 
 type GetPermissionListReq struct {
-	g.Meta      `path:"/getPermissionList" method:"post" summary:"根据ID获取下级权限|列表，返回列表" tags:"权限"`
+	g.Meta      `path:"/getPermissionList" method:"post" summary:"根据ID获取下级权限|列表" tags:"权限"`
 	Id          int64 `json:"id" v:"min:0#权限ID校验失败" dc:"权限ID" default:"0"`
 	IsRecursive bool  `json:"isRecursive" dc:"是否递归，true则显示所有子级"`
 }
