@@ -11,7 +11,7 @@ type SysMenu struct {
 	Name                 *string `json:"name"      dc:"名称" v:"required|max-length:128#请输入名称|名称最大长度请不要超过128字符"`
 	Redirect             *string `json:"redirect"  dc:"跳转" v:"max-length:128#跳转URL最大长度请不要超过128字符"`
 	RedirectType         *int    `json:"redirectType" dc:"跳转类型：1当前页面打开、 2新的标签页打开"`
-	Type                 *int    `json:"type"         dc:"类型：1菜单、2按钮" v:"required|in:1,2#请选择类型|类型数据范围错误"`
+	Type                 *int    `json:"type"         dc:"类型：0目录、1菜单、2按钮" v:"required|in:0,1,2#请选择类型|类型数据范围错误"`
 	Title                *string `json:"title"     dc:"标题" v:"required|max-length:64#请输入标题|标题最大长度请不要超过128字符"`
 	Icon                 *string `json:"icon"      dc:"图标" v:"max-length:128#图标名称最大长度请不要超过128字符"`
 	IconUrl              *string `json:"iconUrl"     dc:"图标URL"`
@@ -32,7 +32,7 @@ type UpdateSysMenu struct {
 	Name                 *string `json:"name"      dc:"名称" v:"max-length:128#请输入名称|名称最大长度请不要超过128字符"`
 	Redirect             *string `json:"redirect"  dc:"跳转" v:"max-length:128#跳转URL最大长度请不要超过128字符"`
 	RedirectType         *int    `json:"redirectType" dc:"跳转类型：1当前页面打开、 2新的标签页打开"`
-	Type                 *int    `json:"type"         dc:"类型：1菜单、2按钮" v:"required|in:1,2#请选择类型|类型数据范围错误"`
+	Type                 *int    `json:"type"         dc:"类型：0目录、1菜单、2按钮" v:"required|in:0,1,2#请选择类型|类型数据范围错误"`
 	Title                *string `json:"title"     dc:"标题" v:"max-length:64#请输入标题|标题最大长度请不要超过128字符"`
 	Icon                 *string `json:"icon"      dc:"图标" v:"max-length:128#图标名称最大长度请不要超过128字符"`
 	IconUrl              *string `json:"iconUrl"     dc:"图标URL"`
