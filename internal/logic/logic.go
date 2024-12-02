@@ -18,6 +18,7 @@ import (
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_casbin"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_category"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_config"
+	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_delivery_company"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_file"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_front_settings"
 	_ "github.com/SupenBysz/gf-admin-community/internal/logic/sys_industry"
