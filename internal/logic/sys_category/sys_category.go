@@ -87,6 +87,7 @@ func (s *sSysCategory) SaveCategory(ctx context.Context, info *sys_model.SysCate
 			Where(sys_dao.SysCategory.Columns().Id, data.Id).
 			Update()
 	} else {
+		data.Id = idgen.NextId()
 		_, err = model.Data(data).Insert()
 	}
 
