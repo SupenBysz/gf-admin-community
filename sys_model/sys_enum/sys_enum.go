@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_category "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/category"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/delivery_company"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_industry "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/industry"
 	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
@@ -103,4 +104,7 @@ var (
 
 	// Category 类目
 	Category = sys_enum_category.Category
+
+	// DeliveryCompany 物流公司
+	DeliveryCompany = delivery_company.DeliveryCompany
 )
