@@ -170,6 +170,8 @@ var (
 						group.Group("/ueditor", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUEditor) })
 						// Iconify 图标集反向代理
 						group.Group("/iconify", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIconify) })
+						// 物流公司
+						group.Group("/deliveryCompany", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysDeliveryCompany) })
 					})
 				})
 			}
