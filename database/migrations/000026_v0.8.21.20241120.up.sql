@@ -30,7 +30,7 @@ CREATE TABLE "public"."sys_category" (
   "union_main_id" int8
 )
 ;
-ALTER TABLE "public"."sys_category" OWNER TO "postgres";
+ALTER TABLE "public"."sys_category" OWNER TO "kuaimk";
 COMMENT ON COLUMN "public"."sys_category"."name" IS '名称';
 COMMENT ON COLUMN "public"."sys_category"."parent_id" IS '父级ID';
 COMMENT ON COLUMN "public"."sys_category"."picture_path" IS '分类图片';
