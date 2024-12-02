@@ -150,11 +150,11 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 			不能编辑：
 				- 公告的状态不是草稿
 			能编辑：
-				- 公告还是草稿状态
+				- 公告未发布则允许编辑
 
 	*/
-	if announcement.State != sys_enum.Announcement.State.Draft.Code() {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "只有草稿中的公告支持编辑", sys_dao.SysAnnouncement.Table())
+	if announcement.State == sys_enum.Announcement.State.Published.Code() || announcement.State == sys_enum.Announcement.State.Expired.Code() {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "公示中和已过期的公告禁止编辑", sys_dao.SysAnnouncement.Table())
 	}
 
 	//if gtime.Now().After(announcement.PublicAt) && announcement.State != sys_enum.Announcement.State.Draft.Code() {
@@ -165,6 +165,10 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 	data.Id = nil
 	data.UpdatedBy = userId
 	data.UpdatedAt = gtime.Now()
+
+	if *info.ExtDataJson == "" {
+		data.ExtDataJson = nil
+	}
 
 	err = sys_dao.SysAnnouncement.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncement.Ctx(ctx).Where(
