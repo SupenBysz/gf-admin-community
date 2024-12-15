@@ -30,6 +30,6 @@ type DeleteCategoryReq struct {
 }
 
 type QueryCategoryReq struct {
-	g.Meta `path:"/queryCategory" method:"post" summary:"查询获取分类｜信息" tags:"分类管理"`
+	g.Meta `path:"/queryCategory" method:"post" summary:"查询获取分类｜列表" tags:"分类管理"`
 	base_model.SearchParams
 }
