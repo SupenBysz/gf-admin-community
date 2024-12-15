@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/business"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/casbin"
 	sys_enum_category "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/category"
+	sys_enum_comment "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/comment"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/delivery_company"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/file"
 	sys_enum_industry "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/industry"
@@ -107,4 +108,7 @@ var (
 
 	// DeliveryCompany 物流公司
 	DeliveryCompany = delivery_company.DeliveryCompany
+
+	// Comment 评论
+	Comment = sys_enum_comment.Comment
 )
