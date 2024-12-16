@@ -38,6 +38,9 @@ type UpdateSysAnnouncement struct {
 	//PublicAt *gtime.Time `json:"publicAt"      orm:"public_at"       description:"公示时间，只有到了公示时间用户才可见，注意：已达到公示时间的公告不能修改公示时间"`
 }
 
-type SysAnnouncementRes sys_entity.SysAnnouncement
+type SysAnnouncementRes struct {
+	ReadState int `json:"readState" dc:"阅读状态：1未读，2已读"`
+	sys_entity.SysAnnouncement
+}
 
 type SysAnnouncementListRes base_model.CollectRes[SysAnnouncementRes]

@@ -5,12 +5,12 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
@@ -34,7 +34,7 @@ func init() {
 }
 
 // checkPublic 检查公告是否已发布
-func (s *sAnnouncement) checkPublic(ctx context.Context, result *sys_model.SysAnnouncementRes) {
+func (s *sAnnouncement) checkPublic(ctx context.Context, result *sys_model.SysAnnouncementRes) *sys_model.SysAnnouncementRes {
 	/*
 		发布时间：19:20
 		过期时间：19:30
@@ -72,12 +72,13 @@ func (s *sAnnouncement) checkPublic(ctx context.Context, result *sys_model.SysAn
 
 	// 已移除 （需要手动触发）
 
+	return result
 }
 
 // GetAnnouncementById 根据id查询公告｜信息
 func (s *sAnnouncement) GetAnnouncementById(ctx context.Context, id int64, userId ...int64) (*sys_model.SysAnnouncementRes, error) {
 
-	result, err := daoctl.GetByIdWithError[sys_entity.SysAnnouncement](sys_dao.SysAnnouncement.Ctx(ctx), id)
+	result, err := daoctl.GetByIdWithError[sys_model.SysAnnouncementRes](sys_dao.SysAnnouncement.Ctx(ctx), id)
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询公告失败", sys_dao.SysAnnouncement.Table())
 	}
@@ -92,9 +93,7 @@ func (s *sAnnouncement) GetAnnouncementById(ctx context.Context, id int64, userI
 		}(newCtx)
 	}
 
-	s.checkPublic(ctx, (*sys_model.SysAnnouncementRes)(result))
-
-	return (*sys_model.SysAnnouncementRes)(result), nil
+	return s.checkPublic(ctx, result), nil
 }
 
 // CreateAnnouncement 添加公告｜信息
@@ -235,7 +234,24 @@ func (s *sAnnouncement) DeleteAnnouncement(ctx context.Context, id int64, unionM
 
 // QueryAnnouncement 查询公告｜列表
 func (s *sAnnouncement) QueryAnnouncement(ctx context.Context, params *base_model.SearchParams, isExport bool) (*sys_model.SysAnnouncementListRes, error) {
-	res, err := daoctl.Query[sys_model.SysAnnouncementRes](sys_dao.SysAnnouncement.Ctx(ctx), params, isExport)
+	filter := make([]base_model.FilterInfo, 0)
+
+	m := sys_dao.SysAnnouncement.Ctx(ctx)
+
+	if params != nil {
+		for _, info := range params.Filter {
+			if gstr.ToUpper(info.Field) == gstr.ToUpper(sys_dao.SysAnnouncement.Columns().ExpireAt) {
+				m = m.Where(m.Builder().WhereGTE(info.Field, info.Value).WhereOrNull(sys_dao.SysAnnouncement.Columns().ExpireAt))
+			} else {
+				filter = append(filter, info)
+			}
+		}
+		params.Filter = filter
+	}
+
+	m = m.OrderDesc(sys_dao.SysAnnouncement.Columns().PublicAt)
+
+	res, err := daoctl.Query[sys_model.SysAnnouncementRes](m, params, isExport)
 
 	if err != nil {
 		return &sys_model.SysAnnouncementListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "公告列表查询失败", sys_dao.SysAnnouncement.Table())
