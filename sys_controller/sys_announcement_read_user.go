@@ -8,6 +8,15 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 )
 
+// MarkRead 标记已读｜公告
+func (c *cSysAnnouncement) MarkRead(ctx context.Context, req *v1.MarkReadReq) (api_v1.BoolRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	ret, err := sys_service.Announcement().MarkRead(ctx, req.Id, user.Id)
+
+	return ret == true, err
+}
+
 // MarkUnRead 标记未读｜公告
 func (c *cSysAnnouncement) MarkUnRead(ctx context.Context, req *v1.MarkUnReadReq) (api_v1.BoolRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
