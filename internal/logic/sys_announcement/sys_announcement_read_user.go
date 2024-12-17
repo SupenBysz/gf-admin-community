@@ -37,7 +37,7 @@ func (s *sAnnouncement) MarkRead(ctx context.Context, announcementId, userId int
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告标记已读失败", sys_dao.SysAnnouncementReadUser.Table())
 		}
 
-	} else if info.FlagRead != sys_enum.Announcement.FlagRead.Readed.Code() {
+	} else if info.FlagRead != sys_enum.Announcement.FlagRead.Readed.Code() && info.UserId != userId {
 		data := &sys_do.SysAnnouncementReadUser{
 			ReadAt:   gtime.Now(),
 			FlagRead: sys_enum.Announcement.FlagRead.Readed.Code(),
@@ -169,12 +169,17 @@ func (s *sAnnouncement) QueryAnnouncementListByUser(ctx context.Context, userId 
 	announcementList := &sys_model.SysAnnouncementListRes{}
 
 	// 已读公告
-	announcementIds, _ := sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{UserId: userId, FlagRead: sys_enum.Announcement.FlagRead.Readed.Code()}).Fields(sys_dao.SysAnnouncementReadUser.Columns().ReadAnnouncementId).All()
+	announcementIds, _ := sys_dao.SysAnnouncementReadUser.Ctx(ctx).
+		Where(sys_do.SysAnnouncementReadUser{
+			UserId:   userId,
+			FlagRead: sys_enum.Announcement.FlagRead.Readed.Code(),
+		}).
+		Fields(sys_dao.SysAnnouncementReadUser.Columns().ReadAnnouncementId).All()
 
 	// 已读的ids
 	readIds := make([]int64, 0)
 	for _, id := range announcementIds {
-		readIds = append(readIds, gconv.Int64(id))
+		readIds = append(readIds, gconv.Int64(id[sys_dao.SysAnnouncementReadUser.Columns().ReadAnnouncementId]))
 	}
 
 	if qType == 0 { // 未读
@@ -197,7 +202,6 @@ func (s *sAnnouncement) QueryAnnouncementListByUser(ctx context.Context, userId 
 
 		//announcementList, _ = s.QueryAnnouncement(ctx, params, isExport)
 		announcementList, _ = s.queryMyAnnouncementList(ctx, userId, unionMainId, params, isExport)
-
 	} else if qType == 1 { // 已读
 		params.Filter = append(params.Filter, base_model.FilterInfo{
 			Field: sys_dao.SysAnnouncement.Columns().Id,
@@ -207,7 +211,6 @@ func (s *sAnnouncement) QueryAnnouncementListByUser(ctx context.Context, userId 
 
 		//announcementList, _ = s.QueryAnnouncement(ctx, params, isExport)
 		announcementList, _ = s.queryMyAnnouncementList(ctx, userId, unionMainId, params, isExport)
-
 	} else if qType == 2 { // 全部
 		//announcementList, _ = s.queryMyAnnouncementList(ctx, userId, unionMainId)
 		announcementList, _ = s.queryMyAnnouncementList(ctx, userId, unionMainId, params, isExport)
@@ -217,9 +220,9 @@ func (s *sAnnouncement) QueryAnnouncementListByUser(ctx context.Context, userId 
 		res := announcementList.Records[i]
 
 		if lo.Contains(readIds, record.Id) {
-			res.ReadState = 1
+			res.ReadState = sys_enum.Announcement.FlagRead.Readed.Code()
 		} else {
-			res.ReadState = 2
+			res.ReadState = sys_enum.Announcement.FlagRead.UnRead.Code()
 		}
 
 		announcementList.Records[i] = res
