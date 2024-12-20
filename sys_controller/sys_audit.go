@@ -63,3 +63,13 @@ func (c *cSysAudit) GetAuditById(ctx context.Context, req *sys_api.GetAuditByIdR
 	result := sys_service.SysAudit().GetAuditById(ctx, req.Id)
 	return (*sys_model.AuditRes)(result), nil
 }
+
+// CancelAudit 取消审核申请
+func (s *cSysAudit) CancelAudit(ctx context.Context, req *sys_api.CancelAuditReq) (api_v1.BoolRes, error) {
+	// 权限判断
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Audit.PermissionType.Cancel); has != true {
+		return false, err
+	}
+
+	return sys_service.SysAudit().CancelAudit(ctx, req.Id)
+}

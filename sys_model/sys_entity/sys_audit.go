@@ -24,4 +24,5 @@ type SysAudit struct {
 	DataIdentifier string      `json:"dataIdentifier" orm:"data_identifier" description:"数据标识"`
 	UserId         int64       `json:"userId"         orm:"user_id"         description:"关联用户ID"`
 	Summary        string      `json:"summary"        orm:"summary"         description:"概述"`
+	AuditGroup     string      `json:"auditGroup"     orm:"audit_group"     description:"审核分组"`
 }
