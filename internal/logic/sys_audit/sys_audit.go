@@ -3,6 +3,7 @@ package sys_audit
 import (
 	"context"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -225,6 +226,21 @@ func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *s
 	fmt.Println("渲染后：", result.AuditData)
 
 	return &result
+}
+
+// CancelAudit 取消审核
+func (s *sSysAudit) CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, error) {
+	data := s.GetAuditById(ctx, id)
+
+	if data == nil {
+		return false, gerror.NewCode(gcode.CodeInvalidParameter, "未找到审核记录")
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysAudit.Ctx(ctx).Where(sys_dao.SysAudit.Columns().Id, id), sys_do.SysAudit{
+		State: sys_enum.Audit.Action.Cancel.Code(),
+	})
+
+	return affected == 1, err
 }
 
 // CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload

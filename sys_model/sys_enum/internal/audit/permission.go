@@ -13,13 +13,15 @@ type permissionType struct {
 	ViewDetail PermissionTypeEnum
 	List       PermissionTypeEnum
 	Update     PermissionTypeEnum
+	Cancel     PermissionTypeEnum
 }
 
 var (
 	PermissionType = permissionType{
-		ViewDetail: permission.New(5953151699124297, "ViewDetail", "查看资质审核信息", "查看某条资质审核信息"),
-		List:       permission.New(5953151699124298, "List", "资质审核列表", "查看所有资质审核"),
-		Update:     permission.New(5953151699124299, "Update", "更新资质审核信息", "更新某条资质审核信息"),
+		ViewDetail: permission.New(5953151699124297, "ViewDetail", "查看审核信息", "查看某条审核信息"),
+		List:       permission.New(5953151699124298, "List", "获取审核列表", "查看所有审核"),
+		Update:     permission.New(5953151699124299, "Update", "更新审核信息", "更新某条审核信息"),
+		Cancel:     permission.New(5953151699124300, "Cancel", "取消审核信息", "撤销某条审核信息"),
 	}
 	permissionTypeMap = gmap.NewStrAnyMapFrom(gconv.Map(PermissionType))
 )

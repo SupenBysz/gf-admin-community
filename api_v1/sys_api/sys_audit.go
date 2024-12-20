@@ -19,6 +19,11 @@ type GetAuditByIdReq struct { //
 	Id     int64 `json:"id" dc:"审核ID"`
 }
 
+type CancelAuditReq struct { //
+	g.Meta `path:"/cancelAudit" method:"post" summary:"撤销审核申请|Boolean" tags:"审核管理"`
+	Id     int64 `json:"id" dc:"审核ID"`
+}
+
 type SetAuditApproveReq struct {
 	g.Meta `path:"/setAuditApprove" method:"post" summary:"审批通过" tags:"审核管理"`
 	Id     int64 `json:"id" v:"required|min:1#ID参数错误|ID必须大于0" dc:"审核ID"`
