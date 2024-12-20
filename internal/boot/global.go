@@ -14,6 +14,9 @@ func InitGlobal() {
 	// 独立调用创建用户、查询用户信息等相关接口时强制过滤类型
 	userDefaultType := g.Cfg().MustGet(context.Background(), "service.userDefaultType", 0)
 	sys_consts.Global.UserDefaultType = sys_enum.User.Type.New(userDefaultType.Int(), "")
+	// 注册用户默认类型
+	UserRegisterDefaultType := g.Cfg().MustGet(context.Background(), "service.userRegisterDefaultType", 0)
+	sys_consts.Global.UserRegisterDefaultType = sys_enum.User.Type.New(UserRegisterDefaultType.Int(), "")
 	// 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
 	sys_consts.Global.UserDefaultState = sys_enum.User.State.New(g.Cfg().MustGet(context.Background(), "service.userDefaultState", 0).Int(), "")
 	// 加载不允许登录的用户类型，并去重

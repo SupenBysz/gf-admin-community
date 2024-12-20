@@ -12,6 +12,7 @@ import (
 
 type global struct {
 	UserDefaultType          sys_enum.UserType
+	UserRegisterDefaultType  sys_enum.UserType
 	UserDefaultState         sys_enum.UserState
 	NotAllowLoginUserTypeArr *garray.SortedIntArray
 	AllowLoginUserTypeArr    *garray.SortedIntArray
