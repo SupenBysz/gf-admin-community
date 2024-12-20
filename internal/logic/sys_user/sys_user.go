@@ -654,11 +654,19 @@ func (s *sSysUser) SetUsername(ctx context.Context, newUsername string, userId i
 }
 
 // SetUserState 设置用户状态
-func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error) {
-	sys_dao.SysUser.DB().Tables(ctx)
+func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enum.UserState) (bool, error) {
 	result, err := sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{State: state.Code()}).Where(sys_do.SysUser{Id: userId}).Update()
 
-	sys_dao.SysUser.Table()
+	if err != nil || result == nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// SetUserType 设置用户类型
+func (s *sSysUser) SetUserType(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error) {
+	result, err := sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{State: state.Code()}).Where(sys_do.SysUser{Id: userId}).Update()
 
 	if err != nil || result == nil {
 		return false, err

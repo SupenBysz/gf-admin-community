@@ -49,7 +49,9 @@ type (
 		// SetUsername 修改自己的账号登陆名称
 		SetUsername(ctx context.Context, newUsername string, userId int64) (bool, error)
 		// SetUserState 设置用户状态
-		SetUserState(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
+		SetUserState(ctx context.Context, userId int64, state sys_enum.UserState) (bool, error)
+		// SetUserType 设置用户类型
+		SetUserType(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error)
 		// UpdateUserPassword 修改用户登录密码
 		UpdateUserPassword(ctx context.Context, info sys_model.UpdateUserPassword, userId int64) (bool, error)
 		// ResetUserPassword 重置用户密码 (超级管理员无需验证验证，XX商管理员重置员工密码无需验证)
