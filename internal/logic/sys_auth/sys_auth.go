@@ -90,7 +90,16 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	}
 
 	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
-	if err != nil || sysUserInfo == nil || sysUserInfo.Id == 0 {
+
+	if sysUserInfo == nil && base_verify.IsPhone(req.Username) {
+		mobileArr, _ := sys_service.SysUser().GetUserListByMobileOrMail(ctx, req.Username)
+
+		if len(mobileArr.Records) > 0 {
+			sysUserInfo = mobileArr.Records[0]
+		}
+	}
+
+	if sysUserInfo == nil && err != nil || sysUserInfo.Id == 0 {
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
@@ -386,7 +395,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		data, err = sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
-			sys_consts.Global.UserDefaultType,
+			sys_consts.Global.UserRegisterDefaultType,
 			customId...,
 		)
 
