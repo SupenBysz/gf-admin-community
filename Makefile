@@ -34,3 +34,9 @@ dao: cli.install
 service: cli.install
 #	@gf gen service
 	@gf gen service -d ./sys_service
+
+.PHONY: build
+build: cli.install
+	@mkdir -p ./build
+	@gf build main.go -v -a amd64 -s linux -o ./build/main
+	@cp -R resource i18n manifest .env ./build/
