@@ -46,6 +46,10 @@ type MyPersonLicenseAuditReq struct {
 	g.Meta `path:"/myPersonLicenseAudit" method:"post" summary:"获取最后一次提交的我个人资质审核信息" tags:"我的" dc:"返回的是当前登陆用户，最后一次提交的我个人资质审核信息"`
 }
 
+type MyUserReq struct {
+	g.Meta `path:"/myUser" method:"post" summary:"我的用户信息" tags:"我的"`
+}
+
 type HeartbeatReq struct {
 	g.Meta `path:"/heartbeat" method:"post" summary:"上报用户在线心跳" tags:"用户"`
 	Flag   string `json:"flagCode" dc:"终端标识"`
