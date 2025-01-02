@@ -205,3 +205,12 @@ func (c *cSysMy) MyPersonLicenseAudit(ctx context.Context, _ *sys_api.MyPersonLi
 
 	return (*sys_model.AuditRes)(ret), nil
 }
+
+// MyUser 我的用户信息
+func (c *cSysMy) MyUser(ctx context.Context, _ *sys_api.MyUserReq) (*sys_model.UserInfoRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result := &sys_model.UserInfoRes{}
+	err := gconv.Struct(user.SysUser, &result)
+	return result, err
+}
