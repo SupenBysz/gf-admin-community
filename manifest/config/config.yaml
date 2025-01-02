@@ -34,7 +34,11 @@ service:
   notAllowLoginUserType: [ 0 ]
   # 加载允许登录的用户类型，并去重
   # 如果NotAllowLoginUserTypeArr包含allowLoginUserType中的用户类型，那么前者优先级高于后者, 默认值为UserDefaultType
-  allowLoginUserType: [32,-1]
+  defaultAllowLoginUserType: [ 32 ]
+  # 管理后通信标识符，需要附在 Header 的 X-CLIENT 上
+  adminClientIdentifier: "c49f13cd9a9347fa86fbb747a6fba06c"
+  # 管理后台允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
+  adminClientAllowLoginUserType: [ -1, 32 ]
   # 需要存储到数据库中的日志，支持：all,error,warn,info
   logLevelToDatabase: [ "all" ]
   # 业务审核服务时限，超过时限需要重新申请审核，相关业务有自定义设置时，将自动忽略这里的设置
