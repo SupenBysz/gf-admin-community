@@ -1,9 +1,10 @@
 package boot
 
 import (
+	"github.com/kysion/base-library/utility/base_permission"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
-	"github.com/kysion/base-library/utility/base_permission"
 )
 
 // InitPermission 初始化权限树结构
@@ -116,7 +117,7 @@ func InitPermission() []base_permission.IPermission {
 		// 菜单管理权限树
 		base_permission.New(5950408166676321, "Menu", "菜单管理").
 			SetType(1).
-			SetIsShow(0).    // 默认隐藏
+			SetIsShow(0). // 默认隐藏
 			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看菜单，查看某个菜单
@@ -134,7 +135,7 @@ func InitPermission() []base_permission.IPermission {
 		// 行业类别管理权限树
 		base_permission.New(5950408166626311, "Industry", "行业类别管理").
 			SetType(1).
-			SetIsShow(1).    // 默认隐藏
+			SetIsShow(1). // 默认隐藏
 			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看行业类别，查看某个行业类别
