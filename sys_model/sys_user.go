@@ -58,5 +58,6 @@ type UpdateUserPassword struct {
 }
 
 type UserInfo SysUser
+type UserInfoRes UserInfo
 type UserInfoList base_model.CollectRes[*SysUser]
 type SysUserListRes base_model.CollectRes[*SysUser]
