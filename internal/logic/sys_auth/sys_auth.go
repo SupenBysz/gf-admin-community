@@ -143,9 +143,17 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, err
 	}
 
+	adminClientIdentifier := g.RequestFromCtx(ctx).Header.Get("X-CLIENT-ID")
+
 	// 校验登录类型
-	if !sys_consts.Global.AllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+	if !sys_consts.Global.DefaultAllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
+		if adminClientIdentifier != "" && adminClientIdentifier == sys_consts.Global.AdminClientIdentifier && !sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+		}
+	}
+
+	if sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) && adminClientIdentifier != "" && adminClientIdentifier != sys_consts.Global.AdminClientIdentifier {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户身份不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
@@ -263,7 +271,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	// 返回token
 	tokenInfo, err := sys_service.SysAuth().InnerLogin(ctx, userInfo)
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, err.Error())
 	}
 
 	// 返回token数据
