@@ -9,7 +9,7 @@ require (
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.7.2
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.7.2
 	github.com/gogf/gf/v2 v2.7.2
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/uuid v1.6.0
 	github.com/kysion/base-library v0.1.9
 	github.com/kysion/oss-library v0.2.4
