@@ -37,7 +37,7 @@ func init() {
 	sys_service.RegisterSysAudit(NewSysAudit())
 }
 
-func NewSysAudit() *sSysAudit {
+func NewSysAudit() sys_service.ISysAudit {
 	return &sSysAudit{
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -158,7 +158,6 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_model.Audit
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, result)
 		}
 
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 		if err != nil {
 			return nil
 		}
@@ -190,7 +189,7 @@ func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId
 			// 业务类型一致则调用注入的Hook函数
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
 		}
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 		if err != nil {
 			return nil
 		}
@@ -200,7 +199,7 @@ func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId
 	return &result
 }
 
-// GetAuditLatestByUserId 获取最新的业务个人审核信息
+// GetAuditLatestByUserId 根据UserId获取最后一次审核信息
 func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_model.AuditRes {
 	result := sys_model.AuditRes{}
 	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UserId: userId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
@@ -218,7 +217,6 @@ func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *s
 			// 业务类型一致则调用注入的Hook函数
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
 		}
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 		if err != nil {
 			return nil
 		}
@@ -258,7 +256,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 
 	data := sys_model.AuditRes{}
 	audit := sys_entity.SysAudit{}
-	gconv.Struct(info, &data)
+	_ = gconv.Struct(info, &data)
 
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
@@ -277,11 +275,11 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 			// 如果当前有审核记录，则转存入历史记录中，并删除当前申请记录，避免后续步骤创建记录时重复导致的失败
 			if err == nil && audit.Id > 0 {
 				historyItems := make([]sys_entity.SysAudit, 0)
-				g.Try(ctx, func(ctx context.Context) {
+				_ = g.Try(ctx, func(ctx context.Context) {
 					// 判断历史记录是否为空
 					if audit.HistoryItems != "" {
 						// 解码json字符串为列表为切片对象
-						gjson.DecodeTo(audit.HistoryItems, &historyItems)
+						_ = gjson.DecodeTo(audit.HistoryItems, &historyItems)
 						// 清空记录中的历史记录，便于后面压入记录中导致冗余的历史记录
 						audit.HistoryItems = ""
 					}
@@ -323,7 +321,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 				// 业务类型一致则调用注入的Hook函数
 				err = hook.Value.Value(ctx, stateType, &data)
 			}
-			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 			if err != nil {
 				return err
 			}
@@ -386,7 +384,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 				// 业务类型一致则调用注入的Hook函数
 				err = hook.Value.Value(ctx, sys_enum.Audit.Event.ExecAudit, data)
 			}
-			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 			if err != nil {
 				return err
 			}
