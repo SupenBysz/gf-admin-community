@@ -62,7 +62,7 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 			auditData := sys_model.AuditPersonLicense{}
 
 			//解析json字符串
-			gjson.DecodeTo(info.AuditData, &auditData)
+			_ = gjson.DecodeTo(info.AuditData, &auditData)
 			if auditData.No == "" { // 说明不是默认结构，业务层自己封装了结构
 				return nil
 			}

@@ -630,20 +630,21 @@ func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.Jwt
 
 	result := sys_model.LoginRes{}
 
-	// 生成新的token
-	newToken, err := sys_service.Jwt().GenerateToken(ctx, &loginUser.SysUser)
-	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
-	}
-
-	result.TokenInfo = *newToken
-
 	user, err := sys_service.SysUser().GetSysUserById(ctx, loginUser.SysUser.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	result.User = user
+
+	// 生成新的token
+	newToken, err := sys_service.Jwt().GenerateToken(ctx, user)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
+	}
+
+	result.TokenInfo = *newToken
+
 
 	return &result, err
 }
