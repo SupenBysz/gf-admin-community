@@ -11,6 +11,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/funs"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/kconv"
 )
@@ -133,6 +134,21 @@ func (c *cSysUser) SetUserState(ctx context.Context, req *sys_api.SetUserStateRe
 		},
 		sys_enum.User.PermissionType.SetState,
 	)
+}
+
+// GetUserById 根据ID获取用户信息
+func (c *cSysUser) GetUserById(ctx context.Context, req *sys_api.GetUserByIdReq) (*sys_model.UserInfoRes, error) {
+	user, err := sys_service.SysUser().GetSysUserById(ctx, req.UserId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := &sys_model.UserInfoRes{}
+
+	err = gconv.Struct(user.SysUser, result)
+
+	return result, err
 }
 
 // makeMore 是否订阅附加数据

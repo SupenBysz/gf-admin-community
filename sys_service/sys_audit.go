@@ -8,8 +8,8 @@ package sys_service
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/kysion/base-library/base_model"
@@ -26,13 +26,15 @@ type (
 		// QueryAuditList 获取审核信息列表
 		QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error)
 		// GetAuditById 根据ID获取审核信息
-		GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit
+		GetAuditById(ctx context.Context, id int64) *sys_model.AuditRes
 		// GetAuditLatestByUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
-		GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit
+		GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_model.AuditRes
 		// GetAuditLatestByUserId 获取最新的业务个人审核信息
-		GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_entity.SysAudit
+		GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_model.AuditRes
+		// CancelAudit 取消审核
+		CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, error)
 		// CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload
-		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error)
+		CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_model.AuditRes, error)
 		// UpdateAudit 处理审核信息
 		UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error)
 		// SetUnionMainId  设置审核关联的主体Id

@@ -3,12 +3,17 @@ package sys_controller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/enum"
+	"github.com/kysion/sms-library/api/sms_api"
+	"github.com/kysion/sms-library/sms_controller"
+	"github.com/kysion/sms-library/sms_global"
+	"github.com/kysion/sms-library/sms_model"
 	"time"
 )
 
@@ -50,21 +55,30 @@ func (c *cCaptcha) SendCaptchaBySms(ctx context.Context, req *sys_api.SendCaptch
 		}
 	}
 
-	return true, nil
+	onSendCaptcha, err := g.Cfg().Get(ctx, "service.onSendCaptcha", false)
+
+	if onSendCaptcha == nil || !onSendCaptcha.Bool() {
+		return true, nil
+	}
 
 	// TODO 如下是正式代码
-	//sendReq := sms_api.SendSmsReq{
-	//	CaptchaType: req.CaptchaType,
-	//	SmsSendMessageReq: sms_model.SmsSendMessageReq{
-	//		Phones:      []string{req.Mobile},
-	//		CaptchaType: req.CaptchaType,
-	//	},
-	//}
-	//
-	//fmt.Println(sendReq)
-	//modules := sms_global.Global.Modules
-	//res, err := sms_controller.Sms(modules).SendSms(ctx, &sendReq)
-	//return res.SmsSendStatus[0].Code == "OK", err
+	sendReq := sms_api.SendSmsReq{
+		CaptchaType: req.CaptchaType,
+		SmsSendMessageReq: sms_model.SmsSendMessageReq{
+			Phones:      []string{req.Mobile},
+			CaptchaType: req.CaptchaType,
+		},
+	}
+
+	fmt.Println(sendReq)
+	modules := sms_global.Global.Modules
+	res, err := sms_controller.Sms(modules).SendSms(ctx, &sendReq)
+
+	if err != nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "短信发送失败", "Sms")
+	}
+
+	return res.SmsSendStatus[0].Code == "OK", err
 }
 
 // SendCaptchaByMail 发送邮箱验证码

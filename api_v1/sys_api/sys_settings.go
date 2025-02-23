@@ -15,7 +15,6 @@ type GetSettingByNameReq struct {
 	g.Meta `path:"/getSettingByName" method:"POST" tags:"系统配置" summary:"获取配置|信息" dc:"系统配置：会限制主体获取"`
 
 	Name string `json:"name" dc:"系统配置的名称"`
-
 	base_model.SearchParams
 }
 

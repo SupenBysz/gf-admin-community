@@ -52,7 +52,7 @@ func NewSysPersonLicense() sys_service.ISysPersonLicense {
 }
 
 // GetAuditData 订阅审核数据获取Hook, 将审核数据渲染成个人资质然后进行输出
-func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_entity.SysAudit) error {
+func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_model.AuditRes) error {
 	//  处理审核
 	if info == nil {
 		return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核数据为空", "Audit")
@@ -62,7 +62,7 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 			auditData := sys_model.AuditPersonLicense{}
 
 			//解析json字符串
-			gjson.DecodeTo(info.AuditData, &auditData)
+			_ = gjson.DecodeTo(info.AuditData, &auditData)
 			if auditData.No == "" { // 说明不是默认结构，业务层自己封装了结构
 				return nil
 			}
@@ -109,7 +109,7 @@ func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enu
 }
 
 // AuditChange 审核成功的处理逻辑 Hook
-func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_entity.SysAudit) error {
+func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_model.AuditRes) error {
 	//data := sys_service.SysAudit().GetAuditById(ctx, info.Id)
 	//if data == nil {
 	//	return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())

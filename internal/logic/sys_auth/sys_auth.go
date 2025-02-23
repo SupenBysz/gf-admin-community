@@ -90,7 +90,16 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	}
 
 	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
-	if err != nil || sysUserInfo == nil || sysUserInfo.Id == 0 {
+
+	if sysUserInfo == nil && base_verify.IsPhone(req.Username) {
+		mobileArr, _ := sys_service.SysUser().GetUserListByMobileOrMail(ctx, req.Username)
+
+		if len(mobileArr.Records) > 0 {
+			sysUserInfo = mobileArr.Records[0]
+		}
+	}
+
+	if sysUserInfo == nil && err != nil || sysUserInfo.Id == 0 {
 		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
 	}
 
@@ -134,9 +143,17 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, err
 	}
 
+	adminClientIdentifier := g.RequestFromCtx(ctx).Header.Get("X-CLIENT-ID")
+
 	// 校验登录类型
-	if !sys_consts.Global.AllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+	if !sys_consts.Global.DefaultAllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
+		if adminClientIdentifier != "" && adminClientIdentifier == sys_consts.Global.AdminClientIdentifier && !sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+		}
+	}
+
+	if sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) && adminClientIdentifier != "" && adminClientIdentifier != sys_consts.Global.AdminClientIdentifier {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户身份不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
@@ -254,7 +271,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	// 返回token
 	tokenInfo, err := sys_service.SysAuth().InnerLogin(ctx, userInfo)
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, err.Error())
 	}
 
 	// 返回token数据
@@ -386,7 +403,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		data, err = sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
 			sys_consts.Global.UserDefaultState,
-			sys_consts.Global.UserDefaultType,
+			sys_consts.Global.UserRegisterDefaultType,
 			customId...,
 		)
 
@@ -613,20 +630,21 @@ func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.Jwt
 
 	result := sys_model.LoginRes{}
 
-	// 生成新的token
-	newToken, err := sys_service.Jwt().GenerateToken(ctx, &loginUser.SysUser)
-	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
-	}
-
-	result.TokenInfo = *newToken
-
 	user, err := sys_service.SysUser().GetSysUserById(ctx, loginUser.SysUser.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	result.User = user
+
+	// 生成新的token
+	newToken, err := sys_service.Jwt().GenerateToken(ctx, user)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
+	}
+
+	result.TokenInfo = *newToken
+
 
 	return &result, err
 }

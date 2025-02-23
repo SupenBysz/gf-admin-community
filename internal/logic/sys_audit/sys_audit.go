@@ -3,6 +3,7 @@ package sys_audit
 import (
 	"context"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -36,7 +37,7 @@ func init() {
 	sys_service.RegisterSysAudit(NewSysAudit())
 }
 
-func NewSysAudit() *sSysAudit {
+func NewSysAudit() sys_service.ISysAudit {
 	return &sSysAudit{
 		conf: gdb.CacheOption{
 			Duration: time.Hour,
@@ -138,9 +139,9 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 }
 
 // GetAuditById 根据ID获取审核信息
-func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysAudit {
+func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_model.AuditRes {
 
-	result, err := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), id)
+	result, err := daoctl.GetByIdWithError[sys_model.AuditRes](sys_dao.SysAudit.Ctx(ctx), id)
 
 	if err != nil {
 		return nil
@@ -157,7 +158,6 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, result)
 		}
 
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 		if err != nil {
 			return nil
 		}
@@ -172,8 +172,8 @@ func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_entity.SysA
 // Audit取，拿出路劲转成带签名的url，
 
 // GetAuditLatestByUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
-func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_entity.SysAudit {
-	result := sys_entity.SysAudit{}
+func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_model.AuditRes {
+	result := sys_model.AuditRes{}
 	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UnionMainId: unionMainId, UserId: 0}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
@@ -189,7 +189,7 @@ func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId
 			// 业务类型一致则调用注入的Hook函数
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
 		}
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 		if err != nil {
 			return nil
 		}
@@ -199,9 +199,9 @@ func (s *sSysAudit) GetAuditLatestByUnionMainId(ctx context.Context, unionMainId
 	return &result
 }
 
-// GetAuditLatestByUserId 获取最新的业务个人审核信息
-func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_entity.SysAudit {
-	result := sys_entity.SysAudit{}
+// GetAuditLatestByUserId 根据UserId获取最后一次审核信息
+func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_model.AuditRes {
+	result := sys_model.AuditRes{}
 	err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{UserId: userId}).OrderDesc(sys_dao.SysAudit.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
@@ -217,7 +217,6 @@ func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *s
 			// 业务类型一致则调用注入的Hook函数
 			err = hook.Value.Value(ctx, sys_enum.Audit.Event.GetAuditData, &result)
 		}
-		gerror.NewCode(gcode.CodeInvalidConfiguration, "")
 		if err != nil {
 			return nil
 		}
@@ -227,8 +226,23 @@ func (s *sSysAudit) GetAuditLatestByUserId(ctx context.Context, userId int64) *s
 	return &result
 }
 
+// CancelAudit 取消审核
+func (s *sSysAudit) CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, error) {
+	data := s.GetAuditById(ctx, id)
+
+	if data == nil {
+		return false, gerror.NewCode(gcode.CodeInvalidParameter, "未找到审核记录")
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysAudit.Ctx(ctx).Where(sys_dao.SysAudit.Columns().Id, id), sys_do.SysAudit{
+		State: sys_enum.Audit.Action.Cancel.Code(),
+	})
+
+	return affected == 1, err
+}
+
 // CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload
-func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_entity.SysAudit, error) {
+func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_model.AuditRes, error) {
 	// 校验参数
 	if err := g.Validator().Data(info).Run(ctx); err != nil {
 		return nil, err
@@ -240,9 +254,9 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 		info.ExpireAt = gtime.Now().Add(time.Duration(time.Hour.Seconds() * 24 * day))
 	}
 
-	data := sys_entity.SysAudit{}
+	data := sys_model.AuditRes{}
 	audit := sys_entity.SysAudit{}
-	gconv.Struct(info, &data)
+	_ = gconv.Struct(info, &data)
 
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
@@ -261,11 +275,11 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 			// 如果当前有审核记录，则转存入历史记录中，并删除当前申请记录，避免后续步骤创建记录时重复导致的失败
 			if err == nil && audit.Id > 0 {
 				historyItems := make([]sys_entity.SysAudit, 0)
-				g.Try(ctx, func(ctx context.Context) {
+				_ = g.Try(ctx, func(ctx context.Context) {
 					// 判断历史记录是否为空
 					if audit.HistoryItems != "" {
 						// 解码json字符串为列表为切片对象
-						gjson.DecodeTo(audit.HistoryItems, &historyItems)
+						_ = gjson.DecodeTo(audit.HistoryItems, &historyItems)
 						// 清空记录中的历史记录，便于后面压入记录中导致冗余的历史记录
 						audit.HistoryItems = ""
 					}
@@ -307,7 +321,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 				// 业务类型一致则调用注入的Hook函数
 				err = hook.Value.Value(ctx, stateType, &data)
 			}
-			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 			if err != nil {
 				return err
 			}
@@ -358,7 +372,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 		}
 
 		//data := s.GetAuditById(ctx, info.Id)
-		data, _ := daoctl.GetByIdWithError[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), info.Id)
+		data, _ := daoctl.GetByIdWithError[sys_model.AuditRes](sys_dao.SysAudit.Ctx(ctx), info.Id)
 		if data == nil {
 			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
 		}
@@ -370,7 +384,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 				// 业务类型一致则调用注入的Hook函数
 				err = hook.Value.Value(ctx, sys_enum.Audit.Event.ExecAudit, data)
 			}
-			gerror.NewCode(gcode.CodeInvalidConfiguration, "")
+
 			if err != nil {
 				return err
 			}

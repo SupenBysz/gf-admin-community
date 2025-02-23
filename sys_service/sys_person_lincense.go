@@ -17,9 +17,9 @@ import (
 type (
 	ISysPersonLicense interface {
 		// GetAuditData 订阅审核数据获取Hook, 将审核数据渲染成个人资质然后进行输出
-		GetAuditData(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_entity.SysAudit) error
+		GetAuditData(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_model.AuditRes) error
 		// AuditChange 审核成功的处理逻辑 Hook
-		AuditChange(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_entity.SysAudit) error
+		AuditChange(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_model.AuditRes) error
 		// GetLicenseById  根据ID获取个人资质认证|信息
 		GetLicenseById(ctx context.Context, id int64) (*sys_entity.SysPersonLicense, error)
 		// QueryLicenseList  查询个人资质认证|列表

@@ -109,6 +109,8 @@ var (
 								sys_controller.SysArea,
 								// 公共：获取图片...
 								sys_controller.Common,
+								// 匿名访问文件
+								sys_controller.SysFileAllowAnonymous,
 							)
 						})
 
@@ -158,11 +160,20 @@ var (
 						group.Group("/industry", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIndustry) })
 						// 消息
 						group.Group("/message", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMessage) })
-						// 公告
+						// 公告管理
 						group.Group("/announcement", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysAnnouncement) })
 						// 会员等级
 						group.Group("/memberLevel", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysMemberLevel) })
-
+						// 类目管理
+						group.Group("/category", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysCategory) })
+						// UEditor 编辑器
+						group.Group("/ueditor", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysUEditor) })
+						// Iconify 图标集反向代理
+						group.Group("/iconify", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysIconify) })
+						// 物流公司
+						group.Group("/deliveryCompany", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysDeliveryCompany) })
+						// 评论
+						group.Group("/comment", func(group *ghttp.RouterGroup) { group.Bind(sys_controller.SysComment) })
 					})
 				})
 			}

@@ -22,6 +22,8 @@ service:
   # -1超级管理员，不支持注册为超级管理员
   # 业务层有自定义类型时将忽略这里的设置
   userDefaultType: 32
+  # 用户注册默认类型
+  userRegisterDefaultType: 0
   # 心跳超时时间，单位秒
   heartbeatTimeout: 60
   # 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
@@ -32,7 +34,11 @@ service:
   notAllowLoginUserType: [ 0 ]
   # 加载允许登录的用户类型，并去重
   # 如果NotAllowLoginUserTypeArr包含allowLoginUserType中的用户类型，那么前者优先级高于后者, 默认值为UserDefaultType
-  allowLoginUserType: [32,-1]
+  defaultAllowLoginUserType: [ 32 ]
+  # 管理后通信标识符，需要附在 Header 的 X-CLIENT 上
+  adminClientIdentifier: "c49f13cd9a9347fa86fbb747a6fba06c"
+  # 管理后台允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
+  adminClientAllowLoginUserType: [ -1, 32 ]
   # 需要存储到数据库中的日志，支持：all,error,warn,info
   logLevelToDatabase: [ "all" ]
   # 业务审核服务时限，超过时限需要重新申请审核，相关业务有自定义设置时，将自动忽略这里的设置
@@ -63,6 +69,8 @@ service:
   inviteCodeMaxActivateNumber: 0
   # 是否部署NFS文件系统
   isDeployNFS: false
+  # 是否开启发送验证码，默认false。正式环境建议配置好相关参数后，这里需要设置为 true 才能真正发送验证码
+  onSendCaptcha: false
 
 # 邮件设置
 email:
@@ -97,6 +105,8 @@ logger:
 upload:
   # 用戶1分钟内限制上传最大文件数量
   fileMaxUploadCountMinute: 10
+  # 加载临时文件缓存天数，默认缓存90天，最小有效值7天
+  tempFileExpiresDays: 90
   # 文件上传的默认保存路径
   path: "resource/upload"
   # 文件上传默认的临时保存路径
@@ -133,8 +143,8 @@ database:
     link: "pgsql:user=dbUsername password=dbPassword host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
     debug: true
 
-redis:
+#redis:
   # 单实例配置示例1
-  default:
-    address: 127.0.0.1:6379
-    db: 1
+#  default:
+#    address: 127.0.0.1:6379
+#    db: 1

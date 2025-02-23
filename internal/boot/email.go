@@ -2,9 +2,10 @@ package boot
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/glog"
+
+	"github.com/SupenBysz/gf-admin-community/sys_consts"
 )
 
 func InitEmail() {

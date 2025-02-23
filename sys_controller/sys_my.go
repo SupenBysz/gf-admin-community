@@ -197,11 +197,18 @@ func (c *cSysMy) MyPersonLicense(ctx context.Context, _ *sys_api.MyPersonLicense
 	return ret, err
 }
 
-// MyPersonLicenseAudit 获取最后一次提交的我个人资质审核信息
-func (c *cSysMy) MyPersonLicenseAudit(ctx context.Context, _ *sys_api.MyPersonLicenseAuditReq) (*sys_model.AuditRes, error) {
+// MyLastLicenseAudit 获取我最后一次提交的资质审核信息
+func (c *cSysMy) MyLastLicenseAudit(ctx context.Context, _ *sys_api.MyLastLicenseAuditReq) (*sys_model.AuditRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	ret := sys_service.SysAudit().GetAuditLatestByUserId(ctx, user.Id)
+	return sys_service.SysAudit().GetAuditLatestByUserId(ctx, user.Id), nil
+}
 
-	return (*sys_model.AuditRes)(ret), nil
+// MyUser 我的用户信息
+func (c *cSysMy) MyUser(ctx context.Context, _ *sys_api.MyUserReq) (*sys_model.UserInfoRes, error) {
+	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	result := &sys_model.UserInfoRes{}
+	err := gconv.Struct(user.SysUser, &result)
+	return result, err
 }

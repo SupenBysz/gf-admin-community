@@ -5,11 +5,11 @@ import (
 	"github.com/kysion/base-library/base_model"
 )
 
-// 记录已读 - 在获取公告详情的时候，就增加一条公告的已读用户记录
-//type MarkReadReq struct {
-//	g.Meta `path:"/getMessageById" method:"post" summary:"根据id查询公告｜信息" tags:"公告/用户公告"`
-//	Id     int64 `json:"id"  v:"required#消息Id不能为空"`
-//}
+// MarkReadReq 记录已读 - 在获取公告详情的时候，就增加一条公告的已读用户记录
+type MarkReadReq struct {
+	g.Meta `path:"/markRead" method:"post" summary:"标记已读｜信息" tags:"公告/用户公告"`
+	Id     int64 `json:"id"  v:"required#消息Id不能为空"`
+}
 
 type MarkUnReadReq struct {
 	g.Meta `path:"/markUnRead" method:"post" summary:"标记未读｜公告" tags:"公告/用户公告"`

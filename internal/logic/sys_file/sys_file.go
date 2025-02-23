@@ -8,6 +8,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/crypto"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
@@ -80,9 +81,7 @@ func (s *sFile) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
-// Upload 统一上传文件
-func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error) {
-	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+func (s *sFile) MakeTempUploadPath(ctx context.Context) (string, string, error) {
 	uploadPath := g.Cfg().MustGet(ctx, "upload.tempPath").String()
 	// 获取系统默认的临时文件的存储路径
 	tmpPath := gfile.Temp("upload")
@@ -103,17 +102,41 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		uploadPath = uploadPath + "/" + gtime.Now().Format("Ymd")
 		// 目录不存在则创建
 		if !gfile.Exists(uploadPath) {
-			gfile.Mkdir(uploadPath)
-			gfile.Chmod(uploadPath, gfile.DefaultPermCopy)
+			err := gfile.Mkdir(uploadPath)
+			if err != nil {
+				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "创建临时文件目录失败", "")
+			}
+			err = gfile.Chmod(uploadPath, gfile.DefaultPermCopy)
+			if err != nil {
+				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "设置临时文件目录权限失败", "")
+			}
 		}
 	}
 
 	{
-		// 清理2天前上传的临时文件，释放空间
-		uploadExpirePath := tmpPath + "/" + gtime.Now().AddDate(0, 0, -2).Format("Ymd")
-		if gfile.Exists(uploadExpirePath) {
-			gfile.Remove(uploadExpirePath)
+		// 加载临时文件缓存天数，默认缓存90天，最小有效值7天
+		expiresDays := g.Cfg().MustGet(ctx, "upload.tempFileExpiresDays", 90).Int()
+		if expiresDays < 7 {
+			expiresDays = 7
 		}
+		// 清理X天前上传的临时文件，释放空间
+		uploadExpirePath := tmpPath + "/" + gtime.Now().AddDate(0, 0, 0-expiresDays).Format("Ymd")
+		if gfile.Exists(uploadExpirePath) {
+			_ = gfile.Remove(uploadExpirePath)
+		}
+	}
+
+	return uploadPath, tmpPath, nil
+}
+
+// Upload 统一上传文件
+func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error) {
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	uploadPath, tmpPath, err := s.MakeTempUploadPath(ctx)
+
+	if err != nil {
+		return nil, err
 	}
 
 	newUserUploadItemsCache := kmap.New[int64, *sys_model.FileInfo]()
@@ -284,8 +307,14 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 	return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, messageStr, sys_dao.SysFile.Table())
 }
 
-// SaveFile 保存文件
-func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo) (*sys_model.FileInfo, error) {
+// SaveFile 保存文件,storageAddr 参数包含路径及文件名
+func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo, saveToLocal ...bool) (*sys_model.FileInfo, error) {
+
+	isSaveLocal := true
+
+	if len(saveToLocal) > 0 {
+		isSaveLocal = saveToLocal[0]
+	}
 
 	if gfile.GetContents(info.Src) == "" { // oss云存储 （TODO 注意：如果部署了NFS，那么获取文件就是获取得到的）
 		// 1.获取远端的临时temp文件，2.进行拉取下载到本地temp目录，3.然后将持久化 oss + 本地
@@ -340,9 +369,23 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		}
 	})
 
-	gfile.Chmod(gfile.Dir(storageAddr), gfile.DefaultPermCopy)
-	if err := gfile.CopyFile(info.Src, storageAddr); err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+	// 是否保存文件到本地
+	if isSaveLocal {
+		dirPath := gfile.Dir(storageAddr)
+
+		if !gfile.Exists(dirPath) {
+			gfile.Mkdir(dirPath)
+		}
+
+		err := gfile.Chmod(gfile.Dir(dirPath), gfile.DefaultPermCopy)
+
+		if err != nil {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败!", sys_dao.SysFile.Table())
+		}
+
+		if err = gfile.CopyFile(info.Src, storageAddr); err != nil {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+		}
 	}
 
 	// 记录到数据表
@@ -534,6 +577,28 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 				model = model.Where(sys_do.SysFile{UnionMainId: sessionUser.UnionMainId})
 			}
 		}
+		err := model.Scan(file)
+
+		if err != nil {
+			return nil, sys_service.SysLogs().WarnSimple(ctx, err, errorMessage, sys_dao.SysFile.Table())
+		}
+
+		//file.Url = s.GetUrlById(file.Id)
+		file.LocalPath = s.MakeFileUrl(ctx, file.Id)
+
+		return &sys_model.FileInfo{
+			SysFile:   *file,
+			ExpiresAt: nil,
+		}, nil
+	}
+}
+
+func (s *sFile) GetAnyFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error) { // 获取图片可以是id、token、路径
+	{
+		file := &sys_entity.SysFile{}
+		model := sys_dao.SysFile.Ctx(ctx).
+			Where(sys_do.SysFile{Id: id, AllowAnonymous: 1})
+
 		err := model.Scan(file)
 
 		if err != nil {
@@ -900,4 +965,8 @@ func (s *sFile) GetOssFileWithURL(ctx context.Context, bucketName, filePath, sin
 	ret, err := oss_controller.OssFile(modules).GetObjectToFileWithURL(ctx, &reqInfo)
 
 	return ret == true, err
+}
+
+func (s *sFile) QueryFile(ctx context.Context, search *base_model.SearchParams) (*base_model.CollectRes[sys_entity.SysFile], error) {
+	return daoctl.Query[sys_entity.SysFile](sys_dao.SysFile.Ctx(ctx), search, true)
 }

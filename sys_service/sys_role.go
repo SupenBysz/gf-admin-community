@@ -22,7 +22,7 @@ type (
 		// QueryRoleList 获取角色列表
 		QueryRoleList(ctx context.Context, info base_model.SearchParams, unionMainId int64) (*sys_model.RoleListRes, error)
 		// GetRoleById 根据id获取角色
-		GetRoleById(ctx context.Context, id int64) (*sys_entity.SysRole, error)
+		GetRoleById(ctx context.Context, id int64) (*sys_model.SysRoleRes, error)
 		// Create 创建角色信息
 		Create(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error)
 		// Update 更新角色信息

@@ -13,6 +13,8 @@ type SysRole struct {
 	UnionMainId int64  `json:"-"  dc:"主体id"`
 }
 
+type SysRoleRes sys_entity.SysRole
+
 type RoleListRes base_model.CollectRes[*sys_entity.SysRole]
 
 type RoleInfo sys_entity.SysRole

@@ -60,3 +60,8 @@ type SetUserStateReq struct {
 	Id     int64 `json:"id" v:"required#用户ID校验失败" dc:"用户ID"`
 	State  int   `json:"state" v:"required|in:-3,-2,-1,0,1#请选择状态|状态设置错误"`
 }
+
+type GetUserByIdReq struct {
+	g.Meta `path:"/getUserById" method:"post" summary:"根据ID获取用户信息" tags:"用户"`
+	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
+}
