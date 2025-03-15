@@ -16,29 +16,46 @@ service:
   # 接口前缀
   apiPrefix: "/api"
   # Token Sign Key
-  tokenSignKey: "KysionGfAdminProTokenSignKey"
+#  tokenSignKey: "KysionGfAdminProTokenSignKey"
   # 用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营商；独立调用创建用户、查询用户信息等相关接口时强制过滤类型
   # 新增用户默认类型：0匿名，1用户，2微商，4商户、8广告主、16服务商、32运营中心、-1超级管理员
   # -1超级管理员，不支持注册为超级管理员
   # 业务层有自定义类型时将忽略这里的设置
-  userDefaultType: 32
+#  userDefaultType: 32
   # 用户注册默认类型
-  userRegisterDefaultType: 0
+#  userRegisterDefaultType: 0
   # 心跳超时时间，单位秒
   heartbeatTimeout: 60
   # 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
-  userDefaultState: 0
+#  userDefaultState: 0
   # 是否运行注册用户，false时用户注册接口将强制返回失败
-  userAllowRegister: false
+#  userAllowRegister: false
   # 不允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
   notAllowLoginUserType: [ 0 ]
   # 加载允许登录的用户类型，并去重
   # 如果NotAllowLoginUserTypeArr包含allowLoginUserType中的用户类型，那么前者优先级高于后者, 默认值为UserDefaultType
-  defaultAllowLoginUserType: [ 32 ]
+#  defaultAllowLoginUserType: [ 32 ]
   # 管理后通信标识符，需要附在 Header 的 X-CLIENT 上
-  adminClientIdentifier: "c49f13cd9a9347fa86fbb747a6fba06c"
+#  adminClientIdentifier: "c49f13cd9a9347fa86fbb747a6fba06c"
   # 管理后台允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
-  adminClientAllowLoginUserType: [ -1, 32 ]
+#  adminClientAllowLoginUserType: [ -1, 32 ]
+  clientConfig:
+      # 通信标识符，需要附在 Header 的 X-CLIENT 上
+    - identifier: c49f13cd9a9347fa86fbb747a6fba06c
+      # 允许登录的用户类型，多个用半角逗号隔开，支持扩展自定义类型
+      allowLoginUserType: [ -1, 32 ]
+      # 是否运行注册用户，false时用户注册接口将强制返回失败
+      allowRegister: false
+      # 用户注册默认类型
+      defaultRegisterType: 0
+      # 新增用户默认状态：0未激活，1正常，-1封号，-2异常，-3已注销
+      defaultUserState: 0
+      # 登陆支持的方式：1用户名+密码+图形验证码、 2手机号+密码或验证码、4邮箱+密码
+      loginRule: [ 1,2,4 ]
+      # 注册支持的方式：1用户名+密码+图形验证码、 2用户名+手机号+验证码、4用户名+邮箱+验证码
+      registerRule: [ 1,2,4 ]
+      # 注册是否强制需要填写邀约码: true必需填写邀约码、false可选
+      enableRegisterInviteCode: false
   # 需要存储到数据库中的日志，支持：all,error,warn,info
   logLevelToDatabase: [ "all" ]
   # 业务审核服务时限，超过时限需要重新申请审核，相关业务有自定义设置时，将自动忽略这里的设置

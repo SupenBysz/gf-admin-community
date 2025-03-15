@@ -16,7 +16,7 @@ func init() {
 	sys_service.RegisterSysSession(New())
 }
 
-func New() *sSysSession {
+func New() sys_service.ISysSession {
 	return &sSysSession{
 		contextKey: g.Cfg().MustGet(context.Background(), "service.sessionContextKey", "gf-admin-community").String(),
 	}

@@ -3,8 +3,8 @@ module github.com/SupenBysz/gf-admin-community
 go 1.24.0
 
 require (
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.88
-	github.com/baidubce/app-builder/go/appbuilder v1.0.2
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.92
+	github.com/baidubce/app-builder/go/appbuilder v1.0.3
 	github.com/casbin/casbin/v2 v2.103.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.8.3
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.8.3
@@ -12,15 +12,15 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/uuid v1.6.0
 	github.com/kysion/base-library v0.2.1
-	github.com/kysion/oss-library v0.2.6
-	github.com/kysion/sms-library v0.2.4
+	github.com/kysion/oss-library v0.2.7
+	github.com/kysion/sms-library v0.2.5
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20241220152942-06eb5c6e8230
 	github.com/mojocn/base64Captcha v1.3.8
 	github.com/samber/lo v1.49.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1103
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1103
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1115
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1115
 	github.com/yitter/idgenerator-go v1.3.3
-	golang.org/x/sync v0.11.0
+	golang.org/x/sync v0.12.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
@@ -32,7 +32,7 @@ require (
 	github.com/alibabacloud-go/dysmsapi-20170525/v2 v2.0.18 // indirect
 	github.com/alibabacloud-go/endpoint-util v1.1.1 // indirect
 	github.com/alibabacloud-go/openapi-util v0.1.1 // indirect
-	github.com/alibabacloud-go/tea v1.3.1 // indirect
+	github.com/alibabacloud-go/tea v1.3.2 // indirect
 	github.com/alibabacloud-go/tea-utils v1.4.5 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
@@ -66,19 +66,19 @@ require (
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/redis/go-redis/v9 v9.7.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1103 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1115 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/otel v1.34.0 // indirect
-	go.opentelemetry.io/otel/metric v1.34.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
-	go.opentelemetry.io/otel/trace v1.34.0 // indirect
-	golang.org/x/crypto v0.34.0 // indirect
-	golang.org/x/image v0.24.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
-	golang.org/x/time v0.10.0 // indirect
+	go.opentelemetry.io/otel v1.35.0 // indirect
+	go.opentelemetry.io/otel/metric v1.35.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/image v0.25.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

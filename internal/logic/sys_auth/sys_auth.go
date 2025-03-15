@@ -143,17 +143,15 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, err
 	}
 
-	adminClientIdentifier := g.RequestFromCtx(ctx).Header.Get("X-CLIENT-ID")
+	clientConfig, err := sys_consts.Global.GetClientConfig(ctx)
 
-	// 校验登录类型
-	if !sys_consts.Global.DefaultAllowLoginUserTypeArr.Contains(user.Type) || sys_consts.Global.NotAllowLoginUserTypeArr.Contains(user.Type) {
-		if adminClientIdentifier != "" && adminClientIdentifier == sys_consts.Global.AdminClientIdentifier && !sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
-		}
+	if err != nil {
+		return nil, err
 	}
 
-	if sys_consts.Global.AdminClientAllowLoginUserType.Contains(user.Type) && adminClientIdentifier != "" && adminClientIdentifier != sys_consts.Global.AdminClientIdentifier {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户身份不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+	// 校验登录类型
+	if !clientConfig.AllowLoginUserTypeArr.Contains(user.Type) {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
@@ -398,12 +396,18 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 
 	data := &sys_model.SysUser{}
 
+	clientConfig, err := sys_consts.Global.GetClientConfig(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	// 开启事务
 	err = sys_dao.SysUser.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data, err = sys_service.SysUser().CreateUser(ctx,
 			*innerRegister,
-			sys_consts.Global.UserDefaultState,
-			sys_consts.Global.UserRegisterDefaultType,
+			sys_enum.User.State.New(clientConfig.DefaultUserState, ""),
+			sys_enum.User.Type.New(clientConfig.DefaultRegisterType, ""),
 			customId...,
 		)
 
@@ -644,7 +648,6 @@ func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.Jwt
 	}
 
 	result.TokenInfo = *newToken
-
 
 	return &result, err
 }
