@@ -3,6 +3,8 @@ package sys_permission
 import (
 	"context"
 	"fmt"
+	"sort"
+
 	"github.com/SupenBysz/gf-admin-community/internal/boot"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -24,7 +26,6 @@ import (
 	"github.com/kysion/base-library/utility/base_tree"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
-	"sort"
 )
 
 type sSysPermission struct {
@@ -95,7 +96,7 @@ func (s *sSysPermission) QueryPermissionList(ctx context.Context, info base_mode
 	result, err := daoctl.Query[*sys_entity.SysPermission](sys_dao.SysPermission.Ctx(ctx), &info, true)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "权限信息查询失败", sys_dao.SysPermission.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_permission_query_failed", sys_dao.SysPermission.Table())
 	}
 
 	return (*sys_model.SysPermissionInfoListRes)(result), err
@@ -276,7 +277,7 @@ func (s *sSysPermission) UpdatePermission(ctx context.Context, info *sys_model.U
 			count, _ := model.Count()
 
 			if count > 0 {
-				return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "名称在当前分类下已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_permission_name_exists", sys_dao.SysPermission.Table())
 			}
 		}
 	}
@@ -426,7 +427,7 @@ func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysP
 		count, _ := model.Count()
 
 		if count > 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "名称在当前分类下已存在，请修改后再试"), "", sys_dao.SysPermission.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_permission_name_exists", sys_dao.SysPermission.Table())
 		}
 
 	}

@@ -2,6 +2,7 @@ package sys_message
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -39,7 +40,7 @@ func init() {
 func (s *sMessage) GetMessageById(ctx context.Context, id int64) (*sys_model.SysMessageRes, error) {
 	result, err := daoctl.GetByIdWithError[sys_entity.SysMessage](sys_dao.SysMessage.Ctx(ctx), id)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询消息失败", sys_dao.SysMessage.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_query_message_by_id_failed", sys_dao.SysMessage.Table())
 	}
 
 	// 业务层  Hook处理渲染，如果没有Hook的话，
@@ -60,7 +61,7 @@ func (s *sMessage) GetMessageById(ctx context.Context, id int64) (*sys_model.Sys
 func (s *sMessage) GetMessageDetailById(ctx context.Context, messageId, userId int64) (*sys_model.SysMessageRes, error) {
 	result, err := daoctl.GetByIdWithError[sys_entity.SysMessage](sys_dao.SysMessage.Ctx(ctx), messageId)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询消息失败", sys_dao.SysMessage.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_query_by_id_failed", sys_dao.SysMessage.Table())
 	}
 
 	// TODO 修改消息状态，改变为已读
@@ -113,7 +114,7 @@ func (s *sMessage) CreateMessage(ctx context.Context, info *sys_model.SysMessage
 		affected, err := daoctl.InsertWithError(sys_dao.SysMessage.Ctx(ctx).OmitNilData().Data(data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "添加消息失败", sys_dao.SysMessage.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_add_message_failed", sys_dao.SysMessage.Table())
 		}
 
 		return nil
@@ -139,7 +140,7 @@ func (s *sMessage) UpdateMessage(ctx context.Context, id int64, info *sys_model.
 
 	// 判断消息状态，只有未发送的消息支持编辑
 	if message.SendAt != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "只有未发送的消息支持编辑", sys_dao.SysMessage.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_only_unsent_message_can_edit", sys_dao.SysMessage.Table())
 	}
 
 	// 消息接受者是否全部存在
@@ -164,7 +165,7 @@ func (s *sMessage) UpdateMessage(ctx context.Context, id int64, info *sys_model.
 		).OmitNilData().Data(data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "信息修改失败", sys_dao.SysMessage.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_update_failed", sys_dao.SysMessage.Table())
 		}
 
 		return nil
@@ -197,7 +198,7 @@ func (s *sMessage) QueryMessage(ctx context.Context, params *base_model.SearchPa
 	res, err := daoctl.Query[sys_model.SysMessageRes](sys_dao.SysMessage.Ctx(ctx), params, isExport)
 
 	if err != nil {
-		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "消息列表查询失败", sys_dao.SysMessage.Table())
+		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_list_query_failed", sys_dao.SysMessage.Table())
 	}
 
 	return (*sys_model.SysMessageListRes)(res), nil
@@ -212,7 +213,7 @@ func (s *sMessage) QueryUserMessage(ctx context.Context, userId int64, params *b
 		params, isExport)
 
 	if err != nil {
-		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "消息列表查询失败", sys_dao.SysMessage.Table())
+		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_list_query_failed", sys_dao.SysMessage.Table())
 	}
 
 	return (*sys_model.SysMessageListRes)(res), nil
@@ -226,7 +227,7 @@ func (s *sMessage) QueryUnionMainMessage(ctx context.Context, unionMainId int64,
 	}), params, isExport)
 
 	if err != nil {
-		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "消息列表查询失败", sys_dao.SysMessage.Table())
+		return &sys_model.SysMessageListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_list_query_failed", sys_dao.SysMessage.Table())
 	}
 
 	return (*sys_model.SysMessageListRes)(res), nil
@@ -244,13 +245,13 @@ func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64, messageTy
 	// 消息总量
 	messageCount, err := model.Count()
 	if err != nil {
-		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "查询未读的消息失败", sys_dao.SysMessage.Table())
+		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "error_unread_message_query_failed", sys_dao.SysMessage.Table())
 	}
 
 	// 已读数量
 	readCount, err := model.WhereLike(sys_dao.SysMessage.Columns().ReadUserIds, "%"+gconv.String(userId)+"%").Count()
 	if err != nil {
-		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "查询未读的消息失败", sys_dao.SysMessage.Table())
+		return 0, sys_service.SysLogs().ErrorSimple(ctx, err, "error_unread_message_query_failed", sys_dao.SysMessage.Table())
 	}
 
 	// 未读数量 = 消息总量 - 已读数量
@@ -270,7 +271,7 @@ func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64, messageTy
 //	}))
 //
 //	if affected == 0 || err != nil {
-//		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "消息状态修改失败", sys_dao.SysMessage.Table())
+//		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_status_update_failed", sys_dao.SysMessage.Table())
 //	}
 //
 //	return affected > 0, nil
@@ -279,7 +280,7 @@ func (s *sMessage) HasUnReadMessage(ctx context.Context, userId int64, messageTy
 // SetMessageReadUserIds 追加消息已读用户
 func (s *sMessage) SetMessageReadUserIds(ctx context.Context, messageId int64, userId int64) (bool, error) {
 	if userId == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户ID不能为空", sys_dao.SysMessage.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_message_user_id_empty", sys_dao.SysMessage.Table())
 	}
 
 	message, err := s.GetMessageById(ctx, messageId)
@@ -297,7 +298,7 @@ func (s *sMessage) SetMessageReadUserIds(ctx context.Context, messageId int64, u
 	affected, err := daoctl.UpdateWithError(sys_dao.SysMessage.Ctx(ctx).Where(sys_do.SysMessage{Id: messageId}).Data(sys_do.SysMessage{ReadUserIds: arr}))
 
 	if err != nil || affected <= 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "追加消息已读用户失败", sys_dao.SysMessage.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_append_read_user_failed", sys_dao.SysMessage.Table())
 	}
 
 	return affected > 0, nil
@@ -306,7 +307,7 @@ func (s *sMessage) SetMessageReadUserIds(ctx context.Context, messageId int64, u
 // OneClickRead 一键已读
 func (s *sMessage) OneClickRead(ctx context.Context, userId int64, messageType sys_enum.MessageType) (bool, error) {
 	if userId == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户ID不能为空", sys_dao.SysMessage.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_message_user_id_empty", sys_dao.SysMessage.Table())
 	}
 
 	// 1、找到用户的消息列表
@@ -359,7 +360,7 @@ func (s *sMessage) checkUser(ctx context.Context, toUserIds []int64) (idStrArr [
 		idStrArr = append(idStrArr, gconv.String(userId))
 		sysUser, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 		if err != nil || sysUser == nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "消息接收者中有用户不存在", sys_dao.SysMessage.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_message_receiver_not_exists", sys_dao.SysMessage.Table())
 		}
 	}
 

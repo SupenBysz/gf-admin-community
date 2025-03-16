@@ -3,6 +3,7 @@ package sys_sms
 import (
 	"context"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
@@ -26,10 +27,10 @@ func New() sys_service.ISysSms {
 // Verify 校验验证码
 func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typeIdentifier ...base_enum.CaptchaType) (bool, error) {
 	if mobile == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "手机号码不能为空", "Sms")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_sms_mobile_empty", "Sms")
 	}
 	if captcha == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码不能为空", "Sms")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_sms_captcha_empty", "Sms")
 	}
 
 	key := ""
@@ -44,7 +45,7 @@ func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typ
 	fmt.Println("验证码：", code.String())
 
 	if err != nil || code.String() != captcha {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码错误", "Sms")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_sms_captcha_incorrect", "Sms")
 	}
 
 	// 成功、清除该缓存

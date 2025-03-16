@@ -2,6 +2,7 @@ package internal
 
 import (
 	"github.com/SupenBysz/gf-admin-community/internal/boot"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
@@ -11,6 +12,9 @@ import (
 
 func init() {
 	env.LoadEnv()
+
+	// 初始化国际化
+	i18n.Init()
 
 	idgen.InitIdGenerator()
 	boot.InitPermissionFactory()

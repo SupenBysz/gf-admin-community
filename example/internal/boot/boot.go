@@ -2,6 +2,7 @@ package boot
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_controller"
@@ -111,6 +112,8 @@ var (
 								sys_controller.Common,
 								// 匿名访问文件
 								sys_controller.SysFileAllowAnonymous,
+								// 语言设置
+								sys_controller.SysCommon,
 							)
 						})
 

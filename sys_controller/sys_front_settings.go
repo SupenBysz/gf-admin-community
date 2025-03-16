@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -94,7 +95,7 @@ func (c *cSysFrontSettings) Save(ctx context.Context, req *sys_api.SaveFrontSett
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	if user.IsSuperAdmin == false && user.IsAdmin == false && req.Sys != 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("权限不足"), "", sys_dao.SysFrontSettings.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_permission_insufficient"), "", sys_dao.SysFrontSettings.Table())
 	}
 
 	// 如果设置的是全局配置或主体配置项，则忽略用户条件

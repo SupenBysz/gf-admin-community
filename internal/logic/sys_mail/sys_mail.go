@@ -4,6 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"math/rand"
+	"net/smtp"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -13,11 +19,6 @@ import (
 	"github.com/kysion/base-library/utility/enum"
 	"github.com/kysion/base-library/utility/kconv"
 	"gopkg.in/gomail.v2"
-	"math/rand"
-	"net/smtp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type sSysMails struct {
@@ -46,13 +47,13 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	code := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
 
 	mailConfig.MailTo = mailTo
-	mailConfig.Subject = mailConfig.TitlePrefix + "验证码邮件"
-	mailConfig.Body = "您的验证码为：" + code + "，请在" + gconv.String(cacheTimeLen) + "分钟内验证，系统邮件请勿回复！"
+	mailConfig.Subject = mailConfig.TitlePrefix + g.I18n().T(ctx, "mail_captcha_subject")
+	mailConfig.Body = g.I18n().Tf(ctx, "mail_captcha_body", code, gconv.String(cacheTimeLen))
 	mailConfig.SendAuthor = strings.Split(mailConfig.Username, "@")[0]
 
 	err = sendMail(&mailConfig)
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "邮件发送失败", "Mail-Captcha")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_mail_send_failed", "Mail-Captcha")
 	}
 
 	for _, value := range captchaTypes {
@@ -66,7 +67,7 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 		}
 		// 设置验证码缓存时间
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "验证码缓存失败", "Mail-Captcha")
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_mail_captcha_cache_failed", "Mail-Captcha")
 		}
 	}
 
@@ -104,10 +105,10 @@ func sendMail(info *sys_model.EmailConfig) error {
 // Verify 校验验证码
 func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, typeIdentifier ...base_enum.CaptchaType) (bool, error) {
 	if email == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "邮箱不能为空", "Mail")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_mail_email_empty", "Mail")
 	}
 	if captcha == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码不能为空", "Mail")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_mail_captcha_empty", "Mail")
 	}
 
 	key := ""
@@ -120,7 +121,7 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 	code, err := g.Redis().Get(ctx, key)
 
 	if err != nil || code.String() != captcha {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "验证码错误", "Mail")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_mail_captcha_incorrect", "Mail")
 	}
 
 	// 成功、清除该缓存

@@ -2,12 +2,14 @@ package sys_settings
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
@@ -29,7 +31,7 @@ func (s *sSysSettings) QueryList(ctx context.Context, params *base_model.SearchP
 	result, err := daoctl.Query[sys_entity.SysSettings](sys_dao.SysSettings.Ctx(ctx), params, isExport)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("配置列表获取失败"), "", sys_dao.SysSettings.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New(g.I18n().T(ctx, "error_settings_list_query_failed")), "", sys_dao.SysSettings.Table())
 	}
 
 	return (*sys_model.SysSettingListRes)(result), err
@@ -48,7 +50,7 @@ func (s *sSysSettings) GetByName(ctx context.Context, name string, info *base_mo
 		}
 	}
 
-	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询配置信息失败", sys_dao.SysSettings.Table())
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_settings_get_by_name_failed"), sys_dao.SysSettings.Table())
 }
 
 // save 保存系统配置信息
@@ -59,7 +61,7 @@ func (s *sSysSettings) save(ctx context.Context, info *sys_model.SysSettings) (*
 
 	if selectInfo != nil {
 		if selectInfo.UnionMainId != info.UnionMainId && info.UnionMainId > 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("当前操作用户的主体和实际关联主体不一致，修改失败！"), "", sys_dao.SysSettings.Table()+":"+info.Name)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New(g.I18n().T(ctx, "error_settings_subject_mismatch")), "", sys_dao.SysSettings.Table()+":"+info.Name)
 		}
 
 		_, err = sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(sys_do.SysSettings{Values: data.Values, Desc: data.Desc})
@@ -68,7 +70,7 @@ func (s *sSysSettings) save(ctx context.Context, info *sys_model.SysSettings) (*
 	}
 
 	if nil != err {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "配置保存失败", sys_dao.SysSettings.Table()+":"+info.Name)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_settings_save_failed"), sys_dao.SysSettings.Table()+":"+info.Name)
 	}
 
 	return s.GetByName(ctx, info.Name, nil)
@@ -90,7 +92,7 @@ func (s *sSysSettings) Delete(ctx context.Context, name string, unionMainId int6
 	affected, err := daoctl.DeleteWithError(sys_dao.SysSettings.Ctx(ctx).Where(sys_do.SysSettings{Name: name, UnionMainId: unionMainId}))
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysSettings.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_settings_delete_failed"), sys_dao.SysSettings.Table())
 	}
 
 	return affected > 0, err

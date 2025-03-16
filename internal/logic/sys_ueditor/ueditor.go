@@ -3,6 +3,9 @@ package sys_ueditor
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -18,8 +21,6 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
-	"net/http"
-	"time"
 )
 
 type sUEditor struct {
@@ -131,7 +132,7 @@ func (s *sUEditor) UEditor(ctx context.Context, userId int64, unionMainId int64,
 			},
 		})
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件查询失败", sys_dao.SysFile.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_query_failed", sys_dao.SysFile.Table())
 		}
 
 		for i, v := range data.Records {

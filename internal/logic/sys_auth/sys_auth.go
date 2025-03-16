@@ -2,6 +2,8 @@ package sys
 
 import (
 	"context"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -25,7 +27,6 @@ import (
 	"github.com/kysion/base-library/utility/base_verify"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/en_crypto"
-	"time"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.AuthHookInfo]
@@ -86,7 +87,7 @@ func (s *sSysAuth) CleanAllHook() {
 // Login 登陆
 func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptcha ...bool) (*sys_model.LoginRes, error) {
 	if (len(needCaptcha) == 0 || needCaptcha[0] == true) && !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), req.Captcha) {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_captcha_incorrect"))
 	}
 
 	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, req.Username)
@@ -100,7 +101,7 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 	}
 
 	if sysUserInfo == nil && err != nil || sysUserInfo.Id == 0 {
-		return nil, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
+		return nil, gerror.NewCode(gcode.CodeValidationFailed, g.I18n().T(ctx, "error_account_not_exists"))
 	}
 
 	// 判断是否相等
@@ -108,7 +109,7 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 		if err != nil {
 			return nil, err
 		}
-		return nil, gerror.New("用户密码错误")
+		return nil, gerror.New(g.I18n().T(ctx, "error_password_incorrect"))
 	}
 	res := sys_model.LoginRes{}
 
@@ -126,16 +127,16 @@ func (s *sSysAuth) Login(ctx context.Context, req sys_model.LoginInfo, needCaptc
 // InnerLogin 内部登录，无需校验验证码和密码
 func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sys_model.TokenInfo, error) {
 	if user.State == 0 {
-		return nil, gerror.New("账号未激活")
+		return nil, gerror.New(g.I18n().T(ctx, "error_account_not_activated"))
 	}
 	if user.State == -1 {
-		return nil, gerror.New("账号已被封号，您可联系客服进行申诉")
+		return nil, gerror.New(g.I18n().T(ctx, "error_account_banned"))
 	}
 	if user.State == -2 {
-		return nil, gerror.New("账号异常，请联系客服处理")
+		return nil, gerror.New(g.I18n().T(ctx, "error_account_abnormal"))
 	}
 	if user.State == -3 {
-		return nil, gerror.New("账号查已注销")
+		return nil, gerror.New(g.I18n().T(ctx, "error_account_cancelled"))
 	}
 
 	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, user)
@@ -151,7 +152,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 
 	// 校验登录类型
 	if !clientConfig.AllowLoginUserTypeArr.Contains(user.Type) {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户类型不匹配，已阻止未授权的登录", sys_dao.SysUser.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_user_type_mismatch", sys_dao.SysUser.Table())
 	}
 
 	ip := g.RequestFromCtx(ctx).GetRemoteIp()
@@ -183,7 +184,7 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 
 				area, err = sys_consts.Global.Searcher.SearchByStr(ip)
 				if err != nil {
-					_ = sys_service.SysLogs().ErrorSimple(ctx, err, "用户登陆地区更新失败", sys_dao.SysUser.Table())
+					_ = sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_login_area_update_failed", sys_dao.SysUser.Table())
 				}
 			}
 
@@ -205,13 +206,13 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 	// 根据配置判断用户是够可以通过此方式登陆
 	loginRule := sys_rules.CheckLoginRule(ctx, info.Mobile)
 	if !loginRule {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此登陆方式！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_login_method_not_supported"))
 	}
 
 	// 判断该手机号码是否具备多用户，是的话返回userList，下一次前端再次调用该接口，需要传递userName
 	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, info.Mobile)
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号错误，请重试")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_mobile_number_incorrect"))
 	}
 
 	if info.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
@@ -228,12 +229,12 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 			ver, err = sys_service.SysSms().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.Login)
 		}
 	} else {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号格式填写错误！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_mobile_format_incorrect"))
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
 		if info.Password == "" {
-			return nil, gerror.New("请输入正确的验证码")
+			return nil, gerror.New(g.I18n().T(ctx, "error_captcha_incorrect"))
 		}
 	}
 
@@ -246,7 +247,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
 	}
 	if err != nil || userInfo == nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_username_verification_failed"))
 	}
 
 	if info.Password != "" {
@@ -262,7 +263,7 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 		}
 
 		if pwdHash != userInfo.Password {
-			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码校验不通过, 请检查")
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_password_verification_failed"))
 		}
 	}
 
@@ -284,12 +285,12 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailInfo) (*sys_model.LoginByMailRes, error) {
 	loginRule := sys_rules.CheckLoginRule(ctx, info.Mail)
 	if !loginRule {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此登陆方式！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_login_method_not_supported"))
 	}
 
 	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, info.Mail)
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱错误，请重试")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_incorrect"))
 	}
 	// 邮箱+密码验证,如果存在多个账号，返回账号列表，不存在直接校验，直接返回用户信息即可
 	if info.Username == "" && len(userList.Records) > 1 { // 不止一个账号的，返回账号列表
@@ -306,12 +307,12 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 			ver, err = sys_service.SysMails().Verify(ctx, info.Mail, info.Captcha, base_enum.Captcha.Type.Login)
 		}
 	} else {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱格式填写错误！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_format_incorrect"))
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
 		if info.Password == "" {
-			return nil, gerror.New("请输入正确的验证码")
+			return nil, gerror.New(g.I18n().T(ctx, "error_captcha_incorrect"))
 		}
 	}
 
@@ -324,7 +325,7 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 		userInfo, err = sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
 	}
 	if err != nil || userInfo == nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名安全校验不通过")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_username_verification_failed"))
 	}
 
 	if info.Password != "" {
@@ -340,14 +341,14 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 		}
 
 		if pwdHash != userInfo.Password {
-			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码校验不通过, 请检查")
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_password_verification_failed"))
 		}
 	}
 
 	// 返回token
 	tokenInfo, err := sys_service.SysAuth().InnerLogin(ctx, userInfo)
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登陆失败，请重试")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_login_failed"))
 	}
 
 	// 返回token数据
@@ -363,12 +364,12 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	// 判断是否支持方式注册
 	registerRule := sys_rules.CheckRegisterRule(ctx, info.Username)
 	if !registerRule {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此方式注册！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_register_method_not_supported"))
 	}
 
 	// 图形验证码校验
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "请输入正确的验证码")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_captcha_incorrect"))
 	}
 
 	userInnerRegister := sys_model.UserInnerRegister{
@@ -391,7 +392,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, innerRegister.Username)
 	if count > 0 {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_user_name_exists"))
 	}
 
 	data := &sys_model.SysUser{}
@@ -458,7 +459,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 
 	if err != nil {
 		g.Log("Auth").Error(ctx, err.Error())
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号注册失败")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_account_registration_failed"))
 	}
 
 	return data, nil
@@ -469,7 +470,7 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 	// 判断是否支持方式注册
 	registerRule := sys_rules.CheckRegisterRule(ctx, info.MobileOrMail)
 	if !registerRule {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统不支持此方式注册！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_register_method_not_supported"))
 	}
 
 	innerRegisterUser := sys_model.UserInnerRegister{
@@ -493,11 +494,11 @@ func (s *sSysAuth) RegisterByMobileOrMail(ctx context.Context, info sys_model.Sy
 		innerRegisterUser.Email = info.MobileOrMail
 
 	} else {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_or_mobile_format_incorrect"))
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		return nil, gerror.New("请输入正确的验证码")
+		return nil, gerror.New(g.I18n().T(ctx, "error_captcha_incorrect"))
 	}
 
 	return s.registerUser(ctx, &innerRegisterUser, customId...)
@@ -515,16 +516,16 @@ func (s *sSysAuth) ForgotUserName(ctx context.Context, captcha, mobileOrEmail st
 		ver, err = sys_service.SysMails().Verify(ctx, mobileOrEmail, captcha, base_enum.Captcha.Type.SetUserName)
 
 	} else {
-		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_or_mobile_format_incorrect"))
 	}
 
 	if captcha == "" || !ver || err != nil {
-		return nil, gerror.New("请输入正确的验证码")
+		return nil, gerror.New(g.I18n().T(ctx, "error_captcha_incorrect"))
 	}
 
 	userList, err := sys_service.SysUser().GetUserListByMobileOrMail(ctx, mobileOrEmail)
 	if err != nil {
-		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱错误，请重试")
+		return &sys_model.SysUserListRes{}, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_incorrect"))
 	}
 
 	return userList, nil
@@ -536,18 +537,18 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 
 	user, err := sys_service.SysUser().GetSysUserByUsername(ctx, info.Username)
 	if err != nil {
-		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名不存在！")
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_user_not_exists"))
 	}
 
 	user, err = sys_service.SysUser().GetUserDetail(ctx, user.Id)
 	if err != nil {
-		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名填写错误！")
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_username_incorrect"))
 	}
 
 	if base_verify.IsPhone(info.Mobile) {
 		// 判断绑定的是否是此手机号
 		if user.Mobile != info.Mobile {
-			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的手机号填写错误！")
+			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_mobile_binding_incorrect"))
 		}
 
 		// 短信验证码校验
@@ -555,22 +556,22 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 	} else if base_verify.IsEmail(info.Mobile) {
 		// 判断绑定的是否是此邮箱
 		if user.Email != info.Mobile {
-			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "账号绑定的邮箱填写错误！")
+			return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_binding_incorrect"))
 		}
 
 		// 邮箱验证码校验
 		ver, err = sys_service.SysMails().Verify(ctx, info.Mobile, info.Captcha, base_enum.Captcha.Type.SetPassword)
 	} else {
-		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邮箱或手机号格式填写错误！")
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_email_or_mobile_format_incorrect"))
 	}
 
 	if info.Captcha == "" || !ver || err != nil {
-		return 0, gerror.New("请输入正确的验证码")
+		return 0, gerror.New(g.I18n().T(ctx, "error_captcha_incorrect"))
 	}
 
 	count, err := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_do.SysUser{Username: info.Username})
 	if count <= 0 || err != nil {
-		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名错误")
+		return 0, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_username_incorrect"))
 	}
 
 	IdKey := idgen.NextId()
@@ -591,18 +592,18 @@ func (s *sSysAuth) ForgotPassword(ctx context.Context, info sys_model.ForgotPass
 func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPassword string, idKey string) (bool, error) {
 	value, err := gcache.Get(ctx, idKey)
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "你停留太久了，请重新操作")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_operation_timeout"))
 	}
 	gcache.Remove(ctx, idKey)
 
 	// 根据用户名获取用户信息
 	sysUserInfo, err := sys_service.SysUser().GetSysUserByUsername(ctx, gconv.String(value))
 	if err != nil || sysUserInfo == nil || sysUserInfo.Id == 0 {
-		return false, gerror.NewCode(gcode.CodeValidationFailed, "请确认账号密码是否正确")
+		return false, gerror.NewCode(gcode.CodeValidationFailed, g.I18n().T(ctx, "error_account_not_exists"))
 	}
 
 	if password != confirmPassword {
-		return false, gerror.NewCode(gcode.CodeValidationFailed, "两次密码不一致，请重新输入")
+		return false, gerror.NewCode(gcode.CodeValidationFailed, g.I18n().T(ctx, "error_passwords_not_match"))
 	}
 	// 取盐
 	salt := gconv.String(sysUserInfo.Id)
@@ -620,7 +621,7 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	count, _ := result.RowsAffected()
 
 	if err != nil || count != 1 {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_reset_password_failed"))
 	}
 
 	return true, nil
@@ -629,7 +630,7 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 // RefreshJwtToken 刷新用户jwtToken
 func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.JwtCustomClaims) (res *sys_model.LoginRes, err error) {
 	if loginUser == nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_user_not_exists"))
 	}
 
 	result := sys_model.LoginRes{}
@@ -644,7 +645,7 @@ func (s *sSysAuth) RefreshJwtToken(ctx context.Context, loginUser *sys_model.Jwt
 	// 生成新的token
 	newToken, err := sys_service.Jwt().GenerateToken(ctx, user)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "刷新jwt-token失败", sys_dao.SysUser.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_refresh_jwt_token_failed", sys_dao.SysUser.Table())
 	}
 
 	result.TokenInfo = *newToken

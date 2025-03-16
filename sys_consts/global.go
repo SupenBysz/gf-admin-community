@@ -2,6 +2,7 @@ package sys_consts
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/container/garray"
@@ -39,7 +40,7 @@ func (s global) GetClientConfig(ctx context.Context) (*sys_model.ClientConfig, e
 		}
 	}
 
-	return nil, gerror.NewCode(gcode.CodeNotAuthorized, "客户端信息错误")
+	return nil, gerror.NewCode(gcode.CodeNotAuthorized, "error_client_info_incorrect")
 }
 
 var (
