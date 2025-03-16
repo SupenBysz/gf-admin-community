@@ -31,13 +31,20 @@ error_login_failed: 'Login failed, please try again'
 error_register_method_not_supported: 'The system does not support this registration method!'
 error_email_or_mobile_format_incorrect: 'Email or mobile format incorrect!'
 error_account_registration_failed: 'Account registration failed'
-error_user_not_exists: 'User information does not exist'
 error_username_incorrect: 'Username incorrect'
 error_mobile_binding_incorrect: 'The mobile number bound to the account is incorrect!'
 error_email_binding_incorrect: 'The email bound to the account is incorrect!'
 error_operation_timeout: 'You stayed too long, please try again'
 error_passwords_not_match: 'The two passwords do not match, please re-enter'
 error_reset_password_failed: 'Reset password failed'
+
+# 令牌模块错误信息
+error_token_creation_failed: 'Token creation failed'
+error_invalid_token: 'Invalid token'
+error_token_expired: 'Token expired'
+error_token_not_active: 'Token not active'
+error_token_signature_invalid: 'Token signature invalid'
+error_token_parsing_failed: 'Token parsing failed'
 
 # System Configuration Module Error Messages
 error_sys_config_list_query_failed: 'Failed to get application configuration list'
@@ -51,7 +58,6 @@ error_settings_get_by_name_failed: 'Failed to query configuration by name'
 error_settings_subject_mismatch: 'The subject of the current operating user is inconsistent with the actual associated subject, modification failed!'
 error_settings_save_failed: 'Failed to save configuration'
 error_settings_delete_failed: 'Failed to delete configuration'
-error_settings_platform_config_delete_forbidden: 'Platform configuration cannot be deleted'
 
 # Personal License Module Error Messages
 error_license_audit_data_empty: 'Audit data is empty'
@@ -111,7 +117,6 @@ error_org_delete_info_failed: 'Failed to delete organization information'
 error_org_delete_with_children: 'Deletion is prohibited when there are subordinate organizations!'
 
 # Member Level Module Error Messages
-error_member_level_list_query_failed: 'Failed to query member level list'
 error_member_level_create_failed: 'Failed to create member level'
 error_member_level_not_exists: 'The member level does not exist'
 error_subject_modify_member_level_forbidden: 'Subject is prohibited from modifying member level information'
@@ -303,9 +308,6 @@ error_industry_has_children: 'This industry category has sub-categories, please 
 
 # Settings module error messages
 error_settings_platform_config_delete_forbidden: 'Platform configuration cannot be deleted'
-
-# SMS module error messages
-error_sms_send_failed: 'Failed to send SMS'
 
 # Member level module error messages
 error_member_level_list_query_failed: 'Failed to query member level list'

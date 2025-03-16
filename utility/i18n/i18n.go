@@ -112,14 +112,17 @@ func T(ctx context.Context, key string, args ...interface{}) string {
 	language := GetLanguage(ctx)
 
 	// 设置语言
-	instance.SetLanguage(language)
+	//instance.SetLanguage(language)
+	n18nCtx := gi18n.WithLanguage(ctx, language)
 
 	// 翻译
 	translated := ""
+	// langKey := `{#` + key + `}`
 	if len(args) > 0 {
-		translated = instance.Tf(ctx, key, args...)
+		translated = instance.Tf(n18nCtx, key, args...)
 	} else {
-		translated = instance.T(ctx, key)
+		translated = instance.T(n18nCtx, key)
+		// translated = g.I18n().T(gi18n.WithLanguage(context.TODO(), language), langKey)
 	}
 
 	if translated == key {

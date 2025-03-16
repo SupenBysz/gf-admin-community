@@ -6,7 +6,6 @@ error_unauthorized: '未授权的操作'
 error_login_required: '请先登录'
 error_password_incorrect: '密码错误'
 error_account_not_exists: '账号不存在'
-error_captcha_incorrect: '请输入正确的验证码'
 error_request_too_frequent: '请求过于频繁，请稍后再试'
 error_system_error: '系统错误，请联系管理员'
 error_data_save_failed: '数据保存失败'
@@ -38,6 +37,14 @@ error_email_binding_incorrect: '账号绑定的邮箱填写错误！'
 error_operation_timeout: '你停留太久了，请重新操作'
 error_passwords_not_match: '两次密码不一致，请重新输入'
 error_reset_password_failed: '重置密码失败'
+
+# 令牌模块错误信息
+error_token_creation_failed: '令牌创建失败'
+error_invalid_token: '无效的令牌'
+error_token_expired: '令牌已过期'
+error_token_not_active: '令牌尚未生效'
+error_token_signature_invalid: '令牌签名无效'
+error_token_parsing_failed: '令牌解析失败'
 
 # 系统配置模块错误信息
 error_sys_config_list_query_failed: '应用配置列表获取失败'
@@ -300,9 +307,6 @@ error_industry_add_failed: '新增行业类别信息失败'
 error_industry_save_failed: '行业类别信息保存失败'
 error_industry_permission_update_failed: '行业类别权限更新失败'
 error_industry_has_children: '该行业类别具备子行业类别，请先移除子行业类别再进行操作'
-
-# 权限错误信息
-error_permission_insufficient: '权限不足'
 
 # 邮件模块多语言文本
 mail_captcha_subject: '验证码邮件'

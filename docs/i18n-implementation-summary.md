@@ -95,12 +95,14 @@
 ### 后端使用
 
 1. **错误信息**：
+
    ```go
    // 使用错误键（不直接翻译）
    return sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_status_update_failed", sys_dao.SysInvite.Table())
    ```
 
 2. **直接翻译**：
+
    ```go
    // 在需要立即显示的地方使用翻译
    message := i18n.T(ctx, "common_success")
@@ -112,6 +114,7 @@
    - 集成 `LanguageSwitcher` 组件到应用导航栏
 
 2. **使用翻译**：
+
    ```vue
    <template>
      <!-- 在模板中使用 -->
@@ -145,4 +148,4 @@
 
 4. **多语言内容管理**：
    - 为动态内容（如CMS内容）添加多语言支持
-   - 实现内容的多语言版本管理 
+   - 实现内容的多语言版本管理
