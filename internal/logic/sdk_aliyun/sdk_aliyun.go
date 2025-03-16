@@ -3,6 +3,8 @@ package sdk_aliyun
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -13,7 +15,6 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/kysion/base-library/utility/kconv"
-	"time"
 )
 
 /*
@@ -65,7 +66,7 @@ func (s *sSdkAliyun) GetAliyunSdkConfList(ctx context.Context) ([]*sys_model.Ali
 	items := make([]*sys_model.AliyunSdkConf, 0)
 	config, err := sys_service.SysConfig().GetByName(ctx, s.sysConfigName)
 	if err != nil {
-		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息获取失败"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return items, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_aliyun_sdk_config_fetch_failed"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	if config.Value == "" {
@@ -91,7 +92,7 @@ func (s *sSdkAliyun) GetAliyunSdkConf(ctx context.Context, identifier string) (t
 		}
 	}
 
-	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 identifier 查询阿里云SDK应用配置信息失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_aliyun_sdk_app_config_query_failed", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 }
 
 // SaveAliyunSdkConf 保存SDK应用配信息, isCreate判断是更新还是新建
@@ -114,7 +115,7 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info *sys_model.Aliy
 		if isCreate { // 创建 --- 追加info （原有的 + 最新的Info）
 			newItems = append(newItems, info)
 		} else { // 更新 --- 不存在此配置，那么就提示错误
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("阿里云SDK配置信息保存失败，标识符错误"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_aliyun_sdk_config_save_failed_identifier_error"), "", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 	}
 
@@ -125,7 +126,7 @@ func (s *sSdkAliyun) SaveAliyunSdkConf(ctx context.Context, info *sys_model.Aliy
 		Value: jsonString,
 	})
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息保存失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_aliyun_sdk_config_save_failed", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 同步阿里云SDK应用配置缓存列表
@@ -170,7 +171,7 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 	}
 
 	if !isHas {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "要删除的阿里云SDK配置信息不存在", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_aliyun_sdk_config_delete_not_exist", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	jsonString := gjson.MustEncodeString(newItems)
@@ -179,7 +180,7 @@ func (s *sSdkAliyun) DeleteAliyunSdkConf(ctx context.Context, identifier string)
 		Value: jsonString,
 	})
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "阿里云SDK配置信息删除失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_aliyun_sdk_config_delete_failed", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 	}
 
 	// 同步Token列表

@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -16,13 +18,13 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/masker"
-	"time"
 )
 
 // 个人资质相关
@@ -55,7 +57,7 @@ func NewSysPersonLicense() sys_service.ISysPersonLicense {
 func (s *sSysPersonLicense) GetAuditData(ctx context.Context, auditEvent sys_enum.AuditEvent, info *sys_model.AuditRes) error {
 	//  处理审核
 	if info == nil {
-		return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核数据为空", "Audit")
+		return sys_service.SysLogs().ErrorSimple(ctx, nil, g.I18n().T(ctx, "error_license_audit_data_empty"), "Audit")
 	}
 	if (auditEvent.Code() & sys_enum.Audit.Event.GetAuditData.Code()) == sys_enum.Audit.Event.GetAuditData.Code() {
 		if (info.Category & sys_enum.Audit.Category.PersonLicenseAudit.Code()) == sys_enum.Audit.Category.PersonLicenseAudit.Code() {
@@ -143,7 +145,7 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 						} else if record.State == sys_enum.License.State.Normal.Code() { // 如果正常，则更新为失效
 							_, err := s.SetLicenseState(ctx, record.Id, sys_enum.License.State.Disabled.Code())
 							if err != nil {
-								return sys_service.SysLogs().ErrorSimple(ctx, err, "审核通过后，个人历史资质更新状态失败。", sys_dao.SysPersonLicense.Table())
+								return sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_update_status_failed"), sys_dao.SysPersonLicense.Table())
 							}
 						}
 					}
@@ -154,7 +156,7 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 			// 2、创建个人资质
 			licenseRes, err := s.CreateLicense(ctx, auditPersonLicense)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核通过后个人资质创建失败", sys_dao.SysPersonLicense.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, nil, g.I18n().T(ctx, "error_license_create_after_audit_failed"), sys_dao.SysPersonLicense.Table())
 			}
 
 			// 3、设置个人资质的审核编号 (TODO： Perf 可以合并到上一个CreateLicense中)
@@ -174,7 +176,7 @@ func (s *sSysPersonLicense) GetLicenseById(ctx context.Context, id int64) (*sys_
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "个人资质信息不存在", sys_dao.SysPersonLicense.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
 	// 需要将持久化的文件ID替换成可访问的接口URL
@@ -243,7 +245,7 @@ func (s *sSysPersonLicense) CreateLicense(ctx context.Context, info sys_model.Au
 		_, err := sys_dao.SysPersonLicense.Ctx(ctx).Insert(result)
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "新增资质信息失败", sys_dao.SysPersonLicense.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_add_failed"), sys_dao.SysPersonLicense.Table())
 		}
 
 	}
@@ -259,11 +261,11 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_operation_failed_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
 	if data.State == sys_enum.License.State.Disabled.Code() {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "操作失败，资质信息被冻结，禁止修改"), "", sys_dao.SysPersonLicense.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, g.I18n().T(ctx, "error_license_operation_failed_disabled")), "", sys_dao.SysPersonLicense.Table())
 	}
 
 	newData := sys_do.SysPersonLicense{}
@@ -295,14 +297,14 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 			if audit != nil && audit.State == 0 {
 				_, err := tx.Ctx(ctx).Model(sys_dao.SysPersonLicense.Table()).Where(sys_do.SysPersonLicense{Id: id}).OmitNil().Save(&newData)
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，更新资质信息失败", sys_dao.SysPersonLicense.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_update_failed"), sys_dao.SysPersonLicense.Table())
 				}
 
 				// 更新待审核的审核信息
 				newAudit.Id = audit.Id
 				_, err = sys_dao.SysAudit.Ctx(ctx).Data(newAudit).Where(sys_do.SysAudit{Id: audit.Id}).Update()
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, err, "更新审核信息失败", sys_dao.SysPersonLicense.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_audit_update_failed"), sys_dao.SysPersonLicense.Table())
 				}
 				return nil
 			}
@@ -338,13 +340,13 @@ func (s *sSysPersonLicense) SetLicenseState(ctx context.Context, id int64, state
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_operation_failed_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
 	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{State: state, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新个人资质状态信息失败", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_status_update_failed"), sys_dao.SysPersonLicense.Table())
 	}
 
 	return true, nil
@@ -355,13 +357,13 @@ func (s *sSysPersonLicense) SetLicenseAuditNumber(ctx context.Context, id int64,
 	data := sys_entity.SysPersonLicense{}
 	err := sys_dao.SysPersonLicense.Ctx(ctx).Scan(&data, sys_do.SysPersonLicense{Id: id})
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "操作失败，资质信息不存在", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_operation_failed_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
 	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogid: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新个人资质证照审核编号失败", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_audit_number_update_failed"), sys_dao.SysPersonLicense.Table())
 	}
 	return true, nil
 }
@@ -375,7 +377,7 @@ func (s *sSysPersonLicense) DeleteLicense(ctx context.Context, id int64, flag bo
 func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int64, latestAuditLogId int64) (bool, error) {
 	auditLog := sys_service.SysAudit().GetAuditById(ctx, latestAuditLogId)
 	if nil == auditLog {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "资质信息校验失败", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, g.I18n().T(ctx, "error_license_verification_failed"), sys_dao.SysPersonLicense.Table())
 	}
 
 	audit := sys_model.AuditPersonLicense{}
@@ -383,7 +385,7 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 	err := gjson.DecodeTo(auditLog.AuditData, &audit)
 
 	if err != nil || audit.LicenseId != id {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "资质校验失败", sys_dao.SysPersonLicense.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_verification_failed"), sys_dao.SysPersonLicense.Table())
 	}
 
 	// 构建资质对象

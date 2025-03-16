@@ -37,6 +37,8 @@ github.com/alibabacloud-go/tea v1.3.1 h1:qdRKlZWj1b7agUnmMEYku+Mzjo37IJh3YmwUmIE
 github.com/alibabacloud-go/tea v1.3.1/go.mod h1:A560v/JTQ1n5zklt2BEpurJzZTI8TUT+Psg2drWlxRg=
 github.com/alibabacloud-go/tea v1.3.2 h1:4xlOnwYaK3ek1Kh+fgYTOYYOfv+uv3SAiJEIYm+8vJk=
 github.com/alibabacloud-go/tea v1.3.2/go.mod h1:A560v/JTQ1n5zklt2BEpurJzZTI8TUT+Psg2drWlxRg=
+github.com/alibabacloud-go/tea v1.3.4 h1:QGTns2930y+ANmoNcUS74TgYpsoqusSrLIyYDOvIFFI=
+github.com/alibabacloud-go/tea v1.3.4/go.mod h1:A560v/JTQ1n5zklt2BEpurJzZTI8TUT+Psg2drWlxRg=
 github.com/alibabacloud-go/tea-utils v1.3.1/go.mod h1:EI/o33aBfj3hETm4RLiAxF/ThQdSngxrpF8rKUDJjPE=
 github.com/alibabacloud-go/tea-utils v1.4.3/go.mod h1:KNcT0oXlZZxOXINnZBs6YvgOd5aYp9U67G+E3R8fcQw=
 github.com/alibabacloud-go/tea-utils v1.4.5 h1:h0/6Xd2f3bPE4XHTvkpjwxowIwRCJAJOqY6Eq8f3zfA=
@@ -53,12 +55,16 @@ github.com/aliyun/alibaba-cloud-sdk-go v1.63.88 h1:87jNTxliGqU2yB3H09xCd4U3cZCmR
 github.com/aliyun/alibaba-cloud-sdk-go v1.63.88/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
 github.com/aliyun/alibaba-cloud-sdk-go v1.63.92 h1:qespx4b6EexlXkvQUow9x0v1GnWUJYGU5FWYw3a4Wlg=
 github.com/aliyun/alibaba-cloud-sdk-go v1.63.92/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.98 h1:pQbh10XE+FewlW2N/h09AI2eifNa9D75assP/gUU6rE=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.98/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
 github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible h1:8psS8a+wKfiLt1iVDX79F7Y6wUM49Lcha2FMXt4UM8g=
 github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
 github.com/aliyun/credentials-go v1.1.2/go.mod h1:ozcZaMR5kLM7pwtCMEpVmQ242suV6qTJya2bDq4X1Tw=
 github.com/aliyun/credentials-go v1.3.6/go.mod h1:1LxUuX7L5YrZUWzBrRyk0SwSdH4OmPrib8NVePL3fxM=
 github.com/aliyun/credentials-go v1.4.3 h1:N3iHyvHRMyOwY1+0qBLSf3hb5JFiOujVSVuEpgeGttY=
 github.com/aliyun/credentials-go v1.4.3/go.mod h1:Jm6d+xIgwJVLVWT561vy67ZRP4lPTQxMbEYRuT2Ti1U=
+github.com/aliyun/credentials-go v1.4.5 h1:O76WYKgdy1oQYYiJkERjlA2dxGuvLRrzuO2ScrtGWSk=
+github.com/aliyun/credentials-go v1.4.5/go.mod h1:Jm6d+xIgwJVLVWT561vy67ZRP4lPTQxMbEYRuT2Ti1U=
 github.com/baidubce/app-builder/go/appbuilder v1.0.0 h1:qTPZzSAezO9jJ1hgMEcDe+EXr2vXRRspSkZGYmG+Zow=
 github.com/baidubce/app-builder/go/appbuilder v1.0.0/go.mod h1:mHOdSd9TJ52aiUbRE2rW1omu4A0U7H32xN39ED+etmE=
 github.com/baidubce/app-builder/go/appbuilder v1.0.2 h1:ZQEs7OPmz2PVqQ8VuBTYkzwNP/vlpwcNdzrRkrstQHU=
@@ -252,6 +258,9 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1114 h1:+Lc
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1114/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1115 h1:lYeFC379r76seyzN7PHmSxv1ji9knmsXQJglDB/K0WE=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1115/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1122/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1123 h1:TcjFFWOKBaOx6GIu/B0AvgNbEwcL2a+3oudB+o3IujQ=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1123/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1082 h1:6rJtpZLjcT50tnWllq4UNPOPt406pXW1QcpwR8Gd+ck=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1082/go.mod h1:Ro7uIktbZD7pF3zxsg+Ujs/DUDFBDoJaEMye/YTKfzY=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1103 h1:OXub4zaEJhuKAJHA9DtyNdk2SKl0/wcG4vaUemGP/Uw=
@@ -260,6 +269,8 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1114 h1:7MPIMs
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1114/go.mod h1:JDJTHAb18KQZaCqawf4/AhWXpzVDfXGkiLiSksQXx+Q=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1115 h1:+r0KANATccSDWxnbDmXjRwy5voRVcF97x+wAg5ToQoE=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1115/go.mod h1:5cdeTTb2BDdZkhouGOZnOnc7OyaQ+li+LfxyqWLy87I=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1122 h1:HUh3LBOuIFcRIWVlx8ga8naETvmgiXl23RWDehl7Imo=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1122/go.mod h1:SP9bjjU2DMz+yXsykxN2Z+NfaKgT/73Kyeik9lx2OlI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1082 h1:zDHgpZb2pcZeBKjv4zSVMTVn5bD7Y2+b9MfJPa8VxxI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1082/go.mod h1:4lhUCDWqBq9qPO9sc2UoM3M7k7Re9Pd2i8lUk+TwQDI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1103 h1:t0PwLeHS4Rz6QJP/csXg5FFxV6btIvrJNjb+LbKczWw=

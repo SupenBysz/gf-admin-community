@@ -3,6 +3,7 @@ package sdk_tencent
 import (
 	"context"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -52,7 +53,7 @@ func (s *sSdkTencent) DetectAuth(ctx context.Context, idCard, name, returnUrl st
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "An API error has returned: "+err.Error(), s.sysConfigName)
 	}
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "腾讯云-实名核身鉴权请求失败", s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_tencent_auth_request_failed", s.sysConfigName)
 	}
 	// 输出json格式的字符串回包
 	fmt.Printf("%s", response.ToJsonString())
@@ -201,7 +202,7 @@ func (s *sSdkTencent) GetDetectAuthPlusResponse(ctx context.Context, bizToken, r
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "An API error has returned: "+err.Error(), s.sysConfigName)
 	}
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "腾讯云-获取实名核身鉴权增强版结果请求失败", s.sysConfigName)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_tencent_auth_enhanced_result_failed", s.sysConfigName)
 	}
 
 	// 输出json格式的字符串回包

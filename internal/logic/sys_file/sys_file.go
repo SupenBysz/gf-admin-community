@@ -3,6 +3,11 @@ package sys_file
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -17,10 +22,6 @@ import (
 	"github.com/kysion/oss-library/oss_controller"
 	"github.com/kysion/oss-library/oss_global"
 	"github.com/kysion/oss-library/oss_model"
-	"io"
-	"net/http"
-	"os"
-	"time"
 
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/encoding/gbase64"
@@ -104,11 +105,11 @@ func (s *sFile) MakeTempUploadPath(ctx context.Context) (string, string, error) 
 		if !gfile.Exists(uploadPath) {
 			err := gfile.Mkdir(uploadPath)
 			if err != nil {
-				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "创建临时文件目录失败", "")
+				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "error_create_temp_dir_failed", "")
 			}
 			err = gfile.Chmod(uploadPath, gfile.DefaultPermCopy)
 			if err != nil {
-				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "设置临时文件目录权限失败", "")
+				return "", "", sys_service.SysLogs().ErrorSimple(ctx, err, "error_set_temp_dir_permission_failed", "")
 			}
 		}
 	}
@@ -164,7 +165,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 		fileMaxUploadCountMinute := g.Cfg().MustGet(ctx, "upload.fileMaxUploadCountMinute", 10).Int()
 		// 限定1分钟内允许上传的最大数量
 		if newUserUploadItemsCache.Size() >= fileMaxUploadCountMinute {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("您上传得太频繁，请稍后再操作"), "", sys_dao.SysFile.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_upload_too_frequent"), "", sys_dao.SysFile.Table())
 		}
 	}
 
@@ -179,7 +180,7 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 	savePath := gfile.Join(dateDirName, idStr)
 	fileName, err := in.File.Save(savePath, in.RandomName)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
 	}
 
 	absPath := gfile.Join(savePath, fileName)
@@ -299,7 +300,7 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 		//}
 	}
 
-	messageStr := "文件不存在"
+	messageStr := "error_file_not_exists"
 	if len(message) > 0 {
 		messageStr = message[0]
 	}
@@ -353,7 +354,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 	}
 
 	if !gfile.Exists(info.Src) { // oss 不存在， 本地也不存在
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "文件不存在", sys_dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_file_not_exists", sys_dao.SysFile.Table())
 	}
 
 	if storageAddr == info.Src {
@@ -380,11 +381,11 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		err := gfile.Chmod(gfile.Dir(dirPath), gfile.DefaultPermCopy)
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败!", sys_dao.SysFile.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
 		}
 
 		if err = gfile.CopyFile(info.Src, storageAddr); err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
 		}
 	}
 
@@ -401,7 +402,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 	}
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "文件保存失败", sys_dao.SysFile.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
 	}
 
 	// 文件保存后的Hook
@@ -431,7 +432,7 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
-		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "解析证照信息失败", sys_dao.SysFile.Table())
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_parse_certificate_info_failed", sys_dao.SysFile.Table())
 	}
 
 	imageBase64 := fileBase64
@@ -465,7 +466,7 @@ func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCR
 	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
-		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "解析证照信息失败", sys_dao.SysFile.Table())
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_parse_certificate_info_failed", sys_dao.SysFile.Table())
 	}
 
 	bankCard, err := sys_service.SdkBaidu().OCRBankCard(ctx, fileBase64)
@@ -495,7 +496,7 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusin
 	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
-		return &ret, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("解析证照信息失败"), "", sys_dao.SysFile.Table())
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_parse_certificate_info_failed"), "", sys_dao.SysFile.Table())
 	}
 
 	imageBase64 := fileBase64
@@ -515,7 +516,7 @@ func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusin
 func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (string, error) { // 文件获取url
 	// 校验目标存储路径是否存在
 	if !gfile.Exists(gfile.Dir(savePath)) {
-		return "", sys_service.SysLogs().WarnSimple(ctx, nil, "The save path does not exist! "+savePath, sys_dao.SysFile.Table())
+		return "", sys_service.SysLogs().WarnSimple(ctx, nil, "error_save_path_does_not_exist", sys_dao.SysFile.Table())
 	}
 
 	tmpPath := g.Cfg().MustGet(ctx, "download.tempPath", "temp/download").String()
@@ -746,8 +747,8 @@ func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, c
 	// 优先从缓存获取，缓存要是获取不到，那么从数据库加载文件信息，从而加载文件
 	// 先获取图片，进行签名、验签，验签通过查找图片，如果不在缓存中的图片从数据库查询后进行缓存起来  缓存key == sign
 	fileInfo := daoctl.GetById[sys_entity.SysFile](sys_dao.SysFile.Ctx(ctx), id)
-	if fileInfo == nil {
-		return nil, sys_service.SysLogs().WarnSimple(ctx, nil, "文件不存在，请检查id", sys_dao.SysFile.Table())
+	if fileInfo == nil || fileInfo.Id == 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_file_not_exists", sys_dao.SysFile.Table())
 	}
 
 	{
@@ -875,7 +876,7 @@ func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOC
 	fileBase64, err := gbase64.EncodeFileToString(result.Src)
 
 	if err != nil {
-		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "图片审核失败", sys_dao.SysFile.Table())
+		return &ret, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_image_review_failed", sys_dao.SysFile.Table())
 	}
 
 	imageBase64 := fileBase64

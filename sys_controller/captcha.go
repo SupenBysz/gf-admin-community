@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -14,7 +16,6 @@ import (
 	"github.com/kysion/sms-library/sms_controller"
 	"github.com/kysion/sms-library/sms_global"
 	"github.com/kysion/sms-library/sms_model"
-	"time"
 )
 
 // Captcha 验证码
@@ -75,7 +76,7 @@ func (c *cCaptcha) SendCaptchaBySms(ctx context.Context, req *sys_api.SendCaptch
 	res, err := sms_controller.Sms(modules).SendSms(ctx, &sendReq)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "短信发送失败", "Sms")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_sms_send_failed", "Sms")
 	}
 
 	return res.SmsSendStatus[0].Code == "OK", err

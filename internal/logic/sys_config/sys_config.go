@@ -2,11 +2,13 @@ package sys_config
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
@@ -36,7 +38,7 @@ func (s *sSysConfig) QueryList(ctx context.Context, params *base_model.SearchPar
 	result, err := daoctl.Query[sys_entity.SysConfig](sys_dao.SysConfig.Ctx(ctx), params, isExport)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "应用配置列表获取失败", sys_dao.SysConfig.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_sys_config_list_query_failed"), sys_dao.SysConfig.Table())
 	}
 
 	return (*sys_model.SysConfigListRes)(result), err
@@ -55,7 +57,7 @@ func (s *sSysConfig) GetByName(ctx context.Context, name string) (*sys_model.Sys
 		}
 	}
 
-	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据 name 查询应用配置信息失败", sys_dao.SysConfig.Table()+":"+name)
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_sys_config_get_by_name_failed"), sys_dao.SysConfig.Table()+":"+name)
 
 }
 
@@ -71,7 +73,7 @@ func (s *sSysConfig) SaveConfig(ctx context.Context, info *sys_model.SysConfig) 
 	}
 
 	if nil != err {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "应用配置保存失败", sys_dao.SysConfig.Table()+":"+info.Name)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_sys_config_save_failed"), sys_dao.SysConfig.Table()+":"+info.Name)
 	}
 
 	return s.GetByName(ctx, info.Name)
@@ -82,7 +84,7 @@ func (s *sSysConfig) DeleteConfig(ctx context.Context, name string) (bool, error
 	affected, err := daoctl.DeleteWithError(sys_dao.SysConfig.Ctx(ctx).Where(sys_do.SysConfig{Name: name}))
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除配置信息失败", sys_dao.SysConfig.Table()+":"+name)
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_sys_config_delete_failed"), sys_dao.SysConfig.Table()+":"+name)
 	}
 
 	return affected > 0, err

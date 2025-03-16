@@ -2,9 +2,10 @@ package sys_rules
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/SupenBysz/gf-admin-community/utility/invite_id"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -48,17 +49,19 @@ func CheckInviteCode(ctx context.Context, code string) (res *sys_model.InviteRes
 
 	// 判断是否填写邀约码
 	if clientConfig != nil && clientConfig.EnableRegisterInviteCode == true && code == "" {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "邀约码不能为空")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, i18n.T(ctx, "error_invite_code_required"))
 	}
-	
+
 	// 只要填写了必需进行校验
 	if code != "" {
 		id := invite_id.CodeToInviteId(code)
-		res, err = sys_service.SysInvite().GetInviteById(ctx, id)
-		if err != nil {
-			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "填写的邀约码错误，请检查！")
+		if id <= 0 {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, i18n.T(ctx, "error_invite_code_incorrect"))
 		}
 	}
 
-	return res, err
+	return &sys_model.InviteRes{
+		Id:   invite_id.CodeToInviteId(code),
+		Code: code,
+	}, nil
 }

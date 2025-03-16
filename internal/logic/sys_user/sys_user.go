@@ -4,6 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math"
+	"sort"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -30,9 +34,6 @@ import (
 	"github.com/kysion/base-library/utility/en_crypto"
 	"github.com/kysion/base-library/utility/kconv"
 	"github.com/kysion/base-library/utility/masker"
-	"math"
-	"sort"
-	"time"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.UserHookInfo]
@@ -136,13 +137,13 @@ func (s *sSysUser) UpdateHeartbeatAt(ctx context.Context, heartbeatTimeout int) 
 		data := &sys_model.SysSettings{
 			Name:   heartbeatTimeoutKey,
 			Values: gjson.MustEncodeString(newHeartbeatTimeout.Seconds()),
-			Desc:   "心跳超时时间",
+			Desc:   g.I18n().T(ctx, "heartbeat_timeout_description"),
 		}
 
 		_, err := sys_service.SysSettings().Create(ctx, data)
 
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "保存用户在线心跳超时设置失败", sys_dao.SysUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_heartbeat_timeout_save_failed", sys_dao.SysUser.Table())
 		}
 	} else {
 		_, err := sys_service.SysSettings().Update(ctx, &sys_model.SysSettings{
@@ -153,7 +154,7 @@ func (s *sSysUser) UpdateHeartbeatAt(ctx context.Context, heartbeatTimeout int) 
 		})
 
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "保存用户在线心跳超时设置失败", sys_dao.SysUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_heartbeat_timeout_save_failed", sys_dao.SysUser.Table())
 		}
 	}
 	s.heartbeatTimeout = newHeartbeatTimeout
@@ -222,7 +223,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 		//size, _ := s.redisCache.Size(ctx)
 		userList, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), nil, true)
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户列表查询失败", sys_dao.SysUser.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_list_query_failed", sys_dao.SysUser.Table())
 		}
 		size := len(userList.Records)
 
@@ -323,19 +324,19 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 		roleInfo, err := sys_service.SysRole().GetRoleById(ctx, roleId)
 
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_id_invalid", sys_dao.SysUser.Table())
 		}
 
 		userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_invalid", sys_dao.SysUser.Table())
 		}
 
 		result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 
 		if result == false || err != nil {
-			return result, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户角色失败", sys_dao.SysUser.Table())
+			return result, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_role_set_failed", sys_dao.SysUser.Table())
 		}
 	}
 
@@ -346,7 +347,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error) {
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户名已经存在"), "", sys_dao.SysUser.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_username_already_exists"), "", sys_dao.SysUser.Table())
 	}
 
 	data := sys_model.SysUser{
@@ -407,7 +408,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			_, err = sys_dao.SysUser.Ctx(ctx).OmitNilData().Data(data.SysUser).Insert()
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_account_registration_failed", sys_dao.SysUser.Table())
 			}
 		}
 
@@ -416,7 +417,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				_, err = sys_dao.SysUserDetail.Ctx(ctx).OmitNilData().Data(data.Detail).Insert()
 
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, err, "账号注册失败", sys_dao.SysUser.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, err, "error_account_registration_failed", sys_dao.SysUser.Table())
 				}
 			}
 
@@ -435,7 +436,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		if len(info.RoleIds) > 0 {
 			ret, err := s.SetUserRoleIds(ctx, info.RoleIds, data.Id)
 			if ret != true || err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色设置失败！"+err.Error(), sys_dao.SysUser.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_set_failed", sys_dao.SysUser.Table())
 			}
 		}
 
@@ -471,7 +472,7 @@ func (s *sSysUser) SetUserPermissions(ctx context.Context, userId int64, permiss
 	_, err := s.GetSysUserById(ctx, userId)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户信息查询失败", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_info_query_failed", sys_dao.SysRole.Table())
 	}
 
 	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(userId), permissionIds)
@@ -499,7 +500,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 	}
 
 	if response == nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 	}
 
 	response = s.masker(s.makeMore(ctx, response))
@@ -513,7 +514,7 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 	userInfo, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userId)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 	}
 	// if （）{hook()}
 	// 取盐
@@ -545,7 +546,7 @@ func (s *sSysUser) GetSysUserById(ctx context.Context, userId int64) (*sys_model
 	}).Scan(&user)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "用户信息不存在", sys_dao.SysUser.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 	}
 
 	// 查询用户所拥有的角色 (指针传递)
@@ -592,7 +593,7 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 		return nil
 	})
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户权限失败", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_permission_set_failed", sys_dao.SysUser.Table())
 	}
 
 	return true, nil
@@ -634,7 +635,7 @@ func (s *sSysUser) DeleteUser(ctx context.Context, id int64) (bool, error) {
 	})
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除员工信息失败", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_delete_failed", sys_dao.SysUser.Table())
 	}
 
 	// daoctl.RemoveQueryCache(sys_dao.SysUser.DB(), sys_dao.SysUser.Table())
@@ -683,12 +684,12 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 	sysUserInfo, err := daoctl.GetByIdWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), userId)
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户不存在")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_not_exist")
 	}
 
 	// 判断输入的两次密码是否相同
 	if info.Password != info.ConfirmPassword {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "两次输入的密码不一致，修改失败")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_mismatch")
 	}
 
 	{
@@ -699,7 +700,7 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 			hash1 = sys_consts.Global.CryptoPasswordFunc(ctx, info.OldPassword, *sysUserInfo.SysUser)
 		}
 		if sysUserInfo.Password != hash1 {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "原密码输入错误，修改失败")
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
 		}
 	}
 
@@ -730,7 +731,7 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 	_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "密码修改失败")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_update_failed")
 	}
 
 	return true, nil
@@ -767,7 +768,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 	// 生成密码，重置密码
 	{
 		if password != confirmPassword {
-			return false, gerror.NewCode(gcode.CodeValidationFailed, "两次密码不一致，请重新输入")
+			return false, gerror.NewCode(gcode.CodeValidationFailed, "error_password_mismatch")
 		}
 		// 取盐
 		salt := gconv.String(userId)
@@ -785,7 +786,7 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		count, _ := result.RowsAffected()
 
 		if err != nil || count != 1 {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "重置密码失败")
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_reset_failed")
 		}
 	}
 
@@ -852,11 +853,11 @@ func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int
 			roleInfo, err := sys_service.SysRole().GetRoleById(ctx, roleId)
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_info_invalid", sys_dao.SysRole.Table())
 			}
 
 			if roleInfo.UnionMainId != makeUserUnionMainId {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, roleInfo.Name+" 角色信息校验失败", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, roleInfo.Name+" error_role_info_mismatch", sys_dao.SysRole.Table())
 			}
 
 			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userId), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
@@ -933,7 +934,7 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 	}).Scan(&user)
 
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_info_not_exist")
 	}
 
 	user.Password = masker.MaskString(user.Password, masker.Password)
@@ -955,13 +956,13 @@ func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (
 	} else if base_verify.IsEmail(info) {
 		userModel = userModel.Where(sys_do.SysUser{Email: info})
 	} else {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "手机号或邮箱格式错误")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_phone_or_email_format")
 	}
 
 	userList, err := daoctl.Query[*sys_model.SysUser](userModel, nil, false)
 
 	if err != nil {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_info_not_exist")
 	}
 
 	newList := make([]*sys_model.SysUser, 0)
@@ -993,7 +994,7 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	}).Scan(&userInfo)
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_info_not_exist")
 	}
 	if newMobile == userInfo.Mobile {
 		return true, nil
@@ -1010,7 +1011,7 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	}
 
 	if pwdHash != user.Password {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登录密码错误")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
@@ -1018,7 +1019,7 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	}))
 
 	if err != nil || affected == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户手机号失败", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_mobile_set_failed", sys_dao.SysUser.Table())
 	}
 
 	// 清除redis验证码缓存
@@ -1040,7 +1041,7 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	mailUser := sys_entity.SysUser{}
 	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId, Email: oldMail}).Scan(&mailUser)
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "原邮箱错误", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invalid_original_email", sys_dao.SysUser.Table())
 	}
 
 	userInfo := sys_model.SysUser{}
@@ -1049,7 +1050,7 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}).Scan(&userInfo)
 
 	if err != nil {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "用户信息不存在")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_info_not_exist")
 	}
 	if newMail == userInfo.Email {
 		return true, nil
@@ -1066,7 +1067,7 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}
 
 	if pwdHash != user.Password {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "登录密码错误")
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Email: newMail, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
@@ -1074,7 +1075,7 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}))
 
 	if err != nil || affected == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "设置用户邮箱失败", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_email_set_failed", sys_dao.SysUser.Table())
 	}
 
 	return true, nil
@@ -1131,7 +1132,7 @@ func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (bool, error) {
 	)
 
 	if err != nil || affected == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "用户心跳失败", sys_dao.SysUser.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_heartbeat_failed", sys_dao.SysUser.Table())
 	}
 
 	return true, nil

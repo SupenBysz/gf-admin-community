@@ -1,8 +1,11 @@
 package sys_middleware
 
 import (
+	"strings"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -79,6 +82,20 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 		code = gerror.Code(err)
 		if code == gcode.CodeNil {
 			code = gcode.CodeInternalError
+		}
+
+		// 尝试将错误消息作为国际化键值
+		ctx := r.Context()
+		errMessage := err.Error()
+
+		// 判断是否是以error_开头的错误码，如果是则尝试进行国际化翻译
+		if strings.HasPrefix(errMessage, "error_") {
+			translatedMessage := i18n.T(ctx, errMessage)
+			if translatedMessage != errMessage {
+				// 如果翻译成功（返回值不等于输入值），则使用翻译后的消息
+				response.JsonExit(r, code.Code(), translatedMessage)
+				return
+			}
 		}
 
 		response.JsonExit(r, code.Code(), err.Error())

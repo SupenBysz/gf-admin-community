@@ -3,6 +3,7 @@ package sdk_tencent
 import (
 	"context"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
@@ -29,7 +30,7 @@ func (s *sSdkTencent) GetAccessToken(ctx context.Context, wBAppId, wBAppSecret, 
 		newTokenInfo := sys_model.AccessTokenByTencent{}
 		_ = gjson.DecodeTo(response, &newTokenInfo)
 		if &newTokenInfo == nil || newTokenInfo.AccessToken == "" {
-			return "", sys_service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API AccessToken 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+			return "", sys_service.SysLogs().ErrorSimple(ctx, err, "error_tencent_api_access_token_failed", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 		if newTokenInfo.AccessToken != "" {
 			accessToken = newTokenInfo.AccessToken
@@ -56,7 +57,7 @@ func (s *sSdkTencent) GetApiTicket(ctx context.Context, wBAppId, accessToken, ve
 		signTicketRes := sys_model.SignTicketRes{}
 		_ = gjson.DecodeTo(response, &signTicketRes)
 		if &signTicketRes == nil || signTicketRes.Tickets == nil || len(signTicketRes.Tickets) == 0 {
-			return "", sys_service.SysLogs().ErrorSimple(ctx, err, "获取腾讯云API Ticket 失败", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
+			return "", sys_service.SysLogs().ErrorSimple(ctx, err, "error_tencent_api_ticket_failed", sys_dao.SysConfig.Table()+":"+s.sysConfigName)
 		}
 
 		if len(signTicketRes.Tickets) > 0 {

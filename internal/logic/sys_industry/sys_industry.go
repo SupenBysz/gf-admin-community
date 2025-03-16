@@ -2,6 +2,8 @@ package sys_menu
 
 import (
 	"context"
+	"sort"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -15,7 +17,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
-	"sort"
 )
 
 // 设计修改行业类别的操作只有超级管理员-1有权限，其他用户只能看看
@@ -40,7 +41,7 @@ func (s *sSysIndustry) GetIndustryById(ctx context.Context, id int64) (*sys_enti
 	//res, err := daoctl.ScanWithError[sys_entity.SysIndustry](sys_dao.SysIndustry.Ctx(ctx).Where(sys_do.SysIndustry{Id: id}))
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "行业类别信息查询失败", sys_dao.SysIndustry.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_query_failed", sys_dao.SysIndustry.Table())
 	}
 	return &result, err
 }
@@ -53,7 +54,7 @@ func (s *sSysIndustry) CreateIndustry(ctx context.Context, info *sys_model.SysIn
 // UpdateIndustry 更新行业类别
 func (s *sSysIndustry) UpdateIndustry(ctx context.Context, info *sys_model.UpdateSysIndustry) (*sys_entity.SysIndustry, error) {
 	if info.Id <= 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysIndustry.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_industry_id_parameter_incorrect"), "", sys_dao.SysIndustry.Table())
 	}
 	data := kconv.Struct(info, &sys_model.SysIndustry{})
 
@@ -69,7 +70,7 @@ func (s *sSysIndustry) SaveIndustry(ctx context.Context, info *sys_model.SysIndu
 	if info.ParentId != nil && *info.ParentId > 0 {
 		permissionInfo, err := s.GetIndustryById(ctx, gconv.Int64(data.ParentId))
 		if err != nil || permissionInfo.Id <= 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "父级行业类别信息不存在", sys_dao.SysIndustry.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_parent_industry_not_exists", sys_dao.SysIndustry.Table())
 		}
 	}
 
@@ -86,7 +87,7 @@ func (s *sSysIndustry) SaveIndustry(ctx context.Context, info *sys_model.SysIndu
 
 			_, err := sys_dao.SysIndustry.Ctx(ctx).Insert(&data)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "新增行业类别信息失败", sys_dao.SysIndustry.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_add_failed", sys_dao.SysIndustry.Table())
 			}
 
 		} else { // 更新
@@ -95,13 +96,8 @@ func (s *sSysIndustry) SaveIndustry(ctx context.Context, info *sys_model.SysIndu
 			_, err := sys_dao.SysIndustry.Ctx(ctx).
 				OmitNilData().Where(sys_dao.SysIndustry.Columns().Id, info.Id).Update(&data)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "行业类别信息保存失败", sys_dao.SysIndustry.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_save_failed", sys_dao.SysIndustry.Table())
 			}
-
-			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "行业类别权限更新失败", sys_dao.SysIndustry.Table())
-			}
-
 		}
 		return nil
 	})
@@ -125,7 +121,7 @@ func (s *sSysIndustry) DeleteIndustry(ctx context.Context, id int64) (bool, erro
 	// 判断是否具备子行业类别
 	count, _ := sys_dao.SysIndustry.Ctx(ctx).Where(sys_dao.SysIndustry.Columns().ParentId, id).Count()
 	if count > 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "该行业类别具备子行业类别，请先移除子行业类别再进行操作", sys_dao.SysIndustry.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_industry_has_children", sys_dao.SysIndustry.Table())
 	}
 
 	err = sys_dao.SysIndustry.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
@@ -166,7 +162,7 @@ func (s *sSysIndustry) MakeIndustryTree(ctx context.Context, parentId int64, isM
 	// 获取下级行业类别列表
 	result, err := s.GetIndustryList(ctx, parentId, false)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询行业类别失败", sys_dao.SysPermission.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_query_failed", sys_dao.SysPermission.Table())
 	}
 
 	response := make([]*sys_model.SysIndustryTreeRes, 0)
@@ -193,7 +189,7 @@ func (s *sSysIndustry) MakeIndustryTree(ctx context.Context, parentId int64, isM
 			}
 
 			if err != nil {
-				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询行业类别失败", sys_dao.SysIndustry.Table())
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_query_failed", sys_dao.SysIndustry.Table())
 			}
 
 			response = append(response, item)
@@ -202,7 +198,7 @@ func (s *sSysIndustry) MakeIndustryTree(ctx context.Context, parentId int64, isM
 	}
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询行业类别失败", sys_dao.SysIndustry.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_query_failed", sys_dao.SysIndustry.Table())
 	}
 
 	return response, nil
@@ -254,7 +250,7 @@ func (s *sSysIndustry) GetIndustryList(ctx context.Context, parentId int64, IsRe
 			children, err := s.GetIndustryList(ctx, sysIndustry.Id, IsRecursive, limitChildrenIds...)
 
 			if err != nil {
-				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysIndustry.Table())
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_industry_query_failed", sys_dao.SysIndustry.Table())
 			}
 
 			if children == nil || len(children) <= 0 {

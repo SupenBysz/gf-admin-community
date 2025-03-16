@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -131,7 +132,7 @@ func (c *cSysSettings) Delete(ctx context.Context, req *sys_api.DeleteSettingReq
 
 	selectInfo, err := daoctl.ScanWithError[sys_entity.SysFrontSettings](sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: req.Name, UnionMainId: user.UnionMainId}))
 	if selectInfo != nil && selectInfo.UnionMainId <= 0 && user.IsSuperAdmin != true {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "平台配置禁止删除", sys_dao.SysFrontSettings.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_settings_platform_config_delete_forbidden", sys_dao.SysFrontSettings.Table())
 	}
 
 	ret, err := sys_service.SysSettings().Delete(ctx, req.Name, user.UnionMainId)

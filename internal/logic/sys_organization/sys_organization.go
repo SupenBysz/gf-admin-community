@@ -2,6 +2,8 @@ package sys_organization
 
 import (
 	"context"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -14,7 +16,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/daoctl"
-	"time"
 )
 
 type sSysOrganization struct {
@@ -48,7 +49,7 @@ func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int
 	err := sys_dao.SysOrganization.Ctx(ctx).Where(sys_do.SysOrganization{ParentId: parentId}).Scan(&result)
 
 	if err != nil {
-		return nil, -1, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
+		return nil, -1, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_failed", sys_dao.SysOrganization.Table())
 	}
 
 	// 如果需要返回下级，则递归加载
@@ -58,7 +59,7 @@ func (s *sSysOrganization) GetOrganizationList(ctx context.Context, parentId int
 			children, count, err := s.GetOrganizationList(ctx, organization.Id, IsRecursive)
 
 			if err != nil {
-				return nil, count, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
+				return nil, count, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_failed", sys_dao.SysOrganization.Table())
 			}
 
 			if children == nil || len(children) <= 0 {
@@ -79,7 +80,7 @@ func (s *sSysOrganization) GetOrganizationTree(ctx context.Context, parentId int
 	result, _, err := s.GetOrganizationList(ctx, parentId, false)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_failed", sys_dao.SysOrganization.Table())
 	}
 
 	response := make([]*sys_model.SysOrganizationTree, 0)
@@ -93,7 +94,7 @@ func (s *sSysOrganization) GetOrganizationTree(ctx context.Context, parentId int
 			item.Children, err = s.GetOrganizationTree(ctx, organization.Id)
 
 			if err != nil {
-				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysOrganization.Table())
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_failed", sys_dao.SysOrganization.Table())
 			}
 
 			response = append(response, item)
@@ -110,7 +111,7 @@ func (s *sSysOrganization) CreateOrganizationInfo(ctx context.Context, info sys_
 // UpdateOrganizationInfo 更新组织架构信息
 func (s *sSysOrganization) UpdateOrganizationInfo(ctx context.Context, info sys_model.SysOrganizationInfo) (*sys_entity.SysOrganization, error) {
 	if info.Id <= 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysOrganization.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_id_parameter_incorrect"), "", sys_dao.SysOrganization.Table())
 	}
 	return s.SaveOrganizationInfo(ctx, info)
 }
@@ -124,11 +125,11 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			One(sys_do.SysOrganization{Id: info.ParentId})
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "父级组织机构信息查询失败，请稍后再试", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_parent_query_failed", sys_dao.SysOrganization.Table())
 		}
 
 		if result.IsEmpty() {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "父级组织机构信息查询失败，请稍后再试"), "", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_parent_query_failed"), "", sys_dao.SysOrganization.Table())
 		}
 
 		result.Struct(&parentInfo)
@@ -143,11 +144,11 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			One(sys_do.SysOrganization{ParentId: info.ParentId, Name: info.Name})
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "添加组织机构信息失败", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_add_info_failed", sys_dao.SysOrganization.Table())
 		}
 
 		if !result.IsEmpty() {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "添加组织机构信息失败，请更换其它名称"), "", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_add_name_exists"), "", sys_dao.SysOrganization.Table())
 		}
 
 		orgInfo := sys_entity.SysOrganization{}
@@ -163,7 +164,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 		})
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "添加组织机构信息失败。"), "", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_add_info_failed"), "", sys_dao.SysOrganization.Table())
 		}
 
 		// 移除已缓存的数据
@@ -182,21 +183,21 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			One()
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "更新组织机构信息失败", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_update_info_failed", sys_dao.SysOrganization.Table())
 		}
 
 		if !result.IsEmpty() {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "更新组织机构信息失败，请更换其它名称"), "", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_update_name_exists"), "", sys_dao.SysOrganization.Table())
 		}
 
 		result, err = sys_dao.SysOrganization.Ctx(ctx).Where(sys_do.SysOrganization{Id: info.Id}).One()
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "更新组织机构信息失败", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_update_info_failed", sys_dao.SysOrganization.Table())
 		}
 
 		if result.IsEmpty() {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "更新组织机构信息失败，组织机构信息不存在"), "", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_update_not_exists"), "", sys_dao.SysOrganization.Table())
 		}
 
 		oldInfo := sys_entity.SysOrganization{}
@@ -208,7 +209,7 @@ func (s *sSysOrganization) SaveOrganizationInfo(ctx context.Context, info sys_mo
 			Update(sys_do.SysOrganization{Name: info.Name, CascadeDeep: oldInfo.CascadeDeep, Description: info.Description})
 
 		if err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "更新组织机构信息失败", sys_dao.SysOrganization.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_update_info_failed", sys_dao.SysOrganization.Table())
 		}
 
 		// 移除已缓存的数据
@@ -228,11 +229,11 @@ func (s *sSysOrganization) GetOrganizationInfo(ctx context.Context, id int64) (*
 	result, err := sys_dao.SysOrganization.Ctx(ctx).Where(sys_do.SysOrganization{Id: id}).One()
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询组织机构信息失败", sys_dao.SysOrganization.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_info_failed", sys_dao.SysOrganization.Table())
 	}
 
 	if result.IsEmpty() {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "组织机构信息不存在"), "", sys_dao.SysOrganization.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_not_exists"), "", sys_dao.SysOrganization.Table())
 	}
 
 	info := sys_entity.SysOrganization{}
@@ -247,11 +248,11 @@ func (s *sSysOrganization) DeleteOrganizationInfo(ctx context.Context, id int64)
 	count, err := sys_dao.SysOrganization.Ctx(ctx).Where(sys_do.SysOrganization{ParentId: id}).Count()
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除组织机构信息失败", sys_dao.SysOrganization.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_delete_info_failed", sys_dao.SysOrganization.Table())
 	}
 
 	if count > 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "存下级组织架构时禁止删除！"), "", sys_dao.SysOrganization.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_org_delete_with_children"), "", sys_dao.SysOrganization.Table())
 	}
 
 	info := sys_entity.SysOrganization{}
@@ -259,7 +260,7 @@ func (s *sSysOrganization) DeleteOrganizationInfo(ctx context.Context, id int64)
 		Where(sys_do.SysOrganization{Id: id}).Scan(&info)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "查询组织机构信息失败，请稍后再试", sys_dao.SysOrganization.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_query_info_failed", sys_dao.SysOrganization.Table())
 	}
 
 	if info.Id <= 0 {
@@ -271,7 +272,7 @@ func (s *sSysOrganization) DeleteOrganizationInfo(ctx context.Context, id int64)
 		Delete(sys_do.SysOrganization{Id: id})
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除组织机构信息失败", sys_dao.SysOrganization.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_org_delete_info_failed", sys_dao.SysOrganization.Table())
 	}
 
 	// 移除已缓存的数据

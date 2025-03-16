@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -32,7 +33,7 @@ func init() {
 func (s *sSysDeliveryCompany) GetDeliveryCompanyById(ctx context.Context, id int64) (*sys_model.SysDeliveryCompanyRes, error) {
 	result, err := daoctl.GetByIdWithError[sys_model.SysDeliveryCompanyRes](sys_dao.SysDeliveryCompany.Ctx(ctx), id)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询快递公司失败", sys_dao.SysDeliveryCompany.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_query_failed", sys_dao.SysDeliveryCompany.Table())
 	}
 	return s.makeMore(ctx, result), nil
 }
@@ -46,7 +47,7 @@ func (s *sSysDeliveryCompany) DeleteDeliveryCompanyById(ctx context.Context, id 
 // SaveDeliveryCompany 保存快递公司
 func (s *sSysDeliveryCompany) SaveDeliveryCompany(ctx context.Context, info *sys_model.SysDeliveryCompany) (*sys_model.SysDeliveryCompanyRes, error) {
 	if info.Name == "" {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "快递公司名称不能为空", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_delivery_company_name_empty", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
 	}
 
 	if info.Id > 0 {
@@ -56,7 +57,7 @@ func (s *sSysDeliveryCompany) SaveDeliveryCompany(ctx context.Context, info *sys
 			Count()
 
 		if count > 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "快递公司名称重复", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_name_exists", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
 		}
 	} else {
 		count, err := sys_dao.NewSysDeliveryCompany().Ctx(ctx).
@@ -64,7 +65,7 @@ func (s *sSysDeliveryCompany) SaveDeliveryCompany(ctx context.Context, info *sys
 			Count()
 
 		if count > 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "快递公司名称重复", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_name_exists", sys_dao.SysDeliveryCompany.Table()+":"+info.Name)
 		}
 	}
 
@@ -96,13 +97,13 @@ func (s *sSysDeliveryCompany) SaveDeliveryCompany(ctx context.Context, info *sys
 		affected, err := daoctl.InsertWithError(sys_dao.SysDeliveryCompany.Ctx(ctx).Data(data))
 
 		if affected <= 0 || err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "快递公司创建失败", sys_dao.SysDeliveryCompany.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_create_failed", sys_dao.SysDeliveryCompany.Table())
 		}
 	} else {
 		affected, err := daoctl.UpdateWithError(sys_dao.SysDeliveryCompany.Ctx(ctx).Data(data).Where(sys_dao.SysDeliveryCompany.Columns().Id, info.Id))
 
 		if affected <= 0 || err != nil {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "快递公司修改失败", sys_dao.SysDeliveryCompany.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_update_failed", sys_dao.SysDeliveryCompany.Table())
 		}
 	}
 
@@ -113,7 +114,7 @@ func (s *sSysDeliveryCompany) SaveDeliveryCompany(ctx context.Context, info *sys
 func (s *sSysDeliveryCompany) QueryDeliveryCompany(ctx context.Context, params *base_model.SearchParams, isExport bool) (*sys_model.SysDeliveryCompanyListRes, error) {
 	result, err := daoctl.Query[sys_model.SysDeliveryCompanyRes](sys_dao.SysDeliveryCompany.Ctx(ctx), params, isExport)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "快递公司列表查询失败", sys_dao.SysDeliveryCompany.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delivery_company_list_query_failed", sys_dao.SysDeliveryCompany.Table())
 	}
 
 	if result != nil {

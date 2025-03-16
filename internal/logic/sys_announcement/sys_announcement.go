@@ -2,6 +2,7 @@ package sys_announcement
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -58,7 +59,7 @@ func (s *sAnnouncement) checkPublic(ctx context.Context, result *sys_model.SysAn
 	if result.PublicAt != nil && gtime.Now().After(result.PublicAt) && result.State < sys_enum.Announcement.State.Published.Code() { // 已发布
 		_, err := daoctl.UpdateWithError(sys_dao.SysAnnouncement.Ctx(ctx).Where(sys_do.SysAnnouncement{Id: result.Id}), sys_do.SysAnnouncement{State: sys_enum.Announcement.State.Published.Code()})
 		if err != nil {
-			_ = sys_service.SysLogs().ErrorSimple(ctx, err, "公告状态修改为已发布失败", sys_dao.SysAnnouncement.Table())
+			_ = sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_status_update_failed", sys_dao.SysAnnouncement.Table())
 		}
 	}
 
@@ -66,7 +67,7 @@ func (s *sAnnouncement) checkPublic(ctx context.Context, result *sys_model.SysAn
 	if result.ExpireAt != nil && gtime.Now().After(result.ExpireAt) && result.State < sys_enum.Announcement.State.Expired.Code() { // 已过期
 		_, err := daoctl.UpdateWithError(sys_dao.SysAnnouncement.Ctx(ctx).Where(sys_do.SysAnnouncement{Id: result.Id}), sys_do.SysAnnouncement{State: sys_enum.Announcement.State.Expired.Code()})
 		if err != nil {
-			_ = sys_service.SysLogs().ErrorSimple(ctx, err, "公告状态修改为已发布失败", sys_dao.SysAnnouncement.Table())
+			_ = sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_status_update_failed", sys_dao.SysAnnouncement.Table())
 		}
 	}
 
@@ -80,7 +81,7 @@ func (s *sAnnouncement) GetAnnouncementById(ctx context.Context, id int64, userI
 
 	result, err := daoctl.GetByIdWithError[sys_model.SysAnnouncementRes](sys_dao.SysAnnouncement.Ctx(ctx), id)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询公告失败", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_query_by_id_failed", sys_dao.SysAnnouncement.Table())
 	}
 
 	// TODO 增加公告的已读用户记录
@@ -116,7 +117,7 @@ func (s *sAnnouncement) CreateAnnouncement(ctx context.Context, info *sys_model.
 		affected, err := daoctl.InsertWithError(sys_dao.SysAnnouncement.Ctx(ctx).OmitNilData().Data(data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "添加公告失败", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_add_failed", sys_dao.SysAnnouncement.Table())
 		}
 
 		return nil
@@ -141,7 +142,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 
 	// 判断是否是本主体公告
 	if unionMainId != announcement.UnionMainId {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "禁止跨主体修改公告信息", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_cross_subject_modification_forbidden", sys_dao.SysAnnouncement.Table())
 	}
 
 	/*
@@ -153,7 +154,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 
 	*/
 	if announcement.State == sys_enum.Announcement.State.Published.Code() || announcement.State == sys_enum.Announcement.State.Expired.Code() {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "公示中和已过期的公告禁止编辑", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_public_expired_announcement_edit_forbidden", sys_dao.SysAnnouncement.Table())
 	}
 
 	//if gtime.Now().After(announcement.PublicAt) && announcement.State != sys_enum.Announcement.State.Draft.Code() {
@@ -177,7 +178,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 		).OmitNilData().Data(&data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "公告修改失败", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_update_failed", sys_dao.SysAnnouncement.Table())
 		}
 
 		return nil
@@ -202,7 +203,7 @@ func (s *sAnnouncement) DeleteAnnouncement(ctx context.Context, id int64, unionM
 		// 1、删除
 		_, err = daoctl.DeleteWithError(sys_dao.SysAnnouncement.Ctx(ctx).Where(sys_do.SysAnnouncement{Id: id, UnionMainId: unionMainId}))
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "公告删除失败", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_delete_failed", sys_dao.SysAnnouncement.Table())
 		}
 
 		// 2、设置删除用户
@@ -213,13 +214,13 @@ func (s *sAnnouncement) DeleteAnnouncement(ctx context.Context, id int64, unionM
 			},
 		).OmitNilData().Data(sys_do.SysAnnouncement{DeletedAt: gtime.Now(), DeletedBy: userId}))
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "设置删除公告用户失败", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_delete_user_set_failed", sys_dao.SysAnnouncement.Table())
 		}
 
 		// 3、删除公告关联的已读用户记录
 		affected, err := daoctl.DeleteWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{ReadAnnouncementId: id}))
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "删除公告关联的已读用户记录失败", sys_dao.SysAnnouncementReadUser.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_delete_read_user_failed", sys_dao.SysAnnouncementReadUser.Table())
 		}
 
 		return nil
@@ -254,7 +255,7 @@ func (s *sAnnouncement) QueryAnnouncement(ctx context.Context, params *base_mode
 	res, err := daoctl.Query[sys_model.SysAnnouncementRes](m, params, isExport)
 
 	if err != nil {
-		return &sys_model.SysAnnouncementListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "公告列表查询失败", sys_dao.SysAnnouncement.Table())
+		return &sys_model.SysAnnouncementListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_list_query_failed", sys_dao.SysAnnouncement.Table())
 	}
 
 	for _, record := range res.Records {

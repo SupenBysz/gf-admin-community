@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -44,11 +45,13 @@ func (s *sSysInvite) InstallInviteStateHook(actionType sys_enum.InviteState, hoo
 
 // GetInviteById 根据id获取邀约
 func (s *sSysInvite) GetInviteById(ctx context.Context, id int64) (*sys_model.InviteRes, error) {
+	if id <= 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
+	}
 
 	result, err := daoctl.GetByIdWithError[sys_model.InviteRes](sys_dao.SysInvite.Ctx(ctx), id)
-
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id查询邀约信息失败", sys_dao.SysInvite.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_query_info_by_id_failed", sys_dao.SysInvite.Table())
 	}
 
 	fmt.Println("渲染前：", result.Value)
@@ -136,7 +139,7 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 		data.CreatedAt = gtime.Now()
 		affected, err := daoctl.InsertWithError(sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(data))
 		if err != nil || affected <= 0 {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "创建邀约信息失败", sys_dao.SysInvite.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_create_info_failed", sys_dao.SysInvite.Table())
 		}
 
 		return nil
@@ -162,7 +165,7 @@ func (s *sSysInvite) DeleteInvite(ctx context.Context, inviteId int64) (bool, er
 		}))
 
 		if err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除邀约信息失败", sys_dao.SysInvite.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_delete_info_failed", sys_dao.SysInvite.Table())
 		}
 	}
 
@@ -174,7 +177,7 @@ func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (b
 
 	info, _ := s.GetInviteById(ctx, id)
 	if info == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "ID参数错误", sys_dao.SysInvite.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
 	}
 
 	// 需要排除无上限次数和过期时间的情况
@@ -190,12 +193,12 @@ func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (b
 		}).Update()
 
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "邀约信息状态修改失败", sys_dao.SysInvite.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_status_update_failed", sys_dao.SysInvite.Table())
 		}
 
 		newData, _ := s.GetInviteById(ctx, info.Id)
 		if newData == nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取邀约信息失败", sys_dao.SysInvite.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_get_info_failed", sys_dao.SysInvite.Table())
 		}
 
 		// TODO 业务层订阅 ， Hook
@@ -220,7 +223,7 @@ func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isA
 
 	info, _ := s.GetInviteById(ctx, id)
 	if info == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "ID参数错误", sys_dao.SysInvite.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
 	}
 
 	// 需要排除无上限次数的情况
@@ -240,7 +243,7 @@ func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isA
 
 		affected, _ := result.RowsAffected()
 		if err != nil || affected <= 0 {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "修改邀约剩余次数失败", sys_dao.SysInvite.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_modify_remaining_count_failed", sys_dao.SysInvite.Table())
 		}
 
 		// 改变邀约次数为0的情况
@@ -249,7 +252,7 @@ func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isA
 			if sys_consts.Global.InviteCodeMaxActivateNumber != 0 { // 非无上限
 				_, err = s.SetInviteState(ctx, id, sys_enum.Invite.State.Invalid.Code())
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, nil, "剩余邀约次数为0时，修改邀约状态失败", sys_dao.SysInvite.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_modify_status_when_zero_failed", sys_dao.SysInvite.Table())
 				}
 			}
 		}
