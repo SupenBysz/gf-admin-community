@@ -2,6 +2,7 @@ package sys_front_settings
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -32,7 +33,7 @@ func (s *sSysFrontSettings) QueryList(ctx context.Context, params *base_model.Se
 	result, err := daoctl.Query[sys_model.SysFrontSettingsRes](sys_dao.SysFrontSettings.Ctx(ctx), params, isExport)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置列表获取失败", sys_dao.SysFrontSettings.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_front_settings_list_get_failed", sys_dao.SysFrontSettings.Table())
 	}
 
 	return (*sys_model.SysFrontSettingsListRes)(result), err
@@ -47,7 +48,7 @@ func (s *sSysFrontSettings) GetFrontSetting(ctx context.Context, name string, un
 	}).One()
 
 	if data == nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置信息获取失败", sys_dao.SysFrontSettings.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_front_settings_get_failed", sys_dao.SysFrontSettings.Table())
 	}
 
 	frontSetting := sys_model.SysFrontSettingsRes{}
@@ -63,7 +64,7 @@ func (s *sSysFrontSettings) Create(ctx context.Context, info *sys_model.SysFront
 	_, err := sys_dao.SysFrontSettings.Ctx(ctx).Insert(data)
 
 	if nil != err {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置保存失败", sys_dao.SysFrontSettings.Table()+":"+info.Name)
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_front_settings_save_failed", sys_dao.SysFrontSettings.Table()+":"+info.Name)
 	}
 
 	return s.GetFrontSetting(ctx, info.Name, info.UnionMainId, info.UserId)
@@ -82,9 +83,8 @@ func (s *sSysFrontSettings) Update(ctx context.Context, info *sys_model.SysFront
 		return nil, err
 	}
 
-	_, err = sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(&data)
-	if nil != err {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "前端配置保存失败", sys_dao.SysFrontSettings.Table()+":"+info.Name)
+	if _, err := sys_dao.SysFrontSettings.Ctx(ctx).Where(sys_do.SysFrontSettings{Name: info.Name, UnionMainId: info.UnionMainId}).OmitNilData().Update(&data); err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_front_settings_save_failed", sys_dao.SysFrontSettings.Table()+":"+info.Name)
 	}
 
 	return s.GetFrontSetting(ctx, info.Name, info.UnionMainId, info.UserId)
@@ -100,7 +100,7 @@ func (s *sSysFrontSettings) Delete(ctx context.Context, name string, unionMainId
 	}))
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除前端配置信息失败", sys_dao.SysFrontSettings.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delete_front_settings_failed", sys_dao.SysFrontSettings.Table())
 	}
 
 	return affected > 0, err

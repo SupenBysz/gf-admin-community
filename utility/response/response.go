@@ -1,10 +1,12 @@
 package response
 
 import (
-	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"reflect"
 	"strings"
 	"unsafe"
+
+	"github.com/SupenBysz/gf-admin-community/api_v1"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -21,6 +23,14 @@ func Json(r *ghttp.Request, code int, message string, data ...interface{}) {
 		responseData = g.Map{}
 	}
 
+	// 尝试国际化消息
+	ctx := r.Context()
+	translatedMessage := message
+	if message != "" {
+		// 尝试翻译消息
+		translatedMessage = i18n.T(ctx, message)
+	}
+
 	if reflect.ValueOf(data) == reflect.ValueOf(api_v1.JsonRes{}) {
 		r.Response.WriteJson(data)
 	} else {
@@ -29,7 +39,7 @@ func Json(r *ghttp.Request, code int, message string, data ...interface{}) {
 
 			r.Response.WriteJson(api_v1.JsonRes{
 				Code:    code,
-				Message: message,
+				Message: translatedMessage,
 				Data:    gconv.Map(jsonRes.Data)["Data"],
 				Time:    gtime.Now().Format("Y-m-d H:i:s"),
 			})
@@ -38,7 +48,7 @@ func Json(r *ghttp.Request, code int, message string, data ...interface{}) {
 
 		r.Response.WriteJson(api_v1.JsonRes{
 			Code:    code,
-			Message: message,
+			Message: translatedMessage,
 			Data:    responseData,
 			Time:    gtime.Now().Format("Y-m-d H:i:s"),
 		})
@@ -57,12 +67,21 @@ func JsonRedirect(r *ghttp.Request, code int, message, redirect string, data ...
 	if len(data) > 0 {
 		responseData = data[0]
 	}
+
+	// 尝试国际化消息
+	ctx := r.Context()
+	translatedMessage := message
+	if message != "" {
+		// 尝试翻译消息
+		translatedMessage = i18n.T(ctx, message)
+	}
+
 	if reflect.ValueOf(data) == reflect.ValueOf(api_v1.JsonRes{}) {
 		r.Response.WriteJson(data)
 	} else {
 		r.Response.WriteJson(api_v1.JsonRes{
 			Code:    code,
-			Message: message,
+			Message: translatedMessage,
 			Data:    responseData,
 			Time:    gtime.Now().Format("Y-m-d H:i:s"),
 		})

@@ -3,6 +3,8 @@ package sys_role
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -23,7 +25,6 @@ import (
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/daoctl"
-	"time"
 )
 
 type sSysRole struct {
@@ -78,7 +79,7 @@ func (s *sSysRole) GetRoleById(ctx context.Context, id int64) (*sys_model.SysRol
 	result, err := daoctl.GetByIdWithError[sys_model.SysRoleRes](sys_dao.SysRole.Ctx(ctx), id)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "根据id获取角色失败", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_get_role_by_id_failed", sys_dao.SysRole.Table())
 	}
 
 	return result, nil
@@ -93,7 +94,7 @@ func (s *sSysRole) Create(ctx context.Context, info sys_model.SysRole) (*sys_ent
 // Update 更新角色信息
 func (s *sSysRole) Update(ctx context.Context, info sys_model.SysRole) (*sys_entity.SysRole, error) {
 	if info.Id <= 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "ID参数错误"), "", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_role_id_incorrect"), "", sys_dao.SysRole.Table())
 	}
 	return s.Save(ctx, info)
 }
@@ -115,12 +116,12 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 
 			count, err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Name: info.Name, UnionMainId: info.UnionMainId}).Count()
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "创建角色失败", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_create_role_failed", sys_dao.SysRole.Table())
 			}
 
 			// 通过Union_main_id去判断
 			if count > 0 {
-				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "角色名称在该域已经存在"), "", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_role_name_exists"), "", sys_dao.SysRole.Table())
 			}
 
 			roleInfo.CreatedAt = gtime.Now()
@@ -144,7 +145,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 				UpdatedAt:   roleInfo.UpdatedAt,
 			})
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "保存角色失败"), "", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_save_role_failed"), "", sys_dao.SysRole.Table())
 			}
 		}
 
@@ -157,7 +158,7 @@ func (s *sSysRole) Save(ctx context.Context, info sys_model.SysRole) (*sys_entit
 	err = sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleInfo.Id}).Scan(&roleInfo)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询角色信息失败", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_query_role_info_failed", sys_dao.SysRole.Table())
 	}
 
 	return &roleInfo, nil
@@ -169,21 +170,21 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&info)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_delete_role_failed", sys_dao.SysRole.Table())
 	}
 
 	if info.IsSystem {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "系统默认的角色不能删除"), "", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_delete_system_role_forbidden"), "", sys_dao.SysRole.Table())
 	}
 
 	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if len(userIds) > 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "删除角色失败，请先删除角色下的用户"), "", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_delete_role_with_users"), "", sys_dao.SysRole.Table())
 	}
 
 	if info.Id == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "删除角色ID不存在"), "", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_delete_role_id_not_exists"), "", sys_dao.SysRole.Table())
 	}
 
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
@@ -192,7 +193,7 @@ func (s *sSysRole) Delete(ctx context.Context, roleId int64) (bool, error) {
 		result, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(info.Id), sys_consts.CasbinSuperRole, sys_consts.CasbinDomain)
 
 		if !result || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "删除角色失败", sys_dao.SysRole.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_delete_role_failed", sys_dao.SysRole.Table())
 		}
 		// 清除角色权限
 		sys_service.Casbin().DeletePermissionsForUser(gconv.String(info.Id))
@@ -208,12 +209,12 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	// 判断是否跨商
 	if makeUserUnionMainId != roleInfo.UnionMainId {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_cross_merchant_operation_forbidden", sys_dao.SysRole.Table())
 	}
 
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
@@ -221,7 +222,7 @@ func (s *sSysRole) SetRoleMember(ctx context.Context, roleId int64, userIds []in
 			userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_incorrect", sys_dao.SysRole.Table())
 			}
 
 			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
@@ -241,14 +242,14 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userIds [
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	err = sys_dao.SysRole.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		for _, userId := range userIds {
 			userInfo, _ := sys_service.SysUser().GetSysUserById(ctx, userId)
 			if err != nil || userInfo == nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_incorrect", sys_dao.SysRole.Table())
 			}
 
 			//userInfo.RoleNames
@@ -277,7 +278,7 @@ func (s *sSysRole) RemoveRoleMember(ctx context.Context, roleId int64, userIds [
 
 			ret, err := sys_service.Casbin().DeleteRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "移除角色成员失败", sys_dao.SysRole.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_remove_role_member_failed", sys_dao.SysRole.Table())
 			}
 
 			if ret == true {
@@ -298,7 +299,7 @@ func (s *sSysRole) GetRoleMemberIds(ctx context.Context, roleId int64, makeUserU
 	err := sys_dao.SysRole.Ctx(ctx).Where(sys_do.SysRole{Id: roleId}).Scan(&roleInfo)
 
 	if roleInfo.UnionMainId != makeUserUnionMainId {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_cross_merchant_operation_forbidden", sys_dao.SysRole.Table())
 	}
 
 	if err == sql.ErrNoRows {
@@ -306,17 +307,17 @@ func (s *sSysRole) GetRoleMemberIds(ctx context.Context, roleId int64, makeUserU
 	}
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "角色ID错误", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	if roleInfo.Id <= 0 {
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "查询角色ID信息不存在")
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_role_not_exists")
 	}
 
 	userIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetUsers(gconv.String(roleId), sys_consts.CasbinDomain)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	return gconv.Int64s(userIds), nil
@@ -341,7 +342,7 @@ func (s *sSysRole) GetRoleMemberList(ctx context.Context, roleId int64, makeUser
 	userInfoArr = userList.Records
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询用户信息失败", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_info_query_failed", sys_dao.SysRole.Table())
 	}
 
 	result := make([]*sys_model.SysUser, 0)
@@ -368,17 +369,17 @@ func (s *sSysRole) GetRoleListByUserId(ctx context.Context, userId int64) ([]*sy
 	userInfo, err := sys_service.SysUser().GetSysUserById(ctx, userId)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	if userInfo.Id <= 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "查询用户ID信息不存在"), "", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_not_exists"), "", sys_dao.SysRole.Table())
 	}
 
 	roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(userId), sys_consts.CasbinDomain)
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "用户ID错误", sys_dao.SysRole.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_id_incorrect", sys_dao.SysRole.Table())
 	}
 
 	roleInfoArr := make([]*sys_entity.SysRole, 0)
@@ -395,12 +396,26 @@ func (s *sSysRole) SetRolePermissions(ctx context.Context, roleId int64, permiss
 
 	// 判断是否跨商设置角色权限
 	if roleInfo.UnionMainId != makeUserUnionMainId {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止跨商操作", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_cross_merchant_operation_forbidden", sys_dao.SysRole.Table())
 	}
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "角色信息查询失败", sys_dao.SysRole.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_query_role_info_failed", sys_dao.SysRole.Table())
 	}
 
 	return sys_service.SysPermission().SetPermissionsByResource(ctx, gconv.String(roleId), permissionIds)
+}
+
+func (s *sSysRole) GetRoleInfoById(ctx context.Context, roleId int64) (*sys_entity.SysRole, error) {
+	if roleId == 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_role_id_incorrect"), "", sys_dao.SysRole.Table())
+	}
+
+	var roleInfo sys_entity.SysRole
+	err := sys_dao.SysRole.Ctx(ctx).WherePri(roleId).Scan(&roleInfo)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_get_role_by_id_failed", sys_dao.SysRole.Table())
+	}
+
+	return &roleInfo, nil
 }

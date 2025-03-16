@@ -2,6 +2,7 @@ package sys_member_level
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -36,7 +37,7 @@ func (s *sSysMemberLevel) QueryMemberLevelList(ctx context.Context, params *base
 	res, err := daoctl.Query[sys_model.SysMemberLevelRes](sys_dao.SysMemberLevel.Ctx(ctx), params, isExport)
 
 	if err != nil {
-		return &sys_model.SysMemberLevelListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级列表查询失败", sys_dao.SysMemberLevel.Table())
+		return &sys_model.SysMemberLevelListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_member_level_list_query_failed", sys_dao.SysMemberLevel.Table())
 	}
 
 	return (*sys_model.SysMemberLevelListRes)(res), nil

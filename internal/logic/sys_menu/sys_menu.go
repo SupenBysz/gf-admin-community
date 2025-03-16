@@ -2,6 +2,8 @@ package sys_menu
 
 import (
 	"context"
+	"sort"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -14,7 +16,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/utility/daoctl"
 	"github.com/kysion/base-library/utility/kconv"
-	"sort"
 )
 
 // 设计修改菜单的操作只有超级管理员-1有权限，其他用户只能看看
@@ -36,7 +37,7 @@ func (s *sSysMenu) GetMenuById(ctx context.Context, menuId int64) (*sys_entity.S
 	result := sys_entity.SysMenu{}
 	err := sys_dao.SysMenu.Ctx(ctx).Where(sys_do.SysMenu{Id: menuId}).Scan(&result)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "菜单信息查询失败", sys_dao.SysMenu.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_menu_query_failed", sys_dao.SysMenu.Table())
 	}
 	return &result, err
 }
@@ -49,7 +50,7 @@ func (s *sSysMenu) CreateMenu(ctx context.Context, info *sys_model.SysMenu) (*sy
 // UpdateMenu 更新菜单
 func (s *sSysMenu) UpdateMenu(ctx context.Context, info *sys_model.UpdateSysMenu) (*sys_entity.SysMenu, error) {
 	if info.Id <= 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "ID参数错误"), "", sys_dao.SysMenu.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, "error_menu_id_parameter_incorrect"), "", sys_dao.SysMenu.Table())
 	}
 	data := kconv.Struct(info, &sys_model.SysMenu{})
 
@@ -65,7 +66,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 	if info.ParentId != nil && *info.ParentId > 0 {
 		permissionInfo, err := s.GetMenuById(ctx, gconv.Int64(data.ParentId))
 		if err != nil || permissionInfo.Id <= 0 {
-			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "父级菜单信息不存在", sys_dao.SysMenu.Table())
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_parent_menu_not_exists", sys_dao.SysMenu.Table())
 		}
 	}
 
@@ -86,7 +87,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 			})
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "保存菜单信息失败", sys_dao.SysMenu.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_menu_info_save_failed", sys_dao.SysMenu.Table())
 			}
 
 			// 菜单id = 权限id
@@ -97,7 +98,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 			_, err = sys_dao.SysMenu.Ctx(ctx).Insert(&data)
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "新增菜单信息失败", sys_dao.SysMenu.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_menu_add_failed", sys_dao.SysMenu.Table())
 			}
 
 		} else { // 更新
@@ -106,7 +107,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 			_, err := sys_dao.SysMenu.Ctx(ctx).
 				OmitNilData().Where(sys_dao.SysMenu.Columns().Id, info.Id).Update(&data)
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "菜单信息保存失败", sys_dao.SysMenu.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_menu_info_save_failed", sys_dao.SysMenu.Table())
 			}
 
 			permisionInfo := sys_model.UpdateSysPermission{
@@ -126,7 +127,7 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 			_, err = sys_service.SysPermission().UpdatePermission(ctx, &permisionInfo)
 
 			if err != nil {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "菜单权限更新失败", sys_dao.SysMenu.Table())
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_menu_permission_update_failed", sys_dao.SysMenu.Table())
 			}
 
 		}
@@ -152,7 +153,7 @@ func (s *sSysMenu) DeleteMenu(ctx context.Context, id int64) (bool, error) {
 	// 判断是否具备子菜单
 	count, _ := sys_dao.SysMenu.Ctx(ctx).Where(sys_dao.SysMenu.Columns().ParentId, id).Count()
 	if count > 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "该菜单具备子菜单，请先移除子菜单再进行操作", sys_dao.SysMenu.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_menu_has_children", sys_dao.SysMenu.Table())
 	}
 
 	err = sys_dao.SysMenu.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {

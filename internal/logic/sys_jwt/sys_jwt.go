@@ -2,13 +2,14 @@ package sys_jwt
 
 import (
 	"context"
+	"time"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
-	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -98,7 +99,7 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_model.SysUser) (resp
 	token, err := s.CreateToken(customClaims)
 
 	if err != nil {
-		return nil, gerror.New("创建登录令牌失败")
+		return nil, gerror.New("error_token_creation_failed")
 	}
 
 	return &sys_model.TokenInfo{
@@ -146,20 +147,20 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				err = gerror.New("无效TOKEN")
+				err = gerror.New("error_invalid_token")
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
 				// Token is expired
-				err = gerror.New("TOKEN 已过期")
+				err = gerror.New("error_token_expired")
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				err = gerror.New("TOKEN 未激活")
+				err = gerror.New("error_token_not_active")
 			} else if ve.Errors&jwt.ValidationErrorSignatureInvalid != 0 {
-				err = gerror.New("TOKEN 签名无效")
+				err = gerror.New("error_token_signature_invalid")
 			} else {
-				err = gerror.New("解析TOKEN失败")
+				err = gerror.New("error_token_parsing_failed")
 			}
 		}
 		if !isCustomSession {
-			response.JsonExit(g.RequestFromCtx(ctx), 401, err.Error())
+			response.JsonExit(g.RequestFromCtx(ctx), 401, "error_token_parsing_failed")
 		}
 		return nil
 	}
@@ -175,7 +176,7 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 	}
 
 	if !isCustomSession {
-		response.JsonExit(g.RequestFromCtx(ctx), 401, "解析TOKEN失败")
+		response.JsonExit(g.RequestFromCtx(ctx), 401, "error_token_parsing_failed")
 	}
 	return nil
 }

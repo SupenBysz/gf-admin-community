@@ -2,6 +2,7 @@ package sys_category
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -39,7 +40,7 @@ func (s *sSysCategory) GetCategoryById(ctx context.Context, id int64) (*sys_mode
 // SaveCategory 保存分类
 func (s *sSysCategory) SaveCategory(ctx context.Context, info *sys_model.SysCategory) (*sys_model.SysCategoryRes, error) {
 	if info.Name == "" {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "名称不能为空", sys_dao.SysCategory.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_name_cannot_be_empty", sys_dao.SysCategory.Table())
 	}
 
 	data := sys_do.SysCategory{}
@@ -52,21 +53,12 @@ func (s *sSysCategory) SaveCategory(ctx context.Context, info *sys_model.SysCate
 
 	model := sys_dao.SysCategory.Ctx(ctx)
 
-	count := 0
-
-	if info.Id > 0 {
-		count, _ = model.
-			WhereNotIn(sys_dao.SysCategory.Columns().Id, data.Id).
-			Where(sys_dao.SysCategory.Columns().Name, data.Name).
-			Count()
-	} else {
-		count, _ = model.
-			Where(sys_dao.SysCategory.Columns().Name, data.Name).
-			Count()
-	}
-
-	if count > 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "名称已存在", sys_dao.SysCategory.Table())
+	count, err := sys_dao.SysCategory.Ctx(ctx).
+		Where(sys_do.SysCategory{Name: info.Name, ParentId: info.ParentId, UnionMainId: info.UnionMainId}).
+		Where(sys_dao.SysCategory.Columns().Id+"!=?", info.Id).
+		Count()
+	if err == nil && count > 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_name_already_exists", sys_dao.SysCategory.Table())
 	}
 
 	if gstr.IsNumeric(info.PicturePath) {
@@ -92,7 +84,7 @@ func (s *sSysCategory) SaveCategory(ctx context.Context, info *sys_model.SysCate
 	}
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "保存失败", sys_dao.SysCategory.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_save_failed", sys_dao.SysCategory.Table())
 	}
 
 	return s.GetCategoryById(ctx, gconv.Int64(data.Id))

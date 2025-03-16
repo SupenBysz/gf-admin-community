@@ -2,6 +2,7 @@ package sys_announcement
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -34,7 +35,7 @@ func (s *sAnnouncement) MarkRead(ctx context.Context, announcementId, userId int
 
 		affected, err := daoctl.InsertWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).OmitNilData().Data(&data))
 		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告标记已读失败", sys_dao.SysAnnouncementReadUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_read_failed", sys_dao.SysAnnouncementReadUser.Table())
 		}
 
 	} else if info.FlagRead != sys_enum.Announcement.FlagRead.Readed.Code() && info.UserId != userId {
@@ -45,7 +46,7 @@ func (s *sAnnouncement) MarkRead(ctx context.Context, announcementId, userId int
 
 		affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{Id: info.Id}).OmitNilData().Data(&data))
 		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告标记已读失败", sys_dao.SysAnnouncementReadUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_read_failed", sys_dao.SysAnnouncementReadUser.Table())
 		}
 	}
 
@@ -57,7 +58,7 @@ func (s *sAnnouncement) MarkUnRead(ctx context.Context, announcementId, userId i
 	// 是否存在公告
 	announcement, _ := s.GetAnnouncementById(ctx, announcementId)
 	if announcement == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "公告不存在", sys_dao.SysAnnouncement.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_announcement_not_exists", sys_dao.SysAnnouncement.Table())
 	}
 
 	// 是否已存在已读记录
@@ -75,7 +76,7 @@ func (s *sAnnouncement) MarkUnRead(ctx context.Context, announcementId, userId i
 
 		affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{Id: info.Id}).OmitNilData().Data(&data))
 		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告标记未读失败", sys_dao.SysAnnouncementReadUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_unread_failed", sys_dao.SysAnnouncementReadUser.Table())
 		}
 	}
 
@@ -89,7 +90,7 @@ func (s *sAnnouncement) queryMyAnnouncementList(ctx context.Context, userId int6
 
 	sysUserId, _ := sys_service.SysUser().GetSysUserById(ctx, userId)
 	if sysUserId == nil {
-		return &res, sys_service.SysLogs().ErrorSimple(ctx, nil, "用户不存在", sys_dao.SysUser.Table())
+		return &res, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_announcement_user_not_exists", sys_dao.SysUser.Table())
 	}
 
 	params.Filter = append(params.Filter,
@@ -256,7 +257,7 @@ func (s *sAnnouncement) SetAnnouncementState(ctx context.Context, announcementId
 
 	count, err := sys_dao.SysAnnouncement.Ctx(ctx).Where(sys_do.SysAnnouncement{Id: announcementId}).Count()
 	if err != nil || count == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告不存在", sys_dao.SysAnnouncement.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_not_exists", sys_dao.SysAnnouncement.Table())
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncement.Ctx(ctx).OmitNilData().Data(
@@ -264,7 +265,7 @@ func (s *sAnnouncement) SetAnnouncementState(ctx context.Context, announcementId
 			State: state,
 		}).Where(sys_dao.SysAnnouncement.Columns().Id, announcementId))
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "公告状态修改失败", sys_dao.SysAnnouncement.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_state_modify_failed", sys_dao.SysAnnouncement.Table())
 	}
 
 	return affected > 0, nil

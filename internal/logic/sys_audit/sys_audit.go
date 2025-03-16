@@ -3,6 +3,7 @@ package sys_audit
 import (
 	"context"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -22,8 +23,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 
-	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"time"
+
+	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 )
 
 type hookInfo sys_model.KeyValueT[int64, sys_hook.AuditHookInfo]
@@ -296,7 +298,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 
 				_, err = sys_dao.SysAudit.Ctx(ctx).Delete(sys_do.SysAudit{Id: audit.Id})
 				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核前置信息失败", sys_dao.SysAudit.Table())
+					return sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_save_pre_info_failed", sys_dao.SysAudit.Table())
 				}
 			}
 		}
@@ -307,7 +309,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 
 		_, err := sys_dao.SysAudit.Ctx(ctx).Data(data).Insert()
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "保存审核信息失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_save_info_failed", sys_dao.SysAudit.Table())
 		}
 
 		stateType := sys_enum.Audit.Event.Created
@@ -331,7 +333,7 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 	})
 
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "创建审核信息失败", sys_dao.SysAudit.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_create_failed", sys_dao.SysAudit.Table())
 	}
 	return s.GetAuditById(ctx, data.Id), nil
 }
@@ -339,20 +341,21 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 // UpdateAudit 处理审核信息
 func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error) {
 	if state == 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核行为类型错误", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_action_type_incorrect", sys_dao.SysAudit.Table())
+
 	}
 
 	if state == -1 && reply == "" {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "审核不通过时必须说明原因", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_reason_required", sys_dao.SysAudit.Table())
 	}
 
 	info := s.GetAuditById(ctx, id)
 	if info == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "ID参数错误", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_id_parameter_incorrect", sys_dao.SysAudit.Table())
 	}
 
 	if info.State != 0 {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "禁止单次申请重复审核业务", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_duplicate_forbidden", sys_dao.SysAudit.Table())
 	}
 
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
@@ -368,13 +371,13 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 		}).Update()
 
 		if err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "审核信息保存失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_info_save_failed", sys_dao.SysAudit.Table())
 		}
 
 		//data := s.GetAuditById(ctx, info.Id)
 		data, _ := daoctl.GetByIdWithError[sys_model.AuditRes](sys_dao.SysAudit.Ctx(ctx), info.Id)
 		if data == nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, nil, "获取审核信息失败", sys_dao.SysAudit.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_info_get_failed", sys_dao.SysAudit.Table())
 		}
 
 		// TODO 业务层订阅 ， Hook
@@ -401,14 +404,13 @@ func (s *sSysAudit) SetUnionMainId(ctx context.Context, id, unionMainId int64) (
 	data := sys_entity.SysAudit{}
 	err := sys_dao.SysAudit.Ctx(ctx).Scan(&data, sys_do.SysAudit{Id: id})
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "未找到ID关联的审核记录", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_record_not_found", sys_dao.SysAudit.Table())
 	}
 
 	_, err = sys_dao.SysAudit.Ctx(ctx).Data(sys_do.SysAudit{UnionMainId: unionMainId}).OmitNilData().Where(sys_do.SysAudit{Id: id}).Update()
 
 	if err != nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "更新审核关联的主体ID失败", sys_dao.SysAudit.Table())
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_subject_id_update_failed", sys_dao.SysAudit.Table())
 	}
 	return true, nil
-
 }
