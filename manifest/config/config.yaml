@@ -86,7 +86,7 @@ service:
   inviteCodeMaxActivateNumber: 0
   # 是否部署NFS文件系统
   isDeployNFS: false
-  # 是否开启发送验证码，默认false。正式环境建议配置好相关参数后，这里需要设置为 true 才能真正发送验证码
+  # 是否开启发送验证码，默认false时不会真的发送验证码，且相关表单默认验证码为 666666。正式环境建议配置好相关参数后，这里需要设置为 true 才能真正发送验证码
   onSendCaptcha: false
 
 # 邮件设置
