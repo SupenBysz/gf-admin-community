@@ -9,6 +9,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/enum"
@@ -56,9 +57,7 @@ func (c *cCaptcha) SendCaptchaBySms(ctx context.Context, req *sys_api.SendCaptch
 		}
 	}
 
-	onSendCaptcha, err := g.Cfg().Get(ctx, "service.onSendCaptcha", false)
-
-	if onSendCaptcha == nil || !onSendCaptcha.Bool() {
+	if !sys_rules.CheckEnableSendCaptchaRule(ctx) {
 		return true, nil
 	}
 

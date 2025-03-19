@@ -12,6 +12,17 @@ import (
 	"github.com/kysion/base-library/utility/base_verify"
 )
 
+// CheckEnableSendCaptchaRule 检查是否允许发送验证码
+func CheckEnableSendCaptchaRule(ctx context.Context) bool {
+	clientConfig, _ := sys_consts.Global.GetClientConfig(ctx)
+
+	if clientConfig == nil {
+		return false
+	}
+
+	return clientConfig.EnableSendCaptcha
+}
+
 // CheckLoginRule 校验用户是否可以通过此方式登陆
 func CheckLoginRule(ctx context.Context, loginIdentifier string) bool {
 	clientConfig, _ := sys_consts.Global.GetClientConfig(ctx)
