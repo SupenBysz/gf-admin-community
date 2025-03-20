@@ -13,6 +13,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model/base_enum"
@@ -47,8 +48,8 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 	code := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
 
 	mailConfig.MailTo = mailTo
-	mailConfig.Subject = mailConfig.TitlePrefix + g.I18n().T(ctx, "mail_captcha_subject")
-	mailConfig.Body = g.I18n().Tf(ctx, "mail_captcha_body", code, gconv.String(cacheTimeLen))
+	mailConfig.Subject = mailConfig.TitlePrefix + i18n.T(ctx, "{#mail_captcha_subject}")
+	mailConfig.Body = i18n.T(ctx, "{#mail_captcha_body}", code, gconv.String(cacheTimeLen))
 	mailConfig.SendAuthor = strings.Split(mailConfig.Username, "@")[0]
 
 	err = sendMail(&mailConfig)
@@ -90,8 +91,13 @@ func sendMail(info *sys_model.EmailConfig) error {
 	// 正文
 	m.SetBody("text/html", info.Body)
 
+	var d *gomail.Dialer = nil
 	// 发送邮件服务器、端口、发件人账号、发件人授权码
-	d := gomail.NewDialer(info.Smtp.Host, port, info.SendAuthor, info.AuthCode)
+	if info.AuthCode != "" {
+		d = gomail.NewDialer(info.Smtp.Host, port, info.SendAuthor, info.AuthCode)
+	} else {
+		d = gomail.NewDialer(info.Smtp.Host, port, info.Username, info.Password)
+	}
 
 	// 是否使用 SSL 加密发送
 	if info.Smtp.SSL {

@@ -109,9 +109,9 @@ func (c *cCaptcha) SendCaptchaByMail(ctx context.Context, req *sys_api.SendCaptc
 			return false, errors.New("验证码缓存失败")
 		}
 	}
-	return true, nil
+	// return true, nil
 
 	// TODO 正式代码
-	//ret, err := sys_service.SysMails().SendCaptcha(ctx, req.Mail, req.CaptchaType) // TODO 加上类型
-	//return ret == true, err
+	ret, err := sys_service.SysMails().SendCaptcha(ctx, req.Mail, req.CaptchaType) // TODO 加上类型
+	return ret == true, err
 }
