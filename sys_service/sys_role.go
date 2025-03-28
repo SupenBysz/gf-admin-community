@@ -43,6 +43,7 @@ type (
 		GetRoleListByUserId(ctx context.Context, userId int64) ([]*sys_entity.SysRole, error)
 		// SetRolePermissions 设置角色权限
 		SetRolePermissions(ctx context.Context, roleId int64, permissionIds []int64, makeUserUnionMainId int64) (bool, error)
+		GetRoleInfoById(ctx context.Context, roleId int64) (*sys_entity.SysRole, error)
 	}
 )
 

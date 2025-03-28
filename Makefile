@@ -40,3 +40,8 @@ build: cli.install
 	@mkdir -p ./build
 	@gf build main.go -v -a amd64 -s linux -o ./build/main
 	@cp -R resource i18n manifest .env ./build/
+
+.PHONY: run
+run:
+	@gf run example/main.go
+
