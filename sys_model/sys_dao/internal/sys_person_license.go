@@ -45,7 +45,7 @@ type SysPersonLicenseColumns struct {
 	State            string // 状态：0失效、1正常
 	AuthType         string // 认证类型:
 	Remark           string // 备注信息
-	LatestAuditLogid string // 最新的审核记录id
+	LatestAuditLogId string // 最新的审核记录id
 	UserId           string // 关联的用户ID
 }
 
@@ -69,7 +69,7 @@ var sysPersonLicenseColumns = SysPersonLicenseColumns{
 	State:            "state",
 	AuthType:         "auth_type",
 	Remark:           "remark",
-	LatestAuditLogid: "latest_audit_logId",
+	LatestAuditLogId: "latest_audit_logId",
 	UserId:           "user_id",
 }
 

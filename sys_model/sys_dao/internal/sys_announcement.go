@@ -27,40 +27,54 @@ type SysAnnouncementDao struct {
 
 // SysAnnouncementColumns defines and stores column names for table sys_announcement.
 type SysAnnouncementColumns struct {
-	Id            string //
-	Title         string // 公告标题
-	UnionMainId   string // 发布主体，0值则代表平台发布的公告
-	PublicAt      string // 公示时间，只有到了公示时间用户才可见
-	Body          string // 公告正文
-	UserTypeScope string // 受众用户类型：0则所有，复合类型
-	ExpireAt      string // 过期时间，过期后前端用户不可见
-	State         string // 状态：1草稿、2待发布、4已发布、8已过期、16已撤销
-	CreatedAt     string //
-	UpdatedAt     string //
-	CreatedBy     string // 创建用户
-	UpdatedBy     string // 最后修改用户
-	DeletedAt     string //
-	DeletedBy     string //
-	ExtDataJson   string // 扩展json数据
+	Id              string //
+	Title           string // 公告标题
+	UnionMainId     string // 发布主体，0值则代表平台发布的公告
+	PublicAt        string // 公示时间，只有到了公示时间用户才可见
+	Body            string // 公告正文
+	UserTypeScope   string // 受众用户类型：0则所有，复合类型
+	ExpireAt        string // 过期时间，过期后前端用户不可见
+	State           string // 状态：1草稿、2待发布、4已发布、8已过期、16已撤销
+	CreatedAt       string //
+	UpdatedAt       string //
+	CreatedBy       string // 创建用户
+	UpdatedBy       string // 最后修改用户
+	DeletedAt       string //
+	DeletedBy       string //
+	ExtDataJson     string // 扩展json数据
+	CategoryId      string // 公告分类ID
+	Priority        string // 优先级：1普通、2重要、3紧急
+	IsPinned        string // 是否置顶：0否、1是
+	IsForceRead     string // 是否强制阅读：0否、1是
+	Tags            string // 公告标签，多个用逗号分隔
+	ReadCount       string // 阅读次数
+	ConfirmRequired string // 是否需要确认：0否、1是
 }
 
 // sysAnnouncementColumns holds the columns for table sys_announcement.
 var sysAnnouncementColumns = SysAnnouncementColumns{
-	Id:            "id",
-	Title:         "title",
-	UnionMainId:   "union_main_id",
-	PublicAt:      "public_at",
-	Body:          "body",
-	UserTypeScope: "user_type_scope",
-	ExpireAt:      "expire_at",
-	State:         "state",
-	CreatedAt:     "created_at",
-	UpdatedAt:     "updated_at",
-	CreatedBy:     "created_by",
-	UpdatedBy:     "updated_by",
-	DeletedAt:     "deleted_at",
-	DeletedBy:     "deleted_by",
-	ExtDataJson:   "ext_data_json",
+	Id:              "id",
+	Title:           "title",
+	UnionMainId:     "union_main_id",
+	PublicAt:        "public_at",
+	Body:            "body",
+	UserTypeScope:   "user_type_scope",
+	ExpireAt:        "expire_at",
+	State:           "state",
+	CreatedAt:       "created_at",
+	UpdatedAt:       "updated_at",
+	CreatedBy:       "created_by",
+	UpdatedBy:       "updated_by",
+	DeletedAt:       "deleted_at",
+	DeletedBy:       "deleted_by",
+	ExtDataJson:     "ext_data_json",
+	CategoryId:      "category_id",
+	Priority:        "priority",
+	IsPinned:        "is_pinned",
+	IsForceRead:     "is_force_read",
+	Tags:            "tags",
+	ReadCount:       "read_count",
+	ConfirmRequired: "confirm_required",
 }
 
 // NewSysAnnouncementDao creates and returns a new DAO object for table data access.

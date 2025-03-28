@@ -13,7 +13,7 @@ import (
 type SysAudit struct {
 	g.Meta         `orm:"table:sys_audit, do:true"`
 	Id             interface{} //
-	State          interface{} // 审核状态：-1不通过，0待审核，1通过
+	State          interface{} // 审核状态：-2已取消，-1不通过，0待审核，1通过
 	Reply          interface{} // 不通过时回复的审核不通过原因
 	UnionMainId    interface{} // 关联主体ID
 	Category       interface{} // 业务类别：1个人资质审核、2主体资质审核、4数据审核

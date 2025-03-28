@@ -29,7 +29,7 @@ type (
 		GetAuditById(ctx context.Context, id int64) *sys_model.AuditRes
 		// GetAuditLatestByUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
 		GetAuditLatestByUnionMainId(ctx context.Context, unionMainId int64) *sys_model.AuditRes
-		// GetAuditLatestByUserId 获取最新的业务个人审核信息
+		// GetAuditLatestByUserId 根据UserId获取最后一次审核信息
 		GetAuditLatestByUserId(ctx context.Context, userId int64) *sys_model.AuditRes
 		// CancelAudit 取消审核
 		CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, error)

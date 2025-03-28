@@ -10,6 +10,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model"
@@ -19,35 +20,68 @@ import (
 
 // MarkRead 标记已读｜公告
 func (s *sAnnouncement) MarkRead(ctx context.Context, announcementId, userId int64) (bool, error) {
-	// 是否已存在已读记录
-	info, _ := daoctl.ScanWithError[sys_entity.SysAnnouncementReadUser](sys_dao.SysAnnouncementReadUser.Ctx(ctx).
-		Where(sys_do.SysAnnouncementReadUser{ReadAnnouncementId: announcementId, UserId: userId}))
+	// 检查公告是否存在
+	announcement, err := s.GetAnnouncementById(ctx, announcementId)
+	if err != nil || announcement == nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_not_exists}", sys_dao.SysAnnouncement.Table())
+	}
 
-	if info == nil {
-		data := &sys_do.SysAnnouncementReadUser{
-			Id:                 idgen.NextId(),
-			UserId:             userId,
-			ReadAnnouncementId: announcementId,
-			ReadAt:             gtime.Now(),
-			ExtDataJson:        nil,
-			FlagRead:           sys_enum.Announcement.FlagRead.Readed.Code(),
+	// 开始事务处理
+	err = sys_dao.SysAnnouncementReadUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		// 是否已存在已读记录
+		info, _ := daoctl.ScanWithError[sys_entity.SysAnnouncementReadUser](sys_dao.SysAnnouncementReadUser.Ctx(ctx).
+			Where(sys_do.SysAnnouncementReadUser{ReadAnnouncementId: gconv.String(announcementId), UserId: userId}))
+
+		if info == nil {
+			data := &sys_do.SysAnnouncementReadUser{
+				Id:                 idgen.NextId(),
+				UserId:             userId,
+				ReadAnnouncementId: gconv.String(announcementId),
+				ReadAt:             gtime.Now(),
+				ExtDataJson:        nil,
+				FlagRead:           sys_enum.Announcement.FlagRead.Readed.Code(),
+			}
+
+			affected, err := daoctl.InsertWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).OmitNilData().Data(&data))
+			if affected == 0 || err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_mark_read_failed}", sys_dao.SysAnnouncementReadUser.Table())
+			}
+
+			// 更新公告阅读次数
+			_, err = sys_dao.SysAnnouncement.Ctx(ctx).
+				Where(sys_do.SysAnnouncement{Id: announcementId}).
+				Increment(sys_dao.SysAnnouncement.Columns().ReadCount, 1)
+
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_update_read_count_failed}", sys_dao.SysAnnouncement.Table())
+			}
+
+		} else if info.FlagRead != sys_enum.Announcement.FlagRead.Readed.Code() {
+			data := &sys_do.SysAnnouncementReadUser{
+				ReadAt:   gtime.Now(),
+				FlagRead: sys_enum.Announcement.FlagRead.Readed.Code(),
+			}
+
+			affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{Id: info.Id}).OmitNilData().Data(&data))
+			if affected == 0 || err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_mark_read_failed}", sys_dao.SysAnnouncementReadUser.Table())
+			}
+
+			// 更新公告阅读次数
+			_, err = sys_dao.SysAnnouncement.Ctx(ctx).
+				Where(sys_do.SysAnnouncement{Id: announcementId}).
+				Increment(sys_dao.SysAnnouncement.Columns().ReadCount, 1)
+
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_update_read_count_failed}", sys_dao.SysAnnouncement.Table())
+			}
 		}
 
-		affected, err := daoctl.InsertWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).OmitNilData().Data(&data))
-		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_read_failed", sys_dao.SysAnnouncementReadUser.Table())
-		}
+		return nil
+	})
 
-	} else if info.FlagRead != sys_enum.Announcement.FlagRead.Readed.Code() && info.UserId != userId {
-		data := &sys_do.SysAnnouncementReadUser{
-			ReadAt:   gtime.Now(),
-			FlagRead: sys_enum.Announcement.FlagRead.Readed.Code(),
-		}
-
-		affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{Id: info.Id}).OmitNilData().Data(&data))
-		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_read_failed", sys_dao.SysAnnouncementReadUser.Table())
-		}
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil
@@ -56,14 +90,14 @@ func (s *sAnnouncement) MarkRead(ctx context.Context, announcementId, userId int
 // MarkUnRead 标记未读｜公告
 func (s *sAnnouncement) MarkUnRead(ctx context.Context, announcementId, userId int64) (bool, error) {
 	// 是否存在公告
-	announcement, _ := s.GetAnnouncementById(ctx, announcementId)
-	if announcement == nil {
-		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_announcement_not_exists", sys_dao.SysAnnouncement.Table())
+	announcement, err := s.GetAnnouncementById(ctx, announcementId)
+	if err != nil || announcement == nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_not_exists}", sys_dao.SysAnnouncement.Table())
 	}
 
 	// 是否已存在已读记录
 	info, _ := daoctl.ScanWithError[sys_entity.SysAnnouncementReadUser](sys_dao.SysAnnouncementReadUser.Ctx(ctx).
-		Where(sys_do.SysAnnouncementReadUser{ReadAnnouncementId: announcementId, UserId: userId}))
+		Where(sys_do.SysAnnouncementReadUser{ReadAnnouncementId: gconv.String(announcementId), UserId: userId}))
 
 	if info == nil || info.FlagRead == sys_enum.Announcement.FlagRead.UnRead.Code() { // 未读
 		return true, nil
@@ -76,12 +110,11 @@ func (s *sAnnouncement) MarkUnRead(ctx context.Context, announcementId, userId i
 
 		affected, err := daoctl.UpdateWithError(sys_dao.SysAnnouncementReadUser.Ctx(ctx).Where(sys_do.SysAnnouncementReadUser{Id: info.Id}).OmitNilData().Data(&data))
 		if affected == 0 || err != nil {
-			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_mark_unread_failed", sys_dao.SysAnnouncementReadUser.Table())
+			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_mark_unread_failed}", sys_dao.SysAnnouncementReadUser.Table())
 		}
 	}
 
 	return true, nil
-
 }
 
 // 查询和我相关的公告列表
@@ -90,7 +123,11 @@ func (s *sAnnouncement) queryMyAnnouncementList(ctx context.Context, userId int6
 
 	sysUserId, _ := sys_service.SysUser().GetSysUserById(ctx, userId)
 	if sysUserId == nil {
-		return &res, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_announcement_user_not_exists", sys_dao.SysUser.Table())
+		return &res, sys_service.SysLogs().ErrorSimple(ctx, nil, "{#error_announcement_user_not_exists}", sys_dao.SysUser.Table())
+	}
+
+	if params == nil {
+		params = &base_model.SearchParams{}
 	}
 
 	params.Filter = append(params.Filter,
@@ -121,13 +158,39 @@ func (s *sAnnouncement) queryMyAnnouncementList(ctx context.Context, userId int6
 		},
 	)
 
+	// 添加排序：优先置顶，然后按优先级，最后按发布时间
+	m := sys_dao.SysAnnouncement.Ctx(ctx).
+		Order(sys_dao.SysAnnouncement.Columns().IsPinned + " DESC, " +
+			sys_dao.SysAnnouncement.Columns().Priority + " DESC, " +
+			sys_dao.SysAnnouncement.Columns().PublicAt + " DESC")
+
 	// 找到和用户相关的所有公告
-	announcementList, err := s.QueryAnnouncement(ctx, params, isExport)
-	if announcementList == nil || len(announcementList.Records) <= 0 || err != nil {
+	result, err := daoctl.Query[sys_model.SysAnnouncementRes](m, params, isExport)
+	if err != nil || len(result.Records) <= 0 {
 		return &res, nil
 	}
 
-	return announcementList, err
+	// 获取公告分类和确认信息
+	for i, record := range result.Records {
+		// 获取分类名称
+		if record.CategoryId > 0 {
+			category, _ := s.GetCategoryById(ctx, record.CategoryId)
+			if category != nil {
+				result.Records[i].CategoryName = category.Name
+			}
+		}
+
+		// 获取确认信息和状态
+		confirmCount, _ := sys_dao.SysAnnouncementConfirm.Ctx(ctx).Where(sys_do.SysAnnouncementConfirm{AnnouncementId: record.Id}).Count()
+		result.Records[i].ConfirmCount = gconv.Int(confirmCount)
+
+		isConfirmed, _ := s.IsAnnouncementConfirmed(ctx, record.Id, userId)
+		if isConfirmed {
+			result.Records[i].ConfirmStatus = 1
+		}
+	}
+
+	return (*sys_model.SysAnnouncementListRes)(result), err
 }
 
 // HasUnReadAnnouncement 获取未读公告数量

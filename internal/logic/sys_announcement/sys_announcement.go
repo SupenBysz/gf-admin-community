@@ -81,11 +81,29 @@ func (s *sAnnouncement) GetAnnouncementById(ctx context.Context, id int64, userI
 
 	result, err := daoctl.GetByIdWithError[sys_model.SysAnnouncementRes](sys_dao.SysAnnouncement.Ctx(ctx), id)
 	if err != nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_query_by_id_failed", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_query_by_id_failed}", sys_dao.SysAnnouncement.Table())
 	}
+
+	// 获取分类名称
+	if result.CategoryId > 0 {
+		category, _ := s.GetCategoryById(ctx, result.CategoryId)
+		if category != nil {
+			result.CategoryName = category.Name
+		}
+	}
+
+	// 获取确认人数
+	confirmCount, _ := sys_dao.SysAnnouncementConfirm.Ctx(ctx).Where(sys_do.SysAnnouncementConfirm{AnnouncementId: id}).Count()
+	result.ConfirmCount = gconv.Int(confirmCount)
 
 	// TODO 增加公告的已读用户记录
 	if len(userId) > 0 && userId[0] != 0 {
+		// 获取确认状态
+		isConfirmed, _ := s.IsAnnouncementConfirmed(ctx, id, userId[0])
+		if isConfirmed {
+			result.ConfirmStatus = 1
+		}
+
 		newCtx := context.Background()
 		go func(ctx context.Context) {
 			for _, uId := range userId {
@@ -101,6 +119,14 @@ func (s *sAnnouncement) GetAnnouncementById(ctx context.Context, id int64, userI
 func (s *sAnnouncement) CreateAnnouncement(ctx context.Context, info *sys_model.SysAnnouncement, unionMainId, userId int64) (*sys_model.SysAnnouncementRes, error) {
 	data := kconv.Struct(info, &sys_do.SysAnnouncement{})
 
+	// 检查分类是否存在
+	if info.CategoryId > 0 {
+		category, err := s.GetCategoryById(ctx, info.CategoryId)
+		if err != nil || category == nil {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_category_not_exists}", sys_dao.SysAnnouncementCategory.Table())
+		}
+	}
+
 	err := sys_dao.SysAnnouncement.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		data.Id = idgen.NextId()
 		data.UnionMainId = unionMainId
@@ -113,11 +139,19 @@ func (s *sAnnouncement) CreateAnnouncement(ctx context.Context, info *sys_model.
 			data.State = sys_enum.Announcement.State.Draft.Code()
 		}
 
+		// 设置默认值
+		if info.Priority == 0 {
+			data.Priority = 1 // 默认普通优先级
+		}
+
+		// 设置阅读次数初始值
+		data.ReadCount = 0
+
 		data.CreatedAt = gtime.Now()
 		affected, err := daoctl.InsertWithError(sys_dao.SysAnnouncement.Ctx(ctx).OmitNilData().Data(data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_add_failed", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_add_failed}", sys_dao.SysAnnouncement.Table())
 		}
 
 		return nil
@@ -142,7 +176,15 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 
 	// 判断是否是本主体公告
 	if unionMainId != announcement.UnionMainId {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_cross_subject_modification_forbidden", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "{#error_cross_subject_modification_forbidden}", sys_dao.SysAnnouncement.Table())
+	}
+
+	// 如果有分类ID，检查分类是否存在
+	if info.CategoryId != nil && *info.CategoryId > 0 {
+		category, err := s.GetCategoryById(ctx, *info.CategoryId)
+		if err != nil || category == nil {
+			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_category_not_exists}", sys_dao.SysAnnouncementCategory.Table())
+		}
 	}
 
 	/*
@@ -154,7 +196,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 
 	*/
 	if announcement.State == sys_enum.Announcement.State.Published.Code() || announcement.State == sys_enum.Announcement.State.Expired.Code() {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_public_expired_announcement_edit_forbidden", sys_dao.SysAnnouncement.Table())
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "{#error_public_expired_announcement_edit_forbidden}", sys_dao.SysAnnouncement.Table())
 	}
 
 	//if gtime.Now().After(announcement.PublicAt) && announcement.State != sys_enum.Announcement.State.Draft.Code() {
@@ -178,7 +220,7 @@ func (s *sAnnouncement) UpdateAnnouncement(ctx context.Context, info *sys_model.
 		).OmitNilData().Data(&data))
 
 		if affected == 0 || err != nil {
-			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_update_failed", sys_dao.SysAnnouncement.Table())
+			return sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_update_failed}", sys_dao.SysAnnouncement.Table())
 		}
 
 		return nil
@@ -250,16 +292,31 @@ func (s *sAnnouncement) QueryAnnouncement(ctx context.Context, params *base_mode
 		params.Filter = filter
 	}
 
-	m = m.OrderDesc(sys_dao.SysAnnouncement.Columns().PublicAt)
+	// 添加排序：优先置顶，然后按优先级，最后按发布时间
+	m = m.Order(sys_dao.SysAnnouncement.Columns().IsPinned + " DESC, " +
+		sys_dao.SysAnnouncement.Columns().Priority + " DESC, " +
+		sys_dao.SysAnnouncement.Columns().PublicAt + " DESC")
 
 	res, err := daoctl.Query[sys_model.SysAnnouncementRes](m, params, isExport)
 
 	if err != nil {
-		return &sys_model.SysAnnouncementListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_announcement_list_query_failed", sys_dao.SysAnnouncement.Table())
+		return &sys_model.SysAnnouncementListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "{#error_announcement_list_query_failed}", sys_dao.SysAnnouncement.Table())
 	}
 
-	for _, record := range res.Records {
+	for i, record := range res.Records {
 		s.checkPublic(ctx, &record)
+
+		// 获取分类名称
+		if record.CategoryId > 0 {
+			category, _ := s.GetCategoryById(ctx, record.CategoryId)
+			if category != nil {
+				res.Records[i].CategoryName = category.Name
+			}
+		}
+
+		// 获取确认人数
+		confirmCount, _ := sys_dao.SysAnnouncementConfirm.Ctx(ctx).Where(sys_do.SysAnnouncementConfirm{AnnouncementId: record.Id}).Count()
+		res.Records[i].ConfirmCount = gconv.Int(confirmCount)
 	}
 
 	return (*sys_model.SysAnnouncementListRes)(res), nil

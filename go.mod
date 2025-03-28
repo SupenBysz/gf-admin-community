@@ -3,21 +3,21 @@ module github.com/SupenBysz/gf-admin-community
 go 1.24.0
 
 require (
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.99
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.100
 	github.com/baidubce/app-builder/go/appbuilder v1.0.3
 	github.com/casbin/casbin/v2 v2.104.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.9.0
 	github.com/gogf/gf/contrib/nosql/redis/v2 v2.9.0
 	github.com/gogf/gf/v2 v2.9.0
-	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
-	github.com/kysion/base-library v0.2.1
+	github.com/kysion/base-library v0.2.4
 	github.com/kysion/oss-library v0.2.8
-	github.com/kysion/sms-library v0.2.6
+	github.com/kysion/sms-library v0.2.7
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20241220152942-06eb5c6e8230
 	github.com/mojocn/base64Captcha v1.3.8
 	github.com/samber/lo v1.49.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1127
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1129
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/faceid v1.0.1115
 	github.com/yitter/idgenerator-go v1.3.3
 	golang.org/x/sync v0.12.0
@@ -64,9 +64,9 @@ require (
 	github.com/mozillazg/go-pinyin v0.20.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
-	github.com/redis/go-redis/v9 v9.7.1 // indirect
+	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1126 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1128 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
@@ -84,8 +84,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-//replace (
-//	github.com/kysion/base-library => ../../kysion/base-library
-//	github.com/kysion/oss-library => ../../kysion/oss-library
-//	github.com/kysion/sms-library => ../../kysion/sms-library
-//)
+replace (
+	github.com/kysion/base-library => ../kysion/base-library
+	github.com/kysion/oss-library => ../kysion/oss-library
+	github.com/kysion/sms-library => ../kysion/sms-library
+)
