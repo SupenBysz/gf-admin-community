@@ -2,6 +2,8 @@ module github.com/SupenBysz/gf-admin-community
 
 go 1.24.0
 
+toolchain go1.24.1
+
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.103
 	github.com/baidubce/app-builder/go/appbuilder v1.0.4
@@ -83,3 +85,9 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// replace (
+// 	github.com/kysion/base-library => ../kysion/base-library
+// 	github.com/kysion/oss-library => ../kysion/oss-library
+// 	github.com/kysion/sms-library => ../kysion/sms-library
+// )
