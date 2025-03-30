@@ -93,7 +93,12 @@ func (s *sSysMenu) SaveMenu(ctx context.Context, info *sys_model.SysMenu) (*sys_
 			// 菜单id = 权限id
 			data.Id = sysPermission.Id
 			info.Id = sysPermission.Id
+			data.LimitHiddenRoleIds = "[]"
+			data.DepPermissionIds = "[]"
+			data.LimitHiddenUserTypes = "[]"
+			data.LimitHiddenUserIds = "[]"
 			data.CreatedAt = gtime.Now()
+
 
 			_, err = sys_dao.SysMenu.Ctx(ctx).Insert(&data)
 
