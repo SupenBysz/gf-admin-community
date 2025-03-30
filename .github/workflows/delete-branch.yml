@@ -1,0 +1,44 @@
+name: 自动删除已合并分支
+
+on:
+    pull_request:
+        types: [closed]
+        branches:
+            - 'dev'
+
+jobs:
+    delete-branch:
+        name: 删除已合并分支
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: 检查 PR 是否已合并
+              id: check-merged
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const pr = context.payload.pull_request;
+                      if (pr.merged) {
+                          core.setOutput('merged', 'true');
+                          core.setOutput('branch', pr.head.ref);
+                      } else {
+                          core.setOutput('merged', 'false');
+                      }
+
+            - name: 删除已合并的分支
+              if: steps.check-merged.outputs.merged == 'true'
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const branch = '${{ steps.check-merged.outputs.branch }}';
+                      try {
+                          await github.rest.git.deleteRef({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              ref: `heads/${branch}`
+                          });
+                          console.log(`✅ 成功删除分支: ${branch}`);
+                      } catch (error) {
+                          console.log(`⚠️ 删除分支失败: ${branch}`);
+                          console.log(error);
+                      }

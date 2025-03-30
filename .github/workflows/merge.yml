@@ -1,0 +1,204 @@
+name: 功能分支合并与发布
+
+on:
+    pull_request:
+        branches:
+            - 'dev'
+        types: [opened, synchronize, reopened]
+
+env:
+    TZ: Asia/Shanghai
+    # 定义目标平台
+    PLATFORMS: 'linux/amd64 windows/amd64 darwin/amd64 darwin/arm64'
+    # 源文件
+    SOURCE_FILE: 'example/main.go'
+    # 输出基础目录
+    OUTPUT_DIR: 'temp'
+    # 二进制文件名
+    BINARY_NAME: 'ky-admin-community'
+    # 资源文件目录
+    RESOURCES: 'example/resource example/i18n example/manifest example/.env.example'
+    # Go 环境变量
+    GO111MODULE: on
+    GOPROXY: https://goproxy.cn,direct
+
+jobs:
+    security:
+        name: 安全检查
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v3
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 运行 Gosec 安全检查
+              uses: securego/gosec@master
+              with:
+                  args: ./...
+
+    test:
+        name: 运行测试
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v3
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: 1.21.4
+
+            - name: 运行测试
+              run: go test -v ./...
+
+    lint:
+        name: 代码质量检查
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v3
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 运行 golangci-lint
+              uses: golangci/golangci-lint-action@v3
+              with:
+                  version: latest
+
+    merge-check:
+        name: 合并检查
+        needs: [security, test, lint]
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: 检查合并冲突
+              run: |
+                  # 获取当前分支名
+                  CURRENT_BRANCH=${{ github.head_ref }}
+                  echo "当前分支: $CURRENT_BRANCH"
+
+                  # 配置 Git
+                  git config --global user.name 'GitHub Actions'
+                  git config --global user.email 'github-actions@github.com'
+
+                  # 尝试合并到 dev 分支
+                  git fetch origin dev
+                  if ! git merge-base --is-ancestor origin/dev HEAD; then
+                      if ! git merge origin/dev --no-commit --no-ff; then
+                          echo "检测到合并冲突，终止流程"
+                          exit 1
+                      fi
+                      git merge --abort
+                  fi
+                  echo "合并检查通过"
+
+    build:
+        name: 构建测试
+        needs: merge-check
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        strategy:
+            matrix:
+                platform:
+                    [linux/amd64, windows/amd64, darwin/amd64, darwin/arm64]
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v3
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: 1.21.4
+
+            - name: 构建二进制文件
+              run: |
+                  GOOS=${matrix.platform%/*}
+                  GOARCH=${matrix.platform#*/}
+                  OUTPUT_PATH="$OUTPUT_DIR/${GOOS}_${GOARCH}"
+                  BINARY_FILENAME="$BINARY_NAME"
+                  if [ "$GOOS" = "windows" ]; then
+                      BINARY_FILENAME="${BINARY_NAME}.exe"
+                  fi
+                  FINAL_OUTPUT="$OUTPUT_PATH/$BINARY_FILENAME"
+
+                  echo "正在构建 $GOOS/$GOARCH..."
+                  mkdir -p "$OUTPUT_PATH"
+                  env GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o "$FINAL_OUTPUT" "$SOURCE_FILE"
+                  if [ $? -ne 0 ]; then
+                      echo "构建失败: $GOOS/$GOARCH"
+                      exit 1
+                  fi
+                  echo "已构建: $FINAL_OUTPUT"
+
+                  echo "正在复制资源文件到 $OUTPUT_PATH..."
+                  for RESOURCE in $RESOURCES; do
+                      if [ -d "$RESOURCE" ] || [ -f "$RESOURCE" ]; then
+                          cp -R "$RESOURCE" "$OUTPUT_PATH/"
+                          echo "已复制: $RESOURCE"
+                      else
+                          echo "警告: 资源文件不存在: $RESOURCE"
+                      fi
+                  done
+
+    approve:
+        name: 自动审批
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: 审批 PR
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      github.rest.pulls.createReview({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: context.issue.number,
+                          event: 'APPROVE',
+                          body: '✅ 所有检查通过，可以合并'
+                      })
