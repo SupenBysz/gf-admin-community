@@ -247,7 +247,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 		beginRowIndex := info.PageNum*info.PageSize - info.PageSize
 
 		// 获得所有的key，遍历
-		result, err := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), info, isExport)
+		result, _ := daoctl.Query[*sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), info, isExport)
 
 		//keys, _ := s.redisCache.Keys(ctx)
 
@@ -280,6 +280,12 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 
 	newList := make([]*sys_model.SysUser, 0)
 	if result != nil && result.Records != nil && len(result.Records) > 0 {
+		result.PaginationRes = base_model.PaginationRes{
+			Pagination: info.Pagination,
+			PageTotal:  gconv.Int(math.Ceil(gconv.Float64(len(result.Records)) / gconv.Float64(info.PageSize))),
+			Total:      gconv.Int64(len(result.Records)),
+		}
+
 		for _, user := range result.Records {
 			user.RoleNames = make([]string, 0)
 			roleIds, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
@@ -309,7 +315,7 @@ func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchPar
 		}
 	}
 
-	if newList != nil && len(newList) > 0 {
+	if len(newList) > 0 {
 		result.Records = newList
 	}
 
@@ -335,7 +341,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 
 		result, err := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userInfo.Id), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
 
-		if result == false || err != nil {
+		if !result || err != nil {
 			return result, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_role_set_failed", sys_dao.SysUser.Table())
 		}
 	}
@@ -435,7 +441,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 		if len(info.RoleIds) > 0 {
 			ret, err := s.SetUserRoleIds(ctx, info.RoleIds, data.Id)
-			if ret != true || err != nil {
+			if !ret || err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_role_set_failed", sys_dao.SysUser.Table())
 			}
 		}
@@ -499,12 +505,7 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 		}
 	}
 
-	if response == nil {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
-	}
-
-	response = s.masker(s.makeMore(ctx, response))
-	return
+	return nil, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 }
 
 // CheckPassword 检查密码是否正确
@@ -565,7 +566,7 @@ func (s *sSysUser) MakeSession(ctx context.Context, userId int64) {
 		return
 	}
 
-	token, err := sys_service.Jwt().GenerateToken(ctx, user)
+	token, _ := sys_service.Jwt().GenerateToken(ctx, user)
 	if token != nil {
 		sys_service.Jwt().MakeSession(ctx, token.Token)
 	}
@@ -586,7 +587,7 @@ func (s *sSysUser) SetUserPermissionIds(ctx context.Context, userId int64, permi
 		// 重新赋予roleId新的权限清单
 		for _, item := range permissionIds {
 			ret, err := sys_service.Casbin().Enforcer().AddPermissionForUser(gconv.String(userId), sys_consts.CasbinDomain, gconv.String(item), "allow")
-			if err != nil || ret == false {
+			if err != nil || !ret {
 				return err
 			}
 		}
@@ -861,7 +862,7 @@ func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int
 			}
 
 			ret, _ := sys_service.Casbin().AddRoleForUserInDomain(gconv.String(userId), gconv.String(roleInfo.Id), sys_consts.CasbinDomain)
-			if ret == true {
+			if ret {
 				// 重置用户角色名称，并自动去重
 				data.RoleNames = garray.NewSortedStrArrayFrom(append(data.RoleNames, roleInfo.Name)).Unique().Slice()
 			}
@@ -1001,9 +1002,9 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	}
 
 	// 检验密码
-	user, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
+	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
-	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
+	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
 
 	// 业务层自定义密码加密规则
 	if sys_consts.Global.CryptoPasswordFunc != nil {
@@ -1057,9 +1058,9 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}
 
 	// 检验密码
-	user, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
+	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
-	pwdHash, err := en_crypto.PwdHash(password, gconv.String(userId))
+	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
 
 	// 业务层自定义密码加密规则
 	if sys_consts.Global.CryptoPasswordFunc != nil {
@@ -1083,7 +1084,7 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 
 func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, unionMainId ...int64) (*sys_model.SysUser, error) {
 
-	if unionMainId == nil || len(unionMainId) <= 0 || unionMainId[0] == 0 {
+	if len(unionMainId) <= 0 || unionMainId[0] == 0 {
 		getS := sys_service.SysSession().Get(ctx)
 		if getS != nil {
 			sessionUser := getS.JwtClaimsUser
