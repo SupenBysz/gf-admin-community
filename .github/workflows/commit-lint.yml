@@ -1,0 +1,56 @@
+name: 提交信息规范检查
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened, edited]
+
+permissions:
+    contents: read
+    pull-requests: write
+
+jobs:
+    commit-lint:
+        name: 检查提交信息
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 设置 Node.js 环境
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 安装依赖
+              run: |
+                  npm install --save-dev @commitlint/cli @commitlint/config-conventional
+
+            - name: 创建 commitlint 配置
+              run: |
+                  echo "module.exports = {extends: ['@commitlint/config-conventional']}" > commitlint.config.js
+
+            - name: 检查提交信息
+              run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+            - name: 提交信息检查结果
+              if: always()
+              run: |
+                  if [ $? -eq 0 ]; then
+                    echo "✅ 提交信息符合规范"
+                  else
+                    echo "❌ 提交信息不符合规范，请参考以下规范："
+                    echo "feat: 新功能"
+                    echo "fix: 修复问题"
+                    echo "docs: 文档变更"
+                    echo "style: 代码格式调整"
+                    echo "refactor: 重构代码"
+                    echo "perf: 性能优化"
+                    echo "test: 测试相关"
+                    echo "build: 构建相关"
+                    echo "ci: CI/CD 相关"
+                    echo "chore: 其他修改"
+                    echo "revert: 回滚提交"
+                    exit 1
+                  fi
