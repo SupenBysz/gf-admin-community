@@ -30,16 +30,18 @@ type SysMenuColumns struct {
 	Id                   string // ID
 	Path                 string // 路径
 	Name                 string // 名称
+	SortName             string // 简称
+	I18NKey              string // 国际化Key
 	Redirect             string // 跳转
 	Title                string // 标题
 	Icon                 string // 图标
+	Layout               string // 布局
 	Component            string // 组件
 	ParentId             string // 所属父级
 	Sort                 string // 排序
-	State                string // 状态：0隐藏，1显示
+	State                string // 状态：1启用，0禁用
+	Hidden               string // 是否隐藏：1是，0否
 	Description          string // 描述
-	CreatedAt            string //
-	UpdatedAt            string //
 	IconUrl              string // 图标URL
 	RedirectType         string // 跳转类型：1当前页面打开、 2新的标签页打开
 	Type                 string // 类型：1菜单、2按钮
@@ -47,6 +49,8 @@ type SysMenuColumns struct {
 	LimitHiddenRoleIds   string // 限定不可见的角色
 	LimitHiddenUserIds   string // 限定不可见的用户
 	LimitHiddenUserTypes string // 限定不可见的用户类型
+	CreatedAt            string //
+	UpdatedAt            string //
 }
 
 // sysMenuColumns holds the columns for table sys_menu.
@@ -54,16 +58,18 @@ var sysMenuColumns = SysMenuColumns{
 	Id:                   "id",
 	Path:                 "path",
 	Name:                 "name",
+	SortName:             "sort_name",
+	I18NKey:              "i18n_key",
 	Redirect:             "redirect",
 	Title:                "title",
 	Icon:                 "icon",
+	Layout:               "layout",
 	Component:            "component",
 	ParentId:             "parent_id",
 	Sort:                 "sort",
 	State:                "state",
+	Hidden:               "hidden",
 	Description:          "description",
-	CreatedAt:            "created_at",
-	UpdatedAt:            "updated_at",
 	IconUrl:              "icon_url",
 	RedirectType:         "redirect_type",
 	Type:                 "type",
@@ -71,6 +77,8 @@ var sysMenuColumns = SysMenuColumns{
 	LimitHiddenRoleIds:   "limit_hidden_role_ids",
 	LimitHiddenUserIds:   "limit_hidden_user_ids",
 	LimitHiddenUserTypes: "limit_hidden_user_types",
+	CreatedAt:            "created_at",
+	UpdatedAt:            "updated_at",
 }
 
 // NewSysMenuDao creates and returns a new DAO object for table data access.

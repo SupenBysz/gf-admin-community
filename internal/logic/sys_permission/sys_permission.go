@@ -2,6 +2,8 @@ package sys_permission
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"sort"
 
@@ -467,6 +469,9 @@ func (s *sSysPermission) DeletePermission(ctx context.Context, permissionId int6
 	_, err := s.GetPermissionById(ctx, permissionId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return true, nil
+		}
 		return false, err
 	}
 
