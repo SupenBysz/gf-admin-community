@@ -4,6 +4,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/kysion/base-library/base_model"
 	"github.com/kysion/base-library/utility/base_permission"
+	"sort"
 )
 
 type SysPermission struct {
@@ -53,6 +54,21 @@ func (d *SysPermissionTree) AssignChildren(father base_permission.IPermission, b
 func (d *SysPermissionTree) IsRoot(father base_permission.IPermission) bool {
 	// 顶级的ParentId这块可以看一下保存的时候ParentId 默认值是多少
 	return father.GetParentId() == 0
+}
+
+func (d *SysPermissionTree) MakeSubNodeSort() {
+	if d.Children == nil || len(d.Children) <= 1 {
+		return
+	}
+
+	sort.Slice(d.Children, func(i, j int) bool {
+		// 检查 Children 中的元素是否为 nil，避免运行时错误
+		if d.Children[i] == nil || d.Children[j] == nil {
+			panic("Children contains nil elements")
+		}
+
+		return d.Children[i].GetSort() < d.Children[j].GetSort()
+	})
 }
 
 // 实现权限接口

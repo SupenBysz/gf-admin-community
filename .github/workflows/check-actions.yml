@@ -1,0 +1,94 @@
+name: 定期检查 Actions 状态
+
+on:
+    schedule:
+        - cron: '0 0 * * *' # 每天 UTC 0 点运行
+        - cron: '0 12 * * *' # 每天 UTC 12 点运行
+
+jobs:
+    check-actions:
+        name: 检查 Actions 状态
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检查最近的工作流运行状态
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const workflows = ['merge.yml', 'delete-branch.yml'];
+                      const results = [];
+
+                      for (const workflow of workflows) {
+                          const runs = await github.rest.actions.listWorkflowRuns({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              workflow_id: workflow,
+                              per_page: 5,
+                              status: 'failure'
+                          });
+                          
+                          if (runs.data.total_count > 0) {
+                              results.push({
+                                  workflow,
+                                  failures: runs.data.workflow_runs.map(run => ({
+                                      id: run.id,
+                                      created_at: run.created_at,
+                                      conclusion: run.conclusion,
+                                      html_url: run.html_url
+                                  }))
+                              });
+                          }
+                      }
+
+                      if (results.length > 0) {
+                          let message = '⚠️ 发现工作流运行失败：\n\n';
+                          for (const result of results) {
+                              message += `### ${result.workflow}\n`;
+                              for (const failure of result.failures) {
+                                  message += `- [运行 #${failure.id}](${failure.html_url}) 在 ${new Date(failure.created_at).toLocaleString()} 失败\n`;
+                              }
+                              message += '\n';
+                          }
+                          
+                          // 创建 issue 报告问题
+                          await github.rest.issues.create({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              title: '🚨 Actions 工作流检查报告',
+                              body: message,
+                              labels: ['actions-check', 'bug']
+                          });
+                          
+                          // 发送通知到 Slack（如果配置了 webhook）
+                          if (process.env.SLACK_WEBHOOK_URL) {
+                              const slackMessage = {
+                                  text: message,
+                                  blocks: [
+                                      {
+                                          type: 'header',
+                                          text: {
+                                              type: 'plain_text',
+                                              text: '🚨 Actions 工作流检查报告'
+                                          }
+                                      },
+                                      {
+                                          type: 'section',
+                                          text: {
+                                              type: 'mrkdwn',
+                                              text: message
+                                          }
+                                      }
+                                  ]
+                              };
+                              
+                              await fetch(process.env.SLACK_WEBHOOK_URL, {
+                                  method: 'POST',
+                                  headers: {
+                                      'Content-Type': 'application/json'
+                                  },
+                                  body: JSON.stringify(slackMessage)
+                              });
+                          }
+                      } else {
+                          console.log('✅ 所有工作流运行正常');
+                      }

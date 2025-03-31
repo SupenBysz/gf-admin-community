@@ -292,7 +292,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 		}
 
 		{
-			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogid)
+			audit := sys_service.SysAudit().GetAuditById(ctx, data.LatestAuditLogId)
 			// 未审核通过的资质资质，直接更改待审核的资质信息
 			if audit != nil && audit.State == 0 {
 				_, err := tx.Ctx(ctx).Model(sys_dao.SysPersonLicense.Table()).Where(sys_do.SysPersonLicense{Id: id}).OmitNil().Save(&newData)
@@ -322,7 +322,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 // GetLicenseByLatestAuditId  获取最新的审核记录Id获取资质信息
 func (s *sSysPersonLicense) GetLicenseByLatestAuditId(ctx context.Context, auditId int64) *sys_entity.SysPersonLicense {
 	result := sys_entity.SysPersonLicense{}
-	err := sys_dao.SysPersonLicense.Ctx(ctx).Where(sys_do.SysPersonLicense{LatestAuditLogid: auditId}).OrderDesc(sys_dao.SysPersonLicense.Columns().CreatedAt).Limit(1).Scan(&result)
+	err := sys_dao.SysPersonLicense.Ctx(ctx).Where(sys_do.SysPersonLicense{LatestAuditLogId: auditId}).OrderDesc(sys_dao.SysPersonLicense.Columns().CreatedAt).Limit(1).Scan(&result)
 	if err != nil {
 		return nil
 	}
@@ -360,7 +360,7 @@ func (s *sSysPersonLicense) SetLicenseAuditNumber(ctx context.Context, id int64,
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_operation_failed_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
-	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogid: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
+	_, err = sys_dao.SysPersonLicense.Ctx(ctx).Data(sys_do.SysPersonLicense{LatestAuditLogId: auditNumber, UpdatedAt: gtime.Now()}).OmitNilData().Where(sys_do.SysPersonLicense{Id: id}).Update()
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_audit_number_update_failed"), sys_dao.SysPersonLicense.Table())
@@ -402,7 +402,7 @@ func (s *sSysPersonLicense) UpdateLicenseAuditLogId(ctx context.Context, id int6
 
 	// 将新创建的个人资质认证信息关联至个人资质
 	_, err = sys_dao.SysPersonLicense.Ctx(ctx).
-		Data(sys_do.SysPersonLicense{LatestAuditLogid: latestAuditLogId, UpdatedAt: gtime.Now()}).
+		Data(sys_do.SysPersonLicense{LatestAuditLogId: latestAuditLogId, UpdatedAt: gtime.Now()}).
 		Where(sys_do.SysPersonLicense{Id: id}).
 		Update()
 

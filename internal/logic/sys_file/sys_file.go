@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
@@ -851,7 +852,7 @@ func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, c
 func makeSign(fileSrc string, id int64) string {
 	srcBase64 := string(gbase64.Encode([]byte(fileSrc)))
 	srcMd5 := crypto.Md5Hash(fileSrc)
-	fileId := string(id)
+	fileId := strconv.FormatInt(id, 10)
 
 	cryptoData := srcBase64 + srcMd5 + fileId
 	checkSign := crypto.Md5Hash(cryptoData)

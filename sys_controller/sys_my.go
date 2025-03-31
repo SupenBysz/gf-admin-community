@@ -6,7 +6,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
@@ -76,6 +75,11 @@ func (c *cSysMy) MyPermission(ctx context.Context, _ *sys_api.MyPermissionsReq) 
 			Value: ids,
 		}),
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	ret := sys_model.MyPermissionListRes{}
 	ret = result.Records
 
@@ -105,39 +109,13 @@ func (c *cSysMy) MyMenu(ctx context.Context, _ *sys_api.MyMenusReq) (sys_model.S
 	}
 
 	ids, err := sys_service.SysPermission().GetPermissionsByResource(ctx, gconv.String(user.Id)) // ids 7
-	////pId := sys_service.Casbin().GetAllNamedRoles(gconv.String(user.Id))
-	//pId, err := sys_service.Casbin().Enforcer().GetRoleManager().GetRoles(gconv.String(user.Id), sys_consts.CasbinDomain)
 
-	// 菜单列表
-	//menuList, err := sys_service.SysMenu().GetMenuList(ctx, 0, true)
-
-	//var pids []int64
-	//
-	//for _, s := range pId {
-	//	if gstr.IsNumeric(s) {
-	//		pids = append(pids, gconv.Int64(s))
-	//	}
-	//
-	//}
-	//ids = append(ids, pids...)
+	if err != nil {
+		return nil, err
+	}
 
 	// 通过菜单列表构建菜单树
-	menuTree, _ := sys_service.SysMenu().MakeMenuTree(ctx, 0, func(ctx context.Context, cruuentMenu *sys_entity.SysMenu) bool {
-		for _, id := range ids {
-			if id == cruuentMenu.Id {
-				return true
-			}
-		}
-		return false
-	})
-
-	//var parentMenuList []sys_entity.SysMenu
-	//sys_dao.SysMenu.Ctx(ctx).Where(sys_dao.SysMenu.Columns().ParentId, 0).WhereIn(sys_dao.SysMenu.Columns().Id, ids).Scan(&parentMenuList)
-	//
-	//for _, parentMenu := range parentMenuList {
-	//	tree, _ := sys_service.SysMenu().MakeMenuTree(ctx, parentMenu.Id, ids...)
-	//	menuTree = append(menuTree, tree...)
-	//}
+	menuTree, _ := sys_service.SysMenu().GetMenuTree(ctx, 0, ids...)
 
 	return menuTree, err
 }

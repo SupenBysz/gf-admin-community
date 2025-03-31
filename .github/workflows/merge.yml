@@ -1,0 +1,298 @@
+name: 功能分支合并与发布
+
+on:
+    pull_request:
+        branches:
+            - 'dev'
+        types: [opened, synchronize, reopened, closed]
+
+env:
+    TZ: Asia/Shanghai
+    # 定义目标平台
+    PLATFORMS: 'linux/amd64 windows/amd64 darwin/amd64 darwin/arm64'
+    # 源文件
+    SOURCE_FILE: 'example/main.go'
+    # 输出基础目录
+    OUTPUT_DIR: 'temp'
+    # 二进制文件名
+    BINARY_NAME: 'ky-admin-community'
+    # 资源文件目录
+    RESOURCES: 'example/resource example/i18n example/manifest example/.env.example'
+    # Go 环境变量
+    GO_VERSION: '1.22.0'
+    # GO111MODULE: on
+    # GOPROXY: https://goproxy.cn,direct
+
+jobs:
+    # security:
+    #     name: 安全检查
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 10
+    #     continue-on-error: true # 允许失败继续执行
+    #     steps:
+    #         - name: 检出代码
+    #           uses: actions/checkout@v4
+
+    #         - name: 缓存 Go 模块
+    #           uses: actions/cache@v4
+    #           with:
+    #               path: |
+    #                   ~/.cache/go-build
+    #                   ~/go/pkg/mod
+    #               key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+    #               restore-keys: |
+    #                   ${{ runner.os }}-go-
+
+    #         - name: 运行 Gosec 安全检查
+    #           uses: securego/gosec@master
+    #           with:
+    #               args: ./...
+
+    test:
+        name: 运行测试
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: 运行测试
+              run: go test -v ./...
+
+    # lint:
+    #     name: 代码质量检查
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 10
+    #     continue-on-error: true # 允许失败继续执行
+    #     steps:
+    #         - name: 检出代码
+    #           uses: actions/checkout@v4
+
+    #         - name: 缓存 Go 模块
+    #           uses: actions/cache@v4
+    #           with:
+    #               path: |
+    #                   ~/.cache/go-build
+    #                   ~/go/pkg/mod
+    #               key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+    #               restore-keys: |
+    #                   ${{ runner.os }}-go-
+
+    #         - name: 运行 golangci-lint
+    #           uses: golangci/golangci-lint-action@v3
+    #           with:
+    #               version: latest
+
+    merge-check:
+        name: 合并检查
+        needs: [test] # 只依赖测试任务
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 检查合并冲突
+              run: |
+                  # 获取当前分支名
+                  CURRENT_BRANCH=${{ github.head_ref }}
+                  echo "当前分支: $CURRENT_BRANCH"
+
+                  # 配置 Git
+                  git config --global user.name 'GitHub Actions'
+                  git config --global user.email 'github-actions@github.com'
+
+                  # 尝试合并到 dev 分支
+                  git fetch origin dev
+                  if ! git merge-base --is-ancestor origin/dev HEAD; then
+                      if ! git merge origin/dev --no-commit --no-ff; then
+                          echo "检测到合并冲突，终止流程"
+                          exit 1
+                      fi
+                      git merge --abort
+                  fi
+                  echo "合并检查通过"
+
+    build:
+        name: 构建测试
+        needs: merge-check
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        strategy:
+            matrix:
+                platform:
+                    [linux/amd64, windows/amd64, darwin/amd64, darwin/arm64]
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+
+            - name: 缓存 Go 模块
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cache/go-build
+                      ~/go/pkg/mod
+                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                  restore-keys: |
+                      ${{ runner.os }}-go-
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: 构建二进制文件
+              shell: bash
+              run: |
+                  # 解析平台信息
+                  IFS='/' read -r OS ARCH <<< "${{ matrix.platform }}"
+                  echo "构建平台: OS=$OS, ARCH=$ARCH"
+
+                  # 设置输出路径
+                  OUTPUT_PATH="${OUTPUT_DIR}/${OS}_${ARCH}"
+                  mkdir -p "$OUTPUT_PATH"
+
+                  # 设置二进制文件名
+                  if [ "$OS" = "windows" ]; then
+                      BINARY_FILENAME="${BINARY_NAME}.exe"
+                  else
+                      BINARY_FILENAME="${BINARY_NAME}"
+                  fi
+
+                  # 完整输出路径
+                  FINAL_OUTPUT="${OUTPUT_PATH}/${BINARY_FILENAME}"
+                  echo "输出路径: $FINAL_OUTPUT"
+
+                  # 执行构建
+                  echo "开始构建 ${OS}/${ARCH}..."
+                  GOOS=$OS GOARCH=$ARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o "$FINAL_OUTPUT" "$SOURCE_FILE"
+
+                  # 检查构建结果
+                  if [ $? -ne 0 ]; then
+                      echo "构建失败: ${OS}/${ARCH}"
+                      exit 1
+                  fi
+
+                  # 复制资源文件
+                  echo "复制资源文件到 $OUTPUT_PATH..."
+                  for RESOURCE in $RESOURCES; do
+                      if [ -e "$RESOURCE" ]; then
+                          cp -R "$RESOURCE" "$OUTPUT_PATH/"
+                          echo "已复制: $RESOURCE"
+                      else
+                          echo "警告: 资源不存在: $RESOURCE"
+                      fi
+                  done
+
+                  echo "构建完成: $FINAL_OUTPUT"
+
+            - name: 上传构建产物
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.platform }}-build
+                  path: ${{ env.OUTPUT_DIR }}/${{ matrix.platform }}
+                  retention-days: 5
+
+    approve:
+        name: 自动审批
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: 审批 PR
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      github.rest.pulls.createReview({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: context.issue.number,
+                          event: 'APPROVE',
+                          body: '✅ 所有检查通过，可以合并'
+                      })
+
+    auto-merge:
+        name: 自动合并
+        needs: approve
+        runs-on: ubuntu-latest
+        if: github.event.pull_request.state == 'open'
+        steps:
+            - name: 自动合并 PR
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      await github.rest.pulls.merge({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: context.issue.number,
+                          merge_method: 'squash'
+                      });
+
+    release:
+        name: 发布版本
+        needs: auto-merge
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 获取版本号
+              id: get_version
+              run: |
+                  CURRENT_VERSION=$(cat version | grep -oE "v[0-9]+\.[0-9]+\.[0-9]+")
+                  NEW_VERSION=$(echo ${CURRENT_VERSION} | awk -F. '{$NF = $NF + 1;}1' OFS=.)
+                  echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+                  echo "${NEW_VERSION}" > version
+
+            - name: 下载所有构建产物
+              uses: actions/download-artifact@v4
+              with:
+                  path: ${{ env.OUTPUT_DIR }}
+
+            - name: 创建发布版本
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # 配置 Git
+                  git config --global user.name 'GitHub Actions Bot'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+                  # 提交版本更新
+                  git add version
+                  git commit -m "chore: 发布版本 ${{ steps.get_version.outputs.new_version }}"
+                  git tag ${{ steps.get_version.outputs.new_version }}
+                  git push origin ${{ steps.get_version.outputs.new_version }}
+                  git push origin dev
+
+                  # 创建压缩包
+                  cd ${{ env.OUTPUT_DIR }}
+                  for platform in */; do
+                      platform_name=${platform%/}
+                      zip -r "${platform_name}.zip" "$platform_name"
+                  done
+
+                  # 创建 Release
+                  gh release create ${{ steps.get_version.outputs.new_version }} \
+                      --title "发布 ${{ steps.get_version.outputs.new_version }}" \
+                      --notes "自动发布新版本" \
+                      ./*.zip

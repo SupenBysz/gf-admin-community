@@ -1,0 +1,181 @@
+name: 依赖更新与版本发布
+
+on:
+    # 定时检查
+    schedule:
+        - cron: '0 0 * * *' # 每天 UTC 0:00 运行
+    # 手动触发
+    workflow_dispatch:
+        inputs:
+            force_update:
+                description: '强制更新依赖'
+                required: false
+                type: boolean
+                default: false
+            base_version:
+                description: '指定 base-library 版本'
+                required: false
+                type: string
+                default: ''
+
+env:
+    TZ: Asia/Shanghai
+    GO_VERSION: '1.24.1'
+    # 定义依赖关系
+    BASE_LIBRARY: 'kysion/base-library'
+    # 当前项目类型：可选值 sms-library, oss-library, gf-admin-community
+    PROJECT_TYPE: 'gf-admin-community'
+
+jobs:
+    check-update:
+        name: 检查依赖更新
+        runs-on: ubuntu-latest
+        outputs:
+            updated: ${{ steps.check_updates.outputs.has_updates }}
+            updates_summary: ${{ steps.check_updates.outputs.updates_summary }}
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: 设置 Go 环境
+              uses: actions/setup-go@v4
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: 检查依赖更新
+              id: check_updates
+              run: |
+                  # 初始化变量
+                  HAS_UPDATES="false"
+                  UPDATES_SUMMARY=""
+                  BRANCH_NAME="update-deps/$(date +%Y%m%d)"
+
+                  # 创建新分支
+                  git checkout -b ${BRANCH_NAME}
+
+                  # 获取当前 base-library 版本
+                  BASE_CURRENT_VERSION=$(grep "github.com/${BASE_LIBRARY}" go.mod | awk '{print $2}')
+                  echo "当前 base-library 版本: ${BASE_CURRENT_VERSION}"
+
+                  # 如果指定了版本，使用指定版本，否则获取最新版本
+                  if [ -n "${{ github.event.inputs.base_version }}" ]; then
+                      BASE_TARGET_VERSION="${{ github.event.inputs.base_version }}"
+                  else
+                      BASE_TARGET_VERSION=$(go list -m -versions github.com/${BASE_LIBRARY} | awk '{print $NF}')
+                  fi
+                  echo "目标 base-library 版本: ${BASE_TARGET_VERSION}"
+
+                  # 检查是否需要更新 base-library
+                  if [ "$BASE_TARGET_VERSION" != "$BASE_CURRENT_VERSION" ] || [ "${{ github.event.inputs.force_update }}" == "true" ]; then
+                      echo "更新 base-library..."
+                      go get -u github.com/${BASE_LIBRARY}@${BASE_TARGET_VERSION}
+                      HAS_UPDATES="true"
+                      UPDATES_SUMMARY="* ${BASE_LIBRARY}: ${BASE_CURRENT_VERSION} -> ${BASE_TARGET_VERSION}\n"
+                  fi
+
+                  # 如果是 gf-admin-community，还需要检查其他依赖
+                  if [ "$PROJECT_TYPE" == "gf-admin-community" ]; then
+                      # 检查 sms-library
+                      SMS_CURRENT=$(grep "github.com/kysion/sms-library" go.mod | awk '{print $2}')
+                      SMS_LATEST=$(go list -m -versions github.com/kysion/sms-library | awk '{print $NF}')
+                      if [ "$SMS_LATEST" != "$SMS_CURRENT" ]; then
+                          go get -u github.com/kysion/sms-library@${SMS_LATEST}
+                          HAS_UPDATES="true"
+                          UPDATES_SUMMARY="${UPDATES_SUMMARY}* kysion/sms-library: ${SMS_CURRENT} -> ${SMS_LATEST}\n"
+                      fi
+                      
+                      # 检查 oss-library
+                      OSS_CURRENT=$(grep "github.com/kysion/oss-library" go.mod | awk '{print $2}')
+                      OSS_LATEST=$(go list -m -versions github.com/kysion/oss-library | awk '{print $NF}')
+                      if [ "$OSS_LATEST" != "$OSS_CURRENT" ]; then
+                          go get -u github.com/kysion/oss-library@${OSS_LATEST}
+                          HAS_UPDATES="true"
+                          UPDATES_SUMMARY="${UPDATES_SUMMARY}* kysion/oss-library: ${OSS_CURRENT} -> ${OSS_LATEST}\n"
+                      fi
+                  fi
+
+                  # 如果有更新，整理依赖并提交更改
+                  if [ "$HAS_UPDATES" == "true" ]; then
+                      echo "整理依赖..."
+                      go mod tidy
+                      
+                      # 配置 Git
+                      git config --global user.name 'GitHub Actions Bot'
+                      git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+                      
+                      # 提交更改
+                      git add go.mod go.sum
+                      git commit -m "chore: 更新依赖版本
+
+                      ${UPDATES_SUMMARY}"
+                      
+                      # 推送分支
+                      git push origin ${BRANCH_NAME}
+                      
+                      # 创建 Pull Request
+                      PR_BODY="自动更新依赖到最新版本：\n\n${UPDATES_SUMMARY}"
+                      PR_URL=$(gh pr create \
+                          --title "chore: 自动更新依赖版本" \
+                          --body "${PR_BODY}" \
+                          --base dev \
+                          --head ${BRANCH_NAME})
+                      
+                      echo "已创建 Pull Request: ${PR_URL}"
+                  fi
+
+                  # 输出结果
+                  echo "has_updates=${HAS_UPDATES}" >> $GITHUB_OUTPUT
+                  echo "updates_summary<<EOF" >> $GITHUB_OUTPUT
+                  echo -e "${UPDATES_SUMMARY}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    create-release:
+        name: 创建发布版本
+        needs: check-update
+        if: success() && needs.check-update.outputs.updated == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 获取版本号
+              id: get_version
+              run: |
+                  # 从 version 文件获取当前版本
+                  CURRENT_VERSION=$(cat version | grep -oE "v[0-9]+\.[0-9]+\.[0-9]+")
+                  # 增加补丁版本号
+                  NEW_VERSION=$(echo ${CURRENT_VERSION} | awk -F. '{$NF = $NF + 1;}1' OFS=.)
+                  echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+                  # 更新 version 文件
+                  echo "${NEW_VERSION}" > version
+
+            - name: 创建发布标签
+              run: |
+                  git config --global user.name 'GitHub Actions Bot'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+                  git add version
+                  git commit -m "chore: 发布版本 ${{ steps.get_version.outputs.new_version }}
+
+                  更新内容：
+                  ${{ needs.check-update.outputs.updates_summary }}"
+
+                  git tag ${{ steps.get_version.outputs.new_version }}
+                  git push origin ${{ steps.get_version.outputs.new_version }}
+
+                  # 创建 GitHub Release
+                  gh release create ${{ steps.get_version.outputs.new_version }} \
+                      --title "发布 ${{ steps.get_version.outputs.new_version }}" \
+                      --notes "自动发布新版本
+
+                      更新内容：
+                      ${{ needs.check-update.outputs.updates_summary }}"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
