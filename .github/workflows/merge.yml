@@ -19,6 +19,7 @@ env:
     # 资源文件目录
     RESOURCES: 'example/resource example/i18n example/manifest example/.env.example'
     # Go 环境变量
+    GO_VERSION: '1.24.1'
     # GO111MODULE: on
     # GOPROXY: https://goproxy.cn,direct
 
@@ -33,7 +34,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: 缓存 Go 模块
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: |
                       ~/.cache/go-build
@@ -53,10 +54,10 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: 缓存 Go 模块
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: |
                       ~/.cache/go-build
@@ -68,7 +69,7 @@ jobs:
             - name: 设置 Go 环境
               uses: actions/setup-go@v4
               with:
-                  go-version: 1.24.1
+                  go-version: ${{ env.GO_VERSION }}
 
             - name: 运行测试
               run: go test -v ./...
@@ -80,10 +81,10 @@ jobs:
         continue-on-error: true # 允许失败继续执行
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: 缓存 Go 模块
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: |
                       ~/.cache/go-build
@@ -104,7 +105,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
@@ -140,10 +141,10 @@ jobs:
                     [linux/amd64, windows/amd64, darwin/amd64, darwin/arm64]
         steps:
             - name: 检出代码
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: 缓存 Go 模块
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: |
                       ~/.cache/go-build
@@ -155,37 +156,59 @@ jobs:
             - name: 设置 Go 环境
               uses: actions/setup-go@v4
               with:
-                  go-version: 1.24.1
+                  go-version: ${{ env.GO_VERSION }}
 
             - name: 构建二进制文件
+              shell: bash
               run: |
-                  GOOS=${matrix.platform%/*}
-                  GOARCH=${matrix.platform#*/}
-                  OUTPUT_PATH="$OUTPUT_DIR/${GOOS}_${GOARCH}"
-                  BINARY_FILENAME="$BINARY_NAME"
-                  if [ "$GOOS" = "windows" ]; then
-                      BINARY_FILENAME="${BINARY_NAME}.exe"
-                  fi
-                  FINAL_OUTPUT="$OUTPUT_PATH/$BINARY_FILENAME"
+                  # 解析平台信息
+                  IFS='/' read -r OS ARCH <<< "${{ matrix.platform }}"
+                  echo "构建平台: OS=$OS, ARCH=$ARCH"
 
-                  echo "正在构建 $GOOS/$GOARCH..."
+                  # 设置输出路径
+                  OUTPUT_PATH="${OUTPUT_DIR}/${OS}_${ARCH}"
                   mkdir -p "$OUTPUT_PATH"
-                  env GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o "$FINAL_OUTPUT" "$SOURCE_FILE"
+
+                  # 设置二进制文件名
+                  if [ "$OS" = "windows" ]; then
+                      BINARY_FILENAME="${BINARY_NAME}.exe"
+                  else
+                      BINARY_FILENAME="${BINARY_NAME}"
+                  fi
+
+                  # 完整输出路径
+                  FINAL_OUTPUT="${OUTPUT_PATH}/${BINARY_FILENAME}"
+                  echo "输出路径: $FINAL_OUTPUT"
+
+                  # 执行构建
+                  echo "开始构建 ${OS}/${ARCH}..."
+                  GOOS=$OS GOARCH=$ARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o "$FINAL_OUTPUT" "$SOURCE_FILE"
+
+                  # 检查构建结果
                   if [ $? -ne 0 ]; then
-                      echo "构建失败: $GOOS/$GOARCH"
+                      echo "构建失败: ${OS}/${ARCH}"
                       exit 1
                   fi
-                  echo "已构建: $FINAL_OUTPUT"
 
-                  echo "正在复制资源文件到 $OUTPUT_PATH..."
+                  # 复制资源文件
+                  echo "复制资源文件到 $OUTPUT_PATH..."
                   for RESOURCE in $RESOURCES; do
-                      if [ -d "$RESOURCE" ] || [ -f "$RESOURCE" ]; then
+                      if [ -e "$RESOURCE" ]; then
                           cp -R "$RESOURCE" "$OUTPUT_PATH/"
                           echo "已复制: $RESOURCE"
                       else
-                          echo "警告: 资源文件不存在: $RESOURCE"
+                          echo "警告: 资源不存在: $RESOURCE"
                       fi
                   done
+
+                  echo "构建完成: $FINAL_OUTPUT"
+
+            - name: 上传构建产物
+              uses: actions/upload-artifact@v3
+              with:
+                  name: ${{ matrix.platform }}-build
+                  path: ${{ env.OUTPUT_DIR }}/${{ matrix.platform }}
+                  retention-days: 5
 
     approve:
         name: 自动审批
