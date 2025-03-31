@@ -1,0 +1,57 @@
+# CLI tool, only in development environment.
+# https://goframe.org/pages/viewpage.action?pageId=3673173
+gfcli:
+  # 工具编译配置
+  build:
+    name:     "gf-admin-community"
+    arch:     "amd64"
+    system:   "linux,darwin,windows"
+    mod:      ""
+    cgo:      0
+
+  # dao生成
+  gen:
+    dao:
+#      - link: "pgsql:user=Username password=Password host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
+        tables: "
+          sys_area,
+          sys_config,
+          sys_user,
+          sys_file,
+          sys_logs,
+          sys_menu,
+          sys_casbin,
+          sys_role,
+          sys_organization,
+          sys_permission,
+          sys_sms_logs,
+          sys_person_audit,
+          sys_person_license,
+          sys_user_detail,
+          sys_settings,
+          sys_front_settings,
+          sys_audit,
+          sys_invite,
+          sys_industry,
+          sys_message,
+          sys_member_level,
+          sys_member_level_user,
+          sys_announcement,
+          sys_announcement_read_user,
+          "
+
+
+        daoPath: "../sys_model/sys_dao"
+        doPath: "../sys_model/sys_do"
+        entityPath: "../sys_model/sys_entity"
+
+        tplDaoIndexPath: "hack/tpls/dao_template.tpl"
+        tplDaoInternalPath: "hack/tpls/dao_internal_template.tpl"
+        tplDaoDoPath: "hack/tpls/do_template.tpl"
+        tplDaoEntityPath: "hack/tpls/entity_template.tpl"
+
+        dstFolder: "..sys_service"
+
+        descriptionTag: true
+        noModelComment: true
+        withTime: false
