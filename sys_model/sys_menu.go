@@ -9,7 +9,7 @@ type SysMenu struct {
 	Id                   int64   `json:"id"        dc:"ID，ID值为0时则新增菜单" v:"min:0#ID不能小于0"`
 	Path                 *string `json:"path"      dc:"路径" v:"max-length:128#路径最大长度请不要超过128字符"`
 	Name                 *string `json:"name"      dc:"名称" v:"required|max-length:128#请输入名称|名称最大长度请不要超过128字符"`
-	SortName             string  `json:"sortName"             orm:"sort_name"               description:"简称"`
+	SortTitle            string  `json:"sortTitle"             orm:"sort_title"               description:"简称"`
 	I18NKey              string  `json:"i18NKey"              orm:"i18n_key"                description:"国际化Key"`
 	Redirect             *string `json:"redirect"  dc:"跳转" v:"max-length:128#跳转URL最大长度请不要超过128字符"`
 	RedirectType         *int    `json:"redirectType" dc:"跳转类型：1当前页面打开、 2新的标签页打开"`
