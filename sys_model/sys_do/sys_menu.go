@@ -15,7 +15,7 @@ type SysMenu struct {
 	Id                   interface{} // ID
 	Path                 interface{} // 路径
 	Name                 interface{} // 名称
-	SortName             interface{} // 简称
+	SortTitle            interface{} // 简称
 	I18NKey              interface{} // 国际化Key
 	Redirect             interface{} // 跳转
 	Title                interface{} // 标题
