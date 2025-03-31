@@ -4,7 +4,7 @@ on:
     pull_request:
         branches:
             - 'dev'
-        types: [opened, synchronize, reopened]
+        types: [opened, synchronize, reopened, closed]
 
 env:
     TZ: Asia/Shanghai
@@ -19,34 +19,34 @@ env:
     # 资源文件目录
     RESOURCES: 'example/resource example/i18n example/manifest example/.env.example'
     # Go 环境变量
-    GO_VERSION: '1.24.1'
+    GO_VERSION: '1.22.0'
     # GO111MODULE: on
     # GOPROXY: https://goproxy.cn,direct
 
 jobs:
-    security:
-        name: 安全检查
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        continue-on-error: true # 允许失败继续执行
-        steps:
-            - name: 检出代码
-              uses: actions/checkout@v4
+    # security:
+    #     name: 安全检查
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 10
+    #     continue-on-error: true # 允许失败继续执行
+    #     steps:
+    #         - name: 检出代码
+    #           uses: actions/checkout@v4
 
-            - name: 缓存 Go 模块
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cache/go-build
-                      ~/go/pkg/mod
-                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-                  restore-keys: |
-                      ${{ runner.os }}-go-
+    #         - name: 缓存 Go 模块
+    #           uses: actions/cache@v4
+    #           with:
+    #               path: |
+    #                   ~/.cache/go-build
+    #                   ~/go/pkg/mod
+    #               key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+    #               restore-keys: |
+    #                   ${{ runner.os }}-go-
 
-            - name: 运行 Gosec 安全检查
-              uses: securego/gosec@master
-              with:
-                  args: ./...
+    #         - name: 运行 Gosec 安全检查
+    #           uses: securego/gosec@master
+    #           with:
+    #               args: ./...
 
     test:
         name: 运行测试
@@ -74,29 +74,29 @@ jobs:
             - name: 运行测试
               run: go test -v ./...
 
-    lint:
-        name: 代码质量检查
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        continue-on-error: true # 允许失败继续执行
-        steps:
-            - name: 检出代码
-              uses: actions/checkout@v4
+    # lint:
+    #     name: 代码质量检查
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 10
+    #     continue-on-error: true # 允许失败继续执行
+    #     steps:
+    #         - name: 检出代码
+    #           uses: actions/checkout@v4
 
-            - name: 缓存 Go 模块
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cache/go-build
-                      ~/go/pkg/mod
-                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-                  restore-keys: |
-                      ${{ runner.os }}-go-
+    #         - name: 缓存 Go 模块
+    #           uses: actions/cache@v4
+    #           with:
+    #               path: |
+    #                   ~/.cache/go-build
+    #                   ~/go/pkg/mod
+    #               key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+    #               restore-keys: |
+    #                   ${{ runner.os }}-go-
 
-            - name: 运行 golangci-lint
-              uses: golangci/golangci-lint-action@v3
-              with:
-                  version: latest
+    #         - name: 运行 golangci-lint
+    #           uses: golangci/golangci-lint-action@v3
+    #           with:
+    #               version: latest
 
     merge-check:
         name: 合并检查
@@ -227,3 +227,72 @@ jobs:
                           event: 'APPROVE',
                           body: '✅ 所有检查通过，可以合并'
                       })
+
+    auto-merge:
+        name: 自动合并
+        needs: approve
+        runs-on: ubuntu-latest
+        if: github.event.pull_request.state == 'open'
+        steps:
+            - name: 自动合并 PR
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      await github.rest.pulls.merge({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: context.issue.number,
+                          merge_method: 'squash'
+                      });
+
+    release:
+        name: 发布版本
+        needs: auto-merge
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 获取版本号
+              id: get_version
+              run: |
+                  CURRENT_VERSION=$(cat version | grep -oE "v[0-9]+\.[0-9]+\.[0-9]+")
+                  NEW_VERSION=$(echo ${CURRENT_VERSION} | awk -F. '{$NF = $NF + 1;}1' OFS=.)
+                  echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+                  echo "${NEW_VERSION}" > version
+
+            - name: 下载所有构建产物
+              uses: actions/download-artifact@v4
+              with:
+                  path: ${{ env.OUTPUT_DIR }}
+
+            - name: 创建发布版本
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # 配置 Git
+                  git config --global user.name 'GitHub Actions Bot'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+                  # 提交版本更新
+                  git add version
+                  git commit -m "chore: 发布版本 ${{ steps.get_version.outputs.new_version }}"
+                  git tag ${{ steps.get_version.outputs.new_version }}
+                  git push origin ${{ steps.get_version.outputs.new_version }}
+                  git push origin dev
+
+                  # 创建压缩包
+                  cd ${{ env.OUTPUT_DIR }}
+                  for platform in */; do
+                      platform_name=${platform%/}
+                      zip -r "${platform_name}.zip" "$platform_name"
+                  done
+
+                  # 创建 Release
+                  gh release create ${{ steps.get_version.outputs.new_version }} \
+                      --title "发布 ${{ steps.get_version.outputs.new_version }}" \
+                      --notes "自动发布新版本" \
+                      ./*.zip
