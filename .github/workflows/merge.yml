@@ -204,7 +204,7 @@ jobs:
                   echo "构建完成: $FINAL_OUTPUT"
 
             - name: 上传构建产物
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: ${{ matrix.platform }}-build
                   path: ${{ env.OUTPUT_DIR }}/${{ matrix.platform }}
