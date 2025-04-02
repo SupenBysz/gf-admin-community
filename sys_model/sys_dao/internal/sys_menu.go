@@ -30,7 +30,7 @@ type SysMenuColumns struct {
 	Id                   string // ID
 	Path                 string // 路径
 	Name                 string // 名称
-	SortName             string // 简称
+	SortTitle            string // 简称
 	I18NKey              string // 国际化Key
 	Redirect             string // 跳转
 	Title                string // 标题
@@ -58,7 +58,7 @@ var sysMenuColumns = SysMenuColumns{
 	Id:                   "id",
 	Path:                 "path",
 	Name:                 "name",
-	SortName:             "sort_name",
+	SortTitle:            "sort_title",
 	I18NKey:              "i18n_key",
 	Redirect:             "redirect",
 	Title:                "title",
