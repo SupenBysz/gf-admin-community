@@ -2,6 +2,7 @@ package sys_file
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"io"
 	"net/http"
@@ -312,6 +313,10 @@ func (s *sFile) GetUploadFile(ctx context.Context, uploadId int64, userId int64,
 // SaveFile 保存文件,storageAddr 参数包含路径及文件名
 func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_model.FileInfo, saveToLocal ...bool) (*sys_model.FileInfo, error) {
 
+	if storageAddr == info.Src {
+		return info, nil
+	}
+
 	isSaveLocal := true
 
 	if len(saveToLocal) > 0 {
@@ -358,10 +363,6 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_file_not_exists", sys_dao.SysFile.Table())
 	}
 
-	if storageAddr == info.Src {
-		return info, nil
-	}
-
 	// 文件保存前的Hook
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
@@ -395,7 +396,14 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 	data.Src = storageAddr
 	//data.Url = storageAddr // 优化于2024年0509，URL一般会放远端的文件存储空间的URL，通过Hook修改
 
+	var err error
+
 	count, err := sys_dao.SysFile.Ctx(ctx).Where(sys_do.SysFile{Id: data.Id}).Count()
+
+	if err != nil && sql.ErrNoRows != err {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
+	}
+
 	if count == 0 {
 		_, err = sys_dao.SysFile.Ctx(ctx).Data(data).OmitEmpty().Insert()
 	} else {
@@ -406,11 +414,13 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_file_save_failed", sys_dao.SysFile.Table())
 	}
 
+	kconv.Struct(data, &info)
+
 	// 文件保存后的Hook
 	g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr { // 微服务模式：同步持久化到oss
 			if hook.Value.Key.Code()&sys_enum.Upload.EventState.AfterSave.Code() == sys_enum.Upload.EventState.AfterSave.Code() {
-				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, kconv.Struct(data, &sys_entity.SysFile{}))
+				hook.Value.Value(ctx, sys_enum.Upload.EventState.AfterSave, &info.SysFile)
 			}
 		}
 	})
