@@ -351,7 +351,7 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 
 // CreateUser 创建用户
 func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error) {
-	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
+	count, _ := sys_dao.SysUser.Ctx(ctx).WhereNot(sys_dao.SysUser.Columns().Username, "").Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
 	if count > 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_username_already_exists"), "", sys_dao.SysUser.Table())
 	}
