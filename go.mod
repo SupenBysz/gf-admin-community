@@ -13,9 +13,9 @@ require (
 	github.com/gogf/gf/v2 v2.9.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
-	github.com/kysion/base-library v0.3.0
-	github.com/kysion/oss-library v0.2.8
-	github.com/kysion/sms-library v0.2.7
+	github.com/kysion/base-library v0.3.2
+	github.com/kysion/oss-library v0.2.9
+	github.com/kysion/sms-library v0.2.10
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20241220152942-06eb5c6e8230
 	github.com/mojocn/base64Captcha v1.3.8
 	github.com/samber/lo v1.49.1
