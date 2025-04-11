@@ -563,6 +563,10 @@ func (s *sFile) DownLoadFile(ctx context.Context, savePath string, url string) (
 
 // GetFileById 根据id获取并返回文件信息
 func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error) { // 获取图片可以是id、token、路径
+	if id == 0 {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_file_id_is_empty", sys_dao.SysFile.Table())
+	}
+
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	{
