@@ -34,7 +34,10 @@ type SysCategoryColumns struct {
 	Hidden      string // 是否隐藏
 	Sort        string // 顺序
 	UnionMainId string // 关联主体ID（保留字段）
-	Description string // 描述
+	Type        string // 0全局；1商品分类；2资讯分类
+	Description string //
+	UpdatedAt   string //
+	CreatedAt   string //
 }
 
 // sysCategoryColumns holds the columns for table sys_category.
@@ -46,7 +49,10 @@ var sysCategoryColumns = SysCategoryColumns{
 	Hidden:      "hidden",
 	Sort:        "sort",
 	UnionMainId: "union_main_id",
+	Type:        "type",
 	Description: "description",
+	UpdatedAt:   "updated_at",
+	CreatedAt:   "created_at",
 }
 
 // NewSysCategoryDao creates and returns a new DAO object for table data access.
