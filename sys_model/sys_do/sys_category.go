@@ -18,4 +18,5 @@ type SysCategory struct {
 	Hidden      interface{} // 是否隐藏
 	Sort        interface{} // 顺序
 	UnionMainId interface{} // 关联主体ID（保留字段）
+	Description interface{} // 描述
 }
