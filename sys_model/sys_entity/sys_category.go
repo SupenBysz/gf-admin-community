@@ -13,4 +13,5 @@ type SysCategory struct {
 	Hidden      int    `json:"hidden"      orm:"hidden"        description:"是否隐藏"`
 	Sort        int    `json:"sort"        orm:"sort"          description:"顺序"`
 	UnionMainId int64  `json:"unionMainId" orm:"union_main_id" description:"关联主体ID（保留字段）"`
+	Description string `json:"description" orm:"description"   description:"描述"`
 }
