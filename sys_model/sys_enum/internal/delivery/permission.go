@@ -1,4 +1,4 @@
-package delivery_company
+package delivery
 
 import (
 	"github.com/SupenBysz/gf-admin-community/utility/permission"
