@@ -19,11 +19,14 @@ var Action = action{
 }
 
 func (e action) New(code int, description string) ActionEnum {
-	if code == Action.Reject.Code() ||
-		code == Action.WaitReview.Code() ||
-		code == Action.Approve.Code() {
+	switch code {
+	case e.Reject.Code():
+		return e.Reject
+	case e.WaitReview.Code():
+		return e.WaitReview
+	case e.Approve.Code():
+		return e.Approve
+	default:
 		return enum.New[ActionEnum](code, description)
-	} else {
-		panic("kyAudit.Action.New: error")
 	}
 }
