@@ -5,6 +5,7 @@ type audit struct {
 	Event          eventState
 	Category       category
 	PermissionType permissionType
+	AuditState     auditState
 }
 
 var Audit = audit{
@@ -12,4 +13,5 @@ var Audit = audit{
 	Event:          Event,
 	Category:       Category,
 	PermissionType: PermissionType,
+	AuditState:     AuditState,
 }

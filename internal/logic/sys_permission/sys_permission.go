@@ -217,32 +217,6 @@ func (s *sSysPermission) GetPermissionTree(ctx context.Context, parentId int64, 
 	// items.Records 代表每一项的权限List， &sys_model.SysPermissionTree{}实现了Tree接口，
 	response := base_tree.ToTree[base_permission.IPermission](itemRes, &sys_model.SysPermissionTree{})
 
-	//result, err := s.GetPermissionList(ctx, parentId, false)
-	//
-	//if err != nil {
-	//	return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
-	//}
-	//
-	//response := make([]*sys_model.SysPermissionTree, 0)
-	//
-	//// 有数据，则递归加载
-	//if len(result) > 0 {
-	//	for _, sysPermissionItem := range result {
-	//
-	//		item := &sys_model.SysPermissionTree{}
-	//		gconv.Struct(sysPermissionItem, &item)
-	//
-	//		item.Children, err = s.GetPermissionTree(ctx, sysPermissionItem.Id)
-	//		if err != nil {
-	//			//wg.Done()
-	//			return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "查询失败", sys_dao.SysPermission.Table())
-	//			//return
-	//		}
-	//		response = append(append(make([]*sys_model.SysPermissionTree, 0), item), response...)
-	//	}
-	//
-	//}
-	//
 	return response, nil
 }
 

@@ -140,10 +140,10 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 				licenseList, _ := s.QueryLicenseByUserId(ctx, userId)
 				if licenseList != nil && len(licenseList.Records) > 0 {
 					for _, record := range licenseList.Records {
-						if record.State == sys_enum.License.State.Disabled.Code() { // 如果已经失效，则不再更新
+						if record.State == sys_enum.License.State.Invalid.Code() { // 如果已经失效，则不再更新
 							continue
 						} else if record.State == sys_enum.License.State.Normal.Code() { // 如果正常，则更新为失效
-							_, err := s.SetLicenseState(ctx, record.Id, sys_enum.License.State.Disabled.Code())
+							_, err := s.SetLicenseState(ctx, record.Id, sys_enum.License.State.Invalid.Code())
 							if err != nil {
 								return sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_update_status_failed"), sys_dao.SysPersonLicense.Table())
 							}
@@ -264,7 +264,7 @@ func (s *sSysPersonLicense) UpdateLicense(ctx context.Context, info sys_model.Au
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, g.I18n().T(ctx, "error_license_operation_failed_not_exists"), sys_dao.SysPersonLicense.Table())
 	}
 
-	if data.State == sys_enum.License.State.Disabled.Code() {
+	if data.State == sys_enum.License.State.Invalid.Code() {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeNil, g.I18n().T(ctx, "error_license_operation_failed_disabled")), "", sys_dao.SysPersonLicense.Table())
 	}
 

@@ -14,55 +14,53 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SysCategoryDao is the data access object for table sys_category.
-type SysCategoryDao struct {
+// SysDeliveryDao is the data access object for table sys_delivery.
+type SysDeliveryDao struct {
 	dao_interface.IDao
 	table       string             // table is the underlying table name of the DAO.
 	group       string             // group is the database configuration group name of current DAO.
-	columns     SysCategoryColumns // columns contains all the column names of Table for convenient usage.
+	columns     SysDeliveryColumns // columns contains all the column names of Table for convenient usage.
 	daoConfig   *dao_interface.DaoConfig
 	ignoreCache bool
 	exWhereArr  []string
 }
 
-// SysCategoryColumns defines and stores column names for table sys_category.
-type SysCategoryColumns struct {
-	Id          string //
-	Name        string // 名称
-	ParentId    string // 父级ID
-	PicturePath string // 分类图片
-	Hidden      string // 是否隐藏
-	Sort        string // 顺序
-	UnionMainId string // 关联主体ID（保留字段）
-	Type        string // 0全局；1商品分类；2资讯分类
-	Description string //
-	UpdatedAt   string //
-	CreatedAt   string //
+// SysDeliveryColumns defines and stores column names for table sys_delivery.
+type SysDeliveryColumns struct {
+	Id                       string //
+	Name                     string // 物流公司
+	Logo                     string // LOGO
+	Site                     string // 网址
+	ExpressNo                string // 物流跟踪编号
+	ExpressNoElectronicSheet string // 电子面单编号
+	PrintStyleJson           string // 打印模板样式
+	ExpTypeJson              string // 业务类型
+	UpdatedAt                string //
+	CreatedAt                string //
 }
 
-// sysCategoryColumns holds the columns for table sys_category.
-var sysCategoryColumns = SysCategoryColumns{
-	Id:          "id",
-	Name:        "name",
-	ParentId:    "parent_id",
-	PicturePath: "picture_path",
-	Hidden:      "hidden",
-	Sort:        "sort",
-	UnionMainId: "union_main_id",
-	Type:        "type",
-	Description: "description",
-	UpdatedAt:   "updated_at",
-	CreatedAt:   "created_at",
+// sysDeliveryColumns holds the columns for table sys_delivery.
+var sysDeliveryColumns = SysDeliveryColumns{
+	Id:                       "id",
+	Name:                     "name",
+	Logo:                     "logo",
+	Site:                     "site",
+	ExpressNo:                "express_no",
+	ExpressNoElectronicSheet: "express_no_electronic_sheet",
+	PrintStyleJson:           "print_style_json",
+	ExpTypeJson:              "exp_type_json",
+	UpdatedAt:                "updated_at",
+	CreatedAt:                "created_at",
 }
 
-// NewSysCategoryDao creates and returns a new DAO object for table data access.
-func NewSysCategoryDao(proxy ...dao_interface.IDao) *SysCategoryDao {
-	var dao *SysCategoryDao
+// NewSysDeliveryDao creates and returns a new DAO object for table data access.
+func NewSysDeliveryDao(proxy ...dao_interface.IDao) *SysDeliveryDao {
+	var dao *SysDeliveryDao
 	if len(proxy) > 0 {
-		dao = &SysCategoryDao{
+		dao = &SysDeliveryDao{
 			group:       proxy[0].Group(),
 			table:       proxy[0].Table(),
-			columns:     sysCategoryColumns,
+			columns:     sysDeliveryColumns,
 			daoConfig:   proxy[0].DaoConfig(context.Background()),
 			IDao:        proxy[0].DaoConfig(context.Background()).Dao,
 			ignoreCache: proxy[0].DaoConfig(context.Background()).IsIgnoreCache(),
@@ -72,39 +70,39 @@ func NewSysCategoryDao(proxy ...dao_interface.IDao) *SysCategoryDao {
 		return dao
 	}
 
-	return &SysCategoryDao{
+	return &SysDeliveryDao{
 		group:   "default",
-		table:   "sys_category",
-		columns: sysCategoryColumns,
+		table:   "sys_delivery",
+		columns: sysDeliveryColumns,
 	}
 }
 
 // DB retrieves and returns the underlying raw database management object of current DAO.
-func (dao *SysCategoryDao) DB() gdb.DB {
+func (dao *SysDeliveryDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
 // Table returns the table name of current dao.
-func (dao *SysCategoryDao) Table() string {
+func (dao *SysDeliveryDao) Table() string {
 	return dao.table
 }
 
 // Group returns the configuration group name of database of current dao.
-func (dao *SysCategoryDao) Group() string {
+func (dao *SysDeliveryDao) Group() string {
 	return dao.group
 }
 
 // Columns returns all column names of current dao.
-func (dao *SysCategoryDao) Columns() SysCategoryColumns {
+func (dao *SysDeliveryDao) Columns() SysDeliveryColumns {
 	return dao.columns
 }
 
 // Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
-func (dao *SysCategoryDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
+func (dao *SysDeliveryDao) Ctx(ctx context.Context, cacheOption ...*gdb.CacheOption) *gdb.Model {
 	return dao.DaoConfig(ctx, cacheOption...).Model
 }
 
-func (dao *SysCategoryDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) *dao_interface.DaoConfig {
+func (dao *SysDeliveryDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.CacheOption) *dao_interface.DaoConfig {
 	//if dao.daoConfig != nil && len(dao.exWhereArr) == 0 {
 	//	return dao.daoConfig
 	//}
@@ -131,23 +129,23 @@ func (dao *SysCategoryDao) DaoConfig(ctx context.Context, cacheOption ...*gdb.Ca
 //
 // Note that, you should not Commit or Rollback the transaction in function f
 // as it is automatically handled by this function.
-func (dao *SysCategoryDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
+func (dao *SysDeliveryDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
 }
 
-func (dao *SysCategoryDao) GetExtWhereKeys() []string {
+func (dao *SysDeliveryDao) GetExtWhereKeys() []string {
 	return dao.exWhereArr
 }
 
-func (dao *SysCategoryDao) IsIgnoreCache() bool {
+func (dao *SysDeliveryDao) IsIgnoreCache() bool {
 	return dao.ignoreCache
 }
 
-func (dao *SysCategoryDao) IgnoreCache() dao_interface.IDao {
+func (dao *SysDeliveryDao) IgnoreCache() dao_interface.IDao {
 	dao.ignoreCache = true
 	return dao
 }
-func (dao *SysCategoryDao) IgnoreExtModel(whereKey ...string) dao_interface.IDao {
+func (dao *SysDeliveryDao) IgnoreExtModel(whereKey ...string) dao_interface.IDao {
 	dao.exWhereArr = append(dao.exWhereArr, whereKey...)
 	return dao
 }

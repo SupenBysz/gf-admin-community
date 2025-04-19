@@ -13,7 +13,7 @@ type SysMenu struct {
 	Id                   int64       `json:"id"                   orm:"id"                      description:"ID"`
 	Path                 string      `json:"path"                 orm:"path"                    description:"路径"`
 	Name                 string      `json:"name"                 orm:"name"                    description:"名称"`
-	SortName             string      `json:"sortName"             orm:"sort_name"               description:"简称"`
+	SortTitle            string      `json:"sortTitle"            orm:"sort_title"              description:"简称"`
 	I18NKey              string      `json:"i18NKey"              orm:"i18n_key"                description:"国际化Key"`
 	Redirect             string      `json:"redirect"             orm:"redirect"                description:"跳转"`
 	Title                string      `json:"title"                orm:"title"                   description:"标题"`
