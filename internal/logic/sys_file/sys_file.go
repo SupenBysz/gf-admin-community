@@ -762,8 +762,11 @@ func (s *sFile) GetFile(ctx context.Context, sign, srcBase64 string, id int64, c
 	// 优先从缓存获取，缓存要是获取不到，那么从数据库加载文件信息，从而加载文件
 	// 先获取图片，进行签名、验签，验签通过查找图片，如果不在缓存中的图片从数据库查询后进行缓存起来  缓存key == sign
 	fileInfo := daoctl.GetById[sys_entity.SysFile](sys_dao.SysFile.Ctx(ctx), id)
-	if fileInfo == nil || fileInfo.Id == 0 {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_file_not_exists", sys_dao.SysFile.Table())
+	if fileInfo != nil && fileInfo.Id > 0 {
+		data := sys_model.FileInfo{}
+
+		gconv.Struct(fileInfo, &data)
+		return &data, nil
 	}
 
 	{
