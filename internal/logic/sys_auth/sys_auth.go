@@ -384,10 +384,16 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 
 func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.UserInnerRegister, customId ...int64) (*sys_model.SysUser, error) {
 	inviteCode := innerRegister.InviteCode
-	// 判断是否填写邀约码,只要填写了必需进行校验
-	inviteInfo, err := sys_rules.CheckInviteCode(ctx, innerRegister.InviteCode)
-	if err != nil {
-		return nil, err
+
+	var inviteInfo *sys_model.InviteRes
+
+	if inviteCode != "" {
+		// 判断是否填写邀约码,只要填写了必需进行校验
+		ret, err := sys_rules.CheckInviteCode(ctx, innerRegister.InviteCode)
+		if err != nil {
+			return nil, err
+		}
+		inviteInfo = ret
 	}
 
 	count, _ := sys_dao.SysUser.Ctx(ctx).Unscoped().Count(sys_dao.SysUser.Columns().Username, innerRegister.Username)
@@ -426,10 +432,11 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 				return err
 			}
 		}
-		needToSettleInvite := true
 
 		// 广播邀约Hook
 		if inviteCode != "" {
+			needToSettleInvite := true
+
 			s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
 				// 判断订阅的Hook类型是否一致
 				if key.Code()&inviteInfo.Type == inviteInfo.Type {
@@ -443,14 +450,14 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 					})
 				}
 			})
-		}
 
-		// 业务层没有处理邀约
-		if needToSettleInvite && inviteInfo != nil {
-			// 修改邀约次数（里面包含了判断邀约次数从而修改邀约状态的逻辑）
-			_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false)
-			if err != nil {
-				return err
+			// 业务层没有处理邀约
+			if needToSettleInvite && inviteInfo != nil {
+				// 修改邀约次数（里面包含了判断邀约次数从而修改邀约状态的逻辑）
+				_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false)
+				if err != nil {
+					return err
+				}
 			}
 		}
 

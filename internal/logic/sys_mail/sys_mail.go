@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/SupenBysz/gf-admin-community/utility/i18n"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"math/rand"
 	"net/smtp"
 	"strconv"
@@ -13,7 +15,6 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/kysion/base-library/base_model/base_enum"
@@ -71,6 +72,8 @@ func (s *sSysMails) SendCaptcha(ctx context.Context, mailTo string, typeIdentifi
 			return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_mail_captcha_cache_failed", "Mail-Captcha")
 		}
 	}
+
+	fmt.Println(gjson.EncodeString(mailConfig))
 
 	return true, nil
 }

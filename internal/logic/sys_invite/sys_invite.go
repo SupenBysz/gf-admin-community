@@ -79,7 +79,6 @@ func (s *sSysInvite) GetInviteById(ctx context.Context, id int64) (*sys_model.In
 
 // QueryInviteList 查询邀约｜列表
 func (s *sSysInvite) QueryInviteList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.InviteListRes, error) {
-
 	filter.Filter = append(filter.Filter, base_model.FilterInfo{
 		Field:       sys_dao.SysInvite.Columns().Id,
 		Where:       ">",

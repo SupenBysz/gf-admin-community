@@ -45,6 +45,10 @@ func CheckLoginRule(ctx context.Context, loginIdentifier string) bool {
 func CheckRegisterRule(ctx context.Context, registerIdentifier string) bool {
 	clientConfig, _ := sys_consts.Global.GetClientConfig(ctx)
 
+	if clientConfig == nil {
+		return false
+	}
+
 	if base_verify.IsPhone(registerIdentifier) {
 		return clientConfig.RegisterRule.Contains(2)
 
