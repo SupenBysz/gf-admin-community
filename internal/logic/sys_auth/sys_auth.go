@@ -465,8 +465,7 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 	})
 
 	if err != nil {
-		g.Log("Auth").Error(ctx, err.Error())
-		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_account_registration_failed"))
+		return nil, err
 	}
 
 	return data, nil

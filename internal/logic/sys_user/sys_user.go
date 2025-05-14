@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/SupenBysz/gf-admin-community/api_v1"
@@ -351,7 +352,11 @@ func (s *sSysUser) SetUserRoleIds(ctx context.Context, roleIds []int64, userId i
 
 // CreateUser 创建用户
 func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegister, userState sys_enum.UserState, userType sys_enum.UserType, customId ...int64) (*sys_model.SysUser, error) {
-	count, _ := sys_dao.SysUser.Ctx(ctx).WhereNot(sys_dao.SysUser.Columns().Username, "").Unscoped().Count(sys_dao.SysUser.Columns().Username, info.Username)
+	if info.Username == "" {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_username_is_required"), "", sys_dao.SysUser.Table())
+	}
+
+	count, _ := sys_dao.SysUser.Ctx(ctx).WhereLike("LOWER(\""+sys_dao.SysUser.Columns().Username+"\")", strings.ToLower(info.Username)).Unscoped().Count()
 	if count > 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_username_already_exists"), "", sys_dao.SysUser.Table())
 	}
@@ -382,7 +387,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	// 密码赋值
 	data.Password = pwdHash
 
-	err = sys_dao.SysUser.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
@@ -446,23 +451,26 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			}
 		}
 
-		return nil
+		// 建后
+		err = g.Try(ctx, func(ctx context.Context) {
+			for _, hook := range s.hookArr {
+				if hook.Value.Key.Code()&sys_enum.User.Event.AfterCreate.Code() == sys_enum.User.Event.AfterCreate.Code() {
+					res, err := hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
+					if err != nil {
+						panic(err)
+					}
+					res.Detail.Id = data.Id
+					data.Detail = res.Detail
+				}
+			}
+		})
+
+		return err
 	})
 
 	if err != nil {
 		return nil, err
 	}
-
-	// 建后
-	g.Try(ctx, func(ctx context.Context) {
-		for _, hook := range s.hookArr {
-			if hook.Value.Key.Code()&sys_enum.User.Event.AfterCreate.Code() == sys_enum.User.Event.AfterCreate.Code() {
-				res, _ := hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
-				res.Detail.Id = data.Id
-				data.Detail = res.Detail
-			}
-		}
-	})
 
 	// 查询用户所拥有的角色 (指针传递)
 	s.getUserRole(ctx, &data)
@@ -492,12 +500,21 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 	// keys, err := s.redisCache.Keys(ctx)
 	userList, err := daoctl.Query[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), nil, true)
 
+	if err != nil && err != sql.ErrNoRows {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_info_query_failed", sys_dao.SysUser.Table())
+	}
+
 	user := &sys_model.SysUser{}
+
+	checkUsername := strings.ToLower(username)
 
 	for _, k := range userList.Records {
 		//sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
-		if k.Username == username {
-			sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: gconv.String(k.Id)}).Scan(&user)
+		if strings.ToLower(k.Username) == checkUsername {
+			user, err = daoctl.GetByIdWithError[sys_model.SysUser](sys_dao.SysUser.Ctx(ctx), k.Id)
+			if err != nil {
+				return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_info_query_failed", sys_dao.SysUser.Table())
+			}
 			response = s.masker(s.makeMore(ctx, user))
 			// 查询用户所拥有的角色 (指针传递)
 			s.getUserRole(ctx, response)
@@ -668,7 +685,7 @@ func (s *sSysUser) SetUserState(ctx context.Context, userId int64, state sys_enu
 
 // SetUserType 设置用户类型
 func (s *sSysUser) SetUserType(ctx context.Context, userId int64, state sys_enum.UserType) (bool, error) {
-	result, err := sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{State: state.Code()}).Where(sys_do.SysUser{Id: userId}).Update()
+	result, err := sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Type: state.Code()}).Where(sys_do.SysUser{Id: userId}).Update()
 
 	if err != nil || result == nil {
 		return false, err
@@ -837,7 +854,7 @@ func (s *sSysUser) ResetUserEmail(ctx context.Context, userId int64, email strin
 		}
 	}
 
-	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}), sys_do.SysUser{Email: email})
+	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}), sys_do.SysUser{Email: strings.ToLower(email)})
 
 	return affected > 0, err
 }
@@ -953,9 +970,9 @@ func (s *sSysUser) GetUserDetail(ctx context.Context, userId int64) (*sys_model.
 func (s *sSysUser) GetUserListByMobileOrMail(ctx context.Context, info string) (*sys_model.SysUserListRes, error) {
 	userModel := sys_dao.SysUser.Ctx(ctx)
 	if base_verify.IsPhone(info) {
-		userModel = userModel.Where(sys_do.SysUser{Mobile: info})
+		userModel = userModel.Where(sys_do.SysUser{Mobile: strings.ToLower(info)})
 	} else if base_verify.IsEmail(info) {
-		userModel = userModel.Where(sys_do.SysUser{Email: info})
+		userModel = userModel.Where(sys_do.SysUser{Email: strings.ToLower(info)})
 	} else {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_phone_or_email_format")
 	}
@@ -990,7 +1007,7 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	}
 
 	userInfo := sys_model.SysUser{}
-	sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 		Id: userId,
 	}).Scan(&userInfo)
 
@@ -1046,14 +1063,14 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	}
 
 	userInfo := sys_model.SysUser{}
-	sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{
 		Id: userId,
 	}).Scan(&userInfo)
 
 	if err != nil {
 		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_user_info_not_exist")
 	}
-	if newMail == userInfo.Email {
+	if strings.EqualFold(newMail, userInfo.Email) {
 		return true, nil
 	}
 
