@@ -76,7 +76,9 @@ func (c *cSysFrontSettings) GetFrontSetting(ctx context.Context, req *sys_api.Ge
 	}
 
 	isSys := 0
-	unionMainId := req.UnionMainId
+
+	req.UserId = req.UserId
+	unionMainId := user.UnionMainId
 
 	if req.Sys != nil {
 		isSys = *req.Sys
