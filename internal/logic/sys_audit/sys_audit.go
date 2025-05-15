@@ -17,8 +17,6 @@ import (
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -257,7 +255,11 @@ func (s *sSysAudit) CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, 
 	data := s.GetAuditById(ctx, id)
 
 	if data == nil {
-		return false, gerror.NewCode(gcode.CodeInvalidParameter, "未找到审核记录")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_record_not_found", sys_dao.SysAudit.Table())
+	}
+
+	if data.State != sys_enum.Audit.Action.WaitReview.Code() {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_only_wait_review_can_be_canceled", sys_dao.SysAudit.Table())
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysAudit.Ctx(ctx).Where(sys_dao.SysAudit.Columns().Id, id), sys_do.SysAudit{
