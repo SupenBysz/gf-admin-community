@@ -140,6 +140,30 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 	return (*sys_model.AuditListRes)(result), err
 }
 
+// GetAuditByDataIdentifier 根据数据标识符获取审核信息
+func (s *sSysAudit) GetAuditByDataIdentifier(ctx context.Context, dataIdentifier string, userId int64, unionMainId int64) (*sys_model.AuditRes, error) {
+	result := sys_model.AuditRes{}
+
+	doSearch := sys_do.SysAudit{
+		DataIdentifier: dataIdentifier,
+	}
+
+	if userId > 0 {
+		doSearch.UserId = userId
+	}
+
+	if unionMainId > 0 {
+		doSearch.UnionMainId = unionMainId
+	}
+
+	err := sys_dao.SysAudit.Ctx(ctx).Where(doSearch).Scan(&result)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_get_by_data_identifier_failed", sys_dao.SysAudit.Table())
+	}
+
+	return &result, nil
+}
+
 // GetAuditById 根据ID获取审核信息
 func (s *sSysAudit) GetAuditById(ctx context.Context, id int64) *sys_model.AuditRes {
 

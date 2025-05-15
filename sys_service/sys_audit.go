@@ -25,6 +25,8 @@ type (
 		CleanAllHook()
 		// QueryAuditList 获取审核信息列表
 		QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error)
+		// GetAuditByDataIdentifier 根据数据标识符获取审核信息
+		GetAuditByDataIdentifier(ctx context.Context, dataIdentifier string, userId int64, unionMainId int64) (*sys_model.AuditRes, error)
 		// GetAuditById 根据ID获取审核信息
 		GetAuditById(ctx context.Context, id int64) *sys_model.AuditRes
 		// GetAuditLatestByUnionMainId 获取最新的业务个人审核信息 (针对主体资质)
