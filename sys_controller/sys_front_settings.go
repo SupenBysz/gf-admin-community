@@ -98,6 +98,9 @@ func (c *cSysFrontSettings) Save(ctx context.Context, req *sys_api.SaveFrontSett
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.New("error_permission_insufficient"), "", sys_dao.SysFrontSettings.Table())
 	}
 
+	req.UserId = user.Id
+	req.UnionMainId = user.UnionMainId
+
 	// 如果设置的是全局配置或主体配置项，则忽略用户条件
 	if req.Sys == 1 {
 		req.UserId = 0
@@ -148,7 +151,7 @@ func (c *cSysFrontSettings) Delete(ctx context.Context, req *sys_api.DeleteFront
 		req.UserId = user.Id
 	}
 
-	ret, err := sys_service.SysFrontSettings().Delete(ctx, req.Name, req.UnionMainId, req.UserId)
+	ret, err := sys_service.SysFrontSettings().Delete(ctx, req.Name, user.UnionMainId, user.Id)
 
 	return ret == true, err
 }

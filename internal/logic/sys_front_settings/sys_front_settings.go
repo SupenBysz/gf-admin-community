@@ -2,6 +2,7 @@ package sys_front_settings
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
@@ -47,7 +48,7 @@ func (s *sSysFrontSettings) GetFrontSetting(ctx context.Context, name string, un
 		UserId:      userId,
 	}).One()
 
-	if data == nil {
+	if data == nil && err != sql.ErrNoRows {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_front_settings_get_failed", sys_dao.SysFrontSettings.Table())
 	}
 
