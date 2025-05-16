@@ -36,7 +36,7 @@ func (c *cSysAudit) SetAuditApprove(ctx context.Context, req *sys_api.SetAuditAp
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "", user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approved.Code(), "", user.Id)
 
 	return result == true, err
 }
@@ -50,7 +50,7 @@ func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sys_api.SetAuditRej
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply, user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Rejected.Code(), req.Reply, user.Id)
 	return result == true, err
 }
 

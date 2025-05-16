@@ -45,10 +45,10 @@ func NewSysPersonLicense() sys_service.ISysPersonLicense {
 	}
 
 	// 订阅审核Hook,审核通过添加个人资质信息
-	sys_service.SysAudit().InstallHook(sys_enum.Audit.Action.Approve, sys_enum.Audit.Category.PersonLicenseAudit.Code(), result.AuditChange)
+	sys_service.SysAudit().InstallHook(sys_enum.Audit.Action.Approved, sys_enum.Audit.Category.PersonLicenseAudit.Code(), result.AuditChange)
 
 	// 订阅审核数据获取Hook, 将审核数据渲染成个人资质然后进行输出
-	sys_service.SysAudit().InstallHook(sys_enum.Audit.Action.Approve, sys_enum.Audit.Category.PersonLicenseAudit.Code(), result.GetAuditData)
+	sys_service.SysAudit().InstallHook(sys_enum.Audit.Action.Approved, sys_enum.Audit.Category.PersonLicenseAudit.Code(), result.GetAuditData)
 
 	return result
 }
@@ -120,7 +120,7 @@ func (s *sSysPersonLicense) AuditChange(ctx context.Context, auditEvent sys_enum
 	//  处理审核
 	if (auditEvent.Code() & sys_enum.Audit.Event.ExecAudit.Code()) == sys_enum.Audit.Event.ExecAudit.Code() {
 		// 审核通过
-		if (info.State & sys_enum.Audit.Action.Approve.Code()) == sys_enum.Audit.Action.Approve.Code() {
+		if (info.State & sys_enum.Audit.Action.Approved.Code()) == sys_enum.Audit.Action.Approved.Code() {
 			auditPersonLicense := sys_model.AuditPersonLicense{}
 			_ = gjson.DecodeTo(info.AuditData, &auditPersonLicense)
 			auditPersonLicense.State = sys_enum.License.State.Normal.Code() // 审核通过，资质是正常状态

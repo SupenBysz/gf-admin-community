@@ -1,7 +1,7 @@
 package sys_enum_audit
 
 type audit struct {
-	Action         action
+	Action         auditState
 	Event          eventState
 	Category       category
 	PermissionType permissionType
@@ -9,7 +9,7 @@ type audit struct {
 }
 
 var Audit = audit{
-	Action:         Action,
+	Action:         AuditState,
 	Event:          Event,
 	Category:       Category,
 	PermissionType: PermissionType,
