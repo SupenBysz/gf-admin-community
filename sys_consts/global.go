@@ -2,6 +2,7 @@ package sys_consts
 
 import (
 	"context"
+	"strings"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
@@ -35,7 +36,7 @@ func (s global) GetClientConfig(ctx context.Context) (*sys_model.ClientConfig, e
 	xClient := ghttp.RequestFromCtx(ctx).Header.Get("X-CLIENT-ID")
 
 	for _, v := range s.ClientConfig {
-		if v.XClientToken == xClient {
+		if strings.EqualFold(v.XClientToken, xClient) {
 			return &v, nil
 		}
 	}

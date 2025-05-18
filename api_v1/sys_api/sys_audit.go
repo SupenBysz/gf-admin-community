@@ -19,6 +19,13 @@ type GetAuditByIdReq struct { //
 	Id     int64 `json:"id" dc:"审核ID"`
 }
 
+type GetAuditByDataIdentifierReq struct {
+	g.Meta         `path:"/getAuditByDataIdentifier" method:"post" summary:"根据数据标识符获取审核|信息" tags:"审核管理"`
+	DataIdentifier string `json:"dataIdentifier" v:"required#数据标识符不能为空" dc:"数据标识符"`
+	UserId         int64  `json:"userId" dc:"用户ID" default:"0"`
+	UnionMainId    int64  `json:"unionMainId" dc:"业务主体ID" default:"0"`
+}
+
 type CancelAuditReq struct { //
 	g.Meta `path:"/cancelAudit" method:"post" summary:"撤销审核申请|Boolean" tags:"审核管理"`
 	Id     int64 `json:"id" dc:"审核ID"`

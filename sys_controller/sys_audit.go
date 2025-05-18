@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -35,7 +36,7 @@ func (c *cSysAudit) SetAuditApprove(ctx context.Context, req *sys_api.SetAuditAp
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approve.Code(), "", user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Approved.Code(), "", user.Id)
 
 	return result == true, err
 }
@@ -49,7 +50,7 @@ func (c *cSysAudit) SetAuditReject(ctx context.Context, req *sys_api.SetAuditRej
 
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
-	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Reject.Code(), req.Reply, user.Id)
+	result, err := sys_service.SysAudit().UpdateAudit(ctx, req.Id, sys_enum.Audit.Action.Rejected.Code(), req.Reply, user.Id)
 	return result == true, err
 }
 
@@ -62,6 +63,17 @@ func (c *cSysAudit) GetAuditById(ctx context.Context, req *sys_api.GetAuditByIdR
 
 	result := sys_service.SysAudit().GetAuditById(ctx, req.Id)
 	return (*sys_model.AuditRes)(result), nil
+}
+
+// GetAuditByDataIdentifier 根据数据标识符获取审核信息
+func (c *cSysAudit) GetAuditByDataIdentifier(ctx context.Context, req *sys_api.GetAuditByDataIdentifierReq) (*sys_model.AuditRes, error) {
+	// 权限判断
+	if has, err := sys_service.SysPermission().CheckPermission(ctx, sys_enum.Audit.PermissionType.ViewDetail); has != true {
+		return nil, err
+	}
+
+	result, err := sys_service.SysAudit().GetAuditByDataIdentifier(ctx, req.DataIdentifier, req.UserId, req.UnionMainId)
+	return (*sys_model.AuditRes)(result), err
 }
 
 // CancelAudit 取消审核申请

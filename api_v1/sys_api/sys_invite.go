@@ -26,17 +26,17 @@ type DeleteInviteReq struct {
 	Id     int64 `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
 }
 
-//type SetInviteStateReq struct {
-//	g.Meta `path:"/setInviteState" method:"post" summary:"修改邀约信息状态｜信息" tags:"邀约"`
-//	Id     int64 `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
-//	State  int   `json:"state" v:"required#邀约状态不能为空" dc:"邀约状态"`
-//}
-//
-//type SetInviteNumberReq struct {
-//	g.Meta `path:"/setInviteNumber" method:"post" summary:"修改邀约剩余次数｜信息" tags:"邀约"`
-//	Id     int64 `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
-//	Number int   `json:"number" v:"required#邀约剩余数量不能为空" dc:"邀约剩余数量"`
-//}
+type SetInviteStateReq struct {
+	g.Meta `path:"/setInviteState" method:"post" summary:"修改邀约信息状态｜信息" tags:"邀约"`
+	Id     int64 `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
+	State  int   `json:"state" v:"required#邀约状态不能为空" dc:"邀约状态"`
+}
+
+type SetInviteNumberReq struct {
+	g.Meta `path:"/setInviteNumber" method:"post" summary:"修改邀约剩余次数｜信息" tags:"邀约"`
+	Id     int64 `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
+	Number int   `json:"number" v:"required#邀约剩余数量不能为空" dc:"邀约剩余数量"`
+}
 
 type MyInviteCodeListReq struct {
 	g.Meta `path:"/myInviteCodeList" method:"post" summary:"我的邀约码｜列表" tags:"邀约"`

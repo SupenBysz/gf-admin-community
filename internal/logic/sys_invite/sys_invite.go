@@ -79,7 +79,6 @@ func (s *sSysInvite) GetInviteById(ctx context.Context, id int64) (*sys_model.In
 
 // QueryInviteList 查询邀约｜列表
 func (s *sSysInvite) QueryInviteList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.InviteListRes, error) {
-
 	filter.Filter = append(filter.Filter, base_model.FilterInfo{
 		Field:       sys_dao.SysInvite.Columns().Id,
 		Where:       ">",
@@ -115,7 +114,7 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 	// 判断该类型&该用户,是否已存在邀约码
 	invite, err := daoctl.ScanWithError[sys_model.InviteRes](sys_dao.SysInvite.Ctx(ctx).Where(sys_do.SysInvite{UserId: info.UserId, Type: info.Type}))
 	if invite != nil && invite.Id != 0 {
-		return invite, nil
+		return s.GetInviteById(ctx, invite.Id)
 	}
 
 	data := sys_do.SysInvite{}

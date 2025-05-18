@@ -51,15 +51,15 @@ func (s *sMiddleware) CTX(r *ghttp.Request) {
 
 // CORS 允许接口跨域请求
 func (s *sMiddleware) CORS(r *ghttp.Request) {
-	// corsOptions := r.Response.DefaultCORSOptions()
-	// corsOptions.AllowOrigin = "*"
-	// corsOptions.AllowCredentials = "true"
-	// corsOptions.AllowHeaders = "Content-Type,Access-Token"
-	// corsOptions.AllowDomain = []string{"127.0.0.1:3000", "0.0.0.0:3000"}
-	// corsOptions.ExposeHeaders = "*"
-	// corsOptions.AllowMethods = "POST,GET,OPTIONS,DELETE"
-	// r.Response.CORS(corsOptions)
-	r.Response.CORSDefault()
+	corsOptions := r.Response.DefaultCORSOptions()
+	corsOptions.AllowOrigin = "*"
+	corsOptions.AllowCredentials = "true"
+	corsOptions.AllowHeaders = "Content-Type,Access-Token"
+	corsOptions.AllowDomain = []string{"*"}
+	corsOptions.ExposeHeaders = "*"
+	corsOptions.AllowMethods = "POST,GET,OPTIONS,DELETE"
+	r.Response.CORS(corsOptions)
+	//r.Response.CORSDefault()
 	r.Middleware.Next()
 }
 

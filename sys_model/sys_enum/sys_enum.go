@@ -40,7 +40,7 @@ type (
 
 	PermissionMatchMode = sys_enum_permissions.MatchModeEnum
 
-	AuditAction = sys_enum_audit.ActionEnum
+	AuditAction = sys_enum_audit.AuditStateEnum
 	AuditEvent  = sys_enum_audit.EventEnum
 
 	// InviteType 邀约类型

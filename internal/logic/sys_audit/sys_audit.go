@@ -17,8 +17,6 @@ import (
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -74,15 +72,12 @@ func (s *sSysAudit) CleanAllHook() {
 }
 
 // QueryAuditList 获取审核信息列表
-func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.AuditListRes, error) {
-	if &filter.Pagination == nil {
-		filter.Pagination = base_model.Pagination{
-			PageNum:  1,
-			PageSize: 20,
-		}
+func (s *sSysAudit) QueryAuditList(ctx context.Context, search *base_model.SearchParams) (*sys_model.AuditListRes, error) {
+	if search == nil {
+		search = &base_model.SearchParams{}
 	}
 
-	filter.Filter = append(filter.Filter, base_model.FilterInfo{
+	search.Filter = append(search.Filter, base_model.FilterInfo{
 		Field:       sys_dao.SysAudit.Columns().Id,
 		Where:       ">",
 		IsOrWhere:   false,
@@ -90,7 +85,7 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 		IsNullValue: false,
 	})
 
-	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), filter, true)
+	result, err := daoctl.Query[sys_entity.SysAudit](sys_dao.SysAudit.Ctx(ctx), search, true)
 
 	//// TODO 抽取到具体业务层处理
 	//auditList := make([]sys_entity.SysAudit, 0)
@@ -138,6 +133,30 @@ func (s *sSysAudit) QueryAuditList(ctx context.Context, filter *base_model.Searc
 	//result.Records = auditList
 
 	return (*sys_model.AuditListRes)(result), err
+}
+
+// GetAuditByDataIdentifier 根据数据标识符获取审核信息
+func (s *sSysAudit) GetAuditByDataIdentifier(ctx context.Context, dataIdentifier string, userId int64, unionMainId int64) (*sys_model.AuditRes, error) {
+	result := sys_model.AuditRes{}
+
+	doSearch := sys_do.SysAudit{
+		DataIdentifier: dataIdentifier,
+	}
+
+	if userId > 0 {
+		doSearch.UserId = userId
+	}
+
+	if unionMainId > 0 {
+		doSearch.UnionMainId = unionMainId
+	}
+
+	err := sys_dao.SysAudit.Ctx(ctx).Where(doSearch).Scan(&result)
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_audit_get_by_data_identifier_failed", sys_dao.SysAudit.Table())
+	}
+
+	return &result, nil
 }
 
 // GetAuditById 根据ID获取审核信息
@@ -233,7 +252,11 @@ func (s *sSysAudit) CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, 
 	data := s.GetAuditById(ctx, id)
 
 	if data == nil {
-		return false, gerror.NewCode(gcode.CodeInvalidParameter, "未找到审核记录")
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_record_not_found", sys_dao.SysAudit.Table())
+	}
+
+	if data.State != sys_enum.Audit.Action.WaitReview.Code() {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_only_wait_review_can_be_canceled", sys_dao.SysAudit.Table())
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysAudit.Ctx(ctx).Where(sys_dao.SysAudit.Columns().Id, id), sys_do.SysAudit{
@@ -246,9 +269,9 @@ func (s *sSysAudit) CancelAudit(ctx context.Context, id int64) (api_v1.BoolRes, 
 // CreateAudit 创建审核信息 // TODO 创建审核信息后，需要通过Hook将temp/upload 中的文件迁移到业务层的指定目录，例如 resource/upload
 func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit) (*sys_model.AuditRes, error) {
 	// 校验参数
-	if err := g.Validator().Data(info).Run(ctx); err != nil {
-		return nil, err
-	}
+	//if err := g.Validator().Data(info).Run(ctx); err != nil {
+	//	return nil, err
+	//}
 
 	// 如果业务没有设置审核服务时限则加载默认设置
 	if info.ExpireAt == nil {
@@ -340,12 +363,11 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 
 // UpdateAudit 处理审核信息
 func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply string, auditUserId int64) (bool, error) {
-	if state == 0 {
+	if state == sys_enum.Audit.AuditState.Reviewing.Code() {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_action_type_incorrect", sys_dao.SysAudit.Table())
-
 	}
 
-	if state == -1 && reply == "" {
+	if state == sys_enum.Audit.AuditState.Rejected.Code() && reply == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_reason_required", sys_dao.SysAudit.Table())
 	}
 
@@ -354,7 +376,7 @@ func (s *sSysAudit) UpdateAudit(ctx context.Context, id int64, state int, reply 
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_id_parameter_incorrect", sys_dao.SysAudit.Table())
 	}
 
-	if info.State != 0 {
+	if info.State != sys_enum.Audit.AuditState.WaitReview.Code() {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_audit_duplicate_forbidden", sys_dao.SysAudit.Table())
 	}
 
