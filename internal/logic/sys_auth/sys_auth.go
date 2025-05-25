@@ -434,22 +434,63 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		}
 
 		// 广播邀约Hook
-		if inviteCode != "" {
+		if inviteCode != "" && inviteInfo != nil {
 			needToSettleInvite := true
 
-			s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
-				// 判断订阅的Hook类型是否一致
-				if key.Code()&inviteInfo.Type == inviteInfo.Type {
-					// 业务类型一致则调用注入的Hook函数
-					g.Try(ctx, func(ctx context.Context) {
+			inviteInfo, err = sys_service.SysInvite().GetInviteById(ctx, inviteInfo.Id)
+			if err != nil {
+				return err
+			}
+
+			if inviteInfo.State == sys_enum.Invite.State.Invalid.Code() {
+				return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_invalid"))
+			}
+
+			if inviteInfo.ExpireAt != nil && inviteInfo.ExpireAt.Before(gtime.Now()) {
+				return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_expired"))
+			}
+
+			if inviteInfo.Type&sys_enum.Invite.Type.Register.Code() == sys_enum.Invite.Type.Register.Code() {
+				canOverLimit, err := sys_service.SysInvite().IsInviteCodeOverLimit(ctx, inviteCode)
+
+				if err != nil {
+					return err
+				}
+
+				if !canOverLimit {
+					return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_over_limit"))
+				}
+
+				// 创建邀请关系
+				_, err = sys_service.SysInvite().CreateInvitePerson(ctx, &sys_model.InvitePersonInfo{
+					FormUserId: inviteInfo.UserId,
+					ByUserId:   data.Id,
+					InviteCode: inviteCode,
+					InviteId:   inviteInfo.Id,
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+			err = g.Try(ctx, func(ctx context.Context) {
+				s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
+					// 判断订阅的Hook类型是否一致
+					if key.Code()&inviteInfo.Type == inviteInfo.Type {
+						// 调用注入的Hook函数
 						// 假如业务层返回false，那下面就无需执行修改邀约次数逻辑
 						needToSettleInvite, err = value(ctx, sys_enum.Invite.Type.Register, inviteInfo, data)
+
 						if err != nil {
-							return
+							panic(err)
 						}
-					})
-				}
+					}
+				})
 			})
+
+			if err != nil {
+				return err
+			}
 
 			// 业务层没有处理邀约
 			if needToSettleInvite && inviteInfo != nil {
