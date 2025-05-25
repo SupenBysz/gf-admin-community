@@ -103,18 +103,28 @@ func (s *sSysInvite) QueryInviteList(ctx context.Context, filter *base_model.Sea
 	return (*sys_model.InviteListRes)(result), err
 }
 
+// 通过标识符获取邀请信息
+func (s *sSysInvite) GetInviteByIdentifier(ctx context.Context, identifier string) (*sys_model.InviteRes, error) {
+	data := sys_model.InviteRes{}
+	err := sys_dao.SysInvite.Ctx(ctx).Where(sys_do.SysInvite{
+		Identifier: identifier,
+	}).Scan(&data)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_get_info_by_identifier_failed", sys_dao.SysInvite.Table())
+	}
+
+	data.Code = invite_id.InviteIdToCode(data.Id)
+
+	return &data, nil
+}
+
 // CreateInvite 创建邀约信息
 func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (*sys_model.InviteRes, error) {
 	// 判断userId是否存在
 	_, err := sys_service.SysUser().GetSysUserById(ctx, info.UserId)
 	if err != nil {
 		return nil, err
-	}
-
-	// 判断该类型&该用户,是否已存在邀约码
-	invite, err := daoctl.ScanWithError[sys_model.InviteRes](sys_dao.SysInvite.Ctx(ctx).Where(sys_do.SysInvite{UserId: info.UserId, Type: info.Type}))
-	if invite != nil && invite.Id != 0 {
-		return s.GetInviteById(ctx, invite.Id)
 	}
 
 	data := sys_do.SysInvite{}

@@ -31,10 +31,11 @@ type SysInviteColumns struct {
 	UserId         string // 用户ID, 也就是邀约人ID
 	Value          string // 邀约码背后的关联业务Json数据,
 	ExpireAt       string // 邀约码的过期失效
-	ActivateNumber string // 邀约码的激活次数限制
+	ActivateNumber string // 邀约码的激活次数限制，小于0，则无限制
 	State          string // 状态： 0失效、1正常
 	Type           string // 类型： 1注册、2加入团队、4加入角色 (复合类型)
 	CreatedAt      string //
+	Identifier     string // 标识符
 }
 
 // sysInviteColumns holds the columns for table sys_invite.
@@ -47,6 +48,7 @@ var sysInviteColumns = SysInviteColumns{
 	State:          "state",
 	Type:           "type",
 	CreatedAt:      "created_at",
+	Identifier:     "identifier",
 }
 
 // NewSysInviteDao creates and returns a new DAO object for table data access.
