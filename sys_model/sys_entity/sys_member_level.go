@@ -17,5 +17,5 @@ type SysMemberLevel struct {
 	CreatedAt   *gtime.Time `json:"createdAt"   orm:"created_at"    description:""`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   orm:"updated_at"    description:""`
 	CreatedBy   int64       `json:"createdBy"   orm:"created_by"    description:""`
-	UnionMainId int         `json:"unionMainId" orm:"union_main_id" description:""`
+	UnionMainId int64       `json:"unionMainId" orm:"union_main_id" description:""`
 }
