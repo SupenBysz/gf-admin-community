@@ -63,20 +63,25 @@ func CheckInviteCode(ctx context.Context, code string) (res *sys_model.InviteRes
 	clientConfig, _ := sys_consts.Global.GetClientConfig(ctx)
 
 	// 判断是否填写邀约码
-	if clientConfig != nil && clientConfig.EnableRegisterInviteCode == true && code == "" {
+	if clientConfig != nil && clientConfig.EnableRegisterInviteCode && code == "" {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, i18n.T(ctx, "error_invite_code_required"))
 	}
 
+	inviteId := int64(0)
+
 	// 只要填写了必需进行校验
 	if code != "" {
-		id := invite_id.CodeToInviteId(code)
-		if id <= 0 {
+		inviteId = invite_id.CodeToInviteId(code)
+		if inviteId <= 0 {
 			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, i18n.T(ctx, "error_invite_code_incorrect"))
 		}
 	}
 
-	return &sys_model.InviteRes{
-		Id:   invite_id.CodeToInviteId(code),
+	result := &sys_model.InviteRes{
 		Code: code,
-	}, nil
+	}
+
+	result.Id = inviteId
+
+	return result, nil
 }
