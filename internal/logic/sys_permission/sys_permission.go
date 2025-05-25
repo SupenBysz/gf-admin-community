@@ -14,6 +14,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/container/gmap"
@@ -483,6 +484,10 @@ func (s *sSysPermission) GetPermissionTreeIdByUrl(ctx context.Context, path stri
 
 // CheckPermission 校验权限，如果多个则需要同时满足
 func (s *sSysPermission) CheckPermission(ctx context.Context, tree ...base_permission.IPermission) (has bool, err error) { // 权限id  域 资源  方法
+	if sys_rules.CheckApiPermissionWhiteList(ctx) {
+		return true, nil
+	}
+
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	// 如果是超级管理员或者某商管理员则直接放行

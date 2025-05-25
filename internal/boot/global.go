@@ -24,6 +24,7 @@ func InitGlobal() {
 			RegisterRule:             garray.NewSortedIntArray(),
 			EnableRegisterInviteCode: false,
 			EnableSendCaptcha:        false,
+			ApiPermissionWhitelist:   []string{},
 		}
 
 		err := gconv.Struct(clientConfig, &configItem)

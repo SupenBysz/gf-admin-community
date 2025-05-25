@@ -2,6 +2,7 @@ package sys_rules
 
 import (
 	"context"
+	"strings"
 
 	"github.com/SupenBysz/gf-admin-community/sys_consts"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -9,6 +10,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/invite_id"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/kysion/base-library/utility/base_funs"
 	"github.com/kysion/base-library/utility/base_verify"
 )
 
@@ -57,6 +60,40 @@ func CheckRegisterRule(ctx context.Context, registerIdentifier string) bool {
 	} else {
 		return clientConfig.RegisterRule.Contains(1)
 	}
+}
+
+// CheckApiPermissionWhiteList 检查API权限白名单
+func CheckApiPermissionWhiteList(ctx context.Context) bool {
+	clientConfig, _ := sys_consts.Global.GetClientConfig(ctx)
+
+	if clientConfig == nil {
+		return false
+	}
+
+	apiRequestPath := ghttp.RequestFromCtx(ctx).URL.Path
+
+	apiRequestPath = strings.TrimPrefix(apiRequestPath, sys_consts.Global.ApiPreFix)
+
+	return base_funs.HasInSlice(clientConfig.ApiPermissionWhitelist, func(pattern string) bool {
+		if pattern == "*" {
+			return true
+		}
+		if strings.HasPrefix(pattern, "*") && strings.HasSuffix(pattern, "*") {
+			middle := strings.Trim(pattern, "*")
+			return strings.Contains(apiRequestPath, middle)
+		}
+
+		if strings.HasPrefix(pattern, "*") {
+			suffix := strings.TrimPrefix(pattern, "*")
+			return strings.HasSuffix(apiRequestPath, suffix)
+		}
+
+		if strings.HasSuffix(pattern, "*") {
+			prefix := strings.TrimSuffix(pattern, "*")
+			return strings.HasPrefix(apiRequestPath, prefix)
+		}
+		return apiRequestPath == pattern
+	})
 }
 
 func CheckInviteCode(ctx context.Context, code string) (res *sys_model.InviteRes, err error) {
