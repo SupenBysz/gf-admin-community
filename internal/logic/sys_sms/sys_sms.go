@@ -7,6 +7,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/base_model/base_enum"
 )
 
@@ -31,6 +32,10 @@ func (s *sSysSms) Verify(ctx context.Context, mobile string, captcha string, typ
 	}
 	if captcha == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_sms_captcha_empty", "Sms")
+	}
+
+	if  gmode.IsDevelop() {
+		return true, nil
 	}
 
 	key := ""
