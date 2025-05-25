@@ -34,6 +34,11 @@ type QueryMemberLevelUserListReq struct {
 	Id     int64 `json:"id" v:"required#会员等级ID不能为空" dc:"会员等级ID"`
 }
 
+type GetMemberLevelByUserIdReq struct {
+	g.Meta `path:"/getMemberLevelByUserId" method:"post" summary:"根据用户ID获取会员等级列表"  dc:"根据用户ID获取会员等级列表" tags:"会员等级"`
+	UserId int64 `json:"id" v:"required#会员等级ID不能为空" dc:"会员等级ID"`
+}
+
 type AddMemberLevelUserReq struct {
 	g.Meta `path:"/addMemberLevelUser" method:"post" summary:"添加会员等级用户"  dc:"添加会员等级用户" tags:"会员等级"`
 	Id     int64   `json:"id" v:"required#会员等级ID不能为空" dc:"会员等级ID"`

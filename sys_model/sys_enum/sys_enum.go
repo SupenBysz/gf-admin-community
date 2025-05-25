@@ -13,6 +13,7 @@ import (
 	sys_enum_industry "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/industry"
 	sys_enum_invite "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/invite"
 	sys_enum_license "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/license"
+	sys_member_level "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/member_level"
 	sys_enum_menu "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/menu"
 	sys_enum_messages "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/message"
 	sys_enum_organization "github.com/SupenBysz/gf-admin-community/sys_model/sys_enum/internal/organization"
@@ -66,6 +67,8 @@ type (
 
 	// AnnouncementState 公告状态
 	AnnouncementState = sys_enum_announcement.StateEnum
+
+	MemberLevelEvent = sys_member_level.EventEnum
 )
 
 var (
@@ -80,6 +83,8 @@ var (
 	User   = sys_enum_user.User
 	Casbin = sys_enum_casbin.Casbin
 	File   = sys_enum_file.File
+
+	MemberLevel = sys_member_level.MemberLevel
 
 	Organization = sys_enum_organization.Organization
 	Role         = sys_enum_role.Role
