@@ -2,7 +2,6 @@ package sys_invite
 
 import (
 	"context"
-
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/invite_id"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -51,12 +50,13 @@ func (s *sSysInvite) QueryInvitePersonList(ctx context.Context, inviteUserId int
 // CreateInvitePerson 创建被邀请信息
 func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.InvitePersonInfo) (*sys_model.InvitePersonRes, error) {
 	data := sys_do.SysInvitePerson{
-		Id:         idgen.NextId(),
-		InviteId:   info.InviteId,
-		InviteCode: info.InviteCode,
-		FormUserId: info.FormUserId,
-		ByUserId:   info.ByUserId,
-		InviteAt:   gtime.Now(),
+		Id:                      idgen.NextId(),
+		InviteId:                info.InviteId,
+		InviteCode:              info.InviteCode,
+		FormUserId:              info.FormUserId,
+		ByUserId:                info.ByUserId,
+		InviteAt:                gtime.Now(),
+		CompanyIdentifierPrefix: info.CompanyIdentifierPrefix,
 	}
 
 	invitePerson, _ := s.GetInvitePersonByUserId(ctx, info.ByUserId)
@@ -66,7 +66,9 @@ func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.Inv
 		data.UserIdentifierPrefix = gconv.String(info.ByUserId)
 	}
 
-	affected, err := daoctl.InsertWithError(sys_dao.SysInvitePerson.Ctx(ctx), data)
+	newData := &data
+
+	affected, err := daoctl.InsertWithError(sys_dao.SysInvitePerson.Ctx(ctx), newData)
 
 	if affected <= 0 || err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_person_create_failed", sys_dao.SysInvitePerson.Table())

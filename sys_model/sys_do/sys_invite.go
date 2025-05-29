@@ -21,4 +21,5 @@ type SysInvite struct {
 	Type           interface{} // 类型： 1注册、2加入团队、4加入角色 (复合类型)
 	CreatedAt      *gtime.Time //
 	Identifier     interface{} // 标识符
+	InviceCode     interface{} // 邀请码
 }

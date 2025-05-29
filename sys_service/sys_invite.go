@@ -8,9 +8,11 @@ package sys_service
 import (
 	"context"
 
+	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/kysion/base-library/base_model"
 )
 
@@ -21,16 +23,18 @@ type (
 		GetInviteById(ctx context.Context, id int64) (*sys_model.InviteRes, error)
 		// QueryInviteList 查询邀约｜列表
 		QueryInviteList(ctx context.Context, filter *base_model.SearchParams) (*sys_model.InviteListRes, error)
-		// 通过标识符获取邀请信息
+		// GetInviteByIdentifier 通过标识符获取邀请信息
 		GetInviteByIdentifier(ctx context.Context, identifier string) (*sys_model.InviteRes, error)
 		// CreateInvite 创建邀约信息
 		CreateInvite(ctx context.Context, info *sys_model.Invite) (*sys_model.InviteRes, error)
+		// SetInviteExpireAt 设置邀约的过期时间
+		SetInviteExpireAt(ctx context.Context, id int64, expireAt gtime.Time) (api_v1.BoolRes, error)
 		// DeleteInvite 删除邀约信息
 		DeleteInvite(ctx context.Context, inviteId int64) (bool, error)
 		// SetInviteState 修改邀约信息状态
 		SetInviteState(ctx context.Context, id int64, state int) (bool, error)
 		// SetInviteNumber 修改邀约剩余次数
-		SetInviteNumber(ctx context.Context, id int64, num int, isAdd bool) (res bool, err error)
+		SetInviteNumber(ctx context.Context, id int64, num int, isAdd bool, isOverride bool) (res bool, err error)
 		// GetInvitePersonById 获取被邀请信息
 		GetInvitePersonById(ctx context.Context, id int64) (*sys_model.InvitePersonRes, error)
 		// GetInvitePersonByUserId 获取被邀请信息

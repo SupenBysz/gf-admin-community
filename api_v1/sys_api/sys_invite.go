@@ -3,6 +3,7 @@ package sys_api
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/kysion/base-library/base_model"
 )
 
@@ -40,4 +41,10 @@ type SetInviteNumberReq struct {
 
 type MyInviteCodeListReq struct {
 	g.Meta `path:"/myInviteCodeList" method:"post" summary:"我的邀约码｜列表" tags:"邀约"`
+}
+
+type SetInviteExpireAtReq struct {
+	g.Meta   `path:"/setInviteExpireAt" method:"post" summary:"设置邀约信息过期时间｜操作" tags:"邀约"`
+	Id       int64      `json:"id" v:"required#邀约ID校验失败" dc:"邀约ID"`
+	ExpireAt gtime.Time `json:"expireAt" v:"required#邀约过期时间不能为空" dc:"邀约过期时间"`
 }
