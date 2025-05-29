@@ -35,6 +35,7 @@ type SysMemberLevelColumns struct {
 	UpdatedAt   string //
 	CreatedBy   string //
 	UnionMainId string //
+	Level       string // 权益级别，要遵循数值越大，权益越多
 }
 
 // sysMemberLevelColumns holds the columns for table sys_member_level.
@@ -47,6 +48,7 @@ var sysMemberLevelColumns = SysMemberLevelColumns{
 	UpdatedAt:   "updated_at",
 	CreatedBy:   "created_by",
 	UnionMainId: "union_main_id",
+	Level:       "level",
 }
 
 // NewSysMemberLevelDao creates and returns a new DAO object for table data access.

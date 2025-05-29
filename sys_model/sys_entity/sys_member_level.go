@@ -18,4 +18,5 @@ type SysMemberLevel struct {
 	UpdatedAt   *gtime.Time `json:"updatedAt"   orm:"updated_at"    description:""`
 	CreatedBy   int64       `json:"createdBy"   orm:"created_by"    description:""`
 	UnionMainId int64       `json:"unionMainId" orm:"union_main_id" description:""`
+	Level       int         `json:"level"       orm:"level"         description:"权益级别，要遵循数值越大，权益越多"`
 }
