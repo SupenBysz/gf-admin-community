@@ -19,5 +19,5 @@ type SysInvite struct {
 	Type           int         `json:"type"           orm:"type"            description:"类型： 1注册、2加入团队、4加入角色 (复合类型)"`
 	CreatedAt      *gtime.Time `json:"createdAt"      orm:"created_at"      description:""`
 	Identifier     string      `json:"identifier"     orm:"identifier"      description:"标识符"`
-	InviceCode     string      `json:"inviceCode"     orm:"invice_code"     description:"邀请码"`
+	InviteCode     string      `json:"inviteCode"     orm:"invite_code"     description:"邀请码"`
 }

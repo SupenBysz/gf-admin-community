@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -145,11 +146,12 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 		data.Id = id
 
 		data.CreatedAt = gtime.Now()
-		data.InviceCode = invite_id.InviteIdToCode(id)
+		data.InviteCode = invite_id.InviteIdToCode(id)
 		data.ActivateNumber = -1
 		data.ExpireAt = nil
 
-		affected, err := daoctl.InsertWithError(sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(data))
+		affected := int64(0)
+		affected, err = daoctl.InsertWithError(sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(data))
 		if err != nil || affected <= 0 {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_create_info_failed", sys_dao.SysInvite.Table())
 		}
