@@ -29,7 +29,7 @@ type BaiduSdkConf struct {
 
 type BaiduSdkConfAccessToken struct {
 	AccessToken   string `json:"access_token" dc:"获取的Access Token"`
-	refreshToken  string `json:"refresh_token" dc:"该参数忽略"`
+	RefreshToken  string `json:"refresh_token" dc:"该参数忽略"`
 	ExpiresIn     int64  `json:"expires_in" dc:"Access Token的有效期(秒为单位，有效期30天)"`
 	Scope         string `json:"scope" dc:"该参数忽略"`
 	SessionKey    string `json:"session_key" dc:"该参数忽略"`
