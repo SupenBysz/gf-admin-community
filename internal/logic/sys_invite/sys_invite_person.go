@@ -2,6 +2,8 @@ package sys_invite
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/invite_id"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -49,6 +51,14 @@ func (s *sSysInvite) QueryInvitePersonList(ctx context.Context, inviteUserId int
 
 // CreateInvitePerson 创建被邀请信息
 func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.InvitePersonInfo) (*sys_model.InvitePersonRes, error) {
+
+	invitePerson, _ := s.GetInvitePersonByUserId(ctx, info.ByUserId)
+
+	// 如果被邀约者已经有邀请信息，则直接返回，防止重复创建邀约记录
+	if invitePerson != nil {
+		return invitePerson, nil
+	}
+
 	data := sys_do.SysInvitePerson{
 		Id:                      idgen.NextId(),
 		InviteId:                info.InviteId,
@@ -59,11 +69,11 @@ func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.Inv
 		CompanyIdentifierPrefix: info.CompanyIdentifierPrefix,
 	}
 
-	invitePerson, _ := s.GetInvitePersonByUserId(ctx, info.ByUserId)
+	invitePerson, _ = s.GetInvitePersonByUserId(ctx, info.FormUserId)
 	if invitePerson != nil {
-		data.UserIdentifierPrefix = invitePerson.UserIdentifierPrefix + "::" + gconv.String(info.ByUserId)
+		data.UserIdentifierPrefix = fmt.Sprintf("%v::%v", invitePerson.UserIdentifierPrefix, info.ByUserId)
 	} else {
-		data.UserIdentifierPrefix = gconv.String(info.ByUserId)
+		data.UserIdentifierPrefix = fmt.Sprintf("%v::%v", info.FormUserId, info.ByUserId)
 	}
 
 	newData := &data
@@ -75,6 +85,15 @@ func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.Inv
 	}
 
 	return s.GetInvitePersonById(ctx, gconv.Int64(data.Id))
+}
+
+// SetInviteCompanyIdentifierPrefix 设置邀请码的邀请者单位标识前缀
+func (s *sSysInvite) SetInviteCompanyIdentifierPrefix(ctx context.Context, inviteId int64, companyIdentifierPrefix string) (bool, error)  {
+	affected, err := daoctl.UpdateWithError(sys_dao.SysInvitePerson.Ctx(ctx).Where(sys_dao.SysInvitePerson.Columns().Id, inviteId), &sys_do.SysInvitePerson{
+		CompanyIdentifierPrefix: companyIdentifierPrefix,
+	})
+
+	return affected > 0, err
 }
 
 // CountRegisterInvitePersonByInviteCode 统计邀请码邀请的人数

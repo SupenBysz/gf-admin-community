@@ -43,6 +43,8 @@ type (
 		QueryInvitePersonList(ctx context.Context, inviteUserId int64) (*sys_model.InvitePersonListRes, error)
 		// CreateInvitePerson 创建被邀请信息
 		CreateInvitePerson(ctx context.Context, info *sys_model.InvitePersonInfo) (*sys_model.InvitePersonRes, error)
+		// SetInviteCompanyIdentifierPrefix 设置邀请码的邀请者单位标识前缀
+		SetInviteCompanyIdentifierPrefix(ctx context.Context, inviteId int64, companyIdentifierPrefix string) (bool, error)
 		// CountRegisterInvitePersonByInviteCode 统计邀请码邀请的人数
 		CountRegisterInvitePersonByInviteCode(ctx context.Context, inviteCode string) (int, error)
 		// CountRegisterInvitePersonByInviteId 统计邀请码邀请的人数
