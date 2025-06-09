@@ -89,7 +89,7 @@ func (s *sSysInvite) CreateInvitePerson(ctx context.Context, info *sys_model.Inv
 
 // SetInviteCompanyIdentifierPrefix 设置邀请码的邀请者单位标识前缀
 func (s *sSysInvite) SetInviteCompanyIdentifierPrefix(ctx context.Context, inviteId int64, companyIdentifierPrefix string) (bool, error)  {
-	affected, err := daoctl.UpdateWithError(sys_dao.SysInvitePerson.Ctx(ctx).Where(sys_dao.SysInvitePerson.Columns().Id, inviteId), &sys_do.SysInvitePerson{
+	affected, err := daoctl.UpdateWithError(sys_dao.SysInvitePerson.Ctx(ctx).Where(sys_dao.SysInvitePerson.Columns().ByUserId, inviteId), &sys_do.SysInvitePerson{
 		CompanyIdentifierPrefix: companyIdentifierPrefix,
 	})
 
