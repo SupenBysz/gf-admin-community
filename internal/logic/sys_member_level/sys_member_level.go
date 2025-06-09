@@ -2,13 +2,14 @@ package sys_member_level
 
 import (
 	"context"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
-
+	"database/sql"
+	"errors"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -207,7 +208,7 @@ func (s *sSysMemberLevel) GetMemberLevelById(ctx context.Context, id int64) (*sy
 }
 
 // GetMemberLevelByUserId 根据用户ID获取会员等级权益
-func (s *sSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, userId int64) (*[]int64, error) {
+func (s *sSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, userId int64) (*[]sys_model.SysMemberLevelUserRes, error) {
 	items := make([]sys_model.SysMemberLevelUserRes, 0)
 
 	err := sys_dao.SysMemberLevelUser.Ctx(ctx).Where(sys_dao.SysMemberLevelUser.Columns().UserId, userId).OrderDesc(
@@ -217,32 +218,33 @@ func (s *sSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, userId int
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取会员等级用户列表失败", sys_dao.SysMemberLevel.Table())
 	}
 
-	result := make([]int64, 0)
-
-	for _, item := range items {
-		result = append(result, item.ExtMemberLevelId)
-	}
-
-	return &result, nil
+	return &items, nil
 }
 
 // QueryMemberLevelUserList 获取会员等级用户列表
-func (s *sSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*sys_model.SysMemberLevelUserListRes, error) {
-	result := &sys_model.SysMemberLevelUserListRes{}
+func (s *sSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*[]sys_model.SysMemberLevelUserRes, error) {
+	result := &[]sys_model.SysMemberLevelUserRes{}
 
 	// 判断是否存在会员等级
 	memberLevel, err := s.GetMemberLevelById(ctx, memberLevelId)
 	if err != nil || memberLevel == nil {
+		if errors.Is(err, sql.ErrNoRows) || memberLevel == nil {
+			return result, nil
+		}
 		return result, sys_service.SysLogs().ErrorSimple(ctx, err, "该会员等级不存在", sys_dao.SysMemberLevel.Table())
 	}
 
 	// 查询会员等级下的 用户列表
-	response, err := daoctl.Query[sys_model.SysMemberLevelUserRes](sys_dao.SysMemberLevelUser.Ctx(ctx).Where(sys_do.SysMemberLevelUser{UnionMainId: memberLevel.UnionMainId, ExtMemberLevelId: memberLevel.Id}), nil, true)
+	err = sys_dao.SysMemberLevelUser.Ctx(ctx).
+		Where(sys_do.SysMemberLevelUser{UnionMainId: memberLevel.UnionMainId, ExtMemberLevelId: memberLevel.Id}).
+		OrderDesc(sys_dao.SysMemberLevel.Columns().Level).
+		OrderDesc(sys_dao.SysMemberLevel.Columns().Id).
+		Scan(result)
 	if err != nil {
 		return result, err
 	}
 
-	return (*sys_model.SysMemberLevelUserListRes)(response), nil
+	return result, nil
 }
 
 // HasMemberLevelUserByUser 查询会员等级下是否有指定的用户
@@ -273,12 +275,21 @@ func (s *sSysMemberLevel) AddMemberLevelUser(ctx context.Context, memberLevelId 
 			dataArr = append(dataArr, item)
 		}
 
+		_, err = sys_dao.SysMemberLevelUser.Ctx(ctx).
+			Where(sys_dao.SysMemberLevelUser.Columns().Id, memberLevel.Id).
+			WhereIn(sys_dao.SysMemberLevelUser.Columns().UserId, userIds).
+			Delete()
+
+		if err != nil {
+			return errors.Join(err, errors.New("error_failed_to_set_the_member_level_information"))
+		}
+
 		// 批量插入
 		if len(dataArr) > 0 {
 			result, err := sys_dao.SysMemberLevelUser.Ctx(ctx).Batch(len(dataArr)).Data(&dataArr).Insert()
 			affected, _ := result.RowsAffected()
 			if err != nil || affected <= 0 {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "批量添加会员等级用户失败", sys_dao.SysMemberLevelUser.Table())
+				return errors.Join(err, errors.New("error_failed_to_set_the_member_level_information"))
 			}
 		}
 

@@ -65,19 +65,12 @@ func (c *cSysMemberLevel) GetMemberLevelById(ctx context.Context, req *v1.GetMem
 	return ret, err
 }
 
-func (c *cSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, req *v1.GetMemberLevelByUserIdReq) (*api_v1.Int64ArrRes, error) {
-	ids, err := sys_service.SysMemberLevel().GetMemberLevelByUserId(ctx, req.UserId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	result := api_v1.Int64ArrRes(*ids)
-	return &result, nil
+func (c *cSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, req *v1.GetMemberLevelByUserIdReq) (*[]sys_model.SysMemberLevelUserRes, error) {
+	return sys_service.SysMemberLevel().GetMemberLevelByUserId(ctx, req.UserId)
 }
 
 // QueryMemberLevelUserList 获取会员等级用户列表
-func (c *cSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, req *v1.QueryMemberLevelUserListReq) (*sys_model.SysMemberLevelUserListRes, error) {
+func (c *cSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, req *v1.QueryMemberLevelUserListReq) (*[]sys_model.SysMemberLevelUserRes, error) {
 	ret, err := sys_service.SysMemberLevel().QueryMemberLevelUserList(ctx, req.Id)
 
 	return ret, err

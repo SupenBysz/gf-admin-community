@@ -33,9 +33,9 @@ type (
 		// GetMemberLevelById 获取会员等级详情
 		GetMemberLevelById(ctx context.Context, id int64) (*sys_model.SysMemberLevelRes, error)
 		// GetMemberLevelByUserId 根据用户ID获取会员等级权益
-		GetMemberLevelByUserId(ctx context.Context, userId int64) (*[]int64, error)
+		GetMemberLevelByUserId(ctx context.Context, userId int64) (*[]sys_model.SysMemberLevelUserRes, error)
 		// QueryMemberLevelUserList 获取会员等级用户列表
-		QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*sys_model.SysMemberLevelUserListRes, error)
+		QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*[]sys_model.SysMemberLevelUserRes, error)
 		// HasMemberLevelUserByUser 查询会员等级下是否有指定的用户
 		HasMemberLevelUserByUser(ctx context.Context, memberLevelId int64, userId int64, unionMainId int64) (bool, error)
 		// AddMemberLevelUser 添加会员等级用户
