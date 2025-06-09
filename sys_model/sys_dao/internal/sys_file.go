@@ -39,7 +39,7 @@ type SysFileColumns struct {
 	CreatedAt      string //
 	UpdatedAt      string //
 	LocalPath      string // 本地路径
-	AllowAnonymous string // 是否允许匿名
+	AllowAnonymous string // 是否允许匿名访问
 }
 
 // sysFileColumns holds the columns for table sys_file.

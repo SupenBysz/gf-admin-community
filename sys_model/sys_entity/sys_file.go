@@ -22,5 +22,5 @@ type SysFile struct {
 	CreatedAt      *gtime.Time `json:"createdAt"      orm:"created_at"      description:""`
 	UpdatedAt      *gtime.Time `json:"updatedAt"      orm:"updated_at"      description:""`
 	LocalPath      string      `json:"localPath"      orm:"local_path"      description:"本地路径"`
-	AllowAnonymous int         `json:"allowAnonymous" orm:"allow_anonymous" description:"是否允许匿名"`
+	AllowAnonymous int         `json:"allowAnonymous" orm:"allow_anonymous" description:"是否允许匿名访问"`
 }

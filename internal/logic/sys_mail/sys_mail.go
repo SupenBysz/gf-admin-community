@@ -17,6 +17,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gogf/gf/v2/util/gmode"
 	"github.com/kysion/base-library/base_model/base_enum"
 	"github.com/kysion/base-library/utility/enum"
 	"github.com/kysion/base-library/utility/kconv"
@@ -118,6 +119,10 @@ func (s *sSysMails) Verify(ctx context.Context, email string, captcha string, ty
 	}
 	if captcha == "" {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_mail_captcha_empty", "Mail")
+	}
+
+	if  gmode.IsDevelop() {
+		return true, nil
 	}
 
 	key := ""

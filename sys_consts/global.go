@@ -25,11 +25,6 @@ type global struct {
 
 	// 密码加密
 	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
-
-	// 邀约码默认时长天数
-	InviteCodeExpireDay int
-	// 邀约码次数上限
-	InviteCodeMaxActivateNumber int
 }
 
 func (s global) GetClientConfig(ctx context.Context) (*sys_model.ClientConfig, error) {
@@ -46,14 +41,12 @@ func (s global) GetClientConfig(ctx context.Context) (*sys_model.ClientConfig, e
 
 var (
 	Global = global{
-		ClientConfig:                []sys_model.ClientConfig{},
-		LogLevelToDatabaseArr:       garray.NewSortedIntArray(),
-		ApiPreFix:                   "",
-		OrmCacheConf:                []*sys_model.TableCacheConf{},
-		PermissionTree:              []base_permission.IPermission{},
-		CryptoPasswordFunc:          nil,
-		EmailConfig:                 sys_model.EmailConfig{},
-		InviteCodeExpireDay:         0,
-		InviteCodeMaxActivateNumber: 0,
+		ClientConfig:          []sys_model.ClientConfig{},
+		LogLevelToDatabaseArr: garray.NewSortedIntArray(),
+		ApiPreFix:             "",
+		OrmCacheConf:          []*sys_model.TableCacheConf{},
+		PermissionTree:        []base_permission.IPermission{},
+		CryptoPasswordFunc:    nil,
+		EmailConfig:           sys_model.EmailConfig{},
 	}
 )

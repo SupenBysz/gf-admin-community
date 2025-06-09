@@ -28,7 +28,7 @@ type SysAuditDao struct {
 // SysAuditColumns defines and stores column names for table sys_audit.
 type SysAuditColumns struct {
 	Id             string //
-	State          string // 审核状态：-2已取消，-1不通过，0待审核，1通过
+	State          string // 审核状态：0 - 待审核；1 - 审核通过；2 - 审核不通过；3 - 审核中（人工复审）；4 - 补充资料待审核
 	Reply          string // 不通过时回复的审核不通过原因
 	UnionMainId    string // 关联主体ID
 	Category       string // 业务类别：1个人资质审核、2主体资质审核、4数据审核

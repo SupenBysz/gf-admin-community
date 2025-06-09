@@ -36,6 +36,7 @@ type SysInviteColumns struct {
 	Type           string // 类型： 1注册、2加入团队、4加入角色 (复合类型)
 	CreatedAt      string //
 	Identifier     string // 标识符
+	InviteCode     string // 邀请码
 }
 
 // sysInviteColumns holds the columns for table sys_invite.
@@ -49,6 +50,7 @@ var sysInviteColumns = SysInviteColumns{
 	Type:           "type",
 	CreatedAt:      "created_at",
 	Identifier:     "identifier",
+	InviteCode:     "invite_code",
 }
 
 // NewSysInviteDao creates and returns a new DAO object for table data access.

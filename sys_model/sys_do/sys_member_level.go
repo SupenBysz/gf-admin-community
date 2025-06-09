@@ -20,4 +20,5 @@ type SysMemberLevel struct {
 	UpdatedAt   *gtime.Time //
 	CreatedBy   interface{} //
 	UnionMainId interface{} //
+	Level       interface{} // 权益级别，要遵循数值越大，权益越多
 }

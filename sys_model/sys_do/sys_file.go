@@ -24,5 +24,5 @@ type SysFile struct {
 	CreatedAt      *gtime.Time //
 	UpdatedAt      *gtime.Time //
 	LocalPath      interface{} // 本地路径
-	AllowAnonymous interface{} // 是否允许匿名
+	AllowAnonymous interface{} // 是否允许匿名访问
 }

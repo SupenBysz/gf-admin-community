@@ -22,4 +22,4 @@ type SysMemberLevelRes sys_entity.SysMemberLevel
 type SysMemberLevelListRes base_model.CollectRes[SysMemberLevelRes]
 
 type SysMemberLevelUserRes sys_entity.SysMemberLevelUser
-type SysMemberLevelUserListRes base_model.CollectRes[SysMemberLevelUserRes]
+type SysMemberLevelUserListRes []SysMemberLevelUserRes

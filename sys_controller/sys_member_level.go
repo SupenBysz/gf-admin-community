@@ -2,6 +2,7 @@ package sys_controller
 
 import (
 	"context"
+
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	v1 "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -15,7 +16,7 @@ type cSysMemberLevel struct{}
 var SysMemberLevel cSysMemberLevel
 
 // QueryMemberLevelList 获取会员等级列表
-func (c *cSysMemberLevel) QueryMemberLevelList(ctx context.Context, req *v1.QueryMemberLevelListReq) (*sys_model.SysMemberLevelListRes, error) {
+func (c *cSysMemberLevel) QueryMemberLevelList(ctx context.Context, _ *v1.QueryMemberLevelListReq) (*sys_model.SysMemberLevelListRes, error) {
 	user := sys_service.SysSession().Get(ctx).JwtClaimsUser
 	params := base_model.SearchParams{
 		Filter: append(make([]base_model.FilterInfo, 0),
@@ -54,7 +55,7 @@ func (c *cSysMemberLevel) DeleteMemberLevel(ctx context.Context, req *v1.DeleteM
 
 	ret, err := sys_service.SysMemberLevel().DeleteMemberLevel(ctx, req.Id, user.UnionMainId)
 
-	return ret == true, err
+	return api_v1.BoolRes(ret), err
 }
 
 // GetMemberLevelById 获取会员等级详情
@@ -64,8 +65,12 @@ func (c *cSysMemberLevel) GetMemberLevelById(ctx context.Context, req *v1.GetMem
 	return ret, err
 }
 
+func (c *cSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, req *v1.GetMemberLevelByUserIdReq) (*[]sys_model.SysMemberLevelUserRes, error) {
+	return sys_service.SysMemberLevel().GetMemberLevelByUserId(ctx, req.UserId)
+}
+
 // QueryMemberLevelUserList 获取会员等级用户列表
-func (c *cSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, req *v1.QueryMemberLevelUserListReq) (*sys_model.SysMemberLevelUserListRes, error) {
+func (c *cSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, req *v1.QueryMemberLevelUserListReq) (*[]sys_model.SysMemberLevelUserRes, error) {
 	ret, err := sys_service.SysMemberLevel().QueryMemberLevelUserList(ctx, req.Id)
 
 	return ret, err
@@ -75,12 +80,12 @@ func (c *cSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, req *v1.
 func (c *cSysMemberLevel) AddMemberLevelUser(ctx context.Context, req *v1.AddMemberLevelUserReq) (api_v1.BoolRes, error) {
 	ret, err := sys_service.SysMemberLevel().AddMemberLevelUser(ctx, req.Id, req.Ids)
 
-	return ret == true, err
+	return api_v1.BoolRes(ret), err
 }
 
 // DeleteMemberLevelUser 删除会员等级用户
 func (c *cSysMemberLevel) DeleteMemberLevelUser(ctx context.Context, req *v1.DeleteMemberLevelUserReq) (api_v1.BoolRes, error) {
 	ret, err := sys_service.SysMemberLevel().DeleteMemberLevelUser(ctx, req.Id, req.Ids)
 
-	return ret == true, err
+	return api_v1.BoolRes(ret), err
 }

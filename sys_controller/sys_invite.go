@@ -2,7 +2,6 @@ package sys_controller
 
 import (
 	"context"
-
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -55,11 +54,16 @@ func (c *cSysInvite) SetInviteState(ctx context.Context, req *sys_api.SetInviteS
 	return api_v1.BoolRes(ret), err
 }
 
-// // SetInviteNumber 修改邀约剩余次数
+// SetInviteNumber 修改邀约剩余次数
 func (c *cSysInvite) SetInviteNumber(ctx context.Context, req *sys_api.SetInviteNumberReq) (res api_v1.BoolRes, err error) {
-	ret, err := sys_service.SysInvite().SetInviteNumber(ctx, req.Id, req.Number, true)
+	ret, err := sys_service.SysInvite().SetInviteNumber(ctx, req.Id, req.Number, true, true)
 
 	return api_v1.BoolRes(ret), err
+}
+
+// SetInviteExpireAt 设置邀约信息过期时间
+func (c *cSysInvite) SetInviteExpireAt(ctx context.Context, req *sys_api.SetInviteExpireAtReq) (api_v1.BoolRes, error) {
+	return sys_service.SysInvite().SetInviteExpireAt(ctx, req.Id, req.ExpireAt)
 }
 
 // MyInviteCodeList 我的邀约码

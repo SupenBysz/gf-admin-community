@@ -62,7 +62,7 @@ func (s *sSysAuth) InstallInviteRegisterHook(actionType sys_enum.InviteType, hoo
 
 // InstallHook 安装Hook
 func (s *sSysAuth) InstallHook(actionType sys_enum.AuthActionType, userType sys_enum.UserType, hookFunc sys_hook.AuthHookFunc) int64 {
-	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.AuthHookInfo{Key: actionType, Value: hookFunc, UserType: userType}}
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.AuthHookInfo{Key: actionType, Value: hookFunc}}
 	s.hookArr = append(s.hookArr, item)
 	return item.Key
 }
@@ -162,11 +162,8 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 	user.Detail.LastLoginIp = ip
 
 	for _, hook := range s.hookArr {
-		// 判断注入的Hook用户类型是否一致
-		if hook.Value.UserType.Code()&user.Type == user.Type || (user.Type == 64 && hook.Value.UserType.Code() == 32) {
-			// 用户类型一致则调用注入的Hook函数
-			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, user)
-		}
+		// 用户类型一致则调用注入的Hook函数
+		err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Login, user)
 		if err != nil {
 			return nil, err
 		}
@@ -423,38 +420,79 @@ func (s *sSysAuth) registerUser(ctx context.Context, innerRegister *sys_model.Us
 		}
 
 		for _, hook := range s.hookArr {
-			// 判断注入的Hook用户类型是否一致
-			if hook.Value.UserType.Code()&data.Type == data.Type {
-				// 用户类型一致则调用注入的Hook函数
-				err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Register, data)
-			}
+			err = hook.Value.Value(ctx, sys_enum.Auth.ActionType.Register, data)
 			if err != nil {
 				return err
 			}
 		}
 
-		// 广播邀约Hook
-		if inviteCode != "" {
+		// 处理邀约Hook
+		if inviteCode != "" && inviteInfo != nil {
 			needToSettleInvite := true
 
-			s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
-				// 判断订阅的Hook类型是否一致
-				if key.Code()&inviteInfo.Type == inviteInfo.Type {
-					// 业务类型一致则调用注入的Hook函数
-					g.Try(ctx, func(ctx context.Context) {
-						// 假如业务层返回false，那下面就无需执行修改邀约次数逻辑
-						needToSettleInvite, err = value(ctx, sys_enum.Invite.Type.Register, inviteInfo, data)
-						if err != nil {
-							return
-						}
+			inviteInfo, err = sys_service.SysInvite().GetInviteById(ctx, inviteInfo.Id)
+			if err != nil {
+				return err
+			}
+
+			if inviteInfo.State == sys_enum.Invite.State.Invalid.Code() {
+				return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_invalid"))
+			}
+
+			if inviteInfo.ExpireAt != nil && inviteInfo.ExpireAt.Before(gtime.Now()) {
+				return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_expired"))
+			}
+
+			if inviteInfo.Type&sys_enum.Invite.Type.Register.Code() == sys_enum.Invite.Type.Register.Code() {
+				canOverLimit := false
+				canOverLimit, err = sys_service.SysInvite().IsInviteCodeOverLimit(ctx, inviteCode)
+
+				if err != nil {
+					return err
+				}
+
+				if !canOverLimit {
+					return gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_invite_code_over_limit"))
+				}
+
+				var result *sys_model.InvitePersonRes
+				// 创建邀请关系
+				result, err = sys_service.SysInvite().CreateInvitePerson(ctx, &sys_model.InvitePersonInfo{
+					FormUserId: inviteInfo.UserId,
+					ByUserId:   data.Id,
+					InviteCode: inviteCode,
+					InviteId:   inviteInfo.Id,
+				})
+				if err != nil {
+					return err
+				}
+
+				if result != nil {
+					err = g.Try(ctx, func(ctx context.Context) {
+						s.InviteRegisterHook.Iterator(func(key sys_enum.InviteType, value sys_hook.InviteRegisterHookFunc) {
+							// 判断订阅的Hook类型是否一致
+							if inviteInfo.Type&sys_enum.Invite.Type.Register.Code() == sys_enum.Invite.Type.Register.Code() {
+								// 调用注入的Hook函数
+								// 假如业务层返回false，那下面就无需执行修改邀约次数逻辑
+								needToSettleInvite, err = value(ctx, sys_enum.Invite.Type.Register, inviteInfo, &result.InvitePerson, data)
+
+								if err != nil {
+									panic(err)
+								}
+							}
+						})
 					})
 				}
-			})
+			}
+
+			if err != nil {
+				return err
+			}
 
 			// 业务层没有处理邀约
 			if needToSettleInvite && inviteInfo != nil {
 				// 修改邀约次数（里面包含了判断邀约次数从而修改邀约状态的逻辑）
-				_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false)
+				_, err = sys_service.SysInvite().SetInviteNumber(ctx, inviteInfo.Id, 1, false, false)
 				if err != nil {
 					return err
 				}

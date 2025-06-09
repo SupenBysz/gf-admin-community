@@ -10,5 +10,4 @@ type AuthHookFunc func(ctx context.Context, actionType sys_enum.AuthActionType, 
 type AuthHookInfo struct {
 	Key      sys_enum.AuthActionType
 	Value    AuthHookFunc
-	UserType sys_enum.UserType `json:"userType" dc:"用户类型"`
 }

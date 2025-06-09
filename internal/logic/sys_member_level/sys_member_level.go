@@ -2,11 +2,14 @@ package sys_member_level
 
 import (
 	"context"
-
+	"database/sql"
+	"errors"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -21,7 +24,10 @@ import (
 会员等级
 */
 
+type hookInfo sys_model.KeyValueT[int64, sys_hook.MemberLevelHookInfo]
+
 type sSysMemberLevel struct {
+	hookArr []hookInfo
 }
 
 func init() {
@@ -30,6 +36,33 @@ func init() {
 
 func New() sys_service.ISysMemberLevel {
 	return &sSysMemberLevel{}
+}
+
+// InstallHook 安装Hook
+func (s *sSysMemberLevel) InstallHook(state sys_enum.AuditEvent, hookFunc sys_hook.MemberLevelHookFunc) int64 {
+	item := hookInfo{Key: idgen.NextId(), Value: sys_hook.MemberLevelHookInfo{
+		Key:   state,
+		Value: hookFunc,
+	}}
+	s.hookArr = append(s.hookArr, item)
+	return item.Key
+}
+
+// UnInstallHook 卸载Hook
+func (s *sSysMemberLevel) UnInstallHook(savedHookId int64) {
+	newFuncArr := make([]hookInfo, 0)
+	for _, item := range s.hookArr {
+		if item.Key != savedHookId {
+			newFuncArr = append(newFuncArr, item)
+			continue
+		}
+	}
+	s.hookArr = newFuncArr
+}
+
+// CleanAllHook 清除所有Hook
+func (s *sSysMemberLevel) CleanAllHook() {
+	s.hookArr = make([]hookInfo, 0)
 }
 
 // QueryMemberLevelList 获取会员等级列表
@@ -56,7 +89,27 @@ func (s *sSysMemberLevel) CreateMemberLevel(ctx context.Context, info *sys_model
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级创建失败", sys_dao.SysMemberLevel.Table())
 	}
 
-	return s.GetMemberLevelById(ctx, gconv.Int64(data.Id))
+	result, err := s.GetMemberLevelById(ctx, gconv.Int64(data.Id))
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级创建失败", sys_dao.SysMemberLevel.Table())
+	}
+
+	// 业务层  Hook处理渲染，如果没有Hook的话，那就直接格式化成默认的个人资质
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Key.Code() & sys_enum.MemberLevel.Event.Created.Code()) == sys_enum.MemberLevel.Event.Created.Code() { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			//if hook.Key == sys_enum.Audit.Event.GetAuditData {}
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.MemberLevel.Event.Created, result)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
 }
 
 // UpdateMemberLevel 更新会员等级
@@ -82,7 +135,27 @@ func (s *sSysMemberLevel) UpdateMemberLevel(ctx context.Context, info *sys_model
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级信息更新失败", sys_dao.SysMemberLevel.Table())
 	}
 
-	return s.GetMemberLevelById(ctx, info.Id)
+	result, err = s.GetMemberLevelById(ctx, gconv.Int64(data.Id))
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级更新失败", sys_dao.SysMemberLevel.Table())
+	}
+
+	// 业务层  Hook处理渲染，如果没有Hook的话，那就直接格式化成默认的个人资质
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Key.Code() & sys_enum.MemberLevel.Event.Updated.Code()) == sys_enum.MemberLevel.Event.Created.Code() { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			//if hook.Key == sys_enum.Audit.Event.GetAuditData {}
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.MemberLevel.Event.Updated, result)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
 }
 
 // DeleteMemberLevel 删除会员等级
@@ -107,6 +180,20 @@ func (s *sSysMemberLevel) DeleteMemberLevel(ctx context.Context, id int64, union
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级删除失败", sys_dao.SysMemberLevel.Table())
 	}
 
+	// 业务层  Hook处理渲染，如果没有Hook的话，那就直接格式化成默认的个人资质
+	for _, hook := range s.hookArr {
+		// 判断注入的Hook业务类型是否一致
+		if (hook.Value.Key.Code() & sys_enum.MemberLevel.Event.Deleted.Code()) == sys_enum.MemberLevel.Event.Created.Code() { // 如果业务层没有订阅数据处理，那么就默认渲染成基础骨架里面的个人资质
+			//if hook.Key == sys_enum.Audit.Event.GetAuditData {}
+			// 业务类型一致则调用注入的Hook函数
+			err = hook.Value.Value(ctx, sys_enum.MemberLevel.Event.Deleted, result)
+		}
+
+		if err != nil {
+			return false, err
+		}
+	}
+
 	return true, err
 }
 
@@ -120,23 +207,51 @@ func (s *sSysMemberLevel) GetMemberLevelById(ctx context.Context, id int64) (*sy
 	return (*sys_model.SysMemberLevelRes)(result), err
 }
 
+// GetMemberLevelByUserId 根据用户ID获取会员等级权益
+func (s *sSysMemberLevel) GetMemberLevelByUserId(ctx context.Context, userId int64) (*[]sys_model.SysMemberLevelUserRes, error) {
+	items := make([]sys_model.SysMemberLevelUserRes, 0)
+
+	err := sys_dao.SysMemberLevelUser.Ctx(ctx).Where(sys_dao.SysMemberLevelUser.Columns().UserId, userId).OrderDesc(
+		sys_dao.SysMemberLevelUser.Columns().Id).Scan(&items)
+
+	if err != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "获取会员等级用户列表失败", sys_dao.SysMemberLevel.Table())
+	}
+
+	return &items, nil
+}
+
 // QueryMemberLevelUserList 获取会员等级用户列表
-func (s *sSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*sys_model.SysMemberLevelUserListRes, error) {
-	result := &sys_model.SysMemberLevelUserListRes{}
+func (s *sSysMemberLevel) QueryMemberLevelUserList(ctx context.Context, memberLevelId int64) (*[]sys_model.SysMemberLevelUserRes, error) {
+	result := &[]sys_model.SysMemberLevelUserRes{}
 
 	// 判断是否存在会员等级
 	memberLevel, err := s.GetMemberLevelById(ctx, memberLevelId)
 	if err != nil || memberLevel == nil {
+		if errors.Is(err, sql.ErrNoRows) || memberLevel == nil {
+			return result, nil
+		}
 		return result, sys_service.SysLogs().ErrorSimple(ctx, err, "该会员等级不存在", sys_dao.SysMemberLevel.Table())
 	}
 
 	// 查询会员等级下的 用户列表
-	response, err := daoctl.Query[sys_model.SysMemberLevelUserRes](sys_dao.SysMemberLevelUser.Ctx(ctx).Where(sys_do.SysMemberLevelUser{UnionMainId: memberLevel.UnionMainId, ExtMemberLevelId: memberLevel.Id}), nil, true)
+	err = sys_dao.SysMemberLevelUser.Ctx(ctx).
+		Where(sys_do.SysMemberLevelUser{UnionMainId: memberLevel.UnionMainId, ExtMemberLevelId: memberLevel.Id}).
+		OrderDesc(sys_dao.SysMemberLevel.Columns().Level).
+		OrderDesc(sys_dao.SysMemberLevel.Columns().Id).
+		Scan(result)
 	if err != nil {
 		return result, err
 	}
 
-	return (*sys_model.SysMemberLevelUserListRes)(response), nil
+	return result, nil
+}
+
+// HasMemberLevelUserByUser 查询会员等级下是否有指定的用户
+func (s *sSysMemberLevel) HasMemberLevelUserByUser(ctx context.Context, memberLevelId int64, userId int64, unionMainId int64) (bool, error) {
+	count, err := sys_dao.SysMemberLevelUser.Ctx(ctx).Where(sys_do.SysMemberLevelUser{UnionMainId: unionMainId, ExtMemberLevelId: memberLevelId, UserId: userId}).Count()
+
+	return count > 0, err
 }
 
 // AddMemberLevelUser 添加会员等级用户
@@ -160,12 +275,21 @@ func (s *sSysMemberLevel) AddMemberLevelUser(ctx context.Context, memberLevelId 
 			dataArr = append(dataArr, item)
 		}
 
+		_, err = sys_dao.SysMemberLevelUser.Ctx(ctx).
+			Where(sys_dao.SysMemberLevelUser.Columns().Id, memberLevel.Id).
+			WhereIn(sys_dao.SysMemberLevelUser.Columns().UserId, userIds).
+			Delete()
+
+		if err != nil {
+			return errors.Join(err, errors.New("error_failed_to_set_the_member_level_information"))
+		}
+
 		// 批量插入
 		if len(dataArr) > 0 {
 			result, err := sys_dao.SysMemberLevelUser.Ctx(ctx).Batch(len(dataArr)).Data(&dataArr).Insert()
 			affected, _ := result.RowsAffected()
 			if err != nil || affected <= 0 {
-				return sys_service.SysLogs().ErrorSimple(ctx, err, "批量添加会员等级用户失败", sys_dao.SysMemberLevelUser.Table())
+				return errors.Join(err, errors.New("error_failed_to_set_the_member_level_information"))
 			}
 		}
 

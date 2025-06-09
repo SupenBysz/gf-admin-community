@@ -370,6 +370,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 			Email:     info.Email,
 			State:     userState.Code(),
 			Type:      userType.Code(),
+			InviteCode: info.InviteCode,
 			CreatedAt: gtime.Now(),
 		},
 	}

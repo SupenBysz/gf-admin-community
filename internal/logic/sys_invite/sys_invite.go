@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/SupenBysz/gf-admin-community/sys_consts"
+	"github.com/SupenBysz/gf-admin-community/api_v1"
+
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_dao"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
@@ -89,6 +90,10 @@ func (s *sSysInvite) QueryInviteList(ctx context.Context, filter *base_model.Sea
 
 	result, err := daoctl.Query[sys_model.InviteRes](sys_dao.SysInvite.Ctx(ctx), filter, true)
 
+	if err != nil {
+		return &sys_model.InviteListRes{}, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_list_query_failed", sys_dao.SysInvite.Table())
+	}
+
 	newList := make([]sys_model.InviteRes, 0)
 	for _, item := range result.Records {
 		item.Code = invite_id.InviteIdToCode(item.Id)
@@ -103,7 +108,7 @@ func (s *sSysInvite) QueryInviteList(ctx context.Context, filter *base_model.Sea
 	return (*sys_model.InviteListRes)(result), err
 }
 
-// 通过标识符获取邀请信息
+// GetInviteByIdentifier 通过标识符获取邀请信息
 func (s *sSysInvite) GetInviteByIdentifier(ctx context.Context, identifier string) (*sys_model.InviteRes, error) {
 	data := sys_model.InviteRes{}
 	err := sys_dao.SysInvite.Ctx(ctx).Where(sys_do.SysInvite{
@@ -128,25 +133,25 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 	}
 
 	data := sys_do.SysInvite{}
-	gconv.Struct(info, &data)
-	// 过期时间和激活上限次数从配置加载
-	data.ExpireAt = gtime.Now().AddDate(0, 0, sys_consts.Global.InviteCodeExpireDay) // 过期时间
-	data.ActivateNumber = sys_consts.Global.InviteCodeMaxActivateNumber              //
+	_ = gconv.Struct(info, &data)
 
 	id := idgen.NextId()
 
-	if sys_consts.Global.InviteCodeExpireDay == 0 {
-		data.ExpireAt = nil
-	}
 	if info.Value == "" {
 		data.Value = nil
 	}
 
 	err = sys_dao.SysInvite.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+
 		data.Id = id
 
 		data.CreatedAt = gtime.Now()
-		affected, err := daoctl.InsertWithError(sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(data))
+		data.InviteCode = invite_id.InviteIdToCode(id)
+		data.ActivateNumber = -1
+		data.ExpireAt = nil
+
+		affected := int64(0)
+		affected, err = daoctl.InsertWithError(sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(data))
 		if err != nil || affected <= 0 {
 			return sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_create_info_failed", sys_dao.SysInvite.Table())
 		}
@@ -159,6 +164,22 @@ func (s *sSysInvite) CreateInvite(ctx context.Context, info *sys_model.Invite) (
 	}
 
 	return s.GetInviteById(ctx, gconv.Int64(data.Id))
+}
+
+// SetInviteExpireAt 设置邀约的过期时间
+func (s *sSysInvite) SetInviteExpireAt(ctx context.Context, id int64, expireAt gtime.Time) (api_v1.BoolRes, error) {
+	info, _ := s.GetInviteById(ctx, id)
+	if info == nil {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
+	}
+
+	affected, err := daoctl.UpdateWithError(sys_dao.SysInvite.Ctx(ctx).Where(sys_dao.SysInvite.Columns().Id, id), &sys_do.SysInvite{ExpireAt: &expireAt})
+
+	if err != nil || affected <= 0 {
+		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_invite_expire_at_update_failed", sys_dao.SysInvite.Table())
+	}
+
+	return true, nil
 }
 
 // DeleteInvite 删除邀约信息
@@ -189,11 +210,6 @@ func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (b
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
 	}
 
-	// 需要排除无上限次数和过期时间的情况
-	if sys_consts.Global.InviteCodeExpireDay == 0 && sys_consts.Global.InviteCodeMaxActivateNumber == 0 {
-		return true, nil
-	}
-
 	err := sys_dao.SysInvite.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err := sys_dao.SysInvite.Ctx(ctx).OmitNilData().Data(sys_do.SysInvite{
 			State: state,
@@ -215,7 +231,7 @@ func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (b
 			// 判断注入的Hook业务类型是否一致
 			if key.Code()&newData.State == newData.State {
 				// 业务类型一致则调用注入的Hook函数
-				g.Try(ctx, func(ctx context.Context) {
+				_ = g.Try(ctx, func(ctx context.Context) {
 					err = value(ctx, sys_enum.Invite.State.New(newData.State, ""), newData)
 				})
 			}
@@ -228,15 +244,13 @@ func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (b
 }
 
 // SetInviteNumber 修改邀约剩余次数
-func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isAdd bool) (res bool, err error) {
-
+func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isAdd bool, isOverride bool) (res bool, err error) {
 	info, _ := s.GetInviteById(ctx, id)
 	if info == nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_id_parameter_incorrect", sys_dao.SysInvite.Table())
 	}
 
-	// 需要排除无上限次数的情况
-	if sys_consts.Global.InviteCodeMaxActivateNumber == 0 && info.ActivateNumber == 0 {
+	if info.ActivateNumber == -1 && !isOverride {
 		return true, nil
 	}
 
@@ -244,10 +258,16 @@ func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isA
 		var result sql.Result
 		daoModel := sys_dao.SysInvite.Ctx(ctx).Where(sys_do.SysInvite{Id: id})
 
-		if !isAdd {
-			result, err = daoModel.Decrement(sys_dao.SysInvite.Columns().ActivateNumber, num)
-		} else if isAdd {
-			result, err = daoModel.Increment(sys_dao.SysInvite.Columns().ActivateNumber, num)
+		if isOverride {
+			result, err = daoModel.Update(sys_do.SysInvite{
+				ActivateNumber: num,
+			})
+		} else {
+			if !isAdd {
+				result, err = daoModel.Decrement(sys_dao.SysInvite.Columns().ActivateNumber, num)
+			} else if isAdd {
+				result, err = daoModel.Increment(sys_dao.SysInvite.Columns().ActivateNumber, num)
+			}
 		}
 
 		affected, _ := result.RowsAffected()
@@ -257,12 +277,10 @@ func (s *sSysInvite) SetInviteNumber(ctx context.Context, id int64, num int, isA
 
 		// 改变邀约次数为0的情况
 		newInviteInfo, _ := s.GetInviteById(ctx, id)
-		if newInviteInfo != nil && newInviteInfo.ActivateNumber <= 0 {
-			if sys_consts.Global.InviteCodeMaxActivateNumber != 0 { // 非无上限
-				_, err = s.SetInviteState(ctx, id, sys_enum.Invite.State.Invalid.Code())
-				if err != nil {
-					return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_modify_status_when_zero_failed", sys_dao.SysInvite.Table())
-				}
+		if newInviteInfo != nil && newInviteInfo.ActivateNumber == 0 && !isOverride {
+			_, err = s.SetInviteState(ctx, id, sys_enum.Invite.State.Invalid.Code())
+			if err != nil {
+				return sys_service.SysLogs().ErrorSimple(ctx, nil, "error_invite_modify_status_when_zero_failed", sys_dao.SysInvite.Table())
 			}
 		}
 
