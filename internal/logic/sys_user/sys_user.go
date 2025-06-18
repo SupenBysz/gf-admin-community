@@ -363,15 +363,15 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 
 	data := sys_model.SysUser{
 		SysUser: &sys_entity.SysUser{
-			Id:        idgen.NextId(),
-			Username:  info.Username,
-			Password:  info.Password,
-			Mobile:    info.Mobile,
-			Email:     info.Email,
-			State:     userState.Code(),
-			Type:      userType.Code(),
+			Id:         idgen.NextId(),
+			Username:   info.Username,
+			Password:   info.Password,
+			Mobile:     info.Mobile,
+			Email:      info.Email,
+			State:      userState.Code(),
+			Type:       userType.Code(),
 			InviteCode: info.InviteCode,
-			CreatedAt: gtime.Now(),
+			CreatedAt:  gtime.Now(),
 		},
 	}
 
@@ -1145,16 +1145,24 @@ func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, 
 
 // Heartbeat 用户在线心跳
 func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (bool, error) {
+
 	affected, err := daoctl.UpdateWithError(
 		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
 		sys_do.SysUserDetail{LastHeartbeatAt: gtime.Now()},
 	)
 
-	if err != nil || affected == 0 {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "error_user_heartbeat_failed", sys_dao.SysUser.Table())
 	}
 
-	return true, nil
+	if errors.Is(err, sql.ErrNoRows) {
+		affected, err = daoctl.InsertWithError(sys_dao.SysUser.Ctx(ctx).OmitNilData(), sys_do.SysUserDetail{
+			Id:              userId,
+			LastHeartbeatAt: gtime.Now(),
+		})
+	}
+
+	return affected > 0, nil
 }
 
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {
