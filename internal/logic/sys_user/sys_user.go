@@ -361,6 +361,14 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_username_already_exists"), "", sys_dao.SysUser.Table())
 	}
 
+	if info.Mobile != "" && sys_service.SysUser().HasSysUserMobile(ctx, info.Mobile) {
+		return nil, errors.New("error_mobile_already_exists")
+	}
+
+	if info.Email != "" && sys_service.SysUser().HasSysUserEmail(ctx, info.Email) {
+		return nil, errors.New("error_email_already_exists")
+	}
+
 	data := sys_model.SysUser{
 		SysUser: &sys_entity.SysUser{
 			Id:         idgen.NextId(),
@@ -392,21 +400,6 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
-				// 枚举优化使用：直接调用Has
-				//enumOb := sys_enum.User.Type.New(3, "")
-				//if enumOb.Has(sys_enum.User.Event.BeforeCreate) { // 单个满足
-				//
-				//}
-				//if hook.Value.Key.Has(sys_enum.User.Event.BeforeCreate, sys_enum.User.Event.AfterCreate) { // 多个满足
-				//
-				//}
-
-				// 自增
-				//enumOb.Add(sys_enum.User.Event.AfterCreate, sys_enum.User.Event.BeforeCreate)
-
-				// 自减少
-				//enumOb.Remove(sys_enum.User.Event.AfterCreate)
-
 				if (hook.Value.Key.Code() & sys_enum.User.Event.BeforeCreate.Code()) == sys_enum.User.Event.BeforeCreate.Code() {
 					res, _ := hook.Value.Value(ctx, sys_enum.User.Event.BeforeCreate, data)
 					res.Detail = &sys_model.SysUserDetail{}
@@ -814,15 +807,32 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 
 // HasSysUserEmail 邮箱是否存在
 func (s *sSysUser) HasSysUserEmail(ctx context.Context, email string) bool {
-	response, _ := s.GetSysUserByEmail(ctx, email)
+	count, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Email: email}).Count()
 
-	return response != nil
+	return count > 0 && err == nil
 }
 
 // GetSysUserByEmail 根据邮箱获取用户信息
 func (s *sSysUser) GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error) {
 
+	response = &sys_model.SysUser{}
 	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Email: email}).Scan(response)
+
+	return
+}
+
+// HasSysUserMobile 手机号是否存在
+func (s *sSysUser) HasSysUserMobile(ctx context.Context, mobile string) bool {
+	count, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Mobile: mobile}).OrderDesc(sys_dao.SysUser.Columns().UpdatedAt).Count()
+
+	return count > 0 && err == nil
+}
+
+// GetSysUserByMobile 根据手机号获取用户信息
+func (s *sSysUser) GetSysUserByMobile(ctx context.Context, mobile string) (response *sys_model.SysUser, err error) {
+
+	response = &sys_model.SysUser{}
+	err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Mobile: mobile}).OrderDesc(sys_dao.SysUser.Columns().UpdatedAt).Scan(response)
 
 	return
 }
@@ -894,7 +904,7 @@ func (s *sSysUser) SetUserRoles(ctx context.Context, userId int64, roleIds []int
 func (s *sSysUser) UpdateUserExDetail(ctx context.Context, user *sys_model.SysUser) (*sys_model.SysUser, error) {
 	//s.initInnerCacheItems(ctx)
 
-	var data *sys_model.SysUserDetail
+	data := &sys_model.SysUserDetail{}
 
 	err := sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: user.Id}).Scan(&data)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

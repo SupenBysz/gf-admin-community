@@ -60,6 +60,10 @@ type (
 		HasSysUserEmail(ctx context.Context, email string) bool
 		// GetSysUserByEmail 根据邮箱获取用户信息
 		GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error)
+		// HasSysUserMobile 手机号是否存在
+		HasSysUserMobile(ctx context.Context, mobile string) bool
+		// GetSysUserByMobile 根据手机号获取用户信息
+		GetSysUserByMobile(ctx context.Context, mobile string) (response *sys_model.SysUser, err error)
 		// ResetUserEmail 重置用户邮箱
 		ResetUserEmail(ctx context.Context, userId int64, email string) (bool, error)
 		// SetUserRoles 设置用户角色
