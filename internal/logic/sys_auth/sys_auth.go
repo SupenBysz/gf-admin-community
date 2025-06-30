@@ -364,6 +364,22 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_register_method_not_supported"))
 	}
 
+	// 验证邮箱格式
+	if info.Email != "" {
+		loginRule := sys_rules.CheckLoginRule(ctx, info.Email)
+		if !loginRule {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_email_format_is_incorrect."))
+		}
+
+		if sys_service.SysUser().HasSysUserEmail(ctx, info.Email) {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_email_address_has_been_registered._please_change_it."))
+		}
+	}
+
+	if info.Mobile != "" && sys_service.SysUser().HasSysUserMobile(ctx, info.Mobile) {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_mobile_has_been_registered._please_change_it."))
+	}
+
 	// 图形验证码校验
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_captcha_incorrect"))
@@ -372,6 +388,8 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	userInnerRegister := sys_model.UserInnerRegister{
 		Username:        info.Username,
 		Password:        info.Password,
+		Mobile:          info.Mobile,
+		Email:           info.Email,
 		ConfirmPassword: info.ConfirmPassword,
 		InviteCode:      info.InviteCode,
 	}
