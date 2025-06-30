@@ -14,7 +14,7 @@ type cSysFile struct{}
 
 // Upload 上传文件
 func (c *cSysFile) Upload(ctx context.Context, req *sys_api.UploadReq) (res *sys_api.UploadFileRes, err error) {
-	result, err := sys_service.File().Upload(ctx, req.FileUploadInput)
+	result, err := sys_service.File().Upload(ctx, req.FileUploadInput, true)
 	if err != nil {
 		return nil, err
 	}

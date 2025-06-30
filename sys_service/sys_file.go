@@ -23,9 +23,10 @@ type (
 		UnInstallHook(savedHookId int64)
 		// CleanAllHook 清除Hook
 		CleanAllHook()
+		// MakeTempUploadPath 创建临时上传路径
 		MakeTempUploadPath(ctx context.Context) (string, string, error)
 		// Upload 统一上传文件
-		Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error)
+		Upload(ctx context.Context, in sys_model.FileUploadInput, allowAnonymous bool) (*sys_entity.SysFile, error)
 		// GetUploadFile 根据上传ID 获取上传文件信息
 		GetUploadFile(ctx context.Context, uploadId int64, userId int64, message ...string) (*sys_model.FileInfo, error)
 		// SaveFile 保存文件,storageAddr 参数包含路径及文件名
