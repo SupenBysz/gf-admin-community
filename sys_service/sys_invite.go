@@ -32,9 +32,12 @@ type (
 		// DeleteInvite 删除邀约信息
 		DeleteInvite(ctx context.Context, inviteId int64) (bool, error)
 		// SetInviteState 修改邀约信息状态
-		SetInviteState(ctx context.Context, id int64, state int) (bool, error)
+		SetInviteState(ctx context.Context, id int64, state int) (api_v1.BoolRes, error)
 		// SetInviteNumber 修改邀约剩余次数
 		SetInviteNumber(ctx context.Context, id int64, num int, isAdd bool, isOverride bool) (res bool, err error)
+		InstallInviteTypeHook(actionType sys_enum.InviteType, hookFunc sys_hook.SetParentUserFunc)
+		// SetParentUserId 修改父级用户
+		SetParentUserId(ctx context.Context, userId int64, oldParentUserId int64, newParentUserId int64) (api_v1.BoolRes, error)
 		// GetInvitePersonById 获取被邀请信息
 		GetInvitePersonById(ctx context.Context, id int64) (*sys_model.InvitePersonRes, error)
 		// GetInvitePersonByUserId 获取被邀请信息

@@ -28,7 +28,6 @@ func (c *cSysInvite) QueryInviteList(ctx context.Context, req *sys_api.QueryInvi
 	ret, err := sys_service.SysInvite().QueryInviteList(ctx, &req.SearchParams)
 
 	return ret, err
-
 }
 
 // CreateInvite 创建邀约信息
