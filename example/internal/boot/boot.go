@@ -72,7 +72,8 @@ var (
 
 			// 业务端密码加密规则重写示例
 			{
-				sys_consts.Global.CryptoPasswordFunc = func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
+				// 保持旧版本兼容性的密码加密函数
+				sys_service.SysUser().SetCryptoPasswordFunc(func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) string {
 					// TODO 以下加密规则可替换
 					slat := "kysion.com"
 					if len(user) > 0 {
@@ -82,7 +83,7 @@ var (
 					pwdHash, _ := en_crypto.PwdHash(passwordStr, slat)
 
 					return pwdHash
-				}
+				})
 			}
 
 			{
