@@ -12,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -139,9 +140,28 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, gerror.New(g.I18n().T(ctx, "error_account_cancelled"))
 	}
 
-	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, user)
+	// 获取请求信息用于增强安全
+	request := g.RequestFromCtx(ctx)
+	var deviceFingerprint, userAgent, ip string
+	if request != nil {
+		deviceFingerprint = request.Header.Get("X-Device-Fingerprint")
+		userAgent = request.Header.Get("User-Agent")
+		ip = request.GetRemoteIp()
+		
+		// 如果没有设备指纹，生成一个
+		if deviceFingerprint == "" {
+			deviceFingerprint = security.GenerateDeviceFingerprint(request)
+		}
+	}
+
+	// 使用增强Token生成
+	tokenInfo, err := sys_service.Jwt().GenerateEnhancedToken(ctx, user, deviceFingerprint, userAgent, ip)
 	if err != nil {
-		return nil, err
+		// 如果增强Token生成失败，回退到标准Token
+		tokenInfo, err = sys_service.Jwt().GenerateToken(ctx, user)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	clientConfig, err := sys_consts.Global.GetClientConfig(ctx)
@@ -155,7 +175,6 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_user_type_mismatch", sys_dao.SysUser.Table())
 	}
 
-	ip := g.RequestFromCtx(ctx).GetRemoteIp()
 	user.Detail = &sys_model.SysUserDetail{}
 	user.Detail.Id = user.Id
 	user.Detail.LastLoginAt = gtime.Now()

@@ -2,11 +2,13 @@ package sys_middleware
 
 import (
 	"strings"
+	"time"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/i18n"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
+	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -14,7 +16,9 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-type sMiddleware struct{}
+type sMiddleware struct{
+	securityManager *security.TokenSecurityManager
+}
 
 func init() {
 	sys_service.RegisterMiddleware(New())
@@ -22,7 +26,9 @@ func init() {
 
 // New MiddlewareMiddleware 权限控制
 func New() sys_service.IMiddleware {
-	return &sMiddleware{}
+	return &sMiddleware{
+		securityManager: security.NewTokenSecurityManager(),
+	}
 }
 
 // Auth 通讯鉴权
@@ -105,4 +111,31 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 	} else {
 		response.JsonExit(r, code.Code(), "", res)
 	}
+}
+
+// EnhancedAuth 增强安全认证中间件
+func (s *sMiddleware) EnhancedAuth(r *ghttp.Request) {
+	s.securityManager.EnhancedSecurityMiddleware(r)
+}
+
+// SecurityMonitor 安全监控中间件
+func (s *sMiddleware) SecurityMonitor(r *ghttp.Request) {
+	// 记录请求信息用于安全监控
+	clientIP := r.GetClientIp()
+	userAgent := r.Header.Get("User-Agent")
+	
+	// 获取当前用户信息（如果已认证）
+	claims := sys_service.Jwt().MakeSession(r.Context(), r.Header.Get("Authorization"))
+	if claims != nil {
+		// 记录正常访问事件
+		s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+			Type:      "normal_access",
+			Timestamp: time.Now(),
+			IP:        clientIP,
+			UserAgent: userAgent,
+			Details:   "Normal API access",
+		})
+	}
+	
+	r.Middleware.Next()
 }

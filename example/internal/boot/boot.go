@@ -95,6 +95,7 @@ var (
 						sys_service.Middleware().CTX,
 						sys_service.Middleware().CORS,
 						sys_service.Middleware().ResponseHandler,
+						sys_service.Middleware().SecurityMonitor,
 					)
 
 					// 匿名路由绑定

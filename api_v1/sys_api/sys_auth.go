@@ -54,3 +54,22 @@ type ResetPasswordReq struct {
 type RefreshJwtTokenReq struct {
 	g.Meta `path:"/refreshJwtToken" method:"post" summary:"刷新用户jwtToken" tags:"鉴权"`
 }
+
+type RefreshTokenReq struct {
+	g.Meta `path:"/refreshToken" method:"post" summary:"刷新Token（带轮换）" tags:"鉴权"`
+	Token  string `json:"token" v:"required#Token不能为空" dc:"当前JWT Token"`
+}
+
+type RevokeAllTokensReq struct {
+	g.Meta `path:"/revokeAllTokens" method:"post" summary:"撤销用户所有Token" tags:"鉴权"`
+	UserId int64  `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
+}
+
+type GetActiveTokenCountReq struct {
+	g.Meta `path:"/getActiveTokenCount" method:"get" summary:"获取用户活跃Token数量" tags:"鉴权"`
+	UserId int64  `json:"userId" v:"required#用户ID不能为空" dc:"用户ID"`
+}
+
+type GetActiveTokenCountRes struct {
+	Count int `json:"count" dc:"活跃Token数量"`
+}
