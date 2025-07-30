@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
-	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -22,9 +21,6 @@ type global struct {
 	PermissionTree        []base_permission.IPermission // PermissionTree 权限信息定义
 	Searcher              *xdb.Searcher
 	EmailConfig           sys_model.EmailConfig
-
-	// 密码加密
-	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 }
 
 func (s global) GetClientConfig(ctx context.Context) (*sys_model.ClientConfig, error) {
@@ -46,7 +42,6 @@ var (
 		ApiPreFix:             "",
 		OrmCacheConf:          []*sys_model.TableCacheConf{},
 		PermissionTree:        []base_permission.IPermission{},
-		CryptoPasswordFunc:    nil,
 		EmailConfig:           sys_model.EmailConfig{},
 	}
 )

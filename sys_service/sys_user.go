@@ -10,6 +10,7 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/kysion/base-library/base_model"
@@ -19,6 +20,10 @@ type (
 	ISysUser interface {
 		// InstallHook 安装Hook
 		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
+		// SetCryptoPasswordFunc 用于业务端自定义密码规则
+		SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string))
+		// GetCryptoPasswordFunc 应用业务端自定义密码规则
+		GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 		// UnInstallHook 卸载Hook
 		UnInstallHook(savedHookId int64)
 		// CleanAllHook 清除所有Hook

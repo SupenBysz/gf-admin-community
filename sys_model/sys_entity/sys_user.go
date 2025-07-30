@@ -21,4 +21,5 @@ type SysUser struct {
 	DeletedAt  *gtime.Time `json:"deletedAt"  orm:"deleted_at"  description:""`
 	Email      string      `json:"email"      orm:"email"       description:"邮箱"`
 	InviteCode string      `json:"inviteCode" orm:"invite_code" description:"邀请码，代表通过这个邀请码注册"`
+	Salt       string      `json:"salt"       orm:"salt"        description:"密码盐值"`
 }

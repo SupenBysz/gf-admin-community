@@ -272,10 +272,11 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 			Id: userInfo.Id,
 		}))
 
+		// 使用默认的密码验证方式
 		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
+		if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+			pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -350,10 +351,11 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 			Id: userInfo.Id,
 		}))
 
+		// 使用默认的密码验证方式
 		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
+		if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+			pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -692,8 +694,8 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	// 加密
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *sysUserInfo.SysUser)
+	if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+		pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, password, *sysUserInfo.SysUser)
 	}
 
 	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})

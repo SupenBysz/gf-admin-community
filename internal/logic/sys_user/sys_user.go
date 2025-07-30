@@ -45,8 +45,8 @@ type sSysUser struct {
 	Duration time.Duration
 
 	heartbeatTimeout time.Duration
-	//// 密码加密
-	//CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
+	// 密码加密
+	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 }
 
 func init() {
@@ -91,15 +91,15 @@ func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserH
 	return item.Key
 }
 
-//// SetCryptoPasswordFunc 用于业务端自定义密码规则
-//func (s *sSysUser) SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)) {
-//	s.CryptoPasswordFunc = f
-//}
-//
-//// GetCryptoPasswordFunc 应用业务端自定义密码规则
-//func (s *sSysUser) GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
-//	return s.CryptoPasswordFunc
-//}
+// SetCryptoPasswordFunc 用于业务端自定义密码规则
+func (s *sSysUser) SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)) {
+	s.CryptoPasswordFunc = f
+}
+
+// GetCryptoPasswordFunc 应用业务端自定义密码规则
+func (s *sSysUser) GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
+	return s.CryptoPasswordFunc
+}
 
 // UnInstallHook 卸载Hook
 func (s *sSysUser) UnInstallHook(savedHookId int64) {
@@ -386,16 +386,22 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 	if len(customId) > 0 && customId[0] > 0 {
 		data.Id = customId[0]
 	}
-	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
+
+	// 使用默认的密码加密方式
+	pwdHash, pwdErr := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
+	if pwdErr != nil {
+		return nil, sys_service.SysLogs().ErrorSimple(ctx, pwdErr, "error_password_encryption_failed", sys_dao.SysUser.Table())
+	}
 
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *data.SysUser)
+	if s.CryptoPasswordFunc != nil {
+		pwdHash = s.CryptoPasswordFunc(ctx, info.Password, *data.SysUser)
 	}
 
 	// 密码赋值
 	data.Password = pwdHash
 
+	var err error
 	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 创建前
 		g.Try(ctx, func(ctx context.Context) {
@@ -410,7 +416,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		})
 
 		{
-			_, err = sys_dao.SysUser.Ctx(ctx).OmitNilData().Data(data.SysUser).Insert()
+			_, err := sys_dao.SysUser.Ctx(ctx).OmitNilData().Data(data.SysUser).Insert()
 
 			if err != nil {
 				return sys_service.SysLogs().ErrorSimple(ctx, err, "error_account_registration_failed", sys_dao.SysUser.Table())
@@ -419,7 +425,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 
 		{
 			if data.Detail != nil && data.Detail.Id > 0 && (data.Detail.Realname != "" || data.Detail.UnionMainName != "") {
-				_, err = sys_dao.SysUserDetail.Ctx(ctx).OmitNilData().Data(data.Detail).Insert()
+				_, err := sys_dao.SysUserDetail.Ctx(ctx).OmitNilData().Data(data.Detail).Insert()
 
 				if err != nil {
 					return sys_service.SysLogs().ErrorSimple(ctx, err, "error_account_registration_failed", sys_dao.SysUser.Table())
@@ -446,7 +452,7 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		}
 
 		// 建后
-		err = g.Try(ctx, func(ctx context.Context) {
+		return g.Try(ctx, func(ctx context.Context) {
 			for _, hook := range s.hookArr {
 				if hook.Value.Key.Code()&sys_enum.User.Event.AfterCreate.Code() == sys_enum.User.Event.AfterCreate.Code() {
 					res, err := hook.Value.Value(ctx, sys_enum.User.Event.AfterCreate, data)
@@ -458,8 +464,6 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 				}
 			}
 		})
-
-		return err
 	})
 
 	if err != nil {
@@ -521,22 +525,19 @@ func (s *sSysUser) GetSysUserByUsername(ctx context.Context, username string) (r
 
 // CheckPassword 检查密码是否正确
 func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password string) (bool, error) {
-	//s.initInnerCacheItems(ctx)
-
 	userInfo, err := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userId)
 
 	if err != nil {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 	}
-	// if （）{hook()}
-	// 取盐
-	salt := gconv.String(userId)
 
-	// 加密：用户输入的密码 + 他的id的后八位(盐)  --进行Hash--> 用户提供的密文
+	// 使用默认的密码验证方式
+	salt := gconv.String(userId)
 	pwdHash, err := en_crypto.PwdHash(password, salt)
+	
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *userInfo)
+	if s.CryptoPasswordFunc != nil {
+		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo)
 	}
 
 	return userInfo.Password == pwdHash, err
@@ -708,8 +709,8 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
 		hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			hash1 = sys_consts.Global.CryptoPasswordFunc(ctx, info.OldPassword, *sysUserInfo.SysUser)
+		if s.CryptoPasswordFunc != nil {
+			hash1 = s.CryptoPasswordFunc(ctx, info.OldPassword, *sysUserInfo.SysUser)
 		}
 		if sysUserInfo.Password != hash1 {
 			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
@@ -736,8 +737,8 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *sysUserInfo.SysUser)
+	if s.CryptoPasswordFunc != nil {
+		pwdHash = s.CryptoPasswordFunc(ctx, info.Password, *sysUserInfo.SysUser)
 	}
 
 	_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
@@ -788,8 +789,8 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		// 加密
 		pwdHash, _ := en_crypto.PwdHash(password, salt)
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *user.SysUser)
+		if s.CryptoPasswordFunc != nil {
+			pwdHash = s.CryptoPasswordFunc(ctx, password, *user.SysUser)
 		}
 
 		result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
@@ -1035,8 +1036,8 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
 
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
+	if s.CryptoPasswordFunc != nil {
+		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
 	}
 
 	if pwdHash != user.Password {
@@ -1091,8 +1092,8 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
 
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
+	if s.CryptoPasswordFunc != nil {
+		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
 	}
 
 	if pwdHash != user.Password {
