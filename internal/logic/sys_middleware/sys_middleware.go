@@ -84,6 +84,9 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 			code = gcode.CodeInternalError
 		}
 
+		// 使用统一错误处理器记录错误
+		response.HandleHTTPError(r, err, code.Code(), response.ErrorLevelError)
+
 		// 尝试将错误消息作为国际化键值
 		ctx := r.Context()
 		errMessage := err.Error()

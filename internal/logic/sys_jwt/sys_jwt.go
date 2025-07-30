@@ -2,7 +2,9 @@ package sys_jwt
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
 
+	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -29,6 +32,7 @@ type sJwt struct {
 	hookArr       []hookInfo
 	revokedTokens map[string]time.Time // token黑名单，存储被注销的token及其过期时间
 	mutex         sync.RWMutex         // 保护revokedTokens的读写锁
+	tokenCache    *gredis.Redis        // Redis缓存实例，用于缓存token验证结果
 }
 
 var (
@@ -45,6 +49,7 @@ func New() sys_service.IJwt {
 		SigningKey:    []byte(g.Cfg().MustGet(gctx.New(), "service.tokenSignKey").String()),
 		hookArr:       make([]hookInfo, 0),
 		revokedTokens: make(map[string]time.Time),
+		tokenCache:    g.Redis(),
 	}
 }
 
@@ -217,6 +222,29 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 		return nil
 	}
 
+	// 尝试从缓存中获取token验证结果
+	cacheKey := fmt.Sprintf("jwt:token:%s", tokenString)
+	if s.tokenCache != nil {
+		cachedData, err := s.tokenCache.Get(ctx, cacheKey)
+		if err == nil && !cachedData.IsNil() {
+			var claims sys_model.JwtCustomClaims
+			if err := json.Unmarshal(cachedData.Bytes(), &claims); err == nil {
+				// 验证缓存的token是否仍然有效
+				if time.Now().Before(claims.RegisteredClaims.ExpiresAt.Time) {
+					isCustomSession := sys_service.SysSession().HasCustom(ctx)
+					if !isCustomSession {
+						sys_service.SysSession().SetUser(ctx, &claims)
+						g.RequestFromCtx(ctx).Middleware.Next()
+					}
+					return &claims
+				} else {
+					// 缓存的token已过期，删除缓存
+					s.tokenCache.Del(ctx, cacheKey)
+				}
+			}
+		}
+	}
+
 	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return s.SigningKey, nil
 	})
@@ -247,6 +275,17 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
+			// 将验证成功的token缓存到Redis，设置过期时间为token的剩余有效时间
+			if s.tokenCache != nil {
+				claimsData, err := json.Marshal(claims)
+				if err == nil {
+					ttl := time.Until(claims.RegisteredClaims.ExpiresAt.Time)
+					if ttl > 0 {
+						s.tokenCache.SetEX(ctx, cacheKey, claimsData, int64(ttl.Seconds()))
+					}
+				}
+			}
+
 			if !isCustomSession {
 				sys_service.SysSession().SetUser(ctx, claims)
 				g.RequestFromCtx(ctx).Middleware.Next()
