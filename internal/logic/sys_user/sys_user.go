@@ -19,6 +19,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -45,8 +46,6 @@ type sSysUser struct {
 	Duration time.Duration
 
 	heartbeatTimeout time.Duration
-	// 密码加密
-	CryptoPasswordFunc func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 }
 
 func init() {
@@ -91,14 +90,15 @@ func (s *sSysUser) InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserH
 	return item.Key
 }
 
-// SetCryptoPasswordFunc 用于业务端自定义密码规则
+// SetCryptoPasswordFunc 用于业务端自定义密码规则 (已废弃，使用security包的密码加密方法)
 func (s *sSysUser) SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)) {
-	s.CryptoPasswordFunc = f
+	// 此方法已废弃，不再支持自定义密码加密函数
 }
 
-// GetCryptoPasswordFunc 应用业务端自定义密码规则
+// GetCryptoPasswordFunc 应用业务端自定义密码规则 (已废弃，使用security包的密码加密方法)
 func (s *sSysUser) GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string) {
-	return s.CryptoPasswordFunc
+	// 此方法已废弃，返回nil
+	return nil
 }
 
 // UnInstallHook 卸载Hook
@@ -387,19 +387,15 @@ func (s *sSysUser) CreateUser(ctx context.Context, info sys_model.UserInnerRegis
 		data.Id = customId[0]
 	}
 
-	// 使用默认的密码加密方式
-	pwdHash, pwdErr := en_crypto.PwdHash(info.Password, gconv.String(data.Id))
+	// 使用security包的密码加密方法
+	hashedPassword, salt, pwdErr := security.CryptoPasswordWithRandomSalt(ctx, info.Password)
 	if pwdErr != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, pwdErr, "error_password_encryption_failed", sys_dao.SysUser.Table())
 	}
 
-	// 业务层自定义密码加密规则
-	if s.CryptoPasswordFunc != nil {
-		pwdHash = s.CryptoPasswordFunc(ctx, info.Password, *data.SysUser)
-	}
-
 	// 密码赋值
-	data.Password = pwdHash
+	data.Password = hashedPassword
+	data.Salt = salt
 
 	var err error
 	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
@@ -531,15 +527,27 @@ func (s *sSysUser) CheckPassword(ctx context.Context, userId int64, password str
 		return false, sys_service.SysLogs().ErrorSimple(ctx, sql.ErrNoRows, "error_user_info_not_exist", sys_dao.SysUser.Table())
 	}
 
-	// 使用默认的密码验证方式
+	// 检验密码
+	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
+
+	// 如果用户有盐值，使用新的验证方式
+	if user.Salt != "" {
+		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
+		if err != nil {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
+	} else {
+		// 兼容旧版本的验证方式
+		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
+		if pwdHash != user.Password {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
+	}
+
+	// 兼容旧版本的验证方式
 	salt := gconv.String(userId)
 	pwdHash, err := en_crypto.PwdHash(password, salt)
 	
-	// 业务层自定义密码加密规则
-	if s.CryptoPasswordFunc != nil {
-		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo)
-	}
-
 	return userInfo.Password == pwdHash, err
 }
 
@@ -707,13 +715,18 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 
 	{
 		// 传入用户输入的原始密码，进行hash，看是否和数据库中原始密码一致
-		hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
-		// 业务层自定义密码加密规则
-		if s.CryptoPasswordFunc != nil {
-			hash1 = s.CryptoPasswordFunc(ctx, info.OldPassword, *sysUserInfo.SysUser)
-		}
-		if sysUserInfo.Password != hash1 {
-			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
+		// 如果用户有盐值，使用新的验证方式
+		if sysUserInfo.Salt != "" {
+			err := security.VerifyPasswordWithSalt(ctx, info.OldPassword, sysUserInfo.Password, sysUserInfo.Salt)
+			if err != nil {
+				return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
+			}
+		} else {
+			// 兼容旧版本的验证方式
+			hash1, _ := en_crypto.PwdHash(info.OldPassword, gconv.String(sysUserInfo.Id))
+			if sysUserInfo.Password != hash1 {
+				return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_old_password")
+			}
 		}
 	}
 
@@ -735,10 +748,9 @@ func (s *sSysUser) UpdateUserPassword(ctx context.Context, info sys_model.Update
 		}
 	}
 
-	pwdHash, err := en_crypto.PwdHash(info.Password, gconv.String(sysUserInfo.Id))
-	// 业务层自定义密码加密规则
-	if s.CryptoPasswordFunc != nil {
-		pwdHash = s.CryptoPasswordFunc(ctx, info.Password, *sysUserInfo.SysUser)
+	pwdHash, _, err := security.CryptoPasswordWithRandomSalt(ctx, info.Password)
+	if err != nil {
+		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_encryption_failed")
 	}
 
 	_, err = sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: sysUserInfo.Id}).Update(sys_do.SysUser{Password: pwdHash})
@@ -783,14 +795,11 @@ func (s *sSysUser) ResetUserPassword(ctx context.Context, userId int64, password
 		if password != confirmPassword {
 			return false, gerror.NewCode(gcode.CodeValidationFailed, "error_password_mismatch")
 		}
-		// 取盐
-		salt := gconv.String(userId)
 
 		// 加密
-		pwdHash, _ := en_crypto.PwdHash(password, salt)
-		// 业务层自定义密码加密规则
-		if s.CryptoPasswordFunc != nil {
-			pwdHash = s.CryptoPasswordFunc(ctx, password, *user.SysUser)
+		pwdHash, _, err := security.CryptoPasswordWithRandomSalt(ctx, password)
+		if err != nil {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_password_encryption_failed")
 		}
 
 		result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Id: userId}).Update(sys_do.SysUser{Password: pwdHash})
@@ -1033,15 +1042,18 @@ func (s *sSysUser) SetUserMobile(ctx context.Context, newMobile, captcha, passwo
 	// 检验密码
 	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
-	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
-
-	// 业务层自定义密码加密规则
-	if s.CryptoPasswordFunc != nil {
-		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
-	}
-
-	if pwdHash != user.Password {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+	// 如果用户有盐值，使用新的验证方式
+	if user.Salt != "" {
+		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
+		if err != nil {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
+	} else {
+		// 兼容旧版本的验证方式
+		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
+		if pwdHash != user.Password {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Mobile: newMobile, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
@@ -1089,15 +1101,18 @@ func (s *sSysUser) SetUserMail(ctx context.Context, oldMail, newMail, captcha, p
 	// 检验密码
 	user, _ := daoctl.GetByIdWithError[sys_entity.SysUser](sys_dao.SysUser.Ctx(ctx), userInfo.Id)
 
-	pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
-
-	// 业务层自定义密码加密规则
-	if s.CryptoPasswordFunc != nil {
-		pwdHash = s.CryptoPasswordFunc(ctx, password, *userInfo.SysUser)
-	}
-
-	if pwdHash != user.Password {
-		return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+	// 如果用户有盐值，使用新的验证方式
+	if user.Salt != "" {
+		err := security.VerifyPasswordWithSalt(ctx, password, user.Password, user.Salt)
+		if err != nil {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
+	} else {
+		// 兼容旧版本的验证方式
+		pwdHash, _ := en_crypto.PwdHash(password, gconv.String(userId))
+		if pwdHash != user.Password {
+			return false, gerror.NewCode(gcode.CodeBusinessValidationFailed, "error_invalid_login_password")
+		}
 	}
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysUser.Ctx(ctx).Data(sys_do.SysUser{Email: newMail, UpdatedAt: gtime.Now()}).Where(sys_do.SysUser{
