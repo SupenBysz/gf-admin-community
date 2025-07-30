@@ -41,6 +41,7 @@ type (
 		DownLoadFile(ctx context.Context, savePath string, url string) (string, error)
 		// GetFileById 根据id获取并返回文件信息
 		GetFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
+		// GetAnyFileById 根据ID获取文件信息
 		GetAnyFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error)
 		// MakeFileUrl 图像id换取url: 拼接三个参数,缓存fileInfo、然后返回url + 三参
 		MakeFileUrl(ctx context.Context, id int64, styleStr ...string) string
@@ -54,6 +55,7 @@ type (
 		GetOssFileSingUrl(ctx context.Context, bucketName string, objectKey string, styleStr ...string) (string, error)
 		// GetOssFileWithURL 根据文件的签名访问URL获取文件
 		GetOssFileWithURL(ctx context.Context, bucketName string, filePath string, singUrl string) (bool, error)
+		// QueryFile 查询文件
 		QueryFile(ctx context.Context, search *base_model.SearchParams) (*base_model.CollectRes[sys_entity.SysFile], error)
 	}
 )
