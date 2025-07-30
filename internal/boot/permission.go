@@ -39,6 +39,8 @@ func InitPermission() []base_permission.IPermission {
 				sys_enum.User.PermissionType.SetUserRole,
 				// 设置用户权限，设置某一个用户的权限
 				sys_enum.User.PermissionType.SetPermission,
+				// 设置父级用户
+				sys_enum.User.PermissionType.SetParentUserId,
 			}),
 
 		base_permission.New(614206186025049, "Category", "类目管理").
@@ -117,7 +119,7 @@ func InitPermission() []base_permission.IPermission {
 		// 菜单管理权限树
 		base_permission.New(5950408166676321, "Menu", "菜单管理").
 			SetType(1).
-			SetIsShow(0). // 默认隐藏
+			SetIsShow(0).    // 默认隐藏
 			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看菜单，查看某个菜单
@@ -135,7 +137,7 @@ func InitPermission() []base_permission.IPermission {
 		// 行业类别管理权限树
 		base_permission.New(5950408166626311, "Industry", "行业类别管理").
 			SetType(1).
-			SetIsShow(1). // 默认隐藏
+			SetIsShow(1).    // 默认隐藏
 			SetMatchMode(0). // ID匹配
 			SetItems([]base_permission.IPermission{
 				// 查看行业类别，查看某个行业类别
@@ -148,6 +150,25 @@ func InitPermission() []base_permission.IPermission {
 				sys_enum.Industry.PermissionType.Delete,
 				// 创建行业类别，创建行业类别
 				sys_enum.Industry.PermissionType.Create,
+			}),
+
+		base_permission.New(5950408166676111, "File", "文件管理").
+			SetType(1).
+			SetIsShow(1).
+			SetMatchMode(0).
+			SetItems([]base_permission.IPermission{
+				sys_enum.File.PermissionType.ViewDetail,
+			}),
+
+		base_permission.New(5950408166676222, "Audit", "审核").
+			SetType(1).
+			SetIsShow(1).
+			SetMatchMode(0).
+			SetItems([]base_permission.IPermission{
+				sys_enum.Audit.PermissionType.ViewDetail,
+				sys_enum.Audit.PermissionType.List,
+				sys_enum.Audit.PermissionType.Update,
+				sys_enum.Audit.PermissionType.Cancel,
 			}),
 	}
 

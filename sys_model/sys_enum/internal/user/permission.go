@@ -19,6 +19,7 @@ type permissionType struct {
 	SetUserRole       PermissionTypeEnum
 	SetPermission     PermissionTypeEnum
 	UpdateHeartbeatAt PermissionTypeEnum
+	SetParentUserId   PermissionTypeEnum
 }
 
 var PermissionType = permissionType{
@@ -33,4 +34,5 @@ var PermissionType = permissionType{
 	SetUserRole:       permission.New(5949854362632264, "SetUserRole", "设置用户角色", "设置某一个用户的角色"),
 	SetPermission:     permission.New(5949854362632265, "SetPermission", "设置用户权限", "设置某一个用户的权限"),
 	UpdateHeartbeatAt: permission.New(608407894548549, "UpdateHeartbeatAt", "设置在线超时时间", "设置用户离开多久算离线"),
+	SetParentUserId:   permission.New(693569944301637, "SetParentUserId", "设置父级用户", "设置所属父级用户"),
 }
