@@ -21,7 +21,7 @@ func init() {
 }
 
 // New MiddlewareMiddleware 权限控制
-func New() *sMiddleware {
+func New() sys_service.IMiddleware {
 	return &sMiddleware{}
 }
 
