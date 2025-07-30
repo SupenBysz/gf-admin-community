@@ -17,4 +17,5 @@ type SysUserDetail struct {
 	LastLoginArea   string      `json:"lastLoginArea"   orm:"last_login_area"   description:"最后登录地区"`
 	LastLoginAt     *gtime.Time `json:"lastLoginAt"     orm:"last_login_at"     description:"最后登录时间"`
 	LastHeartbeatAt *gtime.Time `json:"lastHeartbeatAt" orm:"last_heartbeat_at" description:"最后在线时间"`
+	IsOnline        int         `json:"isOnline"        orm:"is_online"         description:"是否在线"`
 }

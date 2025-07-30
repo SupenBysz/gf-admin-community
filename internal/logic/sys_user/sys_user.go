@@ -164,48 +164,48 @@ func (s *sSysUser) UpdateHeartbeatAt(ctx context.Context, heartbeatTimeout int) 
 
 // QueryUserList 获取用户列表
 func (s *sSysUser) QueryUserList(ctx context.Context, info *base_model.SearchParams, unionMainId int64, isExport bool) (response *sys_model.SysUserListRes, err error) {
-	isFilterOnlineUser := false
+	//isFilterOnlineUser := false
 
-	if info != nil {
-		newFields := make([]base_model.FilterInfo, 0)
-
-		for _, field := range info.Filter {
-			if field.Field != sys_dao.SysUser.Columns().Type { // 移除类型筛选条件
-				// 移除在线过滤标识
-				if field.Field == "is_online" {
-					isFilterOnlineUser = true
-				} else {
-					newFields = append(newFields, field)
-				}
-			}
-		}
-
-		// 是否过滤在线用户
-		if isFilterOnlineUser {
-			// 查询最后心跳小于30秒的用户作为在线用户，
-			// 由于中线还有其他业务逻辑，可能影响在线判断逻辑，
-			// 因此在 makeMore 方法附加数据中判断在线逻辑时，应大于30秒，避免返回的数据出现离线用户
-			result, _ := sys_dao.SysUserDetail.Ctx(ctx).WhereGT(
-				sys_dao.SysUserDetail.Columns().LastHeartbeatAt,
-				time.Now().Add(-time.Second*s.heartbeatTimeout-time.Second*10),
-			).Fields([]string{sys_dao.SysUserDetail.Columns().Id}).All()
-
-			// 提取用户Ids
-			userIds := make([]int64, 0)
-			for _, value := range result.Array() {
-				userIds = append(userIds, value.Int64())
-			}
-
-			// 附加查询条件
-			newFields = append(newFields, base_model.FilterInfo{
-				Field: sys_dao.SysUser.Columns().Id,
-				Where: "in",
-				Value: userIds,
-			})
-		}
-
-		info.Filter = newFields
-	}
+	//if info != nil {
+	//	newFields := make([]base_model.FilterInfo, 0)
+	//
+	//	for _, field := range info.Filter {
+	//		if field.Field != sys_dao.SysUser.Columns().Type { // 移除类型筛选条件
+	//			// 移除在线过滤标识
+	//			if field.Field == "is_online" {
+	//				isFilterOnlineUser = true
+	//			} else {
+	//				newFields = append(newFields, field)
+	//			}
+	//		}
+	//	}
+	//
+	//	// 是否过滤在线用户
+	//	if isFilterOnlineUser {
+	//		// 查询最后心跳小于30秒的用户作为在线用户，
+	//		// 由于中线还有其他业务逻辑，可能影响在线判断逻辑，
+	//		// 因此在 makeMore 方法附加数据中判断在线逻辑时，应大于30秒，避免返回的数据出现离线用户
+	//		result, _ := sys_dao.SysUserDetail.Ctx(ctx).WhereGT(
+	//			sys_dao.SysUserDetail.Columns().LastHeartbeatAt,
+	//			time.Now().Add(-time.Second*s.heartbeatTimeout-time.Second*10),
+	//		).Fields([]string{sys_dao.SysUserDetail.Columns().Id}).All()
+	//
+	//		// 提取用户Ids
+	//		userIds := make([]int64, 0)
+	//		for _, value := range result.Array() {
+	//			userIds = append(userIds, value.Int64())
+	//		}
+	//
+	//		// 附加查询条件
+	//		newFields = append(newFields, base_model.FilterInfo{
+	//			Field: sys_dao.SysUser.Columns().Id,
+	//			Where: "in",
+	//			Value: userIds,
+	//		})
+	//	}
+	//
+	//	info.Filter = newFields
+	//}
 
 	// 如果没有查询条件，则默认从缓存返回数据
 	if info != nil && len(info.Filter) <= 0 {
@@ -1154,11 +1154,14 @@ func (s *sSysUser) getUserRole(ctx context.Context, sysUser *sys_model.SysUser, 
 }
 
 // Heartbeat 用户在线心跳
-func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (bool, error) {
+func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (api_v1.BoolRes, error) {
 
 	affected, err := daoctl.UpdateWithError(
 		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
-		sys_do.SysUserDetail{LastHeartbeatAt: gtime.Now()},
+		sys_do.SysUserDetail{
+			LastHeartbeatAt: gtime.Now(),
+			IsOnline:        1,
+		},
 	)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -1169,10 +1172,24 @@ func (s *sSysUser) Heartbeat(ctx context.Context, userId int64) (bool, error) {
 		affected, err = daoctl.InsertWithError(sys_dao.SysUser.Ctx(ctx).OmitNilData(), sys_do.SysUserDetail{
 			Id:              userId,
 			LastHeartbeatAt: gtime.Now(),
+			IsOnline:        1,
 		})
 	}
 
 	return affected > 0, nil
+}
+
+// Logout 退出登录
+func (s *sSysUser) Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error) {
+	_, _ = daoctl.UpdateWithError(
+		sys_dao.SysUserDetail.Ctx(ctx).Where(sys_do.SysUserDetail{Id: userId}),
+		sys_do.SysUserDetail{
+			LastHeartbeatAt: gtime.Now(),
+			IsOnline:        0,
+		},
+	)
+
+	return true, nil
 }
 
 func (s *sSysUser) masker(user *sys_model.SysUser) *sys_model.SysUser {

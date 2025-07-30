@@ -79,7 +79,9 @@ type (
 		// SetUserMail 设置用户邮箱
 		SetUserMail(ctx context.Context, oldMail string, newMail string, captcha string, password string, userId int64) (bool, error)
 		// Heartbeat 用户在线心跳
-		Heartbeat(ctx context.Context, userId int64) (bool, error)
+		Heartbeat(ctx context.Context, userId int64) (api_v1.BoolRes, error)
+		// Logout 退出登录
+		Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error)
 	}
 )
 

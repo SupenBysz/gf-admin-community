@@ -19,4 +19,5 @@ type SysUserDetail struct {
 	LastLoginArea   interface{} // 最后登录地区
 	LastLoginAt     *gtime.Time // 最后登录时间
 	LastHeartbeatAt *gtime.Time // 最后在线时间
+	IsOnline        interface{} // 是否在线
 }
