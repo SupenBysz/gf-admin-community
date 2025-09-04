@@ -14,8 +14,8 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_do"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
-	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -49,7 +49,7 @@ func init() {
 //}
 
 // New sSysPermission 权限控制逻辑实现
-func New() *sSysPermission {
+func New() sys_service.ISysPermission {
 	return &sSysPermission{}
 }
 
@@ -286,10 +286,12 @@ func (s *sSysPermission) SetPermissionsByResource(ctx context.Context, resourceI
 
 	if len(permissionIds) > 0 {
 		for _, id := range permissionIds {
-			for _, v := range permissionList.Records {
-				if id == v.Id {
-					items = append(items, &v)
-					break
+			if permissionList != nil {
+				for _, v := range permissionList.Records {
+					if id == v.Id {
+						items = append(items, &v)
+						break
+					}
 				}
 			}
 		}
@@ -370,7 +372,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 
 		// 有下级权限，递归插入权限
 		if len(permissionTree.GetItems()) > 0 {
-			s.ImportPermissionTree(ctx, permissionTree.GetItems(), permissionTree)
+			_ = s.ImportPermissionTree(ctx, permissionTree.GetItems(), permissionTree)
 		}
 	}
 	return nil
@@ -379,7 +381,7 @@ func (s *sSysPermission) ImportPermissionTree(ctx context.Context, permissionTre
 // SavePermission 新增/保存权限信息
 func (s *sSysPermission) SavePermission(ctx context.Context, info sys_model.SysPermission) (*sys_entity.SysPermission, error) {
 	data := sys_do.SysPermission{}
-	gconv.Struct(info, &data)
+	_ = gconv.Struct(info, &data)
 
 	// 如果父级ID大于0，则校验父级权限信息是否存在
 	if info.ParentId > 0 {

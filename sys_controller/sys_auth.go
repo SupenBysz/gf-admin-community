@@ -6,6 +6,7 @@ import (
 	sys_api "github.com/SupenBysz/gf-admin-community/api_v1/sys_api"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 // Auth 鉴权 - 需要登陆
@@ -90,4 +91,38 @@ func (c *cAuth) ResetPassword(ctx context.Context, req *sys_api.ResetPasswordReq
 		return false, err
 	}
 	return true, nil
+}
+
+// RefreshToken 刷新Token（带轮换）
+func (c *cAuth) RefreshToken(ctx context.Context, req *sys_api.RefreshTokenReq) (res *sys_model.TokenInfo, err error) {
+	request := g.RequestFromCtx(ctx)
+	deviceFingerprint := request.Header.Get("X-Device-Fingerprint")
+	userAgent := request.Header.Get("User-Agent")
+	ip := request.GetRemoteIp()
+	
+	result, err := sys_service.Jwt().RefreshTokenWithRotation(ctx, req.Token, deviceFingerprint, userAgent, ip)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// RevokeAllTokens 撤销用户所有Token
+func (c *cAuth) RevokeAllTokens(ctx context.Context, req *sys_api.RevokeAllTokensReq) (res api_v1.BoolRes, err error) {
+	err = sys_service.Jwt().RevokeAllUserTokens(ctx, req.UserId)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// GetActiveTokenCount 获取用户活跃Token数量
+func (c *cAuth) GetActiveTokenCount(ctx context.Context, req *sys_api.GetActiveTokenCountReq) (res *sys_api.GetActiveTokenCountRes, err error) {
+	count, err := sys_service.Jwt().GetActiveTokenCount(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &sys_api.GetActiveTokenCountRes{Count: count}, nil
 }

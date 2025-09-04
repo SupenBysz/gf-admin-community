@@ -27,7 +27,7 @@ import (
 // 邀约
 
 type sSysInvite struct {
-
+	SetParentUserHook base_hook.BaseHook[sys_enum.InviteType, sys_hook.SetParentUserFunc]
 	// 关注邀约状态的Hook订阅
 	InviteStateHook base_hook.BaseHook[sys_enum.InviteState, sys_hook.InviteStateHookFunc]
 }
@@ -203,7 +203,7 @@ func (s *sSysInvite) DeleteInvite(ctx context.Context, inviteId int64) (bool, er
 }
 
 // SetInviteState 修改邀约信息状态
-func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (bool, error) {
+func (s *sSysInvite) SetInviteState(ctx context.Context, id int64, state int) (api_v1.BoolRes, error) {
 
 	info, _ := s.GetInviteById(ctx, id)
 	if info == nil {

@@ -286,12 +286,12 @@ func (s *sSysAudit) CreateAudit(ctx context.Context, info sys_model.CreateAudit)
 	err := sys_dao.SysAudit.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		{
 			// 查询当前关联业务ID是否有审核记录
-			err := sys_dao.SysAudit.Ctx(ctx).Where(sys_do.SysAudit{
-				UserId:         info.UserId,
-				UnionMainId:    info.UnionMainId,
-				Category:       info.Category,
-				DataIdentifier: info.DataIdentifier,
-			}).Scan(&audit)
+			err := sys_dao.SysAudit.Ctx(ctx).
+				Where(sys_dao.SysAudit.Columns().UserId, info.UserId).
+				Where(sys_dao.SysAudit.Columns().UnionMainId, info.UnionMainId).
+				Where(sys_dao.SysAudit.Columns().DataIdentifier, info.DataIdentifier).
+				Where(sys_dao.SysAudit.Columns().Category, info.Category).
+				Scan(&audit)
 
 			//if err != nil && err != sql.ErrNoRows {
 			//	return sys_service.SysLogs().ErrorSimple(ctx, err, "查询校验信息失败", sys_dao.SysAudit.Table())

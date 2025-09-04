@@ -2,6 +2,10 @@ package sys_jwt
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/SupenBysz/gf-admin-community/sys_model"
@@ -10,7 +14,9 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
 	"github.com/SupenBysz/gf-admin-community/utility/response"
+	"github.com/SupenBysz/gf-admin-community/utility/security"
 
+	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -23,8 +29,14 @@ import (
 type hookInfo sys_model.KeyValueT[int64, sys_hook.JwtHookInfo]
 
 type sJwt struct {
-	SigningKey []byte
-	hookArr    []hookInfo
+	SigningKey    []byte
+	hookArr       []hookInfo
+	revokedTokens map[string]time.Time // token黑名单，存储被注销的token及其过期时间
+	mutex         sync.RWMutex         // 保护revokedTokens的读写锁
+	tokenCache    *gredis.Redis        // Redis缓存实例，用于缓存token验证结果
+	
+	// 增强安全功能
+	securityManager *security.TokenSecurityManager // 安全管理器
 }
 
 var (
@@ -36,9 +48,14 @@ func init() {
 }
 
 // New MiddlewareJwt 权限控制
-func New() *sJwt {
+func New() sys_service.IJwt {
+	securityManager := security.NewTokenSecurityManager()
 	return &sJwt{
-		SigningKey: []byte(g.Cfg().MustGet(gctx.New(), "service.tokenSignKey").String()),
+		SigningKey:      []byte(g.Cfg().MustGet(gctx.New(), "service.tokenSignKey").String()),
+		hookArr:         make([]hookInfo, 0),
+		revokedTokens:   make(map[string]time.Time),
+		tokenCache:      g.Redis(),
+		securityManager: securityManager,
 	}
 }
 
@@ -80,12 +97,12 @@ func (s *sJwt) GenerateToken(ctx context.Context, user *sys_model.SysUser) (resp
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "免啦街",
-			Subject:   "筷满客",
+			Issuer:    "Kysion Tech",
+			Subject:   "",
 		},
 	}
 
-	g.Try(ctx, func(ctx context.Context) {
+	_ = g.Try(ctx, func(ctx context.Context) {
 		for _, hook := range s.hookArr {
 			if hook.Value.Key.Code()&user.Type == user.Type || (user.Type == 64 && hook.Value.Key.Code() == 32) {
 				customClaims, err = hook.Value.Value(ctx, customClaims)
@@ -114,6 +131,69 @@ func (s *sJwt) CreateToken(claims *sys_model.JwtCustomClaims) (string, error) {
 	return token.SignedString(s.SigningKey)
 }
 
+// RevokeToken 注销token
+func (s *sJwt) RevokeToken(ctx context.Context, tokenString string) error {
+	if gstr.HasPrefix(tokenString, "Bearer ") {
+		tokenString = gstr.SubStr(tokenString, 7)
+	}
+
+	// 解析token获取过期时间
+	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return s.SigningKey, nil
+	})
+
+	if err != nil {
+		return gerror.New("invalid_token")
+	}
+
+	if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok {
+		s.mutex.Lock()
+		defer s.mutex.Unlock()
+
+		// 将token添加到黑名单，存储到过期时间
+		s.revokedTokens[tokenString] = claims.RegisteredClaims.ExpiresAt.Time
+
+		// 清理已过期的token（可选的优化）
+		now := time.Now()
+		for token, expireTime := range s.revokedTokens {
+			if now.After(expireTime) {
+				delete(s.revokedTokens, token)
+			}
+		}
+
+		return nil
+	}
+
+	return gerror.New("invalid_token_claims")
+}
+
+// IsTokenRevoked 检查token是否已被注销
+func (s *sJwt) IsTokenRevoked(ctx context.Context, tokenString string) bool {
+	if gstr.HasPrefix(tokenString, "Bearer ") {
+		tokenString = gstr.SubStr(tokenString, 7)
+	}
+
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	expireTime, exists := s.revokedTokens[tokenString]
+	if !exists {
+		return false
+	}
+
+	// 如果token已过期，从黑名单中移除
+	if time.Now().After(expireTime) {
+		s.mutex.RUnlock()
+		s.mutex.Lock()
+		delete(s.revokedTokens, tokenString)
+		s.mutex.Unlock()
+		s.mutex.RLock()
+		return false
+	}
+
+	return true
+}
+
 // RefreshToken 刷新Token,并发安全
 func (s *sJwt) RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) (string, error) {
 	v, err, _ := ConcurrencyControl.Do("JWT:"+oldToken, func() (interface{}, error) {
@@ -122,6 +202,7 @@ func (s *sJwt) RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) 
 	return v.(string), err
 }
 
+// Middleware 鉴权中间件函数
 func (s *sJwt) Middleware(r *ghttp.Request) {
 	tokenString := gstr.Trim(r.Header.Get("Authorization"))
 
@@ -130,12 +211,44 @@ func (s *sJwt) Middleware(r *ghttp.Request) {
 	}
 
 	s.MakeSession(r.Context(), tokenString)
-	return
 }
 
+// MakeSession 构建会话
 func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.JwtCustomClaims {
 	if gstr.HasPrefix(tokenString, "Bearer ") {
 		tokenString = gstr.SubStr(tokenString, 7)
+	}
+
+	// 检查token是否已被注销
+	if s.IsTokenRevoked(ctx, tokenString) {
+		isCustomSession := sys_service.SysSession().HasCustom(ctx)
+		if !isCustomSession {
+			response.JsonExit(g.RequestFromCtx(ctx), 401, "token_revoked")
+		}
+		return nil
+	}
+
+	// 尝试从缓存中获取token验证结果
+	cacheKey := fmt.Sprintf("jwt:token:%s", tokenString)
+	if s.tokenCache != nil {
+		cachedData, err := s.tokenCache.Get(ctx, cacheKey)
+		if err == nil && !cachedData.IsNil() {
+			var claims sys_model.JwtCustomClaims
+			if err := json.Unmarshal(cachedData.Bytes(), &claims); err == nil {
+				// 验证缓存的token是否仍然有效
+				if time.Now().Before(claims.RegisteredClaims.ExpiresAt.Time) {
+					isCustomSession := sys_service.SysSession().HasCustom(ctx)
+					if !isCustomSession {
+						sys_service.SysSession().SetUser(ctx, &claims)
+						g.RequestFromCtx(ctx).Middleware.Next()
+					}
+					return &claims
+				} else {
+					// 缓存的token已过期，删除缓存
+					s.tokenCache.Del(ctx, cacheKey)
+				}
+			}
+		}
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &sys_model.JwtCustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
@@ -145,18 +258,19 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 	isCustomSession := sys_service.SysSession().HasCustom(ctx)
 
 	if err != nil {
-		if ve, ok := err.(*jwt.ValidationError); ok {
+		var ve *jwt.ValidationError
+		if errors.As(err, &ve) {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				err = gerror.New("error_invalid_token")
+				err = gerror.Wrap(err, "error_invalid_token")
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
 				// Token is expired
-				err = gerror.New("error_token_expired")
+				err = gerror.Wrap(err, "error_token_expired")
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				err = gerror.New("error_token_not_active")
+				err = gerror.Wrap(err, "error_token_not_active")
 			} else if ve.Errors&jwt.ValidationErrorSignatureInvalid != 0 {
-				err = gerror.New("error_token_signature_invalid")
+				err = gerror.Wrap(err, "error_token_signature_invalid")
 			} else {
-				err = gerror.New("error_token_parsing_failed")
+				err = gerror.Wrap(err, "error_token_parsing_failed")
 			}
 		}
 		if !isCustomSession {
@@ -167,6 +281,17 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 
 	if token != nil {
 		if claims, ok := token.Claims.(*sys_model.JwtCustomClaims); ok && token.Valid {
+			// 将验证成功的token缓存到Redis，设置过期时间为token的剩余有效时间
+			if s.tokenCache != nil {
+				claimsData, err := json.Marshal(claims)
+				if err == nil {
+					ttl := time.Until(claims.RegisteredClaims.ExpiresAt.Time)
+					if ttl > 0 {
+						s.tokenCache.SetEX(ctx, cacheKey, claimsData, int64(ttl.Seconds()))
+					}
+				}
+			}
+
 			if !isCustomSession {
 				sys_service.SysSession().SetUser(ctx, claims)
 				g.RequestFromCtx(ctx).Middleware.Next()
@@ -179,4 +304,213 @@ func (s *sJwt) MakeSession(ctx context.Context, tokenString string) *sys_model.J
 		response.JsonExit(g.RequestFromCtx(ctx), 401, "error_token_parsing_failed")
 	}
 	return nil
+}
+
+// GenerateEnhancedToken 生成增强安全token
+func (s *sJwt) GenerateEnhancedToken(ctx context.Context, user *sys_model.SysUser, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error) {
+	user.Password = ""
+
+	// 生成会话ID
+	sessionID := fmt.Sprintf("sess_%d_%d", user.Id, time.Now().UnixNano())
+	
+	// 计算安全级别（基于设备指纹、IP等因素）
+	securityLevel := 1
+	if deviceFingerprint != "" {
+		securityLevel++
+	}
+	if ip != "" {
+		securityLevel++
+	}
+
+	customClaims := &sys_model.EnhancedJwtCustomClaims{
+		JwtCustomClaims: sys_model.JwtCustomClaims{
+			SysUser:      *user,
+			IsSuperAdmin: user.Type == sys_enum.User.Type.SuperAdmin.Code(),
+			IsAdmin:      user.Type == sys_enum.User.Type.Admin.Code(),
+			RegisteredClaims: jwt.RegisteredClaims{
+				NotBefore: jwt.NewNumericDate(time.Now()),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+				Issuer:    "Kysion Tech",
+				Subject:   "",
+			},
+		},
+		DeviceFingerprint: deviceFingerprint,
+		LoginIP:          ip,
+		UserAgent:        userAgent,
+		SessionID:        sessionID,
+		SecurityLevel:    securityLevel,
+	}
+
+	// 执行Hook
+	_ = g.Try(ctx, func(ctx context.Context) {
+		for _, hook := range s.hookArr {
+			if hook.Value.Key.Code()&user.Type == user.Type || (user.Type == 64 && hook.Value.Key.Code() == 32) {
+				// 注意：这里需要将EnhancedJwtCustomClaims转换为JwtCustomClaims
+				jwtClaims := &customClaims.JwtCustomClaims
+				jwtClaims, err = hook.Value.Value(ctx, jwtClaims)
+				if err != nil {
+					break
+				}
+				customClaims.JwtCustomClaims = *jwtClaims
+			}
+		}
+	})
+
+	token, err := s.CreateEnhancedToken(customClaims)
+	if err != nil {
+		return nil, gerror.New("error_token_creation_failed")
+	}
+
+	// 记录token到生命周期管理器
+	s.securityManager.GetLifecycleManager().AddToken(user.Id, token)
+
+	return &sys_model.TokenInfo{
+		Token:    token,
+		ExpireAt: customClaims.RegisteredClaims.ExpiresAt.Time,
+	}, nil
+}
+
+// CreateEnhancedToken 创建增强token
+func (s *sJwt) CreateEnhancedToken(claims *sys_model.EnhancedJwtCustomClaims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.SigningKey)
+}
+
+// RefreshTokenWithRotation 带轮换的token刷新
+func (s *sJwt) RefreshTokenWithRotation(ctx context.Context, oldToken, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error) {
+	if gstr.HasPrefix(oldToken, "Bearer ") {
+		oldToken = gstr.SubStr(oldToken, 7)
+	}
+
+	// 解析旧token
+	token, err := jwt.ParseWithClaims(oldToken, &sys_model.EnhancedJwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return s.SigningKey, nil
+	})
+
+	if err != nil {
+		return nil, gerror.New("invalid_token")
+	}
+
+	if claims, ok := token.Claims.(*sys_model.EnhancedJwtCustomClaims); ok && token.Valid {
+		// 验证设备指纹和IP
+		if err := s.securityManager.ValidateDeviceFingerprint(ctx, &claims.JwtCustomClaims, deviceFingerprint); err != nil {
+			s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+				Type:      "device_mismatch",
+				Timestamp: time.Now(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Details:   "Device fingerprint mismatch during token refresh",
+			})
+			return nil, gerror.New("device_validation_failed")
+		}
+
+		if err := s.securityManager.ValidateIPAddress(ctx, &claims.JwtCustomClaims, ip); err != nil {
+			s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+				Type:      "ip_mismatch",
+				Timestamp: time.Now(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Details:   "IP address mismatch during token refresh",
+			})
+			return nil, gerror.New("ip_validation_failed")
+		}
+
+		// 检查刷新频率
+		tokenHash := s.hashToken(oldToken)
+		if !s.securityManager.GetRateLimiter().IsAllowed(tokenHash) {
+			s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+				Type:      "refresh_rate_limit",
+				Timestamp: time.Now(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Details:   "Token refresh rate limit exceeded",
+			})
+			return nil, gerror.New("refresh_rate_limit_exceeded")
+		}
+
+		// 立即撤销旧token
+		s.RevokeToken(ctx, oldToken)
+
+		// 生成新token
+		newToken, err := s.GenerateEnhancedToken(ctx, &claims.SysUser, deviceFingerprint, userAgent, ip)
+		if err != nil {
+			return nil, err
+		}
+
+		// 记录刷新事件
+		s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+			Type:      "token_refresh",
+			Timestamp: time.Now(),
+			IP:        ip,
+			UserAgent: userAgent,
+			Details:   "Token refreshed successfully",
+		})
+
+		return newToken, nil
+	}
+
+	return nil, gerror.New("invalid_token_claims")
+}
+
+// RevokeAllUserTokens 撤销用户所有token
+func (s *sJwt) RevokeAllUserTokens(ctx context.Context, userId int64) error {
+	return s.securityManager.GetLifecycleManager().RevokeAllUserTokens(userId)
+}
+
+// ValidateTokenSecurity 验证token安全性
+func (s *sJwt) ValidateTokenSecurity(ctx context.Context, tokenString, deviceFingerprint, userAgent, ip string) (bool, error) {
+	if gstr.HasPrefix(tokenString, "Bearer ") {
+		tokenString = gstr.SubStr(tokenString, 7)
+	}
+
+	// 解析token
+	token, err := jwt.ParseWithClaims(tokenString, &sys_model.EnhancedJwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return s.SigningKey, nil
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	if claims, ok := token.Claims.(*sys_model.EnhancedJwtCustomClaims); ok && token.Valid {
+		// 验证设备指纹
+		if err := s.securityManager.ValidateDeviceFingerprint(ctx, &claims.JwtCustomClaims, deviceFingerprint); err != nil {
+			s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+				Type:      "device_mismatch",
+				Timestamp: time.Now(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Details:   "Device fingerprint validation failed",
+			})
+			return false, nil
+		}
+
+		// 验证IP地址
+		if err := s.securityManager.ValidateIPAddress(ctx, &claims.JwtCustomClaims, ip); err != nil {
+			s.securityManager.GetEventMonitor().RecordSuspiciousActivity(claims.SysUser.Id, security.SecurityEvent{
+				Type:      "ip_mismatch",
+				Timestamp: time.Now(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Details:   "IP address validation failed",
+			})
+			return false, nil
+		}
+
+		return true, nil
+	}
+
+	return false, gerror.New("invalid_token_claims")
+}
+
+// GetActiveTokenCount 获取用户活跃token数量
+func (s *sJwt) GetActiveTokenCount(ctx context.Context, userId int64) (int, error) {
+	return s.securityManager.GetLifecycleManager().GetUserTokenCount(userId), nil
+}
+
+// hashToken 对Token进行哈希处理
+func (s *sJwt) hashToken(token string) string {
+	hash := fmt.Sprintf("%x", token)
+	return hash[:16] // 取前16位作为哈希
 }

@@ -52,7 +52,7 @@ func init() {
 	sys_service.RegisterFile(New())
 }
 
-func New() *sFile {
+func New() sys_service.IFile {
 	return &sFile{
 		cachePrefix:   "upload",
 		hookArr:       make([]hookInfo, 0),
@@ -84,6 +84,7 @@ func (s *sFile) CleanAllHook() {
 	s.hookArr = make([]hookInfo, 0)
 }
 
+// MakeTempUploadPath 创建临时上传路径
 func (s *sFile) MakeTempUploadPath(ctx context.Context) (string, string, error) {
 	uploadPath := g.Cfg().MustGet(ctx, "upload.tempPath").String()
 	// 获取系统默认的临时文件的存储路径
@@ -133,7 +134,7 @@ func (s *sFile) MakeTempUploadPath(ctx context.Context) (string, string, error) 
 }
 
 // Upload 统一上传文件
-func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_entity.SysFile, error) {
+func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput, allowAnonymous bool) (*sys_entity.SysFile, error) {
 	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
 
 	uploadPath, tmpPath, err := s.MakeTempUploadPath(ctx)
@@ -188,20 +189,25 @@ func (s *sFile) Upload(ctx context.Context, in sys_model.FileUploadInput) (*sys_
 	absPath := gfile.Join(savePath, fileName)
 	data := &sys_model.FileInfo{
 		SysFile: sys_entity.SysFile{
-			Id:          id,
-			Name:        fileName,
-			Src:         absPath,
-			Url:         absPath,
-			LocalPath:   absPath,
-			Ext:         gfile.Ext(absPath),
-			Size:        in.File.Size,
-			Category:    "",
-			UserId:      sessionUser.Id,
-			UnionMainId: sessionUser.UnionMainId,
-			CreatedAt:   gtime.Now(),
-			UpdatedAt:   nil,
+			Id:             id,
+			Name:           fileName,
+			Src:            absPath,
+			Url:            absPath,
+			LocalPath:      absPath,
+			Ext:            gfile.Ext(absPath),
+			Size:           in.File.Size,
+			Category:       "",
+			UserId:         sessionUser.Id,
+			UnionMainId:    sessionUser.UnionMainId,
+			CreatedAt:      gtime.Now(),
+			UpdatedAt:      nil,
+			AllowAnonymous: 0,
 		},
 		ExpiresAt: gtime.Now().Add(s.CacheDuration),
+	}
+
+	if allowAnonymous {
+		data.AllowAnonymous = 1
 	}
 
 	// 缓存前的Hook广播
@@ -430,7 +436,7 @@ func (s *sFile) SaveFile(ctx context.Context, storageAddr string, info *sys_mode
 // UploadIDCard 上传身份证照片
 func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUploadInput) (*sys_model.IDCardWithOCR, error) {
 
-	result, err := s.Upload(ctx, in.FileUploadInput)
+	result, err := s.Upload(ctx, in.FileUploadInput, false)
 
 	if err != nil {
 		return nil, err
@@ -463,7 +469,7 @@ func (s *sFile) UploadIDCard(ctx context.Context, in sys_model.OCRIDCardFileUplo
 
 // UploadBankCard 上传银行卡照片
 func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCRInput) (*sys_model.BankCardWithOCR, error) {
-	result, err := s.Upload(ctx, in.FileUploadInput)
+	result, err := s.Upload(ctx, in.FileUploadInput, false)
 
 	if err != nil {
 		return nil, err
@@ -494,7 +500,7 @@ func (s *sFile) UploadBankCard(ctx context.Context, in sys_model.BankCardWithOCR
 
 // UploadBusinessLicense 上传营业执照照片
 func (s *sFile) UploadBusinessLicense(ctx context.Context, in sys_model.OCRBusinessLicense) (*sys_model.BusinessLicenseWithOCR, error) {
-	result, err := s.Upload(ctx, in.FileUploadInput)
+	result, err := s.Upload(ctx, in.FileUploadInput, false)
 
 	if err != nil {
 		return nil, err
@@ -609,6 +615,7 @@ func (s *sFile) GetFileById(ctx context.Context, id int64, errorMessage string) 
 	}
 }
 
+// GetAnyFileById 根据ID获取文件信息
 func (s *sFile) GetAnyFileById(ctx context.Context, id int64, errorMessage string) (*sys_model.FileInfo, error) { // 获取图片可以是id、token、路径
 	{
 		file := &sys_entity.SysFile{}
@@ -880,7 +887,7 @@ func makeSign(fileSrc string, id int64) string {
 // UploadPicture 上传图片并审核
 func (s *sFile) UploadPicture(ctx context.Context, input sys_model.PictureWithOCRInput) (*sys_model.PictureWithOCR, error) {
 
-	result, err := s.Upload(ctx, input.FileUploadInput)
+	result, err := s.Upload(ctx, input.FileUploadInput, true)
 
 	if err != nil {
 		return nil, err
@@ -986,6 +993,7 @@ func (s *sFile) GetOssFileWithURL(ctx context.Context, bucketName, filePath, sin
 	return ret == true, err
 }
 
+// QueryFile 查询文件
 func (s *sFile) QueryFile(ctx context.Context, search *base_model.SearchParams) (*base_model.CollectRes[sys_entity.SysFile], error) {
 	return daoctl.Query[sys_entity.SysFile](sys_dao.SysFile.Ctx(ctx), search, true)
 }

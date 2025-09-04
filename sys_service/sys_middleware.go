@@ -19,6 +19,12 @@ type (
 		CORS(r *ghttp.Request)
 		// ResponseHandler 响应函数
 		ResponseHandler(r *ghttp.Request)
+		
+		// 增强安全中间件
+		// EnhancedAuth 增强安全鉴权中间件
+		EnhancedAuth(r *ghttp.Request)
+		// SecurityMonitor 安全监控中间件
+		SecurityMonitor(r *ghttp.Request)
 	}
 )
 

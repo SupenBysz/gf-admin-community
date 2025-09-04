@@ -21,6 +21,16 @@ var SysUser = cSysUser{}
 
 type cSysUser struct{}
 
+// SetParentUserId 设置所属父级用户
+func (c *cSysUser) SetParentUserId(ctx context.Context, req *sys_api.SetParentUserIdReq) (api_v1.BoolRes, error) {
+	return funs.CheckPermission(ctx,
+		func() (api_v1.BoolRes, error) {
+			return sys_service.SysInvite().SetParentUserId(ctx, req.UserId, req.OldParentUserId, req.NewParentUserId)
+		},
+		sys_enum.User.PermissionType.SetParentUserId,
+	)
+}
+
 // UpdateHeartbeatAt 更新用户在线通信心跳时间，单位/秒
 func (c *cSysUser) UpdateHeartbeatAt(ctx context.Context, req *sys_api.UpdateHeartbeatAtReq) (api_v1.BoolRes, error) {
 	return funs.CheckPermission(ctx,
@@ -149,6 +159,12 @@ func (c *cSysUser) GetUserById(ctx context.Context, req *sys_api.GetUserByIdReq)
 	err = gconv.Struct(user.SysUser, result)
 
 	return result, err
+}
+
+func (c *cSysUser) Logout(ctx context.Context, _ *sys_api.LogoutReq) (res api_v1.BoolRes, err error) {
+	sessionUser := sys_service.SysSession().Get(ctx).JwtClaimsUser
+
+	return sys_service.SysUser().Logout(ctx, sessionUser.Id)
 }
 
 // makeMore 是否订阅附加数据

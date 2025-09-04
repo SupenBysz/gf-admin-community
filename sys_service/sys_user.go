@@ -10,6 +10,7 @@ import (
 
 	"github.com/SupenBysz/gf-admin-community/api_v1"
 	"github.com/SupenBysz/gf-admin-community/sys_model"
+	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_enum"
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/kysion/base-library/base_model"
@@ -19,6 +20,10 @@ type (
 	ISysUser interface {
 		// InstallHook 安装Hook
 		InstallHook(event sys_enum.UserEvent, hookFunc sys_hook.UserHookFunc) int64
+		// SetCryptoPasswordFunc 用于业务端自定义密码规则
+		SetCryptoPasswordFunc(f func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string))
+		// GetCryptoPasswordFunc 应用业务端自定义密码规则
+		GetCryptoPasswordFunc() func(ctx context.Context, passwordStr string, user ...sys_entity.SysUser) (pwdEncode string)
 		// UnInstallHook 卸载Hook
 		UnInstallHook(savedHookId int64)
 		// CleanAllHook 清除所有Hook
@@ -60,6 +65,10 @@ type (
 		HasSysUserEmail(ctx context.Context, email string) bool
 		// GetSysUserByEmail 根据邮箱获取用户信息
 		GetSysUserByEmail(ctx context.Context, email string) (response *sys_model.SysUser, err error)
+		// HasSysUserMobile 手机号是否存在
+		HasSysUserMobile(ctx context.Context, mobile string) bool
+		// GetSysUserByMobile 根据手机号获取用户信息
+		GetSysUserByMobile(ctx context.Context, mobile string) (response *sys_model.SysUser, err error)
 		// ResetUserEmail 重置用户邮箱
 		ResetUserEmail(ctx context.Context, userId int64, email string) (bool, error)
 		// SetUserRoles 设置用户角色
@@ -75,7 +84,9 @@ type (
 		// SetUserMail 设置用户邮箱
 		SetUserMail(ctx context.Context, oldMail string, newMail string, captcha string, password string, userId int64) (bool, error)
 		// Heartbeat 用户在线心跳
-		Heartbeat(ctx context.Context, userId int64) (bool, error)
+		Heartbeat(ctx context.Context, userId int64) (api_v1.BoolRes, error)
+		// Logout 退出登录
+		Logout(ctx context.Context, userId int64) (api_v1.BoolRes, error)
 	}
 )
 

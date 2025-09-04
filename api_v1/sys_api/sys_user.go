@@ -17,6 +17,13 @@ type QueryUserListReq struct {
 	Include []string `json:"include" dc:"需要附加数据的返回值字段集，如果没有填写，默认不附加数据"`
 }
 
+type SetParentUserIdReq struct {
+	g.Meta          `path:"/setParentUserId" method:"post" summary:"设置新父级用户"`
+	UserId          int64 `json:"userId" dc:"用户ID"`
+	OldParentUserId int64 `json:"oldParentUserId" dc:"当前父级ID"`
+	NewParentUserId int64 `json:"newParentUserId" dc:"新父级用户ID"`
+}
+
 type UpdateHeartbeatAtReq struct {
 	g.Meta      `path:"/updateHeartbeatAt" method:"post" summary:"更新在线超时设定" tags:"用户"`
 	HeartbeatAt int `json:"heartbeat_at" dc:"在线超时时间，单位/秒"`
@@ -64,4 +71,8 @@ type SetUserStateReq struct {
 type GetUserByIdReq struct {
 	g.Meta `path:"/getUserById" method:"post" summary:"根据ID获取用户信息" tags:"用户"`
 	UserId int64 `json:"userId" v:"required#用户ID校验失败" dc:"用户ID"`
+}
+
+type LogoutReq struct {
+	g.Meta `path:"/logout" method:"post"`
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_hook"
 	"github.com/SupenBysz/gf-admin-community/sys_service"
 	"github.com/SupenBysz/gf-admin-community/utility/idgen"
+	"github.com/SupenBysz/gf-admin-community/utility/security"
 	"github.com/SupenBysz/gf-admin-community/utility/sys_rules"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -139,9 +140,28 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, gerror.New(g.I18n().T(ctx, "error_account_cancelled"))
 	}
 
-	tokenInfo, err := sys_service.Jwt().GenerateToken(ctx, user)
+	// 获取请求信息用于增强安全
+	request := g.RequestFromCtx(ctx)
+	var deviceFingerprint, userAgent, ip string
+	if request != nil {
+		deviceFingerprint = request.Header.Get("X-Device-Fingerprint")
+		userAgent = request.Header.Get("User-Agent")
+		ip = request.GetRemoteIp()
+		
+		// 如果没有设备指纹，生成一个
+		if deviceFingerprint == "" {
+			deviceFingerprint = security.GenerateDeviceFingerprint(request)
+		}
+	}
+
+	// 使用增强Token生成
+	tokenInfo, err := sys_service.Jwt().GenerateEnhancedToken(ctx, user, deviceFingerprint, userAgent, ip)
 	if err != nil {
-		return nil, err
+		// 如果增强Token生成失败，回退到标准Token
+		tokenInfo, err = sys_service.Jwt().GenerateToken(ctx, user)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	clientConfig, err := sys_consts.Global.GetClientConfig(ctx)
@@ -155,7 +175,6 @@ func (s *sSysAuth) InnerLogin(ctx context.Context, user *sys_model.SysUser) (*sy
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, nil, "error_user_type_mismatch", sys_dao.SysUser.Table())
 	}
 
-	ip := g.RequestFromCtx(ctx).GetRemoteIp()
 	user.Detail = &sys_model.SysUserDetail{}
 	user.Detail.Id = user.Id
 	user.Detail.LastLoginAt = gtime.Now()
@@ -253,10 +272,11 @@ func (s *sSysAuth) LoginByMobile(ctx context.Context, info sys_model.LoginByMobi
 			Id: userInfo.Id,
 		}))
 
+		// 使用默认的密码验证方式
 		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
+		if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+			pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -331,10 +351,11 @@ func (s *sSysAuth) LoginByMail(ctx context.Context, info sys_model.LoginByMailIn
 			Id: userInfo.Id,
 		}))
 
+		// 使用默认的密码验证方式
 		pwdHash, _ := en_crypto.PwdHash(info.Password, gconv.String(userInfo.Id))
 		// 业务层自定义密码加密规则
-		if sys_consts.Global.CryptoPasswordFunc != nil {
-			pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, info.Password, *userInfo.SysUser)
+		if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+			pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, info.Password, *userInfo.SysUser)
 		}
 
 		if pwdHash != userInfo.Password {
@@ -364,6 +385,22 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_register_method_not_supported"))
 	}
 
+	// 验证邮箱格式
+	if info.Email != "" {
+		loginRule := sys_rules.CheckLoginRule(ctx, info.Email)
+		if !loginRule {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_email_format_is_incorrect."))
+		}
+
+		if sys_service.SysUser().HasSysUserEmail(ctx, info.Email) {
+			return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_email_address_has_been_registered._please_change_it."))
+		}
+	}
+
+	if info.Mobile != "" && sys_service.SysUser().HasSysUserMobile(ctx, info.Mobile) {
+		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_the_mobile_has_been_registered._please_change_it."))
+	}
+
 	// 图形验证码校验
 	if !gmode.IsDevelop() && !sys_service.Captcha().VerifyAndClear(g.RequestFromCtx(ctx), info.Captcha) {
 		return nil, gerror.NewCode(gcode.CodeBusinessValidationFailed, g.I18n().T(ctx, "error_captcha_incorrect"))
@@ -372,6 +409,8 @@ func (s *sSysAuth) Register(ctx context.Context, info sys_model.SysUserRegister)
 	userInnerRegister := sys_model.UserInnerRegister{
 		Username:        info.Username,
 		Password:        info.Password,
+		Mobile:          info.Mobile,
+		Email:           info.Email,
 		ConfirmPassword: info.ConfirmPassword,
 		InviteCode:      info.InviteCode,
 	}
@@ -655,8 +694,8 @@ func (s *sSysAuth) ResetPassword(ctx context.Context, password string, confirmPa
 	// 加密
 	pwdHash, _ := en_crypto.PwdHash(password, salt)
 	// 业务层自定义密码加密规则
-	if sys_consts.Global.CryptoPasswordFunc != nil {
-		pwdHash = sys_consts.Global.CryptoPasswordFunc(ctx, password, *sysUserInfo.SysUser)
+	if sys_service.SysUser().GetCryptoPasswordFunc() != nil {
+		pwdHash = sys_service.SysUser().GetCryptoPasswordFunc()(ctx, password, *sysUserInfo.SysUser)
 	}
 
 	result, err := sys_dao.SysUser.Ctx(ctx).Where(sys_do.SysUser{Username: sysUserInfo.Username}).Update(sys_do.SysUser{Password: pwdHash})

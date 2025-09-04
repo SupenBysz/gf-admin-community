@@ -18,3 +18,5 @@ type InviteRegisterHookInfo struct {
 
 // InviteStateHookFunc 订阅邀约状态
 type InviteStateHookFunc func(ctx context.Context, state sys_enum.InviteState, invite *sys_model.InviteRes) error
+
+type SetParentUserFunc func(ctx context.Context, userId, oldParentUserId, newParentUserId int64) error

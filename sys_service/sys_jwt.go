@@ -26,10 +26,28 @@ type (
 		GenerateToken(ctx context.Context, user *sys_model.SysUser) (response *sys_model.TokenInfo, err error)
 		// CreateToken 创建一个token
 		CreateToken(claims *sys_model.JwtCustomClaims) (string, error)
+		// RevokeToken 注销token
+		RevokeToken(ctx context.Context, tokenString string) error
+		// IsTokenRevoked 检查token是否已被注销
+		IsTokenRevoked(ctx context.Context, tokenString string) bool
 		// RefreshToken 刷新Token,并发安全
 		RefreshToken(oldToken string, claims *sys_model.JwtCustomClaims) (string, error)
+		// Middleware 鉴权中间件函数
 		Middleware(r *ghttp.Request)
+		// MakeSession 构建会话
 		MakeSession(ctx context.Context, tokenString string) *sys_model.JwtCustomClaims
+		
+		// 增强安全功能
+		// GenerateEnhancedToken 生成增强安全token
+		GenerateEnhancedToken(ctx context.Context, user *sys_model.SysUser, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error)
+		// RefreshTokenWithRotation 带轮换的token刷新
+		RefreshTokenWithRotation(ctx context.Context, oldToken, deviceFingerprint, userAgent, ip string) (response *sys_model.TokenInfo, err error)
+		// RevokeAllUserTokens 撤销用户所有token
+		RevokeAllUserTokens(ctx context.Context, userId int64) error
+		// ValidateTokenSecurity 验证token安全性
+		ValidateTokenSecurity(ctx context.Context, tokenString, deviceFingerprint, userAgent, ip string) (bool, error)
+		// GetActiveTokenCount 获取用户活跃token数量
+		GetActiveTokenCount(ctx context.Context, userId int64) (int, error)
 	}
 )
 

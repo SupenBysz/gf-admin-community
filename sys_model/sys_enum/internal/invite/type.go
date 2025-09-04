@@ -6,15 +6,17 @@ import "github.com/kysion/base-library/utility/enum"
 type TypeEnum enum.IEnumCode[int]
 
 type inviteType struct {
-	Register TypeEnum
-	JoinTeam TypeEnum
-	JoinRole TypeEnum
+	Register      TypeEnum
+	JoinTeam      TypeEnum
+	JoinRole      TypeEnum
+	SetParentUser TypeEnum
 }
 
 var Type = inviteType{
-	Register: enum.New[TypeEnum](1, "注册"),
-	JoinTeam: enum.New[TypeEnum](2, "加入团队"),
-	JoinRole: enum.New[TypeEnum](4, "加入角色"),
+	Register:      enum.New[TypeEnum](1, "注册"),
+	JoinTeam:      enum.New[TypeEnum](2, "加入团队"),
+	JoinRole:      enum.New[TypeEnum](4, "加入角色"),
+	SetParentUser: enum.New[TypeEnum](5, "设置父级用户"),
 }
 
 func (e inviteType) New(code int, description string) TypeEnum {
@@ -26,6 +28,9 @@ func (e inviteType) New(code int, description string) TypeEnum {
 	}
 	if (code & Type.JoinRole.Code()) == Type.JoinRole.Code() {
 		return e.JoinRole
+	}
+	if (code & Type.SetParentUser.Code()) == Type.SetParentUser.Code() {
+		return e.SetParentUser
 	}
 
 	return enum.New[TypeEnum](code, description)

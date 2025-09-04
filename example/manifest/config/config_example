@@ -127,6 +127,11 @@ database:
   default:
     link: "pgsql:user=dbUsername password=dbPassword host=127.0.0.1 port=5432 dbname=dbName sslmode=disable"
     debug: true
+    # 数据库连接池优化配置
+    maxIdle: 10          # 最大空闲连接数
+    maxOpen: 100         # 最大打开连接数
+    maxLifetime: "30s"   # 连接最大生存时间
+    maxIdleTime: "10s"   # 空闲连接最大生存时间
 
 redis:
   # 单实例配置示例1

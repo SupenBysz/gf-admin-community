@@ -10,6 +10,8 @@ import (
 type SysUserRegister struct {
 	Username        string `json:"username" v:"required|length:4,30#请输入用户名称|用户名称长度非法"  dc:"登陆账号"`
 	Password        string `json:"password" v:"required|password#请输入密码|密码长度非法"  dc:"密码" v:"min-length:6#密码最短为6位"`
+	Mobile          string `json:"mobile" dc:"手机号"`
+	Email           string `json:"email" dc:"邮箱"`
 	ConfirmPassword string `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"密码" v:"min-length:6#密码最短为6位"`
 	Captcha         string `json:"captcha" v:"required" dc:"验证码"`
 	InviteCode      string `json:"inviteCode" dc:"邀约码"`
@@ -21,7 +23,7 @@ type UserInnerRegister struct {
 	ConfirmPassword string  `json:"confirmPassword" v:"required|same:password#请输入确认密码|两次密码不一致，请重新输入" dc:"密码" v:"min-length:6#密码最短为6位"`
 	RoleIds         []int64 `json:"roleIds" dc:"所属角色，多个用逗号隔开"`
 	Mobile          string  `json:"mobile"    dc:"手机号"`
-	Email           string  `json:"email"     description:"邮箱"`
+	Email           string  `json:"email"     dc:"邮箱"`
 	InviteCode      string  `json:"inviteCode" dc:"邀约码"`
 }
 

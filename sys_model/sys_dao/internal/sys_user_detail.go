@@ -34,6 +34,7 @@ type SysUserDetailColumns struct {
 	LastLoginArea   string // 最后登录地区
 	LastLoginAt     string // 最后登录时间
 	LastHeartbeatAt string // 最后在线时间
+	IsOnline        string // 是否在线
 }
 
 // sysUserDetailColumns holds the columns for table sys_user_detail.
@@ -45,6 +46,7 @@ var sysUserDetailColumns = SysUserDetailColumns{
 	LastLoginArea:   "last_login_area",
 	LastLoginAt:     "last_login_at",
 	LastHeartbeatAt: "last_heartbeat_at",
+	IsOnline:        "is_online",
 }
 
 // NewSysUserDetailDao creates and returns a new DAO object for table data access.

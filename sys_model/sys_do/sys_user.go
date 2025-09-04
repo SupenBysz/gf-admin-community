@@ -23,4 +23,5 @@ type SysUser struct {
 	DeletedAt  *gtime.Time //
 	Email      interface{} // 邮箱
 	InviteCode interface{} // 邀请码，代表通过这个邀请码注册
+	Salt       interface{} // 密码盐值
 }

@@ -2,20 +2,26 @@ package sys_model
 
 import (
 	"github.com/SupenBysz/gf-admin-community/sys_model/sys_entity"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/kysion/base-library/base_model"
 )
 
 type SysMemberLevel struct {
-	Name       string `json:"name"        orm:"name"          dc:"名称" v:"required#会员等级名称不能为空"`
-	Desc       string `json:"desc"        orm:"desc"          dc:"描述"`
-	Identifier string `json:"identifier"  orm:"identifier"    dc:"级别标识符" v:"required#会员等级标识符不能为空"`
+	sys_entity.SysMemberLevel
+	Id          int64       `json:"-"   orm:"-"`
+	CreatedAt   *gtime.Time `json:"-"   orm:"-"`
+	UpdatedAt   *gtime.Time `json:"-"   orm:"-"`
+	CreatedBy   int64       `json:"-"   orm:"-"`
+	UnionMainId int64       `json:"-"   orm:"-"`
 }
 
 type UpdateSysMemberLevel struct {
-	Id         int64   `json:"id"               orm:"id"                  dc:"ID"  v:"required#会员等级名称不能为空"`
-	Name       *string `json:"name"        orm:"name"          dc:"名称" `
-	Desc       *string `json:"desc"        orm:"desc"          dc:"描述"`
-	Identifier *string `json:"identifier"  orm:"identifier"    dc:"级别标识符"`
+	sys_entity.SysMemberLevel
+	Id          int64       `json:"id"  orm:"id" dc:"ID"  v:"required#会员等级名称不能为空"`
+	CreatedAt   *gtime.Time `json:"-"   orm:"-"`
+	UpdatedAt   *gtime.Time `json:"-"   orm:"-"`
+	CreatedBy   int64       `json:"-"   orm:"-"`
+	UnionMainId int64       `json:"-"   orm:"-"`
 }
 
 type SysMemberLevelRes sys_entity.SysMemberLevel

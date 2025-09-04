@@ -120,22 +120,18 @@ func (s *sSysMemberLevel) UpdateMemberLevel(ctx context.Context, info *sys_model
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "该会员等级不存在", sys_dao.SysMemberLevel.Table())
 	}
 
-	if unionMainId != 0 && gconv.Int64(result.UnionMainId) != unionMainId {
-		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "禁止主体修改会员等级休息", sys_dao.SysMemberLevel.Table())
-	}
-
 	data := kconv.Struct(info, &sys_do.SysMemberLevel{})
 	data.UpdatedAt = gtime.Now()
 	data.Id = nil // id 不能修改，强制置空
 
 	affected, err := daoctl.UpdateWithError(sys_dao.SysMemberLevel.Ctx(ctx).
-		Where(sys_do.SysMemberLevel{Id: info.Id, UnionMainId: unionMainId}).
+		Where(sys_do.SysMemberLevel{Id: info.Id}).
 		OmitNilData().Data(data))
 	if err != nil || affected <= 0 {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级信息更新失败", sys_dao.SysMemberLevel.Table())
 	}
 
-	result, err = s.GetMemberLevelById(ctx, gconv.Int64(data.Id))
+	result, err = s.GetMemberLevelById(ctx, gconv.Int64(info.Id))
 
 	if err != nil {
 		return nil, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级更新失败", sys_dao.SysMemberLevel.Table())
@@ -175,7 +171,7 @@ func (s *sSysMemberLevel) DeleteMemberLevel(ctx context.Context, id int64, union
 	}
 
 	// 2、删除会员等级
-	affected, err := daoctl.DeleteWithError(sys_dao.SysMemberLevel.Ctx(ctx).Where(sys_do.SysMemberLevel{Id: id, UnionMainId: unionMainId}))
+	affected, err := daoctl.DeleteWithError(sys_dao.SysMemberLevel.Ctx(ctx).Where(sys_do.SysMemberLevel{Id: id}))
 	if err != nil || affected == 0 {
 		return false, sys_service.SysLogs().ErrorSimple(ctx, err, "会员等级删除失败", sys_dao.SysMemberLevel.Table())
 	}
